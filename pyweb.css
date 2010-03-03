@@ -1,0 +1,70 @@
+.document { width: 720px; }
+.chapter { margin-left: 12px; }
+.code { font-family: courier,monospace; }
+
+.quote
+{
+	text-align: justify;
+	margin-left: 8%;
+	margin-right: 8%;
+	/*display: block;*/
+	/*width: 4.5in;*/
+	font-size: smaller;
+}
+
+.title
+{
+	font-size: x-large;
+	text-align: center;
+	font-weight: bold;
+}
+
+.subtitle { text-align: center; }
+.macro { margin: 0 0 0 0; }
+
+code
+{
+	color: #101080;
+	/*black*/
+	/*width: 6in;*/
+	display: block;
+	border-color: black;
+	border-width: thin;
+	border-style: solid;
+	background-color: #E0FFFF;
+	/*#99FFFF*/
+	padding: 0 0 0 1%;
+	margin: 0 6% 0 6%;
+	text-align: left;
+	font-size: smaller;
+}
+
+CODE SPAN.KEYWORD
+{
+	color: #000000;
+	font-weight: bold;
+}
+
+CODE SPAN.NAME { color: #000000; }
+CODE SPAN.STRING { color: #004000; }
+CODE SPAN.NUMBER { color: #002020; }
+CODE SPAN.BRACKET { color: #800000; }
+CODE SPAN.PUNCT { color: #802000; }
+CODE SPAN.OP { color: #400000; }
+
+CODE SPAN.COMMENT
+{
+	color: #000000;
+	background-color: #FFF0FF;
+	font-size: 80%;
+	font-family sans-serif: ;
+}
+
+CODE PRE { margin: 0 0 0 0; }
+P,PRE,BLOCKQUOTE PRE { margin: 0 0 6pt 6%; }
+UL,OL,DL { margin-left: 6% margin-right: 6%; }
+
+/* want only level 1 UL's, OL's etc. to have a generous left margin */
+OL OL, OL UL, UL OL, UL UL { margin-left: 4% margin-right: 0; }
+LI { margin-left: 6%; }
+LI LI { margin-left: 0; }
