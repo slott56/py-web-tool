@@ -1,0 +1,2 @@
+include *.w *.css *.html
+include test/*.w test/*.css test/*.html test/*.py

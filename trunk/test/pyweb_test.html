@@ -1,0 +1,2704 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <title>pyWeb Literate Programming 2.1 - Test Suite</title>
+    <meta name="generator" content="BBEdit 6.5.2" />
+    <meta name="author" content="Steven F. Lott" />
+    <link rel="StyleSheet" href="pyweb.css" type="text/css" />
+</head>
+<body>
+<div class="document">
+
+<!-- title page -->
+<p class="title"><em>pyWeb</em> 2.1 Test Suite</p>
+<p class="title">In Python, Yet Another Literate Programming Tool</p>
+<p class="subtitle"><a href="mailto:s_lott@yahoo.com">Steven F. Lott</a></p>
+
+<hr />
+<p class="subtitle">Table of Contents</p>
+<!--TOC-->
+<hr />
+
+<h1>Introduction</h1>
+<div class="chapter">
+<!-- test/intro.w -->
+
+<p>There are two levels of testing in this document.</p>
+<ul>
+<li><a href="#unit">Unit</a></li>
+<li><a href="#functional">Functional</a></li>
+</ul>
+
+<p>Other testing, like performance or security, is possible.
+But for this application, not very interesting.
+</p>
+
+<p>This doument builds a complete test suite, <span class="code">test.py</span>.
+
+<pre>
+MacBook-6:pyweb slott$ cd test
+MacBook-6:test slott$ export PYTHONPATH=..
+MacBook-6:test slott$ python -m pyweb pyweb_test.w
+INFO:pyweb:Reading 'pyweb_test.w'
+INFO:pyweb:Starting Load [WebReader, Web 'pyweb_test.w']
+INFO:pyweb:Including 'intro.w'
+INFO:pyweb:Including 'unit.w'
+INFO:pyweb:Including 'func.w'
+INFO:pyweb:Including 'combined.w'
+INFO:pyweb:Starting Tangle [Web 'pyweb_test.w']
+INFO:pyweb:Tangling 'test_unit.py'
+INFO:pyweb:No change to 'test_unit.py'
+INFO:pyweb:Tangling 'test_weaver.py'
+INFO:pyweb:No change to 'test_weaver.py'
+INFO:pyweb:Tangling 'test_tangler.py'
+INFO:pyweb:No change to 'test_tangler.py'
+INFO:pyweb:Tangling 'test.py'
+INFO:pyweb:No change to 'test.py'
+INFO:pyweb:Tangling 'test_loader.py'
+INFO:pyweb:No change to 'test_loader.py'
+INFO:pyweb:Starting Weave [Web 'pyweb_test.w', None]
+INFO:pyweb:Weaving 'pyweb_test.html'
+INFO:pyweb:Wrote 2519 lines to 'pyweb_test.html'
+INFO:pyweb:pyWeb: Load 1695 lines from 5 files in 0 sec., Tangle 80 lines in 0.1 sec., Weave 2519 lines in 0.0 sec.
+MacBook-6:test slott$ python test.py
+.......................................................................
+----------------------------------------------------------------------
+Ran 71 tests in 2.043s
+
+OK
+MacBook-6:test slott$ 
+</pre></div>
+
+<a name="unit"></a><h1>Unit Testing</h1>
+<div class="chapter">
+
+<!-- test/func.w -->
+
+<p>There are several broad areas of unit testing.  There are the 34 classes in this application.
+However, it isn't really necessary to test everyone single one of these classes.
+We'll decompose these into several hierarchies.
+</p>
+
+<ul type="circle">
+    <li>Emitters
+    <ul>
+	    <li>class Emitter( object ):  </li>
+        <li>class Weaver( Emitter ):  </li>
+        <li>class LaTeX( Weaver ):  </li>
+        <li>class HTML( Weaver ):  </li>
+        <li>class HTMLShort( HTML ):  </li>
+        <li>class Tangler( Emitter ):  </li>
+        <li>class TanglerMake( Tangler ):  </li>
+    </ul>
+    </li>
+    <li>Structure: Chunk, Command
+    <ul>
+        <li>class Chunk( object ):  </li>
+        <li>class NamedChunk( Chunk ):  </li>
+        <li>class OutputChunk( NamedChunk ):  </li>
+        <li>class NamedDocumentChunk( NamedChunk ):  </li>
+        <li>class MyNewCommand( Command ):  </li>
+        <li>class Command( object ):  </li>
+        <li>class TextCommand( Command ):  </li>
+        <li>class CodeCommand( TextCommand ):  </li>
+        <li>class XrefCommand( Command ):  </li>
+        <li>class FileXrefCommand( XrefCommand ):  </li>
+        <li>class MacroXrefCommand( XrefCommand ):  </li>
+        <li>class UserIdXrefCommand( XrefCommand ):  </li>
+        <li>class ReferenceCommand( Command ):  </li>
+	</ul>
+	</li>
+	<li>class Error( Exception ): pass  </li>
+	<li>Reference Handling
+	<ul>
+        <li>class Reference( object ):  </li>
+        <li>class SimpleReference( Reference ):  </li>
+        <li>class TransitiveReference( Reference ):  </li>
+    </ul>
+	</li>
+	<li>class Web( object ):  </li>
+	<li>class WebReader( object ):  </li>
+	<li>Action
+	<ul>
+        <li>class Action( object ):  </li>
+        <li>class ActionSequence( Action ):  </li>
+        <li>class WeaveAction( Action ):  </li>
+        <li>class TangleAction( Action ):  </li>
+        <li>class LoadAction( Action ):  </li>
+    </ul>
+    </li>
+	<li>class Application( object ):  </li>
+	<li>class MyWeaver( HTML ):  </li>
+	<li>class MyHTML( pyweb.HTML ):</li>
+</ul>
+
+<p>This gives us the following outline for unit testing.</p>
+
+<a name="pyweb1"></a>
+    <!--line number 64-->
+    <p><tt>test_unit.py</tt> (1)&nbsp;=</p>
+    <code><pre>
+<a href="#pyweb45">&rarr;<em>Unit Test overheads: imports, etc.</em> (45)</a>
+<a href="#pyweb2">&rarr;<em>Unit Test of Emitter class hierarchy</em> (2)</a>
+<a href="#pyweb11">&rarr;<em>Unit Test of Chunk class hierarchy</em> (11)</a>
+<a href="#pyweb22">&rarr;<em>Unit Test of Command class hierarchy</em> (22)</a>
+<a href="#pyweb31">&rarr;<em>Unit Test of Reference class hierarchy</em> (31)</a>
+<a href="#pyweb32">&rarr;<em>Unit Test of Web class</em> (32)</a>
+<a href="#pyweb38">&rarr;<em>Unit Test of WebReader class</em> (38)</a>
+<a href="#pyweb39">&rarr;<em>Unit Test of Action class hierarchy</em> (39)</a>
+<a href="#pyweb44">&rarr;<em>Unit Test of Application class</em> (44)</a>
+<a href="#pyweb46">&rarr;<em>Unit Test main</em> (46)</a>
+</pre></code>
+    <p>&loz; <tt>test_unit.py</tt> (1).
+    
+    </p>
+
+
+<h3>Emitter Tests</h3>
+
+<p>The emitter class hierarchy produces output files; either woven output
+which uses templates to generate proper markup, or tangled output which
+precisely follows the document structure.
+</p>
+
+
+    <a name="pyweb2"></a>
+    <!--line number 83-->
+    <p><em>Unit Test of Emitter class hierarchy</em> (2)&nbsp;=</p>
+    <code><pre>
+
+<a href="#pyweb4">&rarr;<em>Unit Test Mock Chunk class</em> (4)</a>
+<a href="#pyweb3">&rarr;<em>Unit Test of Emitter Superclass</em> (3)</a>
+<a href="#pyweb5">&rarr;<em>Unit Test of Weaver subclass of Emitter</em> (5)</a>
+<a href="#pyweb6">&rarr;<em>Unit Test of LaTeX subclass of Emitter</em> (6)</a>
+<a href="#pyweb7">&rarr;<em>Unit Test of HTML subclass of Emitter</em> (7)</a>
+<a href="#pyweb8">&rarr;<em>Unit Test of HTMLShort subclass of Emitter</em> (8)</a>
+<a href="#pyweb9">&rarr;<em>Unit Test of Tangler subclass of Emitter</em> (9)</a>
+<a href="#pyweb10">&rarr;<em>Unit Test of TanglerMake subclass of Emitter</em> (10)</a>
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of Emitter class hierarchy</em> (2).
+      Used by <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>The Emitter superclass is designed to be extended.  The test 
+creates a subclass to exercise a few key features.</p>
+
+
+    <a name="pyweb3"></a>
+    <!--line number 97-->
+    <p><em>Unit Test of Emitter Superclass</em> (3)&nbsp;=</p>
+    <code><pre>
+ 
+class EmitterExtension( pyweb.Emitter ):
+    def doOpen( self, fileName ):
+        self.file= StringIO.StringIO()
+    def doClose( self ):
+        self.file.flush()
+    def doWrite( self, text ):
+        self.file.write( text )
+        
+class TestEmitter( unittest.TestCase ):
+    def setUp( self ):
+        self.emitter= EmitterExtension()
+    def test_emitter_should_open_close_write( self ):
+        self.emitter.open( &quot;test.tmp&quot; )
+        self.emitter.write( &quot;Something&quot; )
+        self.emitter.close()
+        self.assertEquals( &quot;Something&quot;, self.emitter.file.getvalue() )
+    def test_emitter_should_codeBlock( self ):
+        self.emitter.open( &quot;test.tmp&quot; )
+        self.emitter.codeBlock( &quot;Some Code&quot; )
+        self.emitter.close()
+        self.assertEquals( &quot;Some Code\n&quot;, self.emitter.file.getvalue() )
+    def test_emitter_should_indent( self ):
+        self.emitter.open( &quot;test.tmp&quot; )
+        self.emitter.codeBlock( &quot;Begin\n&quot; )
+        self.emitter.setIndent( 4 )
+        self.emitter.codeBlock( &quot;More Code\n&quot; )
+        self.emitter.clrIndent()
+        self.emitter.codeBlock( &quot;End&quot; )
+        self.emitter.close()
+        self.assertEquals( &quot;Begin\n    More Code\nEnd\n&quot;, self.emitter.file.getvalue() )
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of Emitter Superclass</em> (3).
+      Used by <a href="#pyweb2"><em>Unit Test of Emitter class hierarchy</em>&nbsp;(2)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>A Mock Chunk is a Chunk-like object that we can use to test Weavers.</p>
+
+
+    <a name="pyweb4"></a>
+    <!--line number 133-->
+    <p><em>Unit Test Mock Chunk class</em> (4)&nbsp;=</p>
+    <code><pre>
+
+class MockChunk( object ):
+    def __init__( self, name, seq, lineNumber ):
+        self.name= name
+        self.fullName= name
+        self.seq= seq
+        self.lineNumber= lineNumber
+        self.initial= True
+        self.commands= []
+        self.referencedBy= []
+
+    </pre></code>
+    <p>&loz; <em>Unit Test Mock Chunk class</em> (4).
+      Used by <a href="#pyweb2"><em>Unit Test of Emitter class hierarchy</em>&nbsp;(2)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>The default Weaver is an Emitter that uses templates to produce RST markup.</p>
+
+
+    <a name="pyweb5"></a>
+    <!--line number 147-->
+    <p><em>Unit Test of Weaver subclass of Emitter</em> (5)&nbsp;=</p>
+    <code><pre>
+
+class TestWeaver( unittest.TestCase ):
+    def setUp( self ):
+        self.weaver= pyweb.Weaver()
+        self.filename= &quot;testweaver.w&quot; 
+        self.aFileChunk= MockChunk( &quot;File&quot;, 123, 456 )
+        self.aFileChunk.references_list= [ ]
+        self.aChunk= MockChunk( &quot;Chunk&quot;, 314, 278 )
+        self.aChunk.references_list= [ (&quot;Container&quot;, 123) ]
+    def tearDown( self ):
+        import os
+        try:
+            os.remove( &quot;testweaver.rst&quot; )
+        except OSError:
+            pass
+        
+    def test_weaver_functions( self ):
+        result= self.weaver.quote( &quot;|char| `code` *em* _em_&quot; )
+        self.assertEquals( &quot;\|char\| \`code\` \*em\* \_em\_&quot;, result )
+        result= self.weaver.references( self.aChunk )
+        self.assertEquals( &quot;\nUsed by: Container (`123`_)\n&quot;, result )
+        result= self.weaver.referenceTo( &quot;Chunk&quot;, 314 )
+        self.assertEquals( &quot;|srarr| Chunk (`314`_)&quot;, result )
+  
+    def test_weaver_should_codeBegin( self ):
+        self.weaver.open( self.filename )
+        self.weaver.codeBegin( self.aChunk )
+        self.weaver.codeBlock( self.weaver.quote( &quot;*The* `Code`\n&quot; ) )
+        self.weaver.codeEnd( self.aChunk )
+        self.weaver.close()
+        with open( &quot;testweaver.rst&quot;, &quot;r&quot; ) as result:
+            txt= result.read()
+        self.assertEquals( &quot;\n..  _`314`:\n..  rubric:: Chunk (314)\n..  parsed-literal::\n    \\*The\\* \\`Code\\`\n\n\nUsed by: Container (`123`_)\n\n&quot;, txt )
+  
+    def test_weaver_should_fileBegin( self ):
+        self.weaver.open( self.filename )
+        self.weaver.fileBegin( self.aFileChunk )
+        self.weaver.codeBlock( self.weaver.quote( &quot;*The* `Code`\n&quot; ) )
+        self.weaver.fileEnd( self.aFileChunk )
+        self.weaver.close()
+        with open( &quot;testweaver.rst&quot;, &quot;r&quot; ) as result:
+            txt= result.read()
+        self.assertEquals( &quot;\n..  _`123`:\n..  rubric:: File (123)\n..  parsed-literal::\n    \\*The\\* \\`Code\\`\n\n\n&quot;, txt )
+
+    def test_weaver_should_xref( self ):
+        self.weaver.open( self.filename )
+        self.weaver.xrefHead( )
+        self.weaver.xrefLine( &quot;Chunk&quot;, [ (&quot;Container&quot;, 123) ] )
+        self.weaver.xrefFoot( )
+        self.weaver.fileEnd( self.aFileChunk )
+        self.weaver.close()
+        with open( &quot;testweaver.rst&quot;, &quot;r&quot; ) as result:
+            txt= result.read()
+        self.assertEquals( &quot;\n:Chunk:\n    |srarr| (`('Container', 123)`_)\n\n\n\n&quot;, txt )
+
+    def test_weaver_should_xref_def( self ):
+        self.weaver.open( self.filename )
+        self.weaver.xrefHead( )
+        self.weaver.xrefDefLine( &quot;Chunk&quot;, 314, [ (&quot;Container&quot;, 123), (&quot;Chunk&quot;, 314) ] )
+        self.weaver.xrefFoot( )
+        self.weaver.fileEnd( self.aFileChunk )
+        self.weaver.close()
+        with open( &quot;testweaver.rst&quot;, &quot;r&quot; ) as result:
+            txt= result.read()
+        self.assertEquals( &quot;\n:Chunk:\n    [`314`_] `('Chunk', 314)`_ `('Container', 123)`_\n\n\n\n&quot;, txt )
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of Weaver subclass of Emitter</em> (5).
+      Used by <a href="#pyweb2"><em>Unit Test of Emitter class hierarchy</em>&nbsp;(2)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>A significant fraction of the various subclasses of weaver are simply
+expansion of templates.  There's no real point in testing the template
+expansion, since that's more easily tested by running a document
+through pyweb and looking at the results.
+</p>
+
+<p>We'll examine a few features of the LaTeX templates.</p>
+
+
+    <a name="pyweb6"></a>
+    <!--line number 222-->
+    <p><em>Unit Test of LaTeX subclass of Emitter</em> (6)&nbsp;=</p>
+    <code><pre>
+ 
+class TestLaTeX( unittest.TestCase ):
+    def setUp( self ):
+        self.weaver= pyweb.LaTeX()
+        self.filename= &quot;testweaver.w&quot; 
+        self.aFileChunk= MockChunk( &quot;File&quot;, 123, 456 )
+        self.aFileChunk.references_list= [ ]
+        self.aChunk= MockChunk( &quot;Chunk&quot;, 314, 278 )
+        self.aChunk.references_list= [ (&quot;Container&quot;, 123) ]
+    def tearDown( self ):
+        import os
+        try:
+            os.remove( &quot;testweaver.tex&quot; )
+        except OSError:
+            pass
+            
+    def test_weaver_functions( self ):
+        result= self.weaver.quote( &quot;\\end{Verbatim}&quot; )
+        self.assertEquals( &quot;\\end\\,{Verbatim}&quot;, result )
+        result= self.weaver.references( self.aChunk )
+        self.assertEquals( &quot;\n    \\footnotesize\n    Used by:\n    \\begin{list}{}{}\n    \n    \\item Code example Container (123) (Sect. \\ref{pyweb123}, p. \\pageref{pyweb123})\n\n    \\end{list}\n    \\normalsize\n&quot;, result )
+        result= self.weaver.referenceTo( &quot;Chunk&quot;, 314 )
+        self.assertEquals( &quot;$\\triangleright$ Code Example Chunk (314)&quot;, result )
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of LaTeX subclass of Emitter</em> (6).
+      Used by <a href="#pyweb2"><em>Unit Test of Emitter class hierarchy</em>&nbsp;(2)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>We'll examine a few features of the HTML templates.</p>
+
+
+    <a name="pyweb7"></a>
+    <!--line number 249-->
+    <p><em>Unit Test of HTML subclass of Emitter</em> (7)&nbsp;=</p>
+    <code><pre>
+ 
+class TestHTML( unittest.TestCase ):
+    def setUp( self ):
+        self.weaver= pyweb.HTML()
+        self.filename= &quot;testweaver.w&quot; 
+        self.aFileChunk= MockChunk( &quot;File&quot;, 123, 456 )
+        self.aFileChunk.references_list= [ ]
+        self.aChunk= MockChunk( &quot;Chunk&quot;, 314, 278 )
+        self.aChunk.references_list= [ (&quot;Container&quot;, 123) ]
+    def tearDown( self ):
+        import os
+        try:
+            os.remove( &quot;testweaver.html&quot; )
+        except OSError:
+            pass
+            
+    def test_weaver_functions( self ):
+        result= self.weaver.quote( &quot;a &lt; b &amp;&amp; c &gt; d&quot; )
+        self.assertEquals( &quot;a &amp;lt; b &amp;amp;&amp;amp; c &amp;gt; d&quot;, result )
+        result= self.weaver.references( self.aChunk )
+        self.assertEquals( '  Used by &lt;a href=&quot;#pyweb123&quot;&gt;&lt;em&gt;Container&lt;/em&gt;&amp;nbsp;(123)&lt;/a&gt;.', result )
+        result= self.weaver.referenceTo( &quot;Chunk&quot;, 314 )
+        self.assertEquals( '&lt;a href=&quot;#pyweb314&quot;&gt;&amp;rarr;&lt;em&gt;Chunk&lt;/em&gt; (314)&lt;/a&gt;', result )
+
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of HTML subclass of Emitter</em> (7).
+      Used by <a href="#pyweb2"><em>Unit Test of Emitter class hierarchy</em>&nbsp;(2)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>The unique feature of the <span class="code">HTMLShort</span> class is just a template change.
+</p>
+
+<p><b>To Do:</b> Test this.</p>
+
+
+    <a name="pyweb8"></a>
+    <!--line number 280-->
+    <p><em>Unit Test of HTMLShort subclass of Emitter</em> (8)&nbsp;=</p>
+    <code><pre>
+ 
+    </pre></code>
+    <p>&loz; <em>Unit Test of HTMLShort subclass of Emitter</em> (8).
+      Used by <a href="#pyweb2"><em>Unit Test of Emitter class hierarchy</em>&nbsp;(2)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>A Tangler emits the various named source files in proper format for the desired
+compiler and language.</p>
+
+
+    <a name="pyweb9"></a>
+    <!--line number 286-->
+    <p><em>Unit Test of Tangler subclass of Emitter</em> (9)&nbsp;=</p>
+    <code><pre>
+ 
+class TestTangler( unittest.TestCase ):
+    def setUp( self ):
+        self.tangler= pyweb.Tangler()
+        self.filename= &quot;testtangler.w&quot; 
+        self.aFileChunk= MockChunk( &quot;File&quot;, 123, 456 )
+        self.aFileChunk.references_list= [ ]
+        self.aChunk= MockChunk( &quot;Chunk&quot;, 314, 278 )
+        self.aChunk.references_list= [ (&quot;Container&quot;, 123) ]
+    def tearDown( self ):
+        import os
+        try:
+            os.remove( &quot;testtangler.w&quot; )
+        except OSError:
+            pass
+        
+    def test_tangler_functions( self ):
+        result= self.tangler.quote( string.printable )
+        self.assertEquals( string.printable, result )
+    def test_tangler_should_codeBegin( self ):
+        self.tangler.open( self.filename )
+        self.tangler.codeBegin( self.aChunk )
+        self.tangler.codeBlock( self.tangler.quote( &quot;*The* `Code`\n&quot; ) )
+        self.tangler.codeEnd( self.aChunk )
+        self.tangler.close()
+        with open( &quot;testtangler.w&quot;, &quot;r&quot; ) as result:
+            txt= result.read()
+        self.assertEquals( &quot;*The* `Code`\n&quot;, txt )
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of Tangler subclass of Emitter</em> (9).
+      Used by <a href="#pyweb2"><em>Unit Test of Emitter class hierarchy</em>&nbsp;(2)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>A TanglerMake uses a cheap hack to see if anything changed.
+It creates a temporary file and then does a complete file difference
+check.  If the file is different, the old version is replaced with 
+the new version.  If the file content is the same, the old version
+is left intact with all of the operating system creation timestamps
+untouched.
+</p>
+
+<p>In order to be sure that the timestamps really have changed, we 
+need to wait for a full second to elapse.
+</p>
+
+
+
+    <a name="pyweb10"></a>
+    <!--line number 329-->
+    <p><em>Unit Test of TanglerMake subclass of Emitter</em> (10)&nbsp;=</p>
+    <code><pre>
+
+class TestTanglerMake( unittest.TestCase ):
+    def setUp( self ):
+        self.tangler= pyweb.TanglerMake()
+        self.filename= &quot;testtangler.w&quot; 
+        self.aChunk= MockChunk( &quot;Chunk&quot;, 314, 278 )
+        self.aChunk.references_list= [ (&quot;Container&quot;, 123) ]
+        self.tangler.open( self.filename )
+        self.tangler.codeBegin( self.aChunk )
+        self.tangler.codeBlock( self.tangler.quote( &quot;*The* `Code`\n&quot; ) )
+        self.tangler.codeEnd( self.aChunk )
+        self.tangler.close()
+        self.original= os.path.getmtime( self.filename )
+        time.sleep( 1.0 ) # Attempt to assure timestamps are different
+    def tearDown( self ):
+        import os
+        try:
+            os.remove( &quot;testtangler.w&quot; )
+        except OSError:
+            pass
+        
+    def test_same_should_leave( self ):
+        self.tangler.open( self.filename )
+        self.tangler.codeBegin( self.aChunk )
+        self.tangler.codeBlock( self.tangler.quote( &quot;*The* `Code`\n&quot; ) )
+        self.tangler.codeEnd( self.aChunk )
+        self.tangler.close()
+        self.assertEquals( self.original, os.path.getmtime( self.filename ) )
+        
+    def test_different_should_update( self ):
+        self.tangler.open( self.filename )
+        self.tangler.codeBegin( self.aChunk )
+        self.tangler.codeBlock( self.tangler.quote( &quot;*Completely Different* `Code`\n&quot; ) )
+        self.tangler.codeEnd( self.aChunk )
+        self.tangler.close()
+        self.assertNotEquals( self.original, os.path.getmtime( self.filename ) )
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of TanglerMake subclass of Emitter</em> (10).
+      Used by <a href="#pyweb2"><em>Unit Test of Emitter class hierarchy</em>&nbsp;(2)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<h3>Chunk Tests</h3>
+
+<p>The Chunk and Command class hierarchies model the input document -- the web
+of chunks that are used to produce the documentation and the source files.
+</p>
+
+
+    <a name="pyweb11"></a>
+    <!--line number 374-->
+    <p><em>Unit Test of Chunk class hierarchy</em> (11)&nbsp;=</p>
+    <code><pre>
+
+<a href="#pyweb12">&rarr;<em>Unit Test of Chunk superclass</em> (12)</a><a href="#pyweb13">(13)</a><a href="#pyweb14">(14)</a><a href="#pyweb15">(15)</a>
+<a href="#pyweb19">&rarr;<em>Unit Test of NamedChunk subclass</em> (19)</a>
+<a href="#pyweb20">&rarr;<em>Unit Test of OutputChunk subclass</em> (20)</a>
+<a href="#pyweb21">&rarr;<em>Unit Test of NamedDocumentChunk subclass</em> (21)</a>
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of Chunk class hierarchy</em> (11).
+      Used by <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>In order to test the Chunk superclass, we need several mock objects.
+A Chunk contains one or more commands.  A Chunk is a part of a Web.
+Also, a Chunk is processed by a Tangler or a Weaver.  We'll need 
+Mock objects for all of these relationships in which a Chunk participates.
+</p>
+
+<p>A MockCommand can be attached to a Chunk.<p>
+
+
+    <a name="pyweb12"></a>
+    <!--line number 390-->
+    <p><em>Unit Test of Chunk superclass</em> (12)&nbsp;=</p>
+    <code><pre>
+
+class MockCommand( object ):
+    def __init__( self ):
+        self.lineNumber= 314
+    def startswith( self, text ):
+        return False
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of Chunk superclass</em> (12).
+      Used by <a href="#pyweb11"><em>Unit Test of Chunk class hierarchy</em>&nbsp;(11)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>A MockWeb can contain a Chunk.<p>
+
+
+    <a name="pyweb13"></a>
+    <!--line number 401-->
+    <p><em>Unit Test of Chunk superclass</em> (13)&nbsp;+=</p>
+    <code><pre>
+
+class MockWeb( object ):
+    def __init__( self ):
+        self.chunks= []
+        self.wove= None
+        self.tangled= None
+    def add( self, aChunk ):
+        self.chunks.append( aChunk )
+    def addNamed( self, aChunk ):
+        self.chunks.append( aChunk )
+    def addOutput( self, aChunk ):
+        self.chunks.append( aChunk )
+    def fullNameFor( self, name ):
+        return name
+    def fileXref( self ):
+        return { 'file':[1,2,3] }
+    def chunkXref( self ):
+        return { 'chunk':[4,5,6] }
+    def userNamesXref( self ):
+        return { 'name':(7,[8,9,10]) }
+    def getchunk( self, name ):
+        return [ MockChunk( name, 1, 314 ) ]
+    def createUsedBy( self ):
+        pass
+    def weaveChunk( self, name, weaver ):
+        weaver.write( name )
+    def tangleChunk( self, name, tangler ):
+        tangler.write( name )
+    def weave( self, weaver ):
+        self.wove= weaver
+    def tangle( self, tangler ):
+        self.tangled= tangler
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of Chunk superclass</em> (13).
+      Used by <a href="#pyweb11"><em>Unit Test of Chunk class hierarchy</em>&nbsp;(11)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>A MockWeaver or MockTangle can process a Chunk.<p>
+
+
+    <a name="pyweb14"></a>
+    <!--line number 438-->
+    <p><em>Unit Test of Chunk superclass</em> (14)&nbsp;+=</p>
+    <code><pre>
+
+class MockWeaver( object ):
+    def __init__( self ):
+        self.begin_chunk= []
+        self.end_chunk= []
+        self.written= []
+        self.code_indent= None
+    def quote( self, text ):
+        return text.replace( &quot;&amp;&quot;, &quot;&amp;amp;&quot; ) # token quoting
+    def docBegin( self, aChunk ):
+        self.begin_chunk.append( aChunk )
+    def write( self, text ):
+        self.written.append( text )
+    def docEnd( self, aChunk ):
+        self.end_chunk.append( aChunk )
+    def codeBegin( self, aChunk ):
+        self.begin_chunk.append( aChunk )
+    def codeBlock( self, text ):
+        self.written.append( text )
+    def codeEnd( self, aChunk ):
+        self.end_chunk.append( aChunk )
+    def fileBegin( self, aChunk ):
+        self.begin_chunk.append( aChunk )
+    def fileEnd( self, aChunk ):
+        self.end_chunk.append( aChunk )
+    def setIndent( self, fixed=None, command=None ):
+        pass
+    def clrIndent( self ):
+        pass
+    def xrefHead( self ):
+        pass
+    def xrefLine( self, name, refList ):
+        self.written.append( &quot;%s %s&quot; % ( name, refList ) )
+    def xrefDefLine( self, name, defn, refList ):
+        self.written.append( &quot;%s %s %s&quot; % ( name, defn, refList ) )
+    def xrefFoot( self ):
+        pass
+    def open( self, aFile ):
+        pass
+    def close( self ):
+        pass
+    def referenceTo( self, name, seq ):
+        pass
+
+class MockTangler( MockWeaver ):
+    def __init__( self ):
+        super( MockTangler, self ).__init__()
+        self.context= [0]
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of Chunk superclass</em> (14).
+      Used by <a href="#pyweb11"><em>Unit Test of Chunk class hierarchy</em>&nbsp;(11)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>A Chunk is built, interrogated and then emitted.</p>
+
+
+    <a name="pyweb15"></a>
+    <!--line number 491-->
+    <p><em>Unit Test of Chunk superclass</em> (15)&nbsp;+=</p>
+    <code><pre>
+
+class TestChunk( unittest.TestCase ):
+    def setUp( self ):
+        self.theChunk= pyweb.Chunk()
+    <a href="#pyweb16">&rarr;<em>Unit Test of Chunk construction</em> (16)</a>
+    <a href="#pyweb17">&rarr;<em>Unit Test of Chunk interrogation</em> (17)</a>
+    <a href="#pyweb18">&rarr;<em>Unit Test of Chunk emission</em> (18)</a>
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of Chunk superclass</em> (15).
+      Used by <a href="#pyweb11"><em>Unit Test of Chunk class hierarchy</em>&nbsp;(11)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>Can we build a Chunk?</p>
+
+
+    <a name="pyweb16"></a>
+    <!--line number 503-->
+    <p><em>Unit Test of Chunk construction</em> (16)&nbsp;=</p>
+    <code><pre>
+
+def test_append_command_should_work( self ):
+    cmd1= MockCommand()
+    self.theChunk.append( cmd1 )
+    self.assertEquals( 1, len(self.theChunk.commands ) )
+    cmd2= MockCommand()
+    self.theChunk.append( cmd2 )
+    self.assertEquals( 2, len(self.theChunk.commands ) )
+    
+def test_append_initial_and_more_text_should_work( self ):
+    self.theChunk.appendText( &quot;hi mom&quot; )
+    self.assertEquals( 1, len(self.theChunk.commands ) )
+    self.theChunk.appendText( &quot;&amp;more text&quot; )
+    self.assertEquals( 1, len(self.theChunk.commands ) )
+    self.assertEquals( &quot;hi mom&amp;more text&quot;, self.theChunk.commands[0].text )
+    
+def test_append_following_text_should_work( self ):
+    cmd1= MockCommand()
+    self.theChunk.append( cmd1 )
+    self.theChunk.appendText( &quot;hi mom&quot; )
+    self.assertEquals( 2, len(self.theChunk.commands ) )
+    
+def test_append_to_web_should_work( self ):
+    web= MockWeb()
+    self.theChunk.webAdd( web )
+    self.assertEquals( 1, len(web.chunks) )
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of Chunk construction</em> (16).
+      Used by <a href="#pyweb15"><em>Unit Test of Chunk superclass</em>&nbsp;(15)</a>; <a href="#pyweb11"><em>Unit Test of Chunk class hierarchy</em>&nbsp;(11)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>Can we interrogate a Chunk?</p>
+
+
+    <a name="pyweb17"></a>
+    <!--line number 534-->
+    <p><em>Unit Test of Chunk interrogation</em> (17)&nbsp;=</p>
+    <code><pre>
+
+def test_leading_command_should_not_find( self ):
+    self.assertFalse( self.theChunk.startswith( &quot;hi mom&quot; ) )
+    cmd1= MockCommand()
+    self.theChunk.append( cmd1 )
+    self.assertFalse( self.theChunk.startswith( &quot;hi mom&quot; ) )
+    self.theChunk.appendText( &quot;hi mom&quot; )
+    self.assertEquals( 2, len(self.theChunk.commands ) )
+    self.assertFalse( self.theChunk.startswith( &quot;hi mom&quot; ) )
+    
+def test_leading_text_should_not_find( self ):
+    self.assertFalse( self.theChunk.startswith( &quot;hi mom&quot; ) )
+    self.theChunk.appendText( &quot;hi mom&quot; )
+    self.assertTrue( self.theChunk.startswith( &quot;hi mom&quot; ) )
+    cmd1= MockCommand()
+    self.theChunk.append( cmd1 )
+    self.assertTrue( self.theChunk.startswith( &quot;hi mom&quot; ) )
+    self.assertEquals( 2, len(self.theChunk.commands ) )
+
+def test_regexp_exists_should_find( self ):
+    self.theChunk.appendText( &quot;this chunk has many words&quot; )
+    pat= re.compile( r&quot;\Wchunk\W&quot; )
+    found= self.theChunk.searchForRE(pat)
+    self.assertTrue( found is self.theChunk )
+def test_regexp_missing_should_not_find( self ):
+    self.theChunk.appendText( &quot;this chunk has many words&quot; )
+    pat= re.compile( &quot;\Warpigs\W&quot; )
+    found= self.theChunk.searchForRE(pat)
+    self.assertTrue( found is None )
+    
+def test_lineNumber_should_work( self ):
+    self.assertTrue( self.theChunk.lineNumber is None )
+    cmd1= MockCommand()
+    self.theChunk.append( cmd1 )
+    self.assertEqual( 314, self.theChunk.lineNumber )
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of Chunk interrogation</em> (17).
+      Used by <a href="#pyweb15"><em>Unit Test of Chunk superclass</em>&nbsp;(15)</a>; <a href="#pyweb11"><em>Unit Test of Chunk class hierarchy</em>&nbsp;(11)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>Can we emit a Chunk with a weaver or tangler?</p>
+
+
+    <a name="pyweb18"></a>
+    <!--line number 574-->
+    <p><em>Unit Test of Chunk emission</em> (18)&nbsp;=</p>
+    <code><pre>
+
+def test_weave_should_work( self ):
+    wvr = MockWeaver()
+    web = MockWeb()
+    self.theChunk.appendText( &quot;this chunk has very &amp; many words&quot; )
+    self.theChunk.weave( web, wvr )
+    self.assertEquals( 1, len(wvr.begin_chunk) )
+    self.assertTrue( wvr.begin_chunk[0] is self.theChunk )
+    self.assertEquals( 1, len(wvr.end_chunk) )
+    self.assertTrue( wvr.end_chunk[0] is self.theChunk )
+    self.assertEquals(  &quot;this chunk has very &amp; many words&quot;, &quot;&quot;.join( wvr.written ) )
+    
+def test_tangle_should_fail( self ):
+    tnglr = MockTangler()
+    web = MockWeb()
+    self.theChunk.appendText( &quot;this chunk has very &amp; many words&quot; )
+    try:
+        self.theChunk.tangle( web, tnglr )
+        self.fail()
+    except pyweb.Error, e:
+        self.assertEquals( &quot;Cannot tangle an anonymous chunk&quot;, e.args[0] )
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of Chunk emission</em> (18).
+      Used by <a href="#pyweb15"><em>Unit Test of Chunk superclass</em>&nbsp;(15)</a>; <a href="#pyweb11"><em>Unit Test of Chunk class hierarchy</em>&nbsp;(11)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>The NamedChunk is created by a <tt>@d</tt> command.
+Since it's named, it appears in the Web's index.  Also, it is woven
+and tangled differently than anonymous chunks.
+</p>
+
+
+    <a name="pyweb19"></a>
+    <!--line number 602-->
+    <p><em>Unit Test of NamedChunk subclass</em> (19)&nbsp;=</p>
+    <code><pre>
+ 
+class TestNamedChunk( unittest.TestCase ):
+    def setUp( self ):
+        self.theChunk= pyweb.NamedChunk( &quot;Some Name...&quot; )
+        cmd= self.theChunk.makeContent( &quot;the words &amp; text of this Chunk&quot; )
+        self.theChunk.append( cmd )
+        self.theChunk.setUserIDRefs( &quot;index terms&quot; )
+        
+    def test_should_find_xref_words( self ):
+        self.assertEquals( 2, len(self.theChunk.getUserIDRefs()) )
+        self.assertEquals( &quot;index&quot;, self.theChunk.getUserIDRefs()[0] )
+        self.assertEquals( &quot;terms&quot;, self.theChunk.getUserIDRefs()[1] )
+        
+    def test_append_to_web_should_work( self ):
+        web= MockWeb()
+        self.theChunk.webAdd( web )
+        self.assertEquals( 1, len(web.chunks) )
+        
+    def test_weave_should_work( self ):
+        wvr = MockWeaver()
+        web = MockWeb()
+        self.theChunk.weave( web, wvr )
+        self.assertEquals( 1, len(wvr.begin_chunk) )
+        self.assertTrue( wvr.begin_chunk[0] is self.theChunk )
+        self.assertEquals( 1, len(wvr.end_chunk) )
+        self.assertTrue( wvr.end_chunk[0] is self.theChunk )
+        self.assertEquals(  &quot;the words &amp;amp; text of this Chunk&quot;, &quot;&quot;.join( wvr.written ) )
+
+    def test_tangle_should_work( self ):
+        tnglr = MockTangler()
+        web = MockWeb()
+        self.theChunk.tangle( web, tnglr )
+        self.assertEquals( 1, len(tnglr.begin_chunk) )
+        self.assertTrue( tnglr.begin_chunk[0] is self.theChunk )
+        self.assertEquals( 1, len(tnglr.end_chunk) )
+        self.assertTrue( tnglr.end_chunk[0] is self.theChunk )
+        self.assertEquals(  &quot;the words &amp; text of this Chunk&quot;, &quot;&quot;.join( tnglr.written ) )
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of NamedChunk subclass</em> (19).
+      Used by <a href="#pyweb11"><em>Unit Test of Chunk class hierarchy</em>&nbsp;(11)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>The OutputChunk is created by a <tt>@o</tt> command.
+Since it's named, it appears in the Web's index.  Also, it is woven
+and tangled differently than anonymous chunks.
+</p>
+
+
+    <a name="pyweb20"></a>
+    <!--line number 646-->
+    <p><em>Unit Test of OutputChunk subclass</em> (20)&nbsp;=</p>
+    <code><pre>
+
+class TestOutputChunk( unittest.TestCase ):
+    def setUp( self ):
+        self.theChunk= pyweb.OutputChunk( &quot;filename&quot;, &quot;#&quot;, &quot;&quot; )
+        cmd= self.theChunk.makeContent( &quot;the words &amp; text of this Chunk&quot; )
+        self.theChunk.append( cmd )
+        self.theChunk.setUserIDRefs( &quot;index terms&quot; )
+        
+    def test_append_to_web_should_work( self ):
+        web= MockWeb()
+        self.theChunk.webAdd( web )
+        self.assertEquals( 1, len(web.chunks) )
+        
+    def test_weave_should_work( self ):
+        wvr = MockWeaver()
+        web = MockWeb()
+        self.theChunk.weave( web, wvr )
+        self.assertEquals( 1, len(wvr.begin_chunk) )
+        self.assertTrue( wvr.begin_chunk[0] is self.theChunk )
+        self.assertEquals( 1, len(wvr.end_chunk) )
+        self.assertTrue( wvr.end_chunk[0] is self.theChunk )
+        self.assertEquals(  &quot;the words &amp;amp; text of this Chunk&quot;, &quot;&quot;.join( wvr.written ) )
+
+    def test_tangle_should_work( self ):
+        tnglr = MockTangler()
+        web = MockWeb()
+        self.theChunk.tangle( web, tnglr )
+        self.assertEquals( 1, len(tnglr.begin_chunk) )
+        self.assertTrue( tnglr.begin_chunk[0] is self.theChunk )
+        self.assertEquals( 1, len(tnglr.end_chunk) )
+        self.assertTrue( tnglr.end_chunk[0] is self.theChunk )
+        self.assertEquals(  &quot;the words &amp; text of this Chunk&quot;, &quot;&quot;.join( tnglr.written ) )
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of OutputChunk subclass</em> (20).
+      Used by <a href="#pyweb11"><em>Unit Test of Chunk class hierarchy</em>&nbsp;(11)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>The NamedDocumentChunk is a little-used feature.</p>
+
+
+    <a name="pyweb21"></a>
+    <!--line number 682-->
+    <p><em>Unit Test of NamedDocumentChunk subclass</em> (21)&nbsp;=</p>
+    <code><pre>
+ 
+    </pre></code>
+    <p>&loz; <em>Unit Test of NamedDocumentChunk subclass</em> (21).
+      Used by <a href="#pyweb11"><em>Unit Test of Chunk class hierarchy</em>&nbsp;(11)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<h3>Command Tests</h3>
+
+
+    <a name="pyweb22"></a>
+    <!--line number 686-->
+    <p><em>Unit Test of Command class hierarchy</em> (22)&nbsp;=</p>
+    <code><pre>
+ 
+<a href="#pyweb23">&rarr;<em>Unit Test of Command superclass</em> (23)</a>
+<a href="#pyweb24">&rarr;<em>Unit Test of TextCommand class to contain a document text block</em> (24)</a>
+<a href="#pyweb25">&rarr;<em>Unit Test of CodeCommand class to contain a program source code block</em> (25)</a>
+<a href="#pyweb26">&rarr;<em>Unit Test of XrefCommand superclass for all cross-reference commands</em> (26)</a>
+<a href="#pyweb27">&rarr;<em>Unit Test of FileXrefCommand class for an output file cross-reference</em> (27)</a>
+<a href="#pyweb28">&rarr;<em>Unit Test of MacroXrefCommand class for a named chunk cross-reference</em> (28)</a>
+<a href="#pyweb29">&rarr;<em>Unit Test of UserIdXrefCommand class for a user identifier cross-reference</em> (29)</a>
+<a href="#pyweb30">&rarr;<em>Unit Test of ReferenceCommand class for chunk references</em> (30)</a>
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of Command class hierarchy</em> (22).
+      Used by <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>This Command superclass is essentially an inteface definition, it
+has no real testable features.</p>
+
+    <a name="pyweb23"></a>
+    <!--line number 699-->
+    <p><em>Unit Test of Command superclass</em> (23)&nbsp;=</p>
+    <code><pre>
+ 
+    </pre></code>
+    <p>&loz; <em>Unit Test of Command superclass</em> (23).
+      Used by <a href="#pyweb22"><em>Unit Test of Command class hierarchy</em>&nbsp;(22)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>A TextCommand object must be constructed, interrogated and emitted.</p>
+
+
+    <a name="pyweb24"></a>
+    <!--line number 703-->
+    <p><em>Unit Test of TextCommand class to contain a document text block</em> (24)&nbsp;=</p>
+    <code><pre>
+ 
+class TestTextCommand( unittest.TestCase ):
+    def setUp( self ):
+        self.cmd= pyweb.TextCommand( &quot;Some text &amp; words in the document\n    &quot;, 314 )
+        self.cmd2= pyweb.TextCommand( &quot;No Indent\n&quot;, 314 )
+    def test_methods_should_work( self ):
+        self.assertTrue( self.cmd.startswith(&quot;Some&quot;) )
+        self.assertFalse( self.cmd.startswith(&quot;text&quot;) )
+        pat1= re.compile( r&quot;\Wthe\W&quot; )
+        self.assertTrue( self.cmd.searchForRE(pat1) is not None )
+        pat2= re.compile( r&quot;\Wnothing\W&quot; )
+        self.assertTrue( self.cmd.searchForRE(pat2) is None )
+        self.assertEquals( 4, self.cmd.indent() )
+        self.assertEquals( 0, self.cmd2.indent() )
+    def test_weave_should_work( self ):
+        wvr = MockWeaver()
+        web = MockWeb()
+        self.cmd.weave( web, wvr )
+        self.assertEquals(  &quot;Some text &amp; words in the document\n    &quot;, &quot;&quot;.join( wvr.written ) )
+    def test_tangle_should_work( self ):
+        tnglr = MockTangler()
+        web = MockWeb()
+        self.cmd.tangle( web, tnglr )
+        self.assertEquals(  &quot;Some text &amp; words in the document\n    &quot;, &quot;&quot;.join( tnglr.written ) )
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of TextCommand class to contain a document text block</em> (24).
+      Used by <a href="#pyweb22"><em>Unit Test of Command class hierarchy</em>&nbsp;(22)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>A CodeCommand object is a TextCommand with different processing for being emitted.</p>
+
+
+    <a name="pyweb25"></a>
+    <!--line number 731-->
+    <p><em>Unit Test of CodeCommand class to contain a program source code block</em> (25)&nbsp;=</p>
+    <code><pre>
+
+class TestCodeCommand( unittest.TestCase ):
+    def setUp( self ):
+        self.cmd= pyweb.CodeCommand( &quot;Some text &amp; words in the document\n    &quot;, 314 )
+    def test_weave_should_work( self ):
+        wvr = MockWeaver()
+        web = MockWeb()
+        self.cmd.weave( web, wvr )
+        self.assertEquals(  &quot;Some text &amp;amp; words in the document\n    &quot;, &quot;&quot;.join( wvr.written ) )
+    def test_tangle_should_work( self ):
+        tnglr = MockTangler()
+        web = MockWeb()
+        self.cmd.tangle( web, tnglr )
+        self.assertEquals(  &quot;Some text &amp; words in the document\n    &quot;, &quot;&quot;.join( tnglr.written ) )
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of CodeCommand class to contain a program source code block</em> (25).
+      Used by <a href="#pyweb22"><em>Unit Test of Command class hierarchy</em>&nbsp;(22)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>The XrefCommand class is largely abstract.</p>
+
+
+    <a name="pyweb26"></a>
+    <!--line number 749-->
+    <p><em>Unit Test of XrefCommand superclass for all cross-reference commands</em> (26)&nbsp;=</p>
+    <code><pre>
+ 
+    </pre></code>
+    <p>&loz; <em>Unit Test of XrefCommand superclass for all cross-reference commands</em> (26).
+      Used by <a href="#pyweb22"><em>Unit Test of Command class hierarchy</em>&nbsp;(22)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>The FileXrefCommand command is expanded by a weaver to a list of all <tt>@o</tt>
+locations.</p>
+
+
+    <a name="pyweb27"></a>
+    <!--line number 754-->
+    <p><em>Unit Test of FileXrefCommand class for an output file cross-reference</em> (27)&nbsp;=</p>
+    <code><pre>
+ 
+class TestFileXRefCommand( unittest.TestCase ):
+    def setUp( self ):
+        self.cmd= pyweb.FileXrefCommand( 314 )
+    def test_weave_should_work( self ):
+        wvr = MockWeaver()
+        web = MockWeb()
+        self.cmd.weave( web, wvr )
+        self.assertEquals(  &quot;file [1, 2, 3]&quot;, &quot;&quot;.join( wvr.written ) )
+    def test_tangle_should_fail( self ):
+        tnglr = MockTangler()
+        web = MockWeb()
+        try:
+            self.cmd.tangle( web, tnglr )
+            self.fail()
+        except pyweb.Error:
+            pass
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of FileXrefCommand class for an output file cross-reference</em> (27).
+      Used by <a href="#pyweb22"><em>Unit Test of Command class hierarchy</em>&nbsp;(22)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>The MacroXrefCommand command is expanded by a weaver to a list of all <tt>@d</tt>
+locations.</p>
+
+
+    <a name="pyweb28"></a>
+    <!--line number 776-->
+    <p><em>Unit Test of MacroXrefCommand class for a named chunk cross-reference</em> (28)&nbsp;=</p>
+    <code><pre>
+
+class TestMacroXRefCommand( unittest.TestCase ):
+    def setUp( self ):
+        self.cmd= pyweb.MacroXrefCommand( 314 )
+    def test_weave_should_work( self ):
+        wvr = MockWeaver()
+        web = MockWeb()
+        self.cmd.weave( web, wvr )
+        self.assertEquals(  &quot;chunk [4, 5, 6]&quot;, &quot;&quot;.join( wvr.written ) )
+    def test_tangle_should_fail( self ):
+        tnglr = MockTangler()
+        web = MockWeb()
+        try:
+            self.cmd.tangle( web, tnglr )
+            self.fail()
+        except pyweb.Error:
+            pass
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of MacroXrefCommand class for a named chunk cross-reference</em> (28).
+      Used by <a href="#pyweb22"><em>Unit Test of Command class hierarchy</em>&nbsp;(22)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>The UserIdXrefCommand command is expanded by a weaver to a list of all <tt>@|</tt>
+names.</p>
+
+
+    <a name="pyweb29"></a>
+    <!--line number 798-->
+    <p><em>Unit Test of UserIdXrefCommand class for a user identifier cross-reference</em> (29)&nbsp;=</p>
+    <code><pre>
+
+class TestUserIdXrefCommand( unittest.TestCase ):
+    def setUp( self ):
+        self.cmd= pyweb.UserIdXrefCommand( 314 )
+    def test_weave_should_work( self ):
+        wvr = MockWeaver()
+        web = MockWeb()
+        self.cmd.weave( web, wvr )
+        self.assertEquals(  &quot;name 7 [8, 9, 10]&quot;, &quot;&quot;.join( wvr.written ) )
+    def test_tangle_should_fail( self ):
+        tnglr = MockTangler()
+        web = MockWeb()
+        try:
+            self.cmd.tangle( web, tnglr )
+            self.fail()
+        except pyweb.Error:
+            pass
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of UserIdXrefCommand class for a user identifier cross-reference</em> (29).
+      Used by <a href="#pyweb22"><em>Unit Test of Command class hierarchy</em>&nbsp;(22)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<p>Reference commands require a context when tangling.
+The context helps provide the required indentation.
+They can't be simply tangled.
+</p>
+
+
+    <a name="pyweb30"></a>
+    <!--line number 822-->
+    <p><em>Unit Test of ReferenceCommand class for chunk references</em> (30)&nbsp;=</p>
+    <code><pre>
+ 
+class TestReferenceCommand( unittest.TestCase ):
+    def setUp( self ):
+        self.chunk= MockChunk( &quot;Owning Chunk&quot;, 123, 456 )
+        self.cmd= pyweb.ReferenceCommand( &quot;Some Name&quot;, 314 )
+        self.cmd.chunk= self.chunk
+        self.chunk.commands.append( self.cmd )
+        self.chunk.previous_command= pyweb.TextCommand( &quot;&quot;, self.chunk.commands[0].lineNumber )
+    def test_weave_should_work( self ):
+        wvr = MockWeaver()
+        web = MockWeb()
+        self.cmd.weave( web, wvr )
+        self.assertEquals(  &quot;Some Name&quot;, &quot;&quot;.join( wvr.written ) )
+    def test_tangle_should_work( self ):
+        tnglr = MockTangler()
+        web = MockWeb()
+        self.cmd.tangle( web, tnglr )
+        self.assertEquals(  &quot;Some Name&quot;, &quot;&quot;.join( tnglr.written ) )
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of ReferenceCommand class for chunk references</em> (30).
+      Used by <a href="#pyweb22"><em>Unit Test of Command class hierarchy</em>&nbsp;(22)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<h3>Reference Tests</h3>
+
+<p>The Reference class implements one of two search strategies for 
+cross-references.  Either simple (or "immediate") or transitive.
+</p>
+
+<p>The superclass is little more than an interface definition,
+it's completely abstract.  The two subclasses differ in 
+a single method.
+</p>
+
+
+    <a name="pyweb31"></a>
+    <!--line number 853-->
+    <p><em>Unit Test of Reference class hierarchy</em> (31)&nbsp;=</p>
+    <code><pre>
+ 
+class TestReference( unittest.TestCase ):
+    def setUp( self ):
+        self.web= MockWeb()
+        self.main= MockChunk( &quot;Main&quot;, 1, 11 )
+        self.parent= MockChunk( &quot;Parent&quot;, 2, 22 )
+        self.parent.referencedBy= [ self.main ]
+        self.chunk= MockChunk( &quot;Sub&quot;, 3, 33 )
+        self.chunk.referencedBy= [ self.parent ]
+    def test_simple_should_find_one( self ):
+        self.reference= pyweb.SimpleReference( self.web )
+        theList= self.reference.chunkReferencedBy( self.chunk )
+        self.assertEquals( 1, len(theList) )
+        self.assertEquals( ('Parent',2), theList[0] )
+    def test_transitive_should_find_all( self ):
+        self.reference= pyweb.TransitiveReference( self.web )
+        theList= self.reference.chunkReferencedBy( self.chunk )
+        self.assertEquals( 2, len(theList) )
+        self.assertEquals( ('Parent',2), theList[0] )
+        self.assertEquals( ('Main',1), theList[1] )
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of Reference class hierarchy</em> (31).
+      Used by <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<h3>Web Tests</h3>
+
+<p>This is more difficult to create mocks for.</p>
+
+
+    <a name="pyweb32"></a>
+    <!--line number 880-->
+    <p><em>Unit Test of Web class</em> (32)&nbsp;=</p>
+    <code><pre>
+ 
+class TestWebConstruction( unittest.TestCase ):
+    def setUp( self ):
+        self.web= pyweb.Web( &quot;Test&quot; )
+    <a href="#pyweb33">&rarr;<em>Unit Test Web class construction methods</em> (33)</a>
+    
+class TestWebProcessing( unittest.TestCase ):
+    def setUp( self ):
+        self.web= pyweb.Web( &quot;Test&quot; )
+        self.chunk= pyweb.Chunk()
+        self.chunk.appendText( &quot;some text&quot; )
+        self.chunk.webAdd( self.web )
+        self.out= pyweb.OutputChunk( &quot;A File&quot; )
+        self.out.appendText( &quot;some code&quot; )
+        nm= self.web.addDefName( &quot;A Chunk&quot; )
+        self.out.append( pyweb.ReferenceCommand( nm ) )
+        self.out.webAdd( self.web )
+        self.named= pyweb.NamedChunk( &quot;A Chunk...&quot; )
+        self.named.appendText( &quot;some user2a code&quot; )
+        self.named.setUserIDRefs( &quot;user1&quot; )
+        nm= self.web.addDefName( &quot;Another Chunk&quot; )
+        self.named.append( pyweb.ReferenceCommand( nm ) )
+        self.named.webAdd( self.web )
+        self.named2= pyweb.NamedChunk( &quot;Another Chunk...&quot; )
+        self.named2.appendText(  &quot;some user1 code&quot;  )
+        self.named2.setUserIDRefs( &quot;user2a user2b&quot; )
+        self.named2.webAdd( self.web )
+    <a href="#pyweb34">&rarr;<em>Unit Test Web class name resolution methods</em> (34)</a>
+    <a href="#pyweb35">&rarr;<em>Unit Test Web class chunk cross-reference</em> (35)</a>
+    <a href="#pyweb36">&rarr;<em>Unit Test Web class tangle</em> (36)</a>
+    <a href="#pyweb37">&rarr;<em>Unit Test Web class weave</em> (37)</a>
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of Web class</em> (32).
+      Used by <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+
+    <a name="pyweb33"></a>
+    <!--line number 914-->
+    <p><em>Unit Test Web class construction methods</em> (33)&nbsp;=</p>
+    <code><pre>
+
+def test_names_definition_should_resolve( self ):
+    name1= self.web.addDefName( &quot;A Chunk...&quot; )
+    self.assertTrue( name1 is None )
+    self.assertEquals( 0, len(self.web.named) )
+    name2= self.web.addDefName( &quot;A Chunk Of Code&quot; )
+    self.assertEquals( &quot;A Chunk Of Code&quot;, name2 )
+    self.assertEquals( 1, len(self.web.named) )
+    name3= self.web.addDefName( &quot;A Chunk...&quot; )
+    self.assertEquals( &quot;A Chunk Of Code&quot;, name3 )
+    self.assertEquals( 1, len(self.web.named) )
+    
+def test_chunks_should_add_and_index( self ):
+    chunk= pyweb.Chunk()
+    chunk.appendText( &quot;some text&quot; )
+    chunk.webAdd( self.web )
+    self.assertEquals( 1, len(self.web.chunkSeq) )
+    self.assertEquals( 0, len(self.web.named) )
+    self.assertEquals( 0, len(self.web.output) )
+    named= pyweb.NamedChunk( &quot;A Chunk&quot; )
+    named.appendText( &quot;some code&quot; )
+    named.webAdd( self.web )
+    self.assertEquals( 2, len(self.web.chunkSeq) )
+    self.assertEquals( 1, len(self.web.named) )
+    self.assertEquals( 0, len(self.web.output) )
+    out= pyweb.OutputChunk( &quot;A File&quot; )
+    out.appendText( &quot;some code&quot; )
+    out.webAdd( self.web )
+    self.assertEquals( 3, len(self.web.chunkSeq) )
+    self.assertEquals( 1, len(self.web.named) )
+    self.assertEquals( 1, len(self.web.output) )
+
+    </pre></code>
+    <p>&loz; <em>Unit Test Web class construction methods</em> (33).
+      Used by <a href="#pyweb32"><em>Unit Test of Web class</em>&nbsp;(32)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+
+    <a name="pyweb34"></a>
+    <!--line number 948-->
+    <p><em>Unit Test Web class name resolution methods</em> (34)&nbsp;=</p>
+    <code><pre>
+ 
+def test_name_queries_should_resolve( self ):
+    self.assertEquals( &quot;A Chunk&quot;, self.web.fullNameFor( &quot;A C...&quot; ) )    
+    self.assertEquals( &quot;A Chunk&quot;, self.web.fullNameFor( &quot;A Chunk&quot; ) )    
+    self.assertNotEquals( &quot;A Chunk&quot;, self.web.fullNameFor( &quot;A File&quot; ) )
+    self.assertTrue( self.named is self.web.getchunk( &quot;A C...&quot; )[0] )
+    self.assertTrue( self.named is self.web.getchunk( &quot;A Chunk&quot; )[0] )
+    try:
+        self.assertTrue( None is not self.web.getchunk( &quot;A File&quot; ) )
+        self.fail()
+    except pyweb.Error, e:
+        self.assertTrue( e.args[0].startswith(&quot;Cannot resolve 'A File'&quot;) )  
+
+    </pre></code>
+    <p>&loz; <em>Unit Test Web class name resolution methods</em> (34).
+      Used by <a href="#pyweb32"><em>Unit Test of Web class</em>&nbsp;(32)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+
+    <a name="pyweb35"></a>
+    <!--line number 962-->
+    <p><em>Unit Test Web class chunk cross-reference</em> (35)&nbsp;=</p>
+    <code><pre>
+ 
+def test_valid_web_should_createUsedBy( self ):
+    self.web.createUsedBy()
+    # If it raises an exception, the web structure is damaged
+def test_valid_web_should_createFileXref( self ):
+    file_xref= self.web.fileXref()
+    self.assertEquals( 1, len(file_xref) )
+    self.assertTrue( &quot;A File&quot; in file_xref ) 
+    self.assertTrue( 1, len(file_xref[&quot;A File&quot;]) )
+def test_valid_web_should_createChunkXref( self ):
+    chunk_xref= self.web.chunkXref()
+    self.assertEquals( 2, len(chunk_xref) )
+    self.assertTrue( &quot;A Chunk&quot; in chunk_xref )
+    self.assertEquals( 1, len(chunk_xref[&quot;A Chunk&quot;]) )
+    self.assertTrue( &quot;Another Chunk&quot; in chunk_xref )
+    self.assertEquals( 1, len(chunk_xref[&quot;Another Chunk&quot;]) )
+    self.assertFalse( &quot;Not A Real Chunk&quot; in chunk_xref )
+def test_valid_web_should_create_userNamesXref( self ):
+    user_xref= self.web.userNamesXref() 
+    self.assertEquals( 3, len(user_xref) )
+    self.assertTrue( &quot;user1&quot; in user_xref )
+    defn, reflist= user_xref[&quot;user1&quot;]
+    self.assertEquals( 1, len(reflist), &quot;did not find user1&quot; )
+    self.assertTrue( &quot;user2a&quot; in user_xref )
+    defn, reflist= user_xref[&quot;user2a&quot;]
+    self.assertEquals( 1, len(reflist), &quot;did not find user2a&quot; )
+    self.assertTrue( &quot;user2b&quot; in user_xref )
+    defn, reflist= user_xref[&quot;user2b&quot;]
+    self.assertEquals( 0, len(reflist) )
+    self.assertFalse( &quot;Not A User Symbol&quot; in user_xref )
+
+    </pre></code>
+    <p>&loz; <em>Unit Test Web class chunk cross-reference</em> (35).
+      Used by <a href="#pyweb32"><em>Unit Test of Web class</em>&nbsp;(32)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+
+    <a name="pyweb36"></a>
+    <!--line number 994-->
+    <p><em>Unit Test Web class tangle</em> (36)&nbsp;=</p>
+    <code><pre>
+ 
+def test_valid_web_should_tangle( self ):
+    tangler= MockTangler()
+    self.web.tangle( tangler )
+    self.assertEquals( 3, len(tangler.written) )
+    self.assertEquals( ['some code', 'some user2a code', 'some user1 code'], tangler.written )
+
+    </pre></code>
+    <p>&loz; <em>Unit Test Web class tangle</em> (36).
+      Used by <a href="#pyweb32"><em>Unit Test of Web class</em>&nbsp;(32)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+
+    <a name="pyweb37"></a>
+    <!--line number 1002-->
+    <p><em>Unit Test Web class weave</em> (37)&nbsp;=</p>
+    <code><pre>
+ 
+def test_valid_web_should_weave( self ):
+    weaver= MockWeaver()
+    self.web.weave( weaver )
+    self.assertEquals( 6, len(weaver.written) )
+    expected= ['some text', 'some code', None, 'some user2a code', None, 'some user1 code']
+    self.assertEquals( expected, weaver.written )
+
+    </pre></code>
+    <p>&loz; <em>Unit Test Web class weave</em> (37).
+      Used by <a href="#pyweb32"><em>Unit Test of Web class</em>&nbsp;(32)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+
+<h3>WebReader Tests</h3>
+
+<p>Generally, this is tested separately through the functional tests.
+Those tests each present source files to be processed by the
+WebReader.
+</p>
+
+
+    <a name="pyweb38"></a>
+    <!--line number 1019-->
+    <p><em>Unit Test of WebReader class</em> (38)&nbsp;=</p>
+    <code><pre>
+ 
+    </pre></code>
+    <p>&loz; <em>Unit Test of WebReader class</em> (38).
+      Used by <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<h3>Action Tests</h3>
+
+<p>Each class is tested separately.  Sequence of some mocks, 
+load, tangle, weave.  
+</p>
+
+
+    <a name="pyweb39"></a>
+    <!--line number 1027-->
+    <p><em>Unit Test of Action class hierarchy</em> (39)&nbsp;=</p>
+    <code><pre>
+ 
+<a href="#pyweb40">&rarr;<em>Unit test of Action Sequence class</em> (40)</a>
+<a href="#pyweb43">&rarr;<em>Unit test of LoadAction class</em> (43)</a>
+<a href="#pyweb42">&rarr;<em>Unit test of TangleAction class</em> (42)</a>
+<a href="#pyweb41">&rarr;<em>Unit test of WeaverAction class</em> (41)</a>
+
+    </pre></code>
+    <p>&loz; <em>Unit Test of Action class hierarchy</em> (39).
+      Used by <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+
+    <a name="pyweb40"></a>
+    <!--line number 1034-->
+    <p><em>Unit test of Action Sequence class</em> (40)&nbsp;=</p>
+    <code><pre>
+
+class MockAction( object ):
+    def __init__( self ):
+        self.count= 0
+    def __call__( self ):
+        self.count += 1
+        
+class MockWebReader( object ):
+    def __init__( self ):
+        self.count= 0
+        self.theWeb= None
+    def web( self, aWeb ):
+        self.theWeb= aWeb
+        return self
+    def load( self ):
+        self.count += 1
+    
+class TestActionSequence( unittest.TestCase ):
+    def setUp( self ):
+        self.web= MockWeb()
+        self.a1= MockAction()
+        self.a2= MockAction()
+        self.action= pyweb.ActionSequence( &quot;TwoSteps&quot;, [self.a1, self.a2] )
+        self.action.web= self.web
+    def test_should_execute_both( self ):
+        self.action()
+        for c in self.action.opSequence:
+            self.assertEquals( 1, c.count )
+            self.assertTrue( self.web is c.web )
+
+    </pre></code>
+    <p>&loz; <em>Unit test of Action Sequence class</em> (40).
+      Used by <a href="#pyweb39"><em>Unit Test of Action class hierarchy</em>&nbsp;(39)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+
+    <a name="pyweb41"></a>
+    <!--line number 1065-->
+    <p><em>Unit test of WeaverAction class</em> (41)&nbsp;=</p>
+    <code><pre>
+ 
+class TestWeaveAction( unittest.TestCase ):
+    def setUp( self ):
+        self.web= MockWeb()
+        self.action= pyweb.WeaveAction(  )
+        self.weaver= MockWeaver()
+        self.action.theWeaver= self.weaver
+        self.action.web= self.web
+    def test_should_execute_weaving( self ):
+        self.action()
+        self.assertTrue( self.web.wove is self.weaver )
+
+    </pre></code>
+    <p>&loz; <em>Unit test of WeaverAction class</em> (41).
+      Used by <a href="#pyweb39"><em>Unit Test of Action class hierarchy</em>&nbsp;(39)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+
+    <a name="pyweb42"></a>
+    <!--line number 1078-->
+    <p><em>Unit test of TangleAction class</em> (42)&nbsp;=</p>
+    <code><pre>
+ 
+class TestTangleAction( unittest.TestCase ):
+    def setUp( self ):
+        self.web= MockWeb()
+        self.action= pyweb.TangleAction(  )
+        self.tangler= MockTangler()
+        self.action.theTangler= self.tangler
+        self.action.web= self.web
+    def test_should_execute_tangling( self ):
+        self.action()
+        self.assertTrue( self.web.tangled is self.tangler )
+
+    </pre></code>
+    <p>&loz; <em>Unit test of TangleAction class</em> (42).
+      Used by <a href="#pyweb39"><em>Unit Test of Action class hierarchy</em>&nbsp;(39)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+
+    <a name="pyweb43"></a>
+    <!--line number 1091-->
+    <p><em>Unit test of LoadAction class</em> (43)&nbsp;=</p>
+    <code><pre>
+ 
+class TestLoadAction( unittest.TestCase ):
+    def setUp( self ):
+        self.web= MockWeb()
+        self.action= pyweb.LoadAction(  )
+        self.webReader= MockWebReader()
+        self.webReader.theWeb= self.web
+        self.action.webReader= self.webReader
+        self.action.web= self.web
+    def test_should_execute_tangling( self ):
+        self.action()
+        self.assertEquals( 1, self.webReader.count )
+
+    </pre></code>
+    <p>&loz; <em>Unit test of LoadAction class</em> (43).
+      Used by <a href="#pyweb39"><em>Unit Test of Action class hierarchy</em>&nbsp;(39)</a>; <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<h3>Application Tests</h3>
+
+<p>As with testing WebReader, this requires extensive mocking.
+It's easier to simply run the various use cases.
+</p>
+
+
+    <a name="pyweb44"></a>
+    <!--line number 1111-->
+    <p><em>Unit Test of Application class</em> (44)&nbsp;=</p>
+    <code><pre>
+ 
+    </pre></code>
+    <p>&loz; <em>Unit Test of Application class</em> (44).
+      Used by <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+<h3>Overheads and Main Script</h3>
+
+<p>The boilerplate code for unit testing is the following.</p>
+
+
+    <a name="pyweb45"></a>
+    <!--line number 1118-->
+    <p><em>Unit Test overheads: imports, etc.</em> (45)&nbsp;=</p>
+    <code><pre>
+from __future__ import print_function
+&quot;&quot;&quot;Unit tests.&quot;&quot;&quot;
+import pyweb
+import unittest
+import logging
+import StringIO
+import string
+import os
+import time
+import re
+
+    </pre></code>
+    <p>&loz; <em>Unit Test overheads: imports, etc.</em> (45).
+      Used by <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+
+
+
+    <a name="pyweb46"></a>
+    <!--line number 1131-->
+    <p><em>Unit Test main</em> (46)&nbsp;=</p>
+    <code><pre>
+
+if __name__ == &quot;__main__&quot;:
+    import sys
+    logging.basicConfig( stream=sys.stdout, level= logging.WARN )
+    unittest.main()
+
+    </pre></code>
+    <p>&loz; <em>Unit Test main</em> (46).
+      Used by <a href="#pyweb1"><em>test_unit.py</em>&nbsp;(1)</a>.
+    </p>
+</div>
+
+<a name="functional"></a><h1>Functional Testing</h1>
+<div class="chapter">
+
+<!-- test/func.w -->
+
+<p>There are three broad areas of functional testing.</p>
+
+<ul>
+<li>Loading</li>
+<li>Tanging</li>
+<li>Weaving</li>
+</ul>
+
+<p>There are a total of 11 test cases.</p>
+
+<h3>Tests for Loading</h3>
+
+<p>We need to be able to load a web from one or more source files.</p>
+
+<a name="pyweb47"></a>
+    <!--line number 18-->
+    <p><tt>test_loader.py</tt> (47)&nbsp;=</p>
+    <code><pre>
+<a href="#pyweb53">&rarr;<em>Load Test overheads: imports, etc.</em> (53)</a>
+<a href="#pyweb48">&rarr;<em>Load Test superclass to refactor common setup</em> (48)</a>
+<a href="#pyweb49">&rarr;<em>Load Test error handling with a few common syntax errors</em> (49)</a>
+<a href="#pyweb51">&rarr;<em>Load Test include processing with syntax errors</em> (51)</a>
+<a href="#pyweb54">&rarr;<em>Load Test main program</em> (54)</a>
+</pre></code>
+    <p>&loz; <tt>test_loader.py</tt> (47).
+    
+    </p>
+
+
+<p>Parsing test cases have a common setup shown in this superclass.</p>
+
+<p>By using some class-level variables <span class="code">text</span>,
+<span class="code">file_name</span>, we can simply provide a file-like
+input object to the <span class="code">WebReader</span> instance.
+</p>
+
+
+    <a name="pyweb48"></a>
+    <!--line number 33-->
+    <p><em>Load Test superclass to refactor common setup</em> (48)&nbsp;=</p>
+    <code><pre>
+
+class ParseTestcase( unittest.TestCase ):
+    text= &quot;&quot;
+    file_name= &quot;&quot;
+    def setUp( self ):
+        source= StringIO.StringIO( self.text )
+        self.web= pyweb.Web( self.file_name )
+        self.rdr= pyweb.WebReader()
+        self.rdr.source( self.file_name, source ).web( self.web )
+
+    </pre></code>
+    <p>&loz; <em>Load Test superclass to refactor common setup</em> (48).
+      Used by <a href="#pyweb47"><em>test_loader.py</em>&nbsp;(47)</a>.
+    </p>
+
+
+<p>There are a lot of specific parsing exceptions which can be thrown.
+We'll cover most of the cases with a quick check for a failure to 
+find an expected next token.
+</p>
+
+
+    <a name="pyweb49"></a>
+    <!--line number 50-->
+    <p><em>Load Test error handling with a few common syntax errors</em> (49)&nbsp;=</p>
+    <code><pre>
+
+<a href="#pyweb50">&rarr;<em>Sample Document 1 with correct and incorrect syntax</em> (50)</a>
+
+class Test_ParseErrors( ParseTestcase ):
+    text= test1_w
+    file_name= &quot;test1.w&quot;
+    def test_should_raise_syntax( self ):
+        try:
+            self.rdr.load()
+            self.fail( &quot;Should not parse&quot; )
+        except pyweb.Error, e:
+            self.assertEquals( &quot;At ('test1.w', 8, 8): expected ('@{',), found '@o'&quot;, e.args[0] )
+
+    </pre></code>
+    <p>&loz; <em>Load Test error handling with a few common syntax errors</em> (49).
+      Used by <a href="#pyweb47"><em>test_loader.py</em>&nbsp;(47)</a>.
+    </p>
+
+
+
+    <a name="pyweb50"></a>
+    <!--line number 65-->
+    <p><em>Sample Document 1 with correct and incorrect syntax</em> (50)&nbsp;=</p>
+    <code><pre>
+
+test1_w= &quot;&quot;&quot;Some anonymous chunk
+@o test1.tmp
+@{@&lt;part1@&gt;
+@&lt;part2@&gt;
+@}@@
+@d part1 @{This is part 1.@}
+Okay, now for an error.
+@o show how @o commands work
+@{ @{ @] @]
+&quot;&quot;&quot;
+
+    </pre></code>
+    <p>&loz; <em>Sample Document 1 with correct and incorrect syntax</em> (50).
+      Used by <a href="#pyweb49"><em>Load Test error handling with a few common syntax errors</em>&nbsp;(49)</a>; <a href="#pyweb47"><em>test_loader.py</em>&nbsp;(47)</a>.
+    </p>
+
+
+<p>All of the parsing exceptions should be correctly identified with
+any included file.
+We'll cover most of the cases with a quick check for a failure to 
+find an expected next token.
+</p>
+
+<p>In order to handle the include file processing, we have to actually
+create a temporary file.  It's hard to mock the include processing.
+</p>
+
+
+    <a name="pyweb51"></a>
+    <!--line number 89-->
+    <p><em>Load Test include processing with syntax errors</em> (51)&nbsp;=</p>
+    <code><pre>
+
+<a href="#pyweb52">&rarr;<em>Sample Document 8 and the file it includes</em> (52)</a>
+
+class Test_IncludeParseErrors( ParseTestcase ):
+    text= test8_w
+    file_name= &quot;test8.w&quot;
+    def setUp( self ):
+        with open('test8_inc.tmp','w') as temp:
+            temp.write( test8_inc_w )
+        super( Test_IncludeParseErrors, self ).setUp()
+    def test_should_raise_include_syntax( self ):
+        try:
+            self.rdr.load()
+            self.fail( &quot;Should not parse&quot; )
+        except pyweb.Error, e:
+            self.assertEquals( &quot;At ('test8_inc.tmp', 3, 4): end of input, ('@{', '@[') not found&quot;, e.args[0] )
+    def tearDown( self ):
+        os.remove( 'test8_inc.tmp' )
+        super( Test_IncludeParseErrors, self ).tearDown()
+
+    </pre></code>
+    <p>&loz; <em>Load Test include processing with syntax errors</em> (51).
+      Used by <a href="#pyweb47"><em>test_loader.py</em>&nbsp;(47)</a>.
+    </p>
+
+
+<p>The sample document must reference the correct name that will
+be given to the included document by <span class="code">setUp</span>.
+</p>
+
+
+    <a name="pyweb52"></a>
+    <!--line number 115-->
+    <p><em>Sample Document 8 and the file it includes</em> (52)&nbsp;=</p>
+    <code><pre>
+
+test8_w= &quot;&quot;&quot;Some anonymous chunk.
+@d title @[the title of this document, defined with @@[ and @@]@]
+A reference to @&lt;title@&gt;.
+@i test8_inc.tmp
+A final anonymous chunk from test8.w
+&quot;&quot;&quot;
+
+test8_inc_w=&quot;&quot;&quot;A chunk from test8a.w
+And now for an error - incorrect syntax in an included file!
+@d yap
+&quot;&quot;&quot;
+
+    </pre></code>
+    <p>&loz; <em>Sample Document 8 and the file it includes</em> (52).
+      Used by <a href="#pyweb51"><em>Load Test include processing with syntax errors</em>&nbsp;(51)</a>; <a href="#pyweb47"><em>test_loader.py</em>&nbsp;(47)</a>.
+    </p>
+
+
+<p>The overheads for a Python unittest.</p>
+
+
+    <a name="pyweb53"></a>
+    <!--line number 132-->
+    <p><em>Load Test overheads: imports, etc.</em> (53)&nbsp;=</p>
+    <code><pre>
+from __future__ import print_function
+&quot;&quot;&quot;Loader and parsing tests.&quot;&quot;&quot;
+import pyweb
+import unittest
+import logging
+import StringIO
+import os
+
+    </pre></code>
+    <p>&loz; <em>Load Test overheads: imports, etc.</em> (53).
+      Used by <a href="#pyweb47"><em>test_loader.py</em>&nbsp;(47)</a>.
+    </p>
+
+
+<p>A main program that configures logging and then runs the test.</p>
+
+
+    <a name="pyweb54"></a>
+    <!--line number 144-->
+    <p><em>Load Test main program</em> (54)&nbsp;=</p>
+    <code><pre>
+
+if __name__ == &quot;__main__&quot;:
+    import sys
+    logging.basicConfig( stream=sys.stdout, level= logging.WARN )
+    unittest.main()
+
+    </pre></code>
+    <p>&loz; <em>Load Test main program</em> (54).
+      Used by <a href="#pyweb47"><em>test_loader.py</em>&nbsp;(47)</a>.
+    </p>
+
+
+<h3>Tests for Tangling</h3>
+
+<p>We need to be able to tangle a web.</p>
+
+<a name="pyweb55"></a>
+    <!--line number 156-->
+    <p><tt>test_tangler.py</tt> (55)&nbsp;=</p>
+    <code><pre>
+<a href="#pyweb69">&rarr;<em>Tangle Test overheads: imports, etc.</em> (69)</a>
+<a href="#pyweb56">&rarr;<em>Tangle Test superclass to refactor common setup</em> (56)</a>
+<a href="#pyweb57">&rarr;<em>Tangle Test semantic error 2</em> (57)</a>
+<a href="#pyweb59">&rarr;<em>Tangle Test semantic error 3</em> (59)</a>
+<a href="#pyweb61">&rarr;<em>Tangle Test semantic error 4</em> (61)</a>
+<a href="#pyweb63">&rarr;<em>Tangle Test semantic error 5</em> (63)</a>
+<a href="#pyweb65">&rarr;<em>Tangle Test semantic error 6</em> (65)</a>
+<a href="#pyweb67">&rarr;<em>Tangle Test include error 7</em> (67)</a>
+<a href="#pyweb70">&rarr;<em>Tangle Test main program</em> (70)</a>
+</pre></code>
+    <p>&loz; <tt>test_tangler.py</tt> (55).
+    
+    </p>
+
+
+<p>Tangling test cases have a common setup and teardown shown in this superclass.
+Since tangling must produce a file, it's helpful to remove the file that gets created.
+The essential test case is to load and attempt to tangle, checking the 
+exceptions raised.
+</p>
+
+
+    <a name="pyweb56"></a>
+    <!--line number 174-->
+    <p><em>Tangle Test superclass to refactor common setup</em> (56)&nbsp;=</p>
+    <code><pre>
+
+class TangleTestcase( unittest.TestCase ):
+    text= &quot;&quot;
+    file_name= &quot;&quot;
+    error= &quot;&quot;
+    def setUp( self ):
+        source= StringIO.StringIO( self.text )
+        self.web= pyweb.Web( self.file_name )
+        self.rdr= pyweb.WebReader()
+        self.rdr.source( self.file_name, source ).web( self.web )
+        self.tangler= pyweb.Tangler()
+    def tangle_and_check_exception( self, exception_text ):
+        try:
+            self.rdr.load()
+            self.web.tangle( self.tangler )
+            self.web.createUsedBy()
+            self.fail( &quot;Should not tangle&quot; )
+        except pyweb.Error, e:
+            self.assertEquals( exception_text, e.args[0] )
+    def tearDown( self ):
+        name, _ = os.path.splitext( self.file_name )
+        try:
+            os.remove( name + &quot;.tmp&quot; )
+        except OSError:
+            pass
+
+    </pre></code>
+    <p>&loz; <em>Tangle Test superclass to refactor common setup</em> (56).
+      Used by <a href="#pyweb55"><em>test_tangler.py</em>&nbsp;(55)</a>.
+    </p>
+
+
+
+    <a name="pyweb57"></a>
+    <!--line number 202-->
+    <p><em>Tangle Test semantic error 2</em> (57)&nbsp;=</p>
+    <code><pre>
+
+<a href="#pyweb58">&rarr;<em>Sample Document 2</em> (58)</a>
+
+class Test_SemanticError_2( TangleTestcase ):
+    text= test2_w
+    file_name= &quot;test2.w&quot;
+    def test_should_raise_undefined( self ):
+        self.tangle_and_check_exception( &quot;Attempt to tangle an undefined Chunk, part2.&quot; )
+
+    </pre></code>
+    <p>&loz; <em>Tangle Test semantic error 2</em> (57).
+      Used by <a href="#pyweb55"><em>test_tangler.py</em>&nbsp;(55)</a>.
+    </p>
+
+
+
+    <a name="pyweb58"></a>
+    <!--line number 212-->
+    <p><em>Sample Document 2</em> (58)&nbsp;=</p>
+    <code><pre>
+
+test2_w= &quot;&quot;&quot;Some anonymous chunk
+@o test2.tmp
+@{@&lt;part1@&gt;
+@&lt;part2@&gt;
+@}@@
+@d part1 @{This is part 1.@}
+Okay, now for some errors: no part2!
+&quot;&quot;&quot;
+
+    </pre></code>
+    <p>&loz; <em>Sample Document 2</em> (58).
+      Used by <a href="#pyweb57"><em>Tangle Test semantic error 2</em>&nbsp;(57)</a>; <a href="#pyweb55"><em>test_tangler.py</em>&nbsp;(55)</a>.
+    </p>
+
+
+
+    <a name="pyweb59"></a>
+    <!--line number 224-->
+    <p><em>Tangle Test semantic error 3</em> (59)&nbsp;=</p>
+    <code><pre>
+
+<a href="#pyweb60">&rarr;<em>Sample Document 3</em> (60)</a>
+
+class Test_SemanticError_3( TangleTestcase ):
+    text= test3_w
+    file_name= &quot;test3.w&quot;
+    def test_should_raise_bad_xref( self ):
+        self.tangle_and_check_exception( &quot;Illegal tangling of a cross reference command.&quot; )
+
+    </pre></code>
+    <p>&loz; <em>Tangle Test semantic error 3</em> (59).
+      Used by <a href="#pyweb55"><em>test_tangler.py</em>&nbsp;(55)</a>.
+    </p>
+
+
+
+    <a name="pyweb60"></a>
+    <!--line number 234-->
+    <p><em>Sample Document 3</em> (60)&nbsp;=</p>
+    <code><pre>
+
+test3_w= &quot;&quot;&quot;Some anonymous chunk
+@o test3.tmp
+@{@&lt;part1@&gt;
+@&lt;part2@&gt;
+@}@@
+@d part1 @{This is part 1.@}
+@d part2 @{This is part 2, with an illegal: @f.@}
+Okay, now for some errors: attempt to tangle a cross-reference!
+&quot;&quot;&quot;
+
+    </pre></code>
+    <p>&loz; <em>Sample Document 3</em> (60).
+      Used by <a href="#pyweb59"><em>Tangle Test semantic error 3</em>&nbsp;(59)</a>; <a href="#pyweb55"><em>test_tangler.py</em>&nbsp;(55)</a>.
+    </p>
+
+
+
+
+    <a name="pyweb61"></a>
+    <!--line number 248-->
+    <p><em>Tangle Test semantic error 4</em> (61)&nbsp;=</p>
+    <code><pre>
+
+<a href="#pyweb62">&rarr;<em>Sample Document 4</em> (62)</a>
+
+class Test_SemanticError_4( TangleTestcase ):
+    text= test4_w
+    file_name= &quot;test4.w&quot;
+    def test_should_raise_noFullName( self ):
+        self.tangle_and_check_exception( &quot;No full name for 'part1...'&quot; )
+
+    </pre></code>
+    <p>&loz; <em>Tangle Test semantic error 4</em> (61).
+      Used by <a href="#pyweb55"><em>test_tangler.py</em>&nbsp;(55)</a>.
+    </p>
+
+
+
+    <a name="pyweb62"></a>
+    <!--line number 258-->
+    <p><em>Sample Document 4</em> (62)&nbsp;=</p>
+    <code><pre>
+
+test4_w= &quot;&quot;&quot;Some anonymous chunk
+@o test4.tmp
+@{@&lt;part1...@&gt;
+@&lt;part2@&gt;
+@}@@
+@d part1... @{This is part 1.@}
+@d part2 @{This is part 2.@}
+Okay, now for some errors: attempt to weave but no full name for part1....
+&quot;&quot;&quot;
+
+    </pre></code>
+    <p>&loz; <em>Sample Document 4</em> (62).
+      Used by <a href="#pyweb61"><em>Tangle Test semantic error 4</em>&nbsp;(61)</a>; <a href="#pyweb55"><em>test_tangler.py</em>&nbsp;(55)</a>.
+    </p>
+
+
+
+    <a name="pyweb63"></a>
+    <!--line number 271-->
+    <p><em>Tangle Test semantic error 5</em> (63)&nbsp;=</p>
+    <code><pre>
+
+<a href="#pyweb64">&rarr;<em>Sample Document 5</em> (64)</a>
+
+class Test_SemanticError_5( TangleTestcase ):
+    text= test5_w
+    file_name= &quot;test5.w&quot;
+    def test_should_raise_ambiguous( self ):
+        self.tangle_and_check_exception( &quot;Ambiguous abbreviation 'part1...', matches ['part1b', 'part1a']&quot; )
+
+    </pre></code>
+    <p>&loz; <em>Tangle Test semantic error 5</em> (63).
+      Used by <a href="#pyweb55"><em>test_tangler.py</em>&nbsp;(55)</a>.
+    </p>
+
+
+
+    <a name="pyweb64"></a>
+    <!--line number 281-->
+    <p><em>Sample Document 5</em> (64)&nbsp;=</p>
+    <code><pre>
+
+test5_w= &quot;&quot;&quot;
+Some anonymous chunk
+@o test5.tmp
+@{@&lt;part1...@&gt;
+@&lt;part2@&gt;
+@}@@
+@d part1a @{This is part 1 a.@}
+@d part1b @{This is part 1 b.@}
+@d part2 @{This is part 2.@}
+Okay, now for some errors: part1... is ambiguous
+&quot;&quot;&quot;
+
+    </pre></code>
+    <p>&loz; <em>Sample Document 5</em> (64).
+      Used by <a href="#pyweb63"><em>Tangle Test semantic error 5</em>&nbsp;(63)</a>; <a href="#pyweb55"><em>test_tangler.py</em>&nbsp;(55)</a>.
+    </p>
+
+
+
+    <a name="pyweb65"></a>
+    <!--line number 296-->
+    <p><em>Tangle Test semantic error 6</em> (65)&nbsp;=</p>
+    <code><pre>
+ 
+<a href="#pyweb66">&rarr;<em>Sample Document 6</em> (66)</a>
+
+class Test_SemanticError_6( TangleTestcase ):
+    text= test6_w
+    file_name= &quot;test6.w&quot;
+    def test_should_warn( self ):
+        self.rdr.load()
+        self.web.tangle( self.tangler )
+        self.web.createUsedBy()
+        self.assertEquals( 1, len( self.web.no_reference() ) )
+        self.assertEquals( 1, len( self.web.multi_reference() ) )
+        self.assertEquals( 0, len( self.web.no_definition() ) )
+
+    </pre></code>
+    <p>&loz; <em>Tangle Test semantic error 6</em> (65).
+      Used by <a href="#pyweb55"><em>test_tangler.py</em>&nbsp;(55)</a>.
+    </p>
+
+
+
+    <a name="pyweb66"></a>
+    <!--line number 311-->
+    <p><em>Sample Document 6</em> (66)&nbsp;=</p>
+    <code><pre>
+
+test6_w= &quot;&quot;&quot;Some anonymous chunk
+@o test6.tmp
+@{@&lt;part1...@&gt;
+@&lt;part1a@&gt;
+@}@@
+@d part1a @{This is part 1 a.@}
+@d part2 @{This is part 2.@}
+Okay, now for some warnings: 
+- part1 has multiple references.
+- part2 is unreferenced.
+&quot;&quot;&quot;
+
+    </pre></code>
+    <p>&loz; <em>Sample Document 6</em> (66).
+      Used by <a href="#pyweb65"><em>Tangle Test semantic error 6</em>&nbsp;(65)</a>; <a href="#pyweb55"><em>test_tangler.py</em>&nbsp;(55)</a>.
+    </p>
+
+
+
+    <a name="pyweb67"></a>
+    <!--line number 326-->
+    <p><em>Tangle Test include error 7</em> (67)&nbsp;=</p>
+    <code><pre>
+
+<a href="#pyweb68">&rarr;<em>Sample Document 7 and it's included file</em> (68)</a>
+
+class Test_IncludeError_7( TangleTestcase ):
+    text= test7_w
+    file_name= &quot;test7.w&quot;
+    def setUp( self ):
+        with open('test7_inc.tmp','w') as temp:
+            temp.write( test7_inc_w )
+        super( Test_IncludeError_7, self ).setUp()
+    def test_should_include( self ):
+        self.rdr.load()
+        self.web.tangle( self.tangler )
+        self.web.createUsedBy()
+        self.assertEquals( 5, len(self.web.chunkSeq) )
+        self.assertEquals( test7_inc_w, self.web.chunkSeq[3].commands[0].text )
+    def tearDown( self ):
+        os.remove( 'test7_inc.tmp' )
+        super( Test_IncludeError_7, self ).tearDown()
+
+    </pre></code>
+    <p>&loz; <em>Tangle Test include error 7</em> (67).
+      Used by <a href="#pyweb55"><em>test_tangler.py</em>&nbsp;(55)</a>.
+    </p>
+
+
+
+    <a name="pyweb68"></a>
+    <!--line number 347-->
+    <p><em>Sample Document 7 and it's included file</em> (68)&nbsp;=</p>
+    <code><pre>
+
+test7_w= &quot;&quot;&quot;
+Some anonymous chunk.
+@d title @[the title of this document, defined with @@[ and @@]@]
+A reference to @&lt;title@&gt;.
+@i test7_inc.tmp
+A final anonymous chunk from test7.w
+&quot;&quot;&quot;
+
+test7_inc_w= &quot;&quot;&quot;The test7a.tmp chunk for test7.w
+&quot;&quot;&quot;
+
+    </pre></code>
+    <p>&loz; <em>Sample Document 7 and it's included file</em> (68).
+      Used by <a href="#pyweb67"><em>Tangle Test include error 7</em>&nbsp;(67)</a>; <a href="#pyweb55"><em>test_tangler.py</em>&nbsp;(55)</a>.
+    </p>
+
+
+
+    <a name="pyweb69"></a>
+    <!--line number 361-->
+    <p><em>Tangle Test overheads: imports, etc.</em> (69)&nbsp;=</p>
+    <code><pre>
+from __future__ import print_function
+&quot;&quot;&quot;Tangler tests exercise various semantic features.&quot;&quot;&quot;
+import pyweb
+import unittest
+import logging
+import StringIO
+import os
+
+    </pre></code>
+    <p>&loz; <em>Tangle Test overheads: imports, etc.</em> (69).
+      Used by <a href="#pyweb55"><em>test_tangler.py</em>&nbsp;(55)</a>.
+    </p>
+
+
+
+    <a name="pyweb70"></a>
+    <!--line number 371-->
+    <p><em>Tangle Test main program</em> (70)&nbsp;=</p>
+    <code><pre>
+
+if __name__ == &quot;__main__&quot;:
+    import sys
+    logging.basicConfig( stream=sys.stdout, level= logging.WARN )
+    unittest.main()
+
+    </pre></code>
+    <p>&loz; <em>Tangle Test main program</em> (70).
+      Used by <a href="#pyweb55"><em>test_tangler.py</em>&nbsp;(55)</a>.
+    </p>
+
+
+
+<h3>Tests for Weaving</h3>
+
+<p>We need to be able to weave a document from one or more source files.</p>
+
+<a name="pyweb71"></a>
+    <!--line number 384-->
+    <p><tt>test_weaver.py</tt> (71)&nbsp;=</p>
+    <code><pre>
+<a href="#pyweb78">&rarr;<em>Weave Test overheads: imports, etc.</em> (78)</a>
+<a href="#pyweb72">&rarr;<em>Weave Test superclass to refactor common setup</em> (72)</a>
+<a href="#pyweb73">&rarr;<em>Weave Test references and definitions</em> (73)</a>
+<a href="#pyweb76">&rarr;<em>Weave Test evaluation of expressions</em> (76)</a>
+<a href="#pyweb79">&rarr;<em>Weave Test main program</em> (79)</a>
+</pre></code>
+    <p>&loz; <tt>test_weaver.py</tt> (71).
+    
+    </p>
+
+
+<p>Weaving test cases have a common setup shown in this superclass.</p>
+
+
+    <a name="pyweb72"></a>
+    <!--line number 393-->
+    <p><em>Weave Test superclass to refactor common setup</em> (72)&nbsp;=</p>
+    <code><pre>
+
+class WeaveTestcase( unittest.TestCase ):
+    text= &quot;&quot;
+    file_name= &quot;&quot;
+    error= &quot;&quot;
+    def setUp( self ):
+        source= StringIO.StringIO( self.text )
+        self.web= pyweb.Web( self.file_name )
+        self.rdr= pyweb.WebReader()
+        self.rdr.source( self.file_name, source ).web( self.web )
+        self.rdr.load()
+    def tangle_and_check_exception( self, exception_text ):
+        try:
+            self.rdr.load()
+            self.web.tangle( self.tangler )
+            self.web.createUsedBy()
+            self.fail( &quot;Should not tangle&quot; )
+        except pyweb.Error, e:
+            self.assertEquals( exception_text, e.args[0] )
+    def tearDown( self ):
+        name, _ = os.path.splitext( self.file_name )
+        try:
+            os.remove( name + &quot;.html&quot; )
+        except OSError:
+            pass
+
+    </pre></code>
+    <p>&loz; <em>Weave Test superclass to refactor common setup</em> (72).
+      Used by <a href="#pyweb71"><em>test_weaver.py</em>&nbsp;(71)</a>.
+    </p>
+
+
+
+    <a name="pyweb73"></a>
+    <!--line number 420-->
+    <p><em>Weave Test references and definitions</em> (73)&nbsp;=</p>
+    <code><pre>
+
+<a href="#pyweb74">&rarr;<em>Sample Document 0</em> (74)</a>
+<a href="#pyweb75">&rarr;<em>Expected Output 0</em> (75)</a>
+
+class Test_RefDefWeave( WeaveTestcase ):
+    text= test0_w
+    file_name = &quot;test0.w&quot;
+    def test_load_should_createChunks( self ):
+        self.assertEquals( 3, len( self.web.chunkSeq ) )
+    def test_weave_should_createFile( self ):
+        doc= pyweb.HTML()
+        self.web.weave( doc )
+        with open(&quot;test0.html&quot;,&quot;r&quot;) as source:
+            actual= source.read()
+        m= difflib.SequenceMatcher( lambda x: x in string.whitespace, expected, actual )
+        for tag, i1, i2, j1, j2 in m.get_opcodes():
+            if tag == &quot;equal&quot;: continue
+            self.fail( &quot;At %d %s: expected %r, actual %r&quot; % ( j1, tag, repr(expected[i1:i2]), repr(actual[j1:j2]) ) )
+
+
+    </pre></code>
+    <p>&loz; <em>Weave Test references and definitions</em> (73).
+      Used by <a href="#pyweb71"><em>test_weaver.py</em>&nbsp;(71)</a>.
+    </p>
+
+
+
+    <a name="pyweb74"></a>
+    <!--line number 442-->
+    <p><em>Sample Document 0</em> (74)&nbsp;=</p>
+    <code><pre>
+ 
+test0_w= &quot;&quot;&quot;&lt;html&gt;
+&lt;head&gt;
+    &lt;link rel=&quot;StyleSheet&quot; href=&quot;pyweb.css&quot; type=&quot;text/css&quot; /&gt;
+&lt;/head&gt;
+&lt;body&gt;
+@&lt;some code@&gt;
+
+@d some code 
+@{
+def fastExp( n, p ):
+    r= 1
+    while p &gt; 0:
+        if p%2 == 1: return n*fastExp(n,p-1)
+	return n*n*fastExp(n,p/2)
+
+for i in range(24):
+    fastExp(2,i)
+@}
+&lt;/body&gt;
+&lt;/html&gt;
+&quot;&quot;&quot;
+
+    </pre></code>
+    <p>&loz; <em>Sample Document 0</em> (74).
+      Used by <a href="#pyweb73"><em>Weave Test references and definitions</em>&nbsp;(73)</a>; <a href="#pyweb71"><em>test_weaver.py</em>&nbsp;(71)</a>.
+    </p>
+
+
+
+    <a name="pyweb75"></a>
+    <!--line number 466-->
+    <p><em>Expected Output 0</em> (75)&nbsp;=</p>
+    <code><pre>
+
+expected= &quot;&quot;&quot;&lt;html&gt;
+&lt;head&gt;
+    &lt;link rel=&quot;StyleSheet&quot; href=&quot;pyweb.css&quot; type=&quot;text/css&quot; /&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;a href=&quot;#pyweb1&quot;&gt;&amp;rarr;&lt;em&gt;some code&lt;/em&gt; (1)&lt;/a&gt;
+
+
+    &lt;a name=&quot;pyweb1&quot;&gt;&lt;/a&gt;
+    &lt;!--line number 9--&gt;
+    &lt;p&gt;&lt;em&gt;some code&lt;/em&gt; (1)&amp;nbsp;=&lt;/p&gt;
+    &lt;code&gt;&lt;pre&gt;
+
+def fastExp( n, p ):
+    r= 1
+    while p &amp;gt; 0:
+        if p%2 == 1: return n*fastExp(n,p-1)
+	return n*n*fastExp(n,p/2)
+
+for i in range(24):
+    fastExp(2,i)
+
+    &lt;/pre&gt;&lt;/code&gt;
+    &lt;p&gt;&amp;loz; &lt;em&gt;some code&lt;/em&gt; (1).
+    
+    &lt;/p&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+&quot;&quot;&quot;
+
+    </pre></code>
+    <p>&loz; <em>Expected Output 0</em> (75).
+      Used by <a href="#pyweb73"><em>Weave Test references and definitions</em>&nbsp;(73)</a>; <a href="#pyweb71"><em>test_weaver.py</em>&nbsp;(71)</a>.
+    </p>
+
+
+
+    <a name="pyweb76"></a>
+    <!--line number 499-->
+    <p><em>Weave Test evaluation of expressions</em> (76)&nbsp;=</p>
+    <code><pre>
+
+<a href="#pyweb77">&rarr;<em>Sample Document 9</em> (77)</a>
+
+class TestEvaluations( WeaveTestcase ):
+    text= test9_w
+    file_name = &quot;test9.w&quot;
+    def test_should_evaluate( self ):
+        doc= pyweb.HTML()
+        self.web.weave( doc )
+        with open(&quot;test9.html&quot;,&quot;r&quot;) as source:
+            actual= source.readlines()
+        #print( actual )
+        self.assertEquals( &quot;An anonymous chunk.\n&quot;, actual[0] )
+        self.assertTrue( actual[1].startswith( &quot;Time =&quot; ) )
+        self.assertEquals( &quot;File = ('test9.w', 3, 3)\n&quot;, actual[2] )
+        self.assertEquals( 'Version = $Revision$\n', actual[3] )
+        self.assertEquals( 'OS = %s\n' % os.name, actual[4] )
+        self.assertEquals( 'CWD = %s\n' % os.getcwd(), actual[5] )
+
+    </pre></code>
+    <p>&loz; <em>Weave Test evaluation of expressions</em> (76).
+      Used by <a href="#pyweb71"><em>test_weaver.py</em>&nbsp;(71)</a>.
+    </p>
+
+
+
+    <a name="pyweb77"></a>
+    <!--line number 520-->
+    <p><em>Sample Document 9</em> (77)&nbsp;=</p>
+    <code><pre>
+
+test9_w= &quot;&quot;&quot;An anonymous chunk.
+Time = @(time.asctime()@)
+File = @(theLocation@)
+Version = @(__version__@)
+OS = @(os.name@)
+CWD = @(os.getcwd()@)
+&quot;&quot;&quot;
+
+    </pre></code>
+    <p>&loz; <em>Sample Document 9</em> (77).
+      Used by <a href="#pyweb76"><em>Weave Test evaluation of expressions</em>&nbsp;(76)</a>; <a href="#pyweb71"><em>test_weaver.py</em>&nbsp;(71)</a>.
+    </p>
+
+
+
+    <a name="pyweb78"></a>
+    <!--line number 531-->
+    <p><em>Weave Test overheads: imports, etc.</em> (78)&nbsp;=</p>
+    <code><pre>
+from __future__ import print_function
+&quot;&quot;&quot;Weaver tests exercise various weaving features.&quot;&quot;&quot;
+import pyweb
+import unittest
+import logging
+import StringIO
+import os
+import difflib
+import string
+
+    </pre></code>
+    <p>&loz; <em>Weave Test overheads: imports, etc.</em> (78).
+      Used by <a href="#pyweb71"><em>test_weaver.py</em>&nbsp;(71)</a>.
+    </p>
+
+
+
+    <a name="pyweb79"></a>
+    <!--line number 543-->
+    <p><em>Weave Test main program</em> (79)&nbsp;=</p>
+    <code><pre>
+
+if __name__ == &quot;__main__&quot;:
+    import sys
+    logging.basicConfig( stream=sys.stdout, level= logging.WARN )
+    unittest.main()
+
+    </pre></code>
+    <p>&loz; <em>Weave Test main program</em> (79).
+      Used by <a href="#pyweb71"><em>test_weaver.py</em>&nbsp;(71)</a>.
+    </p>
+
+</div>
+
+<h1>Combined Test Script</h1>
+<div class="chapter">
+
+<!-- combined.w -->
+
+<p>The combined test script runs all tests in all test modules.</p>
+
+<a name="pyweb80"></a>
+    <!--line number 6-->
+    <p><tt>test.py</tt> (80)&nbsp;=</p>
+    <code><pre>
+<a href="#pyweb81">&rarr;<em>Combined Test overheads, imports, etc.</em> (81)</a>
+<a href="#pyweb82">&rarr;<em>Combined Test suite which imports all other test modules</em> (82)</a>
+<a href="#pyweb83">&rarr;<em>Combined Test main script</em> (83)</a>
+</pre></code>
+    <p>&loz; <tt>test.py</tt> (80).
+    
+    </p>
+
+
+<p>The overheads import unittest and logging, because those are essential
+infrastructure.  Additionally, each of the test modules is also imported.
+</p>
+
+
+    <a name="pyweb81"></a>
+    <!--line number 16-->
+    <p><em>Combined Test overheads, imports, etc.</em> (81)&nbsp;=</p>
+    <code><pre>
+from __future__ import print_function
+&quot;&quot;&quot;Combined tests.&quot;&quot;&quot;
+import unittest
+import test_loader
+import test_tangler
+import test_weaver
+import test_unit
+import logging
+
+    </pre></code>
+    <p>&loz; <em>Combined Test overheads, imports, etc.</em> (81).
+      Used by <a href="#pyweb80"><em>test.py</em>&nbsp;(80)</a>.
+    </p>
+
+
+<p>The test suite is built from each of the individual test modules.</p>
+
+
+    <a name="pyweb82"></a>
+    <!--line number 29-->
+    <p><em>Combined Test suite which imports all other test modules</em> (82)&nbsp;=</p>
+    <code><pre>
+
+def suite():
+    s= unittest.TestSuite()
+    for m in ( test_loader, test_tangler, test_weaver, test_unit ):
+        s.addTests( unittest.defaultTestLoader.loadTestsFromModule( m ) )
+    return s
+
+    </pre></code>
+    <p>&loz; <em>Combined Test suite which imports all other test modules</em> (82).
+      Used by <a href="#pyweb80"><em>test.py</em>&nbsp;(80)</a>.
+    </p>
+
+
+<p>The main script initializes logging and then executes the 
+<span class="code">unittest.TextTestRunner</span> on the test suite.
+</p>
+
+
+    <a name="pyweb83"></a>
+    <!--line number 42-->
+    <p><em>Combined Test main script</em> (83)&nbsp;=</p>
+    <code><pre>
+
+if __name__ == &quot;__main__&quot;:
+    import sys
+    logging.basicConfig( stream=sys.stdout, level=logging.CRITICAL )
+    tr= unittest.TextTestRunner()
+    result= tr.run( suite() )
+    logging.shutdown()
+    sys.exit( len(result.failures) + len(result.errors) )
+
+    </pre></code>
+    <p>&loz; <em>Combined Test main script</em> (83).
+      Used by <a href="#pyweb80"><em>test.py</em>&nbsp;(80)</a>.
+    </p>
+</div>
+
+<h1>Indices</h1>
+<div class="chapter">
+<h2>Files</h2>
+
+<dl>
+<dt>test.py</dt><dd><a href="#pyweb80">(80)</a></dd>
+<dt>test_loader.py</dt><dd><a href="#pyweb47">(47)</a></dd>
+<dt>test_tangler.py</dt><dd><a href="#pyweb55">(55)</a></dd>
+<dt>test_unit.py</dt><dd><a href="#pyweb1">(1)</a></dd>
+<dt>test_weaver.py</dt><dd><a href="#pyweb71">(71)</a></dd>
+</dl>
+
+<h2>Macros</h2>
+<dl>
+<dt>Combined Test main script</dt><dd><a href="#pyweb83">(83)</a></dd>
+<dt>Combined Test overheads, imports, etc.</dt><dd><a href="#pyweb81">(81)</a></dd>
+<dt>Combined Test suite which imports all other test modules</dt><dd><a href="#pyweb82">(82)</a></dd>
+<dt>Expected Output 0</dt><dd><a href="#pyweb75">(75)</a></dd>
+<dt>Load Test error handling with a few common syntax errors</dt><dd><a href="#pyweb49">(49)</a></dd>
+<dt>Load Test include processing with syntax errors</dt><dd><a href="#pyweb51">(51)</a></dd>
+<dt>Load Test main program</dt><dd><a href="#pyweb54">(54)</a></dd>
+<dt>Load Test overheads: imports, etc.</dt><dd><a href="#pyweb53">(53)</a></dd>
+<dt>Load Test superclass to refactor common setup</dt><dd><a href="#pyweb48">(48)</a></dd>
+<dt>Sample Document 0</dt><dd><a href="#pyweb74">(74)</a></dd>
+<dt>Sample Document 1 with correct and incorrect syntax</dt><dd><a href="#pyweb50">(50)</a></dd>
+<dt>Sample Document 2</dt><dd><a href="#pyweb58">(58)</a></dd>
+<dt>Sample Document 3</dt><dd><a href="#pyweb60">(60)</a></dd>
+<dt>Sample Document 4</dt><dd><a href="#pyweb62">(62)</a></dd>
+<dt>Sample Document 5</dt><dd><a href="#pyweb64">(64)</a></dd>
+<dt>Sample Document 6</dt><dd><a href="#pyweb66">(66)</a></dd>
+<dt>Sample Document 7 and it's included file</dt><dd><a href="#pyweb68">(68)</a></dd>
+<dt>Sample Document 8 and the file it includes</dt><dd><a href="#pyweb52">(52)</a></dd>
+<dt>Sample Document 9</dt><dd><a href="#pyweb77">(77)</a></dd>
+<dt>Tangle Test include error 7</dt><dd><a href="#pyweb67">(67)</a></dd>
+<dt>Tangle Test main program</dt><dd><a href="#pyweb70">(70)</a></dd>
+<dt>Tangle Test overheads: imports, etc.</dt><dd><a href="#pyweb69">(69)</a></dd>
+<dt>Tangle Test semantic error 2</dt><dd><a href="#pyweb57">(57)</a></dd>
+<dt>Tangle Test semantic error 3</dt><dd><a href="#pyweb59">(59)</a></dd>
+<dt>Tangle Test semantic error 4</dt><dd><a href="#pyweb61">(61)</a></dd>
+<dt>Tangle Test semantic error 5</dt><dd><a href="#pyweb63">(63)</a></dd>
+<dt>Tangle Test semantic error 6</dt><dd><a href="#pyweb65">(65)</a></dd>
+<dt>Tangle Test superclass to refactor common setup</dt><dd><a href="#pyweb56">(56)</a></dd>
+<dt>Unit Test Mock Chunk class</dt><dd><a href="#pyweb4">(4)</a></dd>
+<dt>Unit Test Web class chunk cross-reference</dt><dd><a href="#pyweb35">(35)</a></dd>
+<dt>Unit Test Web class construction methods</dt><dd><a href="#pyweb33">(33)</a></dd>
+<dt>Unit Test Web class name resolution methods</dt><dd><a href="#pyweb34">(34)</a></dd>
+<dt>Unit Test Web class tangle</dt><dd><a href="#pyweb36">(36)</a></dd>
+<dt>Unit Test Web class weave</dt><dd><a href="#pyweb37">(37)</a></dd>
+<dt>Unit Test main</dt><dd><a href="#pyweb46">(46)</a></dd>
+<dt>Unit Test of Action class hierarchy</dt><dd><a href="#pyweb39">(39)</a></dd>
+<dt>Unit Test of Application class</dt><dd><a href="#pyweb44">(44)</a></dd>
+<dt>Unit Test of Chunk class hierarchy</dt><dd><a href="#pyweb11">(11)</a></dd>
+<dt>Unit Test of Chunk construction</dt><dd><a href="#pyweb16">(16)</a></dd>
+<dt>Unit Test of Chunk emission</dt><dd><a href="#pyweb18">(18)</a></dd>
+<dt>Unit Test of Chunk interrogation</dt><dd><a href="#pyweb17">(17)</a></dd>
+<dt>Unit Test of Chunk superclass</dt><dd><a href="#pyweb12">(12)</a> <a href="#pyweb13">(13)</a> <a href="#pyweb14">(14)</a> <a href="#pyweb15">(15)</a></dd>
+<dt>Unit Test of CodeCommand class to contain a program source code block</dt><dd><a href="#pyweb25">(25)</a></dd>
+<dt>Unit Test of Command class hierarchy</dt><dd><a href="#pyweb22">(22)</a></dd>
+<dt>Unit Test of Command superclass</dt><dd><a href="#pyweb23">(23)</a></dd>
+<dt>Unit Test of Emitter Superclass</dt><dd><a href="#pyweb3">(3)</a></dd>
+<dt>Unit Test of Emitter class hierarchy</dt><dd><a href="#pyweb2">(2)</a></dd>
+<dt>Unit Test of FileXrefCommand class for an output file cross-reference</dt><dd><a href="#pyweb27">(27)</a></dd>
+<dt>Unit Test of HTML subclass of Emitter</dt><dd><a href="#pyweb7">(7)</a></dd>
+<dt>Unit Test of HTMLShort subclass of Emitter</dt><dd><a href="#pyweb8">(8)</a></dd>
+<dt>Unit Test of LaTeX subclass of Emitter</dt><dd><a href="#pyweb6">(6)</a></dd>
+<dt>Unit Test of MacroXrefCommand class for a named chunk cross-reference</dt><dd><a href="#pyweb28">(28)</a></dd>
+<dt>Unit Test of NamedChunk subclass</dt><dd><a href="#pyweb19">(19)</a></dd>
+<dt>Unit Test of NamedDocumentChunk subclass</dt><dd><a href="#pyweb21">(21)</a></dd>
+<dt>Unit Test of OutputChunk subclass</dt><dd><a href="#pyweb20">(20)</a></dd>
+<dt>Unit Test of Reference class hierarchy</dt><dd><a href="#pyweb31">(31)</a></dd>
+<dt>Unit Test of ReferenceCommand class for chunk references</dt><dd><a href="#pyweb30">(30)</a></dd>
+<dt>Unit Test of Tangler subclass of Emitter</dt><dd><a href="#pyweb9">(9)</a></dd>
+<dt>Unit Test of TanglerMake subclass of Emitter</dt><dd><a href="#pyweb10">(10)</a></dd>
+<dt>Unit Test of TextCommand class to contain a document text block</dt><dd><a href="#pyweb24">(24)</a></dd>
+<dt>Unit Test of UserIdXrefCommand class for a user identifier cross-reference</dt><dd><a href="#pyweb29">(29)</a></dd>
+<dt>Unit Test of Weaver subclass of Emitter</dt><dd><a href="#pyweb5">(5)</a></dd>
+<dt>Unit Test of Web class</dt><dd><a href="#pyweb32">(32)</a></dd>
+<dt>Unit Test of WebReader class</dt><dd><a href="#pyweb38">(38)</a></dd>
+<dt>Unit Test of XrefCommand superclass for all cross-reference commands</dt><dd><a href="#pyweb26">(26)</a></dd>
+<dt>Unit Test overheads: imports, etc.</dt><dd><a href="#pyweb45">(45)</a></dd>
+<dt>Unit test of Action Sequence class</dt><dd><a href="#pyweb40">(40)</a></dd>
+<dt>Unit test of LoadAction class</dt><dd><a href="#pyweb43">(43)</a></dd>
+<dt>Unit test of TangleAction class</dt><dd><a href="#pyweb42">(42)</a></dd>
+<dt>Unit test of WeaverAction class</dt><dd><a href="#pyweb41">(41)</a></dd>
+<dt>Weave Test evaluation of expressions</dt><dd><a href="#pyweb76">(76)</a></dd>
+<dt>Weave Test main program</dt><dd><a href="#pyweb79">(79)</a></dd>
+<dt>Weave Test overheads: imports, etc.</dt><dd><a href="#pyweb78">(78)</a></dd>
+<dt>Weave Test references and definitions</dt><dd><a href="#pyweb73">(73)</a></dd>
+<dt>Weave Test superclass to refactor common setup</dt><dd><a href="#pyweb72">(72)</a></dd>
+</dl>
+
+<h2>User Identifiers</h2>
+<dl>
+</dl>
+
+</div>
+
+<hr />
+<p><small>Created by /Users/slott/Documents/Projects/pyWeb-2.1/pyweb/pyweb.py at Mon Mar  1 10:13:00 2010.</small></p>
+<p><small>pyweb.__version__ '$Revision$'.</small></p>
+<p><small>Source pyweb_test.w modified Mon Mar  1 07:57:54 2010.
+</small></p>
+<p><small>Working directory '/Users/slott/Documents/Projects/pyWeb-2.1/pyweb/test'.</small></p>
+
+</div>
+</body>
+</html>
