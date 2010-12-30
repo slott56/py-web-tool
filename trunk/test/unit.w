@@ -176,7 +176,7 @@ class TestWeaver( unittest.TestCase ):
         self.weaver.close()
         with open( "testweaver.rst", "r" ) as result:
             txt= result.read()
-        self.assertEquals( "\n..  _`314`:\n..  rubric:: Chunk (314)\n..  parsed-literal::\n    \\*The\\* \\`Code\\`\n\n\nUsed by: Container (`123`_)\n\n", txt )
+        self.assertEquals( "\n..  _`314`:\n..  rubric:: Chunk (314)\n..  parsed-literal::\n\n    \\*The\\* \\`Code\\`\n\n\nUsed by: Container (`123`_)\n\n\n", txt )
   
     def test_weaver_should_fileBegin( self ):
         self.weaver.open( self.filename )
@@ -186,7 +186,7 @@ class TestWeaver( unittest.TestCase ):
         self.weaver.close()
         with open( "testweaver.rst", "r" ) as result:
             txt= result.read()
-        self.assertEquals( "\n..  _`123`:\n..  rubric:: File (123)\n..  parsed-literal::\n    \\*The\\* \\`Code\\`\n\n\n", txt )
+        self.assertEquals( "\n..  _`123`:\n..  rubric:: File (123)\n..  parsed-literal::\n\n    \\*The\\* \\`Code\\`\n\n\n\n", txt )
 
     def test_weaver_should_xref( self ):
         self.weaver.open( self.filename )

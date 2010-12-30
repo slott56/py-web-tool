@@ -428,7 +428,7 @@ class Weaver( Emitter ):
     """Format various types of XRef's and code blocks when weaving."""
     extension= ".rst" # A subclass will provide their preferred extension
     code_indent= 4
-    @<Weaver doOpen, doClose and doWrite overrides@>
+    @<Weaver doOpen, doClose, doWrite and resetIndent overrides@>
     
     # Template Expansions.
     @<Weaver quoted characters@>
@@ -458,13 +458,17 @@ def doOpen( self, aFile ):
     self.fileName= src + self.extension
     self.theFile= open( self.fileName, "w" )
     logger.info( "Weaving %r", self.fileName )
+    self.resetIndent()
 def doClose( self ):
     self.theFile.close()
     logger.info( "Wrote %d lines to %r", 
         self.linesWritten, self.fileName )
 def doWrite( self, text ):
     self.theFile.write( text )
-@| doOpen doClose doWrite
+def resetIndent( self ):
+    self.context= [4]
+    self.log_indent.debug( "resetIndent %r", self.context )
+@| doOpen doClose doWrite resetIndent
 @}
 
 <p>The remaining methods apply a chunk to a template.</p>
@@ -523,13 +527,13 @@ refer to this chunk can be emitted.
 
 @d Weaver code...
 @{
-cb_template = string.Template( "\n..  _`${seq}`:\n..  rubric:: ${fullName} (${seq})\n..  parsed-literal::\n    " )
+cb_template = string.Template( "\n..  _`${seq}`:\n..  rubric:: ${fullName} (${seq})\n..  parsed-literal::\n\n" )
 def codeBegin( self, aChunk ):
     tex = self.cb_template.substitute( 
         seq= aChunk.seq,
         lineNumber= aChunk.lineNumber, 
         fullName= aChunk.fullName,
-        concat= "=" if aChunk.initial else "+=", # LaTeX Separator
+        concat= "=" if aChunk.initial else "+=", # RST Separator
     )
     self.write( tex )
 ce_template = string.Template( "\n${references}\n" )
@@ -560,13 +564,13 @@ for the intended file type.
 
 @d Weaver file...
 @{
-fb_template = string.Template( "\n..  _`${seq}`:\n..  rubric:: ${fullName} (${seq})\n..  parsed-literal::\n    " )
+fb_template = string.Template( "\n..  _`${seq}`:\n..  rubric:: ${fullName} (${seq})\n..  parsed-literal::\n\n" )
 def fileBegin( self, aChunk ):
     txt= self.fb_template.substitute(
         seq= aChunk.seq, 
         lineNumber= aChunk.lineNumber, 
         fullName= aChunk.fullName,
-        concat= "=" if aChunk.initial else "+=", # HTML Separator
+        concat= "=" if aChunk.initial else "+=", # RST Separator
     )
     self.write( txt )
 fe_template= string.Template( "\n${references}\n" )
@@ -1050,6 +1054,10 @@ class Tangler( Emitter ):
 @}
 
 <p>The default for all tanglers is to create the named file.
+In order to handle paths, we will examine the file name for any <tt>"/"</tt>
+characters and perform the required <span class="code">os.makedirs</span> functions to
+allow creation of files with a path.  We don't use Windows <tt>"\"</tt>
+characters, but rely on Python to handle this automatically.
 </p>
 <p>This <span class="code">doClose()</span> method overrides the <span class="code">Emitter</span> class <span class="code">doClose()</span> method by closing the
 actual file created by open.
@@ -1060,8 +1068,18 @@ actual file created by open.
 
 @d Tangler doOpen...
 @{
+def checkPath( self ):
+    if "/" in self.fileName:
+        dirname, _, _ = self.fileName.rpartition("/")
+        try:
+            os.makedirs( dirname )
+            logger.info( "Creating %r", dirname )
+        except OSError, e:
+            # Already exists.  Could check for errno.EEXIST.
+            logger.debug( "Exception %r creating %r", e, dirname )
 def doOpen( self, aFile ):
     self.fileName= aFile
+    self.checkPath()
     self.theFile= open( aFile, "w" )
     logger.info( "Tangling %r", aFile )
 def doClose( self ):
@@ -1151,11 +1169,16 @@ a "touch" if the new file is the same as the original.
 @d TanglerMake doOpen...
 @{
 def doOpen( self, aFile ):
-    self.tempname= tempfile.mktemp()
-    self.theFile= open( self.tempname, "w" )
+    fd, self.tempname= tempfile.mkstemp( dir=os.curdir )
+    self.theFile= os.fdopen( fd, "w" )
     logger.info( "Tangling %r", aFile )
 @| doOpen
 @}
+
+<p class="note">This includes a fix for 
+the <a href="https://sourceforge.net/tracker/?func=detail&aid=3003185&group_id=307422&atid=1294997">
+OSError: [Errno 18] Invalid cross-device link</a> bug.
+</p>
 
 <p>If there is a previous file: compare the temporary file and the previous file.  
 If there was  previous file or the files are different: rename temporary to replace previous;
@@ -1170,16 +1193,17 @@ def doClose( self ):
     try:
         same= filecmp.cmp( self.tempname, self.fileName )
     except OSError,e:
-        same= 0
+        same= False # Doesn't exist.  Could check for errno.ENOENT
     if same:
         logger.info( "No change to %r", self.fileName )
         os.remove( self.tempname )
     else:
-        # note the Windows requires the original file name be removed first
+        # Windows requires the original file name be removed first.
+        self.checkPath()
         try: 
             os.remove( self.fileName )
         except OSError,e:
-            pass
+            pass # Doesn't exist.  Could check for errno.ENOENT
         os.rename( self.tempname, self.fileName )
         logger.info( "Wrote %d lines to %r",
             self.linesWritten, self.fileName )
@@ -4403,8 +4427,8 @@ logger.info( weave.summary() )
 from distutils.core import setup
 
 setup(name='pyweb',
-      version='2.1',
-      description='pyWeb 2.1: In Python, Yet Another Literate Programming Tool',
+      version='2.2',
+      description='pyWeb 2.2: In Python, Yet Another Literate Programming Tool',
       author='S. Lott',
       author_email='s_lott@@yahoo.com',
       url='http://slott-softwarearchitect.blogspot.com/',
@@ -4427,12 +4451,13 @@ We use a simple inclusion to augment the default manifest rules.
 @o MANIFEST.in
 @{include *.w *.css *.html
 include test/*.w test/*.css test/*.html test/*.py
+include jedit/*
 @}
 
 <p>Generally, a <tt>README</tt> is also considered to be good form.</p>
 
 @o README
-@{pyWeb 2.1: In Python, Yet Another Literate Programming Tool
+@{pyWeb 2.2: In Python, Yet Another Literate Programming Tool
 
 Literate programming is an attempt to reconcile the opposing needs
 of clear presentation to people with the technical issues of 
@@ -4467,6 +4492,9 @@ Authoring
 
 The pyweb document describes the simple markup used to define code chunks
 and assemble those code chunks into a coherent document as well as working code.
+
+If you're a JEdit user, the <tt>jedit</tt> directory can be used
+to configure syntax highlighting that includes PyWeb and RST.
 
 Operation
 ---------

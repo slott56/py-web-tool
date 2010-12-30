@@ -140,16 +140,16 @@ We'll decompose these into several hierarchies.
     <!--line number 64-->
     <p><tt>test_unit.py</tt> (1)&nbsp;=</p>
     <code><pre>
-<a href="#pyweb45">&rarr;<em>Unit Test overheads: imports, etc.</em> (45)</a>
-<a href="#pyweb2">&rarr;<em>Unit Test of Emitter class hierarchy</em> (2)</a>
-<a href="#pyweb11">&rarr;<em>Unit Test of Chunk class hierarchy</em> (11)</a>
-<a href="#pyweb22">&rarr;<em>Unit Test of Command class hierarchy</em> (22)</a>
-<a href="#pyweb31">&rarr;<em>Unit Test of Reference class hierarchy</em> (31)</a>
-<a href="#pyweb32">&rarr;<em>Unit Test of Web class</em> (32)</a>
-<a href="#pyweb38">&rarr;<em>Unit Test of WebReader class</em> (38)</a>
-<a href="#pyweb39">&rarr;<em>Unit Test of Action class hierarchy</em> (39)</a>
-<a href="#pyweb44">&rarr;<em>Unit Test of Application class</em> (44)</a>
-<a href="#pyweb46">&rarr;<em>Unit Test main</em> (46)</a>
+    <a href="#pyweb45">&rarr;<em>Unit Test overheads: imports, etc.</em> (45)</a>    
+    <a href="#pyweb2">&rarr;<em>Unit Test of Emitter class hierarchy</em> (2)</a>    
+    <a href="#pyweb11">&rarr;<em>Unit Test of Chunk class hierarchy</em> (11)</a>    
+    <a href="#pyweb22">&rarr;<em>Unit Test of Command class hierarchy</em> (22)</a>    
+    <a href="#pyweb31">&rarr;<em>Unit Test of Reference class hierarchy</em> (31)</a>    
+    <a href="#pyweb32">&rarr;<em>Unit Test of Web class</em> (32)</a>    
+    <a href="#pyweb38">&rarr;<em>Unit Test of WebReader class</em> (38)</a>    
+    <a href="#pyweb39">&rarr;<em>Unit Test of Action class hierarchy</em> (39)</a>    
+    <a href="#pyweb44">&rarr;<em>Unit Test of Application class</em> (44)</a>    
+    <a href="#pyweb46">&rarr;<em>Unit Test main</em> (46)</a>    
 </pre></code>
     <p>&loz; <tt>test_unit.py</tt> (1).
     
@@ -293,7 +293,7 @@ class TestWeaver( unittest.TestCase ):
         self.weaver.close()
         with open( &quot;testweaver.rst&quot;, &quot;r&quot; ) as result:
             txt= result.read()
-        self.assertEquals( &quot;\n..  _`314`:\n..  rubric:: Chunk (314)\n..  parsed-literal::\n    \\*The\\* \\`Code\\`\n\n\nUsed by: Container (`123`_)\n\n&quot;, txt )
+        self.assertEquals( &quot;\n..  _`314`:\n..  rubric:: Chunk (314)\n..  parsed-literal::\n\n    \\*The\\* \\`Code\\`\n\n\nUsed by: Container (`123`_)\n\n\n&quot;, txt )
   
     def test_weaver_should_fileBegin( self ):
         self.weaver.open( self.filename )
@@ -303,7 +303,7 @@ class TestWeaver( unittest.TestCase ):
         self.weaver.close()
         with open( &quot;testweaver.rst&quot;, &quot;r&quot; ) as result:
             txt= result.read()
-        self.assertEquals( &quot;\n..  _`123`:\n..  rubric:: File (123)\n..  parsed-literal::\n    \\*The\\* \\`Code\\`\n\n\n&quot;, txt )
+        self.assertEquals( &quot;\n..  _`123`:\n..  rubric:: File (123)\n..  parsed-literal::\n\n    \\*The\\* \\`Code\\`\n\n\n\n&quot;, txt )
 
     def test_weaver_should_xref( self ):
         self.weaver.open( self.filename )
@@ -1676,11 +1676,11 @@ if __name__ == &quot;__main__&quot;:
     <!--line number 18-->
     <p><tt>test_loader.py</tt> (47)&nbsp;=</p>
     <code><pre>
-<a href="#pyweb53">&rarr;<em>Load Test overheads: imports, etc.</em> (53)</a>
-<a href="#pyweb48">&rarr;<em>Load Test superclass to refactor common setup</em> (48)</a>
-<a href="#pyweb49">&rarr;<em>Load Test error handling with a few common syntax errors</em> (49)</a>
-<a href="#pyweb51">&rarr;<em>Load Test include processing with syntax errors</em> (51)</a>
-<a href="#pyweb54">&rarr;<em>Load Test main program</em> (54)</a>
+    <a href="#pyweb53">&rarr;<em>Load Test overheads: imports, etc.</em> (53)</a>    
+    <a href="#pyweb48">&rarr;<em>Load Test superclass to refactor common setup</em> (48)</a>    
+    <a href="#pyweb49">&rarr;<em>Load Test error handling with a few common syntax errors</em> (49)</a>    
+    <a href="#pyweb51">&rarr;<em>Load Test include processing with syntax errors</em> (51)</a>    
+    <a href="#pyweb54">&rarr;<em>Load Test main program</em> (54)</a>    
 </pre></code>
     <p>&loz; <tt>test_loader.py</tt> (47).
     
@@ -1884,15 +1884,15 @@ if __name__ == &quot;__main__&quot;:
     <!--line number 156-->
     <p><tt>test_tangler.py</tt> (55)&nbsp;=</p>
     <code><pre>
-<a href="#pyweb69">&rarr;<em>Tangle Test overheads: imports, etc.</em> (69)</a>
-<a href="#pyweb56">&rarr;<em>Tangle Test superclass to refactor common setup</em> (56)</a>
-<a href="#pyweb57">&rarr;<em>Tangle Test semantic error 2</em> (57)</a>
-<a href="#pyweb59">&rarr;<em>Tangle Test semantic error 3</em> (59)</a>
-<a href="#pyweb61">&rarr;<em>Tangle Test semantic error 4</em> (61)</a>
-<a href="#pyweb63">&rarr;<em>Tangle Test semantic error 5</em> (63)</a>
-<a href="#pyweb65">&rarr;<em>Tangle Test semantic error 6</em> (65)</a>
-<a href="#pyweb67">&rarr;<em>Tangle Test include error 7</em> (67)</a>
-<a href="#pyweb70">&rarr;<em>Tangle Test main program</em> (70)</a>
+    <a href="#pyweb69">&rarr;<em>Tangle Test overheads: imports, etc.</em> (69)</a>    
+    <a href="#pyweb56">&rarr;<em>Tangle Test superclass to refactor common setup</em> (56)</a>    
+    <a href="#pyweb57">&rarr;<em>Tangle Test semantic error 2</em> (57)</a>    
+    <a href="#pyweb59">&rarr;<em>Tangle Test semantic error 3</em> (59)</a>    
+    <a href="#pyweb61">&rarr;<em>Tangle Test semantic error 4</em> (61)</a>    
+    <a href="#pyweb63">&rarr;<em>Tangle Test semantic error 5</em> (63)</a>    
+    <a href="#pyweb65">&rarr;<em>Tangle Test semantic error 6</em> (65)</a>    
+    <a href="#pyweb67">&rarr;<em>Tangle Test include error 7</em> (67)</a>    
+    <a href="#pyweb70">&rarr;<em>Tangle Test main program</em> (70)</a>    
 </pre></code>
     <p>&loz; <tt>test_tangler.py</tt> (55).
     
@@ -2260,11 +2260,11 @@ if __name__ == &quot;__main__&quot;:
     <!--line number 384-->
     <p><tt>test_weaver.py</tt> (71)&nbsp;=</p>
     <code><pre>
-<a href="#pyweb78">&rarr;<em>Weave Test overheads: imports, etc.</em> (78)</a>
-<a href="#pyweb72">&rarr;<em>Weave Test superclass to refactor common setup</em> (72)</a>
-<a href="#pyweb73">&rarr;<em>Weave Test references and definitions</em> (73)</a>
-<a href="#pyweb76">&rarr;<em>Weave Test evaluation of expressions</em> (76)</a>
-<a href="#pyweb79">&rarr;<em>Weave Test main program</em> (79)</a>
+    <a href="#pyweb78">&rarr;<em>Weave Test overheads: imports, etc.</em> (78)</a>    
+    <a href="#pyweb72">&rarr;<em>Weave Test superclass to refactor common setup</em> (72)</a>    
+    <a href="#pyweb73">&rarr;<em>Weave Test references and definitions</em> (73)</a>    
+    <a href="#pyweb76">&rarr;<em>Weave Test evaluation of expressions</em> (76)</a>    
+    <a href="#pyweb79">&rarr;<em>Weave Test main program</em> (79)</a>    
 </pre></code>
     <p>&loz; <tt>test_weaver.py</tt> (71).
     
@@ -2386,7 +2386,7 @@ expected= &quot;&quot;&quot;&lt;html&gt;
     &lt;link rel=&quot;StyleSheet&quot; href=&quot;pyweb.css&quot; type=&quot;text/css&quot; /&gt;
 &lt;/head&gt;
 &lt;body&gt;
-&lt;a href=&quot;#pyweb1&quot;&gt;&amp;rarr;&lt;em&gt;some code&lt;/em&gt; (1)&lt;/a&gt;
+    &lt;a href=&quot;#pyweb1&quot;&gt;&amp;rarr;&lt;em&gt;some code&lt;/em&gt; (1)&lt;/a&gt;
 
 
     &lt;a name=&quot;pyweb1&quot;&gt;&lt;/a&gt;
@@ -2518,9 +2518,9 @@ if __name__ == &quot;__main__&quot;:
     <!--line number 6-->
     <p><tt>test.py</tt> (80)&nbsp;=</p>
     <code><pre>
-<a href="#pyweb81">&rarr;<em>Combined Test overheads, imports, etc.</em> (81)</a>
-<a href="#pyweb82">&rarr;<em>Combined Test suite which imports all other test modules</em> (82)</a>
-<a href="#pyweb83">&rarr;<em>Combined Test main script</em> (83)</a>
+    <a href="#pyweb81">&rarr;<em>Combined Test overheads, imports, etc.</em> (81)</a>    
+    <a href="#pyweb82">&rarr;<em>Combined Test suite which imports all other test modules</em> (82)</a>    
+    <a href="#pyweb83">&rarr;<em>Combined Test main script</em> (83)</a>    
 </pre></code>
     <p>&loz; <tt>test.py</tt> (80).
     
@@ -2693,7 +2693,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 
 <hr />
-<p><small>Created by /Users/slott/Documents/Projects/pyWeb-2.1/pyweb/pyweb.py at Mon Mar  1 10:13:00 2010.</small></p>
+<p><small>Created by /Users/slott/Documents/Projects/pyWeb-2.1/pyweb/pyweb.py at Wed Mar 10 08:00:56 2010.</small></p>
 <p><small>pyweb.__version__ '$Revision$'.</small></p>
 <p><small>Source pyweb_test.w modified Mon Mar  1 07:57:54 2010.
 </small></p>
