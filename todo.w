@@ -20,7 +20,7 @@ Also, setting the command character can be done in the header.
 To support multiple projects, the header would probably be included with @@i, indicating
 that embedding in the <tt>.w</tt> file isn't as useful as keeping it separate.
 See the <tt>weave.py</tt> example.</li>
-<li>Offer a basic HTML template that uses CDATA sections instead of quoting.
+<li>Offer a basic XHTML template that uses CDATA sections instead of quoting.
 Does require the standard quoting for the CDATA end tag.</li>
 <li>The <b>createUsedBy()</b> method can be done incrementally by 
 accumulating a list of forward references to chunks; as each

@@ -3,7 +3,7 @@
         "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-    <title>pyWeb Literate Programming 2.1</title>
+    <title>pyWeb Literate Programming 2.2</title>
     <meta name="generator" content="BBEdit 6.5.2" />
     <meta name="author" content="Steven F. Lott" />
     <link rel="StyleSheet" href="pyweb.css" type="text/css" />
@@ -12,7 +12,7 @@
 <div class="document">
 
 <!-- title page -->
-<p class="title"><em>pyWeb</em> 2.1</p>
+<p class="title"><em>pyWeb</em> 2.2</p>
 <p class="title">In Python, Yet Another Literate Programming Tool</p>
 <p class="subtitle"><a href="mailto:s_lott@@yahoo.com">Steven F. Lott</a></p>
 
@@ -24,6 +24,7 @@
 <li><a href="#changes">Change Log</a></li>
 <li><a href="#arch">Architecture and Design Overview</a></li>
 <li><a href="#impl">Implementation</a></li>
+<li><a href="#addl">Additional Support</a></li>
 <li><a href="#ix">Indices</a></li>
 </ol>
 <hr />
@@ -51,6 +52,11 @@
 <a name="impl"></a><h1>Implementation</h1>
 <div class="chapter">
 @i impl.w
+</div>
+
+<a name="addl"></a><h1>Additional Support</h1>
+<div class="chapter">
+@i additional.w
 </div>
 
 <a name="ix"></a><h1>Indices</h1>

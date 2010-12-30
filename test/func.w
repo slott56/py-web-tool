@@ -469,7 +469,7 @@ expected= """<html>
     <link rel="StyleSheet" href="pyweb.css" type="text/css" />
 </head>
 <body>
-<a href="#pyweb1">&rarr;<em>some code</em> (1)</a>
+    <a href="#pyweb1">&rarr;<em>some code</em> (1)</a>
 
 
     <a name="pyweb1"></a>

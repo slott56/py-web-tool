@@ -322,7 +322,7 @@ in an input file.  The </p>
 
 <p>Each <tt>@@o</tt> and <tt>@@d</tt> tag is followed by a chunk which is
 delited by <tt>@@{</tt> and <tt>@@}</tt> tags.  
-End the end of that chunk, there is an optional "major" tag.  
+At the end of that chunk, there is an optional "major" tag.  
 </p>
 <dl>
     <dt><tt>@@|</tt></dt>
@@ -402,7 +402,7 @@ print math.pi
 
 <h3>Document Overhead</h3>
 <p>The documents generally need some minimal overheads to work correctly.</p>
-<p>The <b>RST</b> weaver requires that you have <tt>..  include &lt;isoamsa.txt&gt;</tt></p>
+<p>The <b>RST</b> weaver requires that you have <tt>..  include:: &lt;isoamsa.txt&gt;</tt></p>
 <p>The <b>LaTeX</b> weaver requires that you have <tt>\usepackage{fancyvrb}</tt></p>
 
 <h3>Additional Features</h3>

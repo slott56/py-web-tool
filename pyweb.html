@@ -3,7 +3,7 @@
         "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-    <title>pyWeb Literate Programming 2.1</title>
+    <title>pyWeb Literate Programming 2.2</title>
     <meta name="generator" content="BBEdit 6.5.2" />
     <meta name="author" content="Steven F. Lott" />
     <link rel="StyleSheet" href="pyweb.css" type="text/css" />
@@ -12,7 +12,7 @@
 <div class="document">
 
 <!-- title page -->
-<p class="title"><em>pyWeb</em> 2.1</p>
+<p class="title"><em>pyWeb</em> 2.2</p>
 <p class="title">In Python, Yet Another Literate Programming Tool</p>
 <p class="subtitle"><a href="mailto:s_lott@yahoo.com">Steven F. Lott</a></p>
 
@@ -24,6 +24,7 @@
 <li><a href="#changes">Change Log</a></li>
 <li><a href="#arch">Architecture and Design Overview</a></li>
 <li><a href="#impl">Implementation</a></li>
+<li><a href="#addl">Additional Support</a></li>
 <li><a href="#ix">Indices</a></li>
 </ol>
 <hr />
@@ -354,7 +355,7 @@ in an input file.  The </p>
 
 <p>Each <tt>@o</tt> and <tt>@d</tt> tag is followed by a chunk which is
 delited by <tt>@{</tt> and <tt>@}</tt> tags.  
-End the end of that chunk, there is an optional "major" tag.  
+At the end of that chunk, there is an optional "major" tag.  
 </p>
 <dl>
     <dt><tt>@|</tt></dt>
@@ -434,7 +435,7 @@ print math.pi
 
 <h3>Document Overhead</h3>
 <p>The documents generally need some minimal overheads to work correctly.</p>
-<p>The <b>RST</b> weaver requires that you have <tt>..  include &lt;isoamsa.txt&gt;</tt></p>
+<p>The <b>RST</b> weaver requires that you have <tt>..  include:: &lt;isoamsa.txt&gt;</tt></p>
 <p>The <b>LaTeX</b> weaver requires that you have <tt>\usepackage{fancyvrb}</tt></p>
 
 <h3>Additional Features</h3>
@@ -697,7 +698,7 @@ Also, setting the command character can be done in the header.
 To support multiple projects, the header would probably be included with @i, indicating
 that embedding in the <tt>.w</tt> file isn't as useful as keeping it separate.
 See the <tt>weave.py</tt> example.</li>
-<li>Offer a basic HTML template that uses CDATA sections instead of quoting.
+<li>Offer a basic XHTML template that uses CDATA sections instead of quoting.
 Does require the standard quoting for the CDATA end tag.</li>
 <li>The <b>createUsedBy()</b> method can be done incrementally by 
 accumulating a list of forward references to chunks; as each
@@ -1390,7 +1391,7 @@ class Weaver( Emitter ):
     &quot;&quot;&quot;Format various types of XRef's and code blocks when weaving.&quot;&quot;&quot;
     extension= &quot;.rst&quot; # A subclass will provide their preferred extension
     code_indent= 4
-    <a href="#pyweb14">&rarr;<em>Weaver doOpen, doClose and doWrite overrides</em> (14)</a>
+    <a href="#pyweb14">&rarr;<em>Weaver doOpen, doClose, doWrite and resetIndent overrides</em> (14)</a>
     
     # Template Expansions.
     <a href="#pyweb15">&rarr;<em>Weaver quoted characters</em> (15)</a>
@@ -1420,7 +1421,7 @@ actual file created by the <span class="code">open()</span> method.
 
     <a name="pyweb14"></a>
     <!--line number 455-->
-    <p><em>Weaver doOpen, doClose and doWrite overrides</em> (14)&nbsp;=</p>
+    <p><em>Weaver doOpen, doClose, doWrite and resetIndent overrides</em> (14)&nbsp;=</p>
     <code><pre>
 
 def doOpen( self, aFile ):
@@ -1428,15 +1429,19 @@ def doOpen( self, aFile ):
     self.fileName= src + self.extension
     self.theFile= open( self.fileName, &quot;w&quot; )
     logger.info( &quot;Weaving %r&quot;, self.fileName )
+    self.resetIndent()
 def doClose( self ):
     self.theFile.close()
     logger.info( &quot;Wrote %d lines to %r&quot;, 
         self.linesWritten, self.fileName )
 def doWrite( self, text ):
     self.theFile.write( text )
+def resetIndent( self ):
+    self.context= [4]
+    self.log_indent.debug( &quot;resetIndent %r&quot;, self.context )
 
     </pre></code>
-    <p>&loz; <em>Weaver doOpen, doClose and doWrite overrides</em> (14).
+    <p>&loz; <em>Weaver doOpen, doClose, doWrite and resetIndent overrides</em> (14).
       Used by <a href="#pyweb13"><em>Weaver subclass of Emitter to create documentation with fancy markup and escapes</em>&nbsp;(13)</a>; <a href="#pyweb2"><em>Emitter class hierarchy - used to control output files</em>&nbsp;(2)</a>; <a href="#pyweb1"><em>Base Class Definitions</em>&nbsp;(1)</a>; <a href="#pyweb150"><em>pyweb.py</em>&nbsp;(150)</a>.
     </p>
 
@@ -1445,7 +1450,7 @@ def doWrite( self, text ):
 
 
     <a name="pyweb15"></a>
-    <!--line number 473-->
+    <!--line number 477-->
     <p><em>Weaver quoted characters</em> (15)&nbsp;=</p>
     <code><pre>
 
@@ -1472,7 +1477,7 @@ of possible additional processing.
 
 
     <a name="pyweb16"></a>
-    <!--line number 491-->
+    <!--line number 495-->
     <p><em>Weaver document chunk begin-end</em> (16)&nbsp;=</p>
     <code><pre>
 
@@ -1490,7 +1495,7 @@ def docEnd( self, aChunk ):
 <p>Each code chunk includes the places where the chunk is referenced</p>
 
     <a name="pyweb17"></a>
-    <!--line number 501-->
+    <!--line number 505-->
     <p><em>Weaver reference summary, used by code chunk and file chunk</em> (17)&nbsp;=</p>
     <code><pre>
 
@@ -1522,17 +1527,17 @@ refer to this chunk can be emitted.
 
 
     <a name="pyweb18"></a>
-    <!--line number 525-->
+    <!--line number 529-->
     <p><em>Weaver code chunk begin-end</em> (18)&nbsp;=</p>
     <code><pre>
 
-cb_template = string.Template( &quot;\n..  _`${seq}`:\n..  rubric:: ${fullName} (${seq})\n..  parsed-literal::\n    &quot; )
+cb_template = string.Template( &quot;\n..  _`${seq}`:\n..  rubric:: ${fullName} (${seq})\n..  parsed-literal::\n\n&quot; )
 def codeBegin( self, aChunk ):
     tex = self.cb_template.substitute( 
         seq= aChunk.seq,
         lineNumber= aChunk.lineNumber, 
         fullName= aChunk.fullName,
-        concat= &quot;=&quot; if aChunk.initial else &quot;+=&quot;, # LaTeX Separator
+        concat= &quot;=&quot; if aChunk.initial else &quot;+=&quot;, # RST Separator
     )
     self.write( tex )
 ce_template = string.Template( &quot;\n${references}\n&quot; )
@@ -1567,17 +1572,17 @@ for the intended file type.
 
 
     <a name="pyweb19"></a>
-    <!--line number 562-->
+    <!--line number 566-->
     <p><em>Weaver file chunk begin-end</em> (19)&nbsp;=</p>
     <code><pre>
 
-fb_template = string.Template( &quot;\n..  _`${seq}`:\n..  rubric:: ${fullName} (${seq})\n..  parsed-literal::\n    &quot; )
+fb_template = string.Template( &quot;\n..  _`${seq}`:\n..  rubric:: ${fullName} (${seq})\n..  parsed-literal::\n\n&quot; )
 def fileBegin( self, aChunk ):
     txt= self.fb_template.substitute(
         seq= aChunk.seq, 
         lineNumber= aChunk.lineNumber, 
         fullName= aChunk.fullName,
-        concat= &quot;=&quot; if aChunk.initial else &quot;+=&quot;, # HTML Separator
+        concat= &quot;=&quot; if aChunk.initial else &quot;+=&quot;, # RST Separator
     )
     self.write( txt )
 fe_template= string.Template( &quot;\n${references}\n&quot; )
@@ -1605,7 +1610,7 @@ for the intended file type.
 
 
     <a name="pyweb20"></a>
-    <!--line number 592-->
+    <!--line number 596-->
     <p><em>Weaver reference command output</em> (20)&nbsp;=</p>
     <code><pre>
 
@@ -1650,7 +1655,7 @@ to change the look of the final woven document.
 
 
     <a name="pyweb21"></a>
-    <!--line number 629-->
+    <!--line number 633-->
     <p><em>Weaver cross reference output methods</em> (21)&nbsp;=</p>
     <code><pre>
 
@@ -1678,7 +1683,7 @@ def xrefLine( self, name, refList ):
 
 
     <a name="pyweb22"></a>
-    <!--line number 648-->
+    <!--line number 652-->
     <p><em>Weaver cross reference output methods</em> (22)&nbsp;+=</p>
     <code><pre>
 
@@ -1727,7 +1732,7 @@ function pretty well in most <b>LaTeX</b> documents.
 
 
     <a name="pyweb23"></a>
-    <!--line number 689-->
+    <!--line number 693-->
     <p><em>LaTeX subclass of Weaver</em> (23)&nbsp;=</p>
     <code><pre>
 
@@ -1762,7 +1767,7 @@ italicised header, and opens a preformatted block.
   
 
     <a name="pyweb24"></a>
-    <!--line number 716-->
+    <!--line number 720-->
     <p><em>LaTeX code chunk begin</em> (24)&nbsp;=</p>
     <code><pre>
 
@@ -1787,7 +1792,7 @@ indentation.
   
 
     <a name="pyweb25"></a>
-    <!--line number 733-->
+    <!--line number 737-->
     <p><em>LaTeX code chunk end</em> (25)&nbsp;=</p>
     <code><pre>
 
@@ -1810,7 +1815,7 @@ start of a code chunk.
 
 
     <a name="pyweb26"></a>
-    <!--line number 748-->
+    <!--line number 752-->
     <p><em>LaTeX file output begin</em> (26)&nbsp;=</p>
     <code><pre>
 
@@ -1829,7 +1834,7 @@ invokes this chunk, and restores normal indentation.  </p>
 
 
     <a name="pyweb27"></a>
-    <!--line number 759-->
+    <!--line number 763-->
     <p><em>LaTeX file output end</em> (27)&nbsp;=</p>
     <code><pre>
 
@@ -1848,7 +1853,7 @@ referring block appears.  </p>
   
 
     <a name="pyweb28"></a>
-    <!--line number 770-->
+    <!--line number 774-->
     <p><em>LaTeX references summary at the end of a chunk</em> (28)&nbsp;=</p>
     <code><pre>
 
@@ -1876,7 +1881,7 @@ block.  Our one compromise is a thin space if the phrase
   
 
     <a name="pyweb29"></a>
-    <!--line number 790-->
+    <!--line number 794-->
     <p><em>LaTeX write a line of code</em> (29)&nbsp;=</p>
     <code><pre>
 
@@ -1899,7 +1904,7 @@ the current line of code.
 
 
     <a name="pyweb30"></a>
-    <!--line number 805-->
+    <!--line number 809-->
     <p><em>LaTeX reference to a chunk</em> (30)&nbsp;=</p>
     <code><pre>
 
@@ -1945,7 +1950,7 @@ with abbreviated (no name) cross references at the end of the chunk.</p>
 
 
     <a name="pyweb31"></a>
-    <!--line number 843-->
+    <!--line number 847-->
     <p><em>HTML subclass of Weaver</em> (31)&nbsp;=</p>
     <code><pre>
 
@@ -1970,7 +1975,7 @@ class HTML( Weaver ):
 
 
     <a name="pyweb32"></a>
-    <!--line number 860-->
+    <!--line number 864-->
     <p><em>HTML subclass of Weaver</em> (32)&nbsp;+=</p>
     <code><pre>
 
@@ -1990,7 +1995,7 @@ and HTML tags necessary to set the code off visually.
 
 
     <a name="pyweb33"></a>
-    <!--line number 872-->
+    <!--line number 876-->
     <p><em>HTML code chunk begin</em> (33)&nbsp;=</p>
     <code><pre>
 
@@ -2013,7 +2018,7 @@ write the list of chunks that reference this chunk.
 
 
     <a name="pyweb34"></a>
-    <!--line number 887-->
+    <!--line number 891-->
     <p><em>HTML code chunk end</em> (34)&nbsp;=</p>
     <code><pre>
 
@@ -2035,7 +2040,7 @@ and HTML tags necessary to set the code off visually.
 
 
     <a name="pyweb35"></a>
-    <!--line number 901-->
+    <!--line number 905-->
     <p><em>HTML output file begin</em> (35)&nbsp;=</p>
     <code><pre>
 
@@ -2057,7 +2062,7 @@ write the list of chunks that reference this chunk.
 
 
     <a name="pyweb36"></a>
-    <!--line number 915-->
+    <!--line number 919-->
     <p><em>HTML output file end</em> (36)&nbsp;=</p>
     <code><pre>
 
@@ -2078,7 +2083,7 @@ transitive references.
 </p>
 
     <a name="pyweb37"></a>
-    <!--line number 928-->
+    <!--line number 932-->
     <p><em>HTML references summary at the end of a chunk</em> (37)&nbsp;=</p>
     <code><pre>
 
@@ -2100,7 +2105,7 @@ as HTML.
 
 
     <a name="pyweb38"></a>
-    <!--line number 942-->
+    <!--line number 946-->
     <p><em>HTML write a line of code</em> (38)&nbsp;=</p>
     <code><pre>
 
@@ -2124,7 +2129,7 @@ surrounding source code.
 
 
     <a name="pyweb39"></a>
-    <!--line number 958-->
+    <!--line number 962-->
     <p><em>HTML reference to a chunk</em> (39)&nbsp;=</p>
     <code><pre>
 
@@ -2153,7 +2158,7 @@ refto_seq_template = string.Template(
 
 
     <a name="pyweb40"></a>
-    <!--line number 979-->
+    <!--line number 983-->
     <p><em>HTML simple cross reference markup</em> (40)&nbsp;=</p>
     <code><pre>
 
@@ -2175,7 +2180,7 @@ is included in the correct order with the other instances, but is bold and marke
 
 
     <a name="pyweb41"></a>
-    <!--line number 993-->
+    <!--line number 997-->
     <p><em>HTML write user id cross reference line</em> (41)&nbsp;=</p>
     <code><pre>
 
@@ -2196,7 +2201,7 @@ transitive references.
 </p>
 
     <a name="pyweb42"></a>
-    <!--line number 1006-->
+    <!--line number 1010-->
     <p><em>HTML short references summary at the end of a chunk</em> (42)&nbsp;=</p>
     <code><pre>
 
@@ -2236,7 +2241,7 @@ the prevailing indent for the block tangled as a replacement for the  <tt>@&lt;.
 
 
     <a name="pyweb43"></a>
-    <!--line number 1038-->
+    <!--line number 1042-->
     <p><em>Tangler subclass of Emitter to create source files with no markup</em> (43)&nbsp;=</p>
     <code><pre>
 
@@ -2258,6 +2263,10 @@ class Tangler( Emitter ):
 
 
 <p>The default for all tanglers is to create the named file.
+In order to handle paths, we will examine the file name for any <tt>"/"</tt>
+characters and perform the required <span class="code">os.makedirs</span> functions to
+allow creation of files with a path.  We don't use Windows <tt>"\"</tt>
+characters, but rely on Python to handle this automatically.
 </p>
 <p>This <span class="code">doClose()</span> method overrides the <span class="code">Emitter</span> class <span class="code">doClose()</span> method by closing the
 actual file created by open.
@@ -2268,12 +2277,22 @@ actual file created by open.
 
 
     <a name="pyweb44"></a>
-    <!--line number 1062-->
+    <!--line number 1070-->
     <p><em>Tangler doOpen, doClose and doWrite overrides</em> (44)&nbsp;=</p>
     <code><pre>
 
+def checkPath( self ):
+    if &quot;/&quot; in self.fileName:
+        dirname, _, _ = self.fileName.rpartition(&quot;/&quot;)
+        try:
+            os.makedirs( dirname )
+            logger.info( &quot;Creating %r&quot;, dirname )
+        except OSError, e:
+            # Already exists.  Could check for errno.EEXIST.
+            logger.debug( &quot;Exception %r creating %r&quot;, e, dirname )
 def doOpen( self, aFile ):
     self.fileName= aFile
+    self.checkPath()
     self.theFile= open( aFile, &quot;w&quot; )
     logger.info( &quot;Tangling %r&quot;, aFile )
 def doClose( self ):
@@ -2295,7 +2314,7 @@ prevailing indent at the start of the <tt>@&lt;</tt> reference command.</p>
 
 
     <a name="pyweb45"></a>
-    <!--line number 1081-->
+    <!--line number 1099-->
     <p><em>Tangler code chunk begin</em> (45)&nbsp;=</p>
     <code><pre>
 
@@ -2317,7 +2336,7 @@ setting.</p>
 
 
     <a name="pyweb46"></a>
-    <!--line number 1095-->
+    <!--line number 1113-->
     <p><em>Tangler code chunk end</em> (46)&nbsp;=</p>
     <code><pre>
 
@@ -2358,7 +2377,7 @@ are opened and closed.</p>
 
 
     <a name="pyweb47"></a>
-    <!--line number 1128-->
+    <!--line number 1146-->
     <p><em>Imports</em> (47)&nbsp;+=</p>
     <code><pre>
 import tempfile
@@ -2372,7 +2391,7 @@ import filecmp
 
 
     <a name="pyweb48"></a>
-    <!--line number 1134-->
+    <!--line number 1152-->
     <p><em>Tangler subclass which is make-sensitive</em> (48)&nbsp;=</p>
     <code><pre>
 
@@ -2398,13 +2417,13 @@ a "touch" if the new file is the same as the original.
 
 
     <a name="pyweb49"></a>
-    <!--line number 1152-->
+    <!--line number 1170-->
     <p><em>TanglerMake doOpen override, using a temporary file</em> (49)&nbsp;=</p>
     <code><pre>
 
 def doOpen( self, aFile ):
-    self.tempname= tempfile.mktemp()
-    self.theFile= open( self.tempname, &quot;w&quot; )
+    fd, self.tempname= tempfile.mkstemp( dir=os.curdir )
+    self.theFile= os.fdopen( fd, &quot;w&quot; )
     logger.info( &quot;Tangling %r&quot;, aFile )
 
     </pre></code>
@@ -2421,7 +2440,7 @@ and time) if nothing has changed.
 
 
     <a name="pyweb50"></a>
-    <!--line number 1167-->
+    <!--line number 1185-->
     <p><em>TanglerMake doClose override, comparing temporary to original</em> (50)&nbsp;=</p>
     <code><pre>
 
@@ -2430,16 +2449,17 @@ def doClose( self ):
     try:
         same= filecmp.cmp( self.tempname, self.fileName )
     except OSError,e:
-        same= 0
+        same= False # Doesn't exist.  Could check for errno.ENOENT
     if same:
         logger.info( &quot;No change to %r&quot;, self.fileName )
         os.remove( self.tempname )
     else:
-        # note the Windows requires the original file name be removed first
+        # Windows requires the original file name be removed first.
+        self.checkPath()
         try: 
             os.remove( self.fileName )
         except OSError,e:
-            pass
+            pass # Doesn't exist.  Could check for errno.ENOENT
         os.rename( self.tempname, self.fileName )
         logger.info( &quot;Wrote %d lines to %r&quot;,
             self.linesWritten, self.fileName )
@@ -2467,7 +2487,7 @@ a reference command, or the documentation source.
 
 
     <a name="pyweb51"></a>
-    <!--line number 1205-->
+    <!--line number 1224-->
     <p><em>Chunk class hierarchy - used to describe input chunks</em> (51)&nbsp;=</p>
     <code><pre>
 
@@ -2608,7 +2628,7 @@ isn't necessary.</li>
 
 
     <a name="pyweb52"></a>
-    <!--line number 1337-->
+    <!--line number 1356-->
     <p><em>Chunk class</em> (52)&nbsp;=</p>
     <code><pre>
 
@@ -2652,7 +2672,7 @@ class Chunk( object ):
 
 
     <a name="pyweb53"></a>
-    <!--line number 1373-->
+    <!--line number 1392-->
     <p><em>Chunk append a command</em> (53)&nbsp;=</p>
     <code><pre>
 
@@ -2683,7 +2703,7 @@ be a separate TextCommand because it will wind up indented.
 
 
     <a name="pyweb54"></a>
-    <!--line number 1396-->
+    <!--line number 1415-->
     <p><em>Chunk append text</em> (54)&nbsp;=</p>
     <code><pre>
 
@@ -2715,7 +2735,7 @@ of the <span class="code">Web</span> class to append an anonymous, unindexed chu
 
 
     <a name="pyweb55"></a>
-    <!--line number 1420-->
+    <!--line number 1439-->
     <p><em>Chunk add to the web</em> (55)&nbsp;=</p>
     <code><pre>
 
@@ -2738,7 +2758,7 @@ A Named Chunk using <tt>@[</tt> and <tt>@[</tt> creates text.
 
 
     <a name="pyweb56"></a>
-    <!--line number 1435-->
+    <!--line number 1454-->
     <p><em>Chunk superclass make Content definition</em> (56)&nbsp;=</p>
     <code><pre>
 
@@ -2772,7 +2792,7 @@ and accumulated as part of a cross reference for this <span class="code">Chunk</
 
 
     <a name="pyweb57"></a>
-    <!--line number 1461-->
+    <!--line number 1480-->
     <p><em>Chunk examination: starts with, matches pattern</em> (57)&nbsp;=</p>
     <code><pre>
 
@@ -2801,7 +2821,7 @@ The operation is delegated to each <span class="code">Command</span> instance wi
 
 
     <a name="pyweb58"></a>
-    <!--line number 1482-->
+    <!--line number 1501-->
     <p><em>Chunk search for user identifiers in each child command</em> (58)&nbsp;=</p>
     <code><pre>
 
@@ -2827,7 +2847,7 @@ context information.
 
 
     <a name="pyweb59"></a>
-    <!--line number 1499-->
+    <!--line number 1518-->
     <p><em>Chunk generate references from this Chunk</em> (59)&nbsp;=</p>
     <code><pre>
 
@@ -2853,7 +2873,7 @@ to either generate a simple parent or a transitive closure of all parents.
 
 
     <a name="pyweb60"></a>
-    <!--line number 1517-->
+    <!--line number 1536-->
     <p><em>Chunk references to this Chunk</em> (60)&nbsp;=</p>
     <code><pre>
 
@@ -2884,7 +2904,7 @@ context information.
 
 
     <a name="pyweb61"></a>
-    <!--line number 1539-->
+    <!--line number 1558-->
     <p><em>Chunk weave this Chunk into the documentation</em> (61)&nbsp;=</p>
     <code><pre>
 
@@ -2915,7 +2935,7 @@ problem with this program or the input file.</p>
 
 
     <a name="pyweb62"></a>
-    <!--line number 1562-->
+    <!--line number 1581-->
     <p><em>Chunk tangle this Chunk into a code file</em> (62)&nbsp;=</p>
     <code><pre>
 
@@ -2974,7 +2994,7 @@ is set by the Web by the <span class="code">webAdd()</span> method.</li>
 
 
     <a name="pyweb63"></a>
-    <!--line number 1613-->
+    <!--line number 1632-->
     <p><em>NamedChunk class</em> (63)&nbsp;=</p>
     <code><pre>
 
@@ -3007,7 +3027,7 @@ in a <tt>@d</tt> named chunk.  These are used by the <tt>@u</tt> cross reference
 
 
     <a name="pyweb64"></a>
-    <!--line number 1638-->
+    <!--line number 1657-->
     <p><em>NamedChunk user identifiers set and get</em> (64)&nbsp;=</p>
     <code><pre>
 
@@ -3031,7 +3051,7 @@ of the <span class="code">Web</span> class to append a named chunk.
 
 
     <a name="pyweb65"></a>
-    <!--line number 1654-->
+    <!--line number 1673-->
     <p><em>NamedChunk add to the web</em> (65)&nbsp;=</p>
     <code><pre>
 
@@ -3066,7 +3086,7 @@ context information.
 
 
     <a name="pyweb66"></a>
-    <!--line number 1681-->
+    <!--line number 1700-->
     <p><em>NamedChunk weave</em> (66)&nbsp;=</p>
     <code><pre>
 
@@ -3112,7 +3132,7 @@ context information.
 
 
     <a name="pyweb67"></a>
-    <!--line number 1719-->
+    <!--line number 1738-->
     <p><em>NamedChunk tangle into the source file</em> (67)&nbsp;=</p>
     <code><pre>
 
@@ -3160,7 +3180,7 @@ use different <span class="code">Weaver</span> methods for different kinds of te
 
 
     <a name="pyweb68"></a>
-    <!--line number 1759-->
+    <!--line number 1778-->
     <p><em>OutputChunk class</em> (68)&nbsp;=</p>
     <code><pre>
 
@@ -3188,7 +3208,7 @@ of the <span class="code">Web</span> class to append a file output chunk.
 
 
     <a name="pyweb69"></a>
-    <!--line number 1779-->
+    <!--line number 1798-->
     <p><em>OutputChunk add to the web</em> (69)&nbsp;=</p>
     <code><pre>
 
@@ -3217,7 +3237,7 @@ context information.
 
 
     <a name="pyweb70"></a>
-    <!--line number 1800-->
+    <!--line number 1819-->
     <p><em>OutputChunk weave</em> (70)&nbsp;=</p>
     <code><pre>
 
@@ -3241,7 +3261,7 @@ def weave( self, aWeb, aWeaver ):
 
 
     <a name="pyweb71"></a>
-    <!--line number 1816-->
+    <!--line number 1835-->
     <p><em>OutputChunk tangle</em> (71)&nbsp;=</p>
     <code><pre>
 
@@ -3279,7 +3299,7 @@ gathering, it is ignored for reporting purposes.</p>
 
 
     <a name="pyweb72"></a>
-    <!--line number 1845-->
+    <!--line number 1864-->
     <p><em>NamedDocumentChunk class</em> (72)&nbsp;=</p>
     <code><pre>
 
@@ -3310,7 +3330,7 @@ to insert the entire chunk.
 
 
     <a name="pyweb73"></a>
-    <!--line number 1868-->
+    <!--line number 1887-->
     <p><em>NamedDocumentChunk weave</em> (73)&nbsp;=</p>
     <code><pre>
 
@@ -3336,7 +3356,7 @@ def weaveShortReferenceTo( self, aWeb, aWeaver ):
 
 
     <a name="pyweb74"></a>
-    <!--line number 1886-->
+    <!--line number 1905-->
     <p><em>NamedDocumentChunk tangle</em> (74)&nbsp;=</p>
     <code><pre>
 
@@ -3369,7 +3389,7 @@ cross reference information and tangle a file or weave the final document.
 
 
     <a name="pyweb75"></a>
-    <!--line number 1911-->
+    <!--line number 1930-->
     <p><em>Command class hierarchy - used to describe individual commands</em> (75)&nbsp;=</p>
     <code><pre>
 
@@ -3443,7 +3463,7 @@ the command began, in <i>lineNumber</i>.</p>
 
 
     <a name="pyweb76"></a>
-    <!--line number 1976-->
+    <!--line number 1995-->
     <p><em>Command superclass</em> (76)&nbsp;=</p>
     <code><pre>
 
@@ -3465,7 +3485,7 @@ class Command( object ):
 
 
     <a name="pyweb77"></a>
-    <!--line number 1990-->
+    <!--line number 2009-->
     <p><em>Command analysis features: starts-with and Regular Expression search</em> (77)&nbsp;=</p>
     <code><pre>
 
@@ -3484,7 +3504,7 @@ def indent( self ):
 
 
     <a name="pyweb78"></a>
-    <!--line number 2001-->
+    <!--line number 2020-->
     <p><em>Command tangle and weave functions</em> (78)&nbsp;=</p>
     <code><pre>
 
@@ -3525,7 +3545,7 @@ or tangler.
 
 
     <a name="pyweb79"></a>
-    <!--line number 2034-->
+    <!--line number 2053-->
     <p><em>TextCommand class to contain a document text block</em> (79)&nbsp;=</p>
     <code><pre>
 
@@ -3579,7 +3599,7 @@ indentation is maintained.
 
 
     <a name="pyweb80"></a>
-    <!--line number 2080-->
+    <!--line number 2099-->
     <p><em>CodeCommand class to contain a program source code block</em> (80)&nbsp;=</p>
     <code><pre>
 
@@ -3623,7 +3643,7 @@ is illegal.  An exception is raised and processing stops.
 
 
     <a name="pyweb81"></a>
-    <!--line number 2116-->
+    <!--line number 2135-->
     <p><em>XrefCommand superclass for all cross-reference commands</em> (81)&nbsp;=</p>
     <code><pre>
 
@@ -3661,7 +3681,7 @@ the  <span class="code">formatXref()</span> method of the <span class="code">Xre
 
 
     <a name="pyweb82"></a>
-    <!--line number 2146-->
+    <!--line number 2165-->
     <p><em>FileXrefCommand class for an output file cross-reference</em> (82)&nbsp;=</p>
     <code><pre>
 
@@ -3694,7 +3714,7 @@ the <span class="code">formatXref()</span> method of the <span class="code">Xref
 
 
     <a name="pyweb83"></a>
-    <!--line number 2171-->
+    <!--line number 2190-->
     <p><em>MacroXrefCommand class for a named chunk cross-reference</em> (83)&nbsp;=</p>
     <code><pre>
 
@@ -3733,7 +3753,7 @@ algorithm, which is similar to the algorithm in the <span class="code">XrefComma
 
 
     <a name="pyweb84"></a>
-    <!--line number 2202-->
+    <!--line number 2221-->
     <p><em>UserIdXrefCommand class for a user identifier cross-reference</em> (84)&nbsp;=</p>
     <code><pre>
 
@@ -3782,7 +3802,7 @@ elided with a trailing <tt>'...'</tt>.</li>
 
 
     <a name="pyweb85"></a>
-    <!--line number 2243-->
+    <!--line number 2262-->
     <p><em>ReferenceCommand class for chunk references</em> (85)&nbsp;=</p>
     <code><pre>
 
@@ -3815,7 +3835,7 @@ to the chunk.
 
 
     <a name="pyweb86"></a>
-    <!--line number 2268-->
+    <!--line number 2287-->
     <p><em>ReferenceCommand resolve a referenced chunk name</em> (86)&nbsp;=</p>
     <code><pre>
 
@@ -3838,7 +3858,7 @@ Chinks to which it refers.
 
 
     <a name="pyweb87"></a>
-    <!--line number 2283-->
+    <!--line number 2302-->
     <p><em>ReferenceCommand refers to a chunk</em> (87)&nbsp;=</p>
     <code><pre>
 
@@ -3860,7 +3880,7 @@ this appropriately for the document type being woven.
 
 
     <a name="pyweb88"></a>
-    <!--line number 2297-->
+    <!--line number 2316-->
     <p><em>ReferenceCommand weave a reference to a chunk</em> (88)&nbsp;=</p>
     <code><pre>
 
@@ -3882,7 +3902,7 @@ inserts the chunk and resets the indent.
 
 
     <a name="pyweb89"></a>
-    <!--line number 2311-->
+    <!--line number 2330-->
     <p><em>ReferenceCommand tangle a referenced chunk</em> (89)&nbsp;=</p>
     <code><pre>
 
@@ -3942,7 +3962,7 @@ but merely creates a distinct class to facilitate writing <tt>except</tt> statem
 
 
     <a name="pyweb90"></a>
-    <!--line number 2363-->
+    <!--line number 2382-->
     <p><em>Error class - defines the errors raised</em> (90)&nbsp;=</p>
     <code><pre>
 
@@ -3970,7 +3990,7 @@ this object.
 
 
     <a name="pyweb91"></a>
-    <!--line number 2382-->
+    <!--line number 2401-->
     <p><em>Reference class hierarchy - references to a chunk</em> (91)&nbsp;=</p>
     <code><pre>
 
@@ -3992,7 +4012,7 @@ class Reference( object ):
 
 
     <a name="pyweb92"></a>
-    <!--line number 2395-->
+    <!--line number 2414-->
     <p><em>Reference class hierarchy - references to a chunk</em> (92)&nbsp;+=</p>
     <code><pre>
 
@@ -4016,7 +4036,7 @@ references to this Chunkn.</p>
 
 
     <a name="pyweb93"></a>
-    <!--line number 2410-->
+    <!--line number 2429-->
     <p><em>Reference class hierarchy - references to a chunk</em> (93)&nbsp;+=</p>
     <code><pre>
 
@@ -4092,7 +4112,7 @@ named chunk.</li>
 
 
     <a name="pyweb94"></a>
-    <!--line number 2477-->
+    <!--line number 2496-->
     <p><em>Web class - describes the overall "web" of chunks</em> (94)&nbsp;=</p>
     <code><pre>
 
@@ -4135,7 +4155,7 @@ to contain a more complete description of the chunk.
 
 
     <a name="pyweb95"></a>
-    <!--line number 2512-->
+    <!--line number 2531-->
     <p><em>Web construction methods used by Chunks and WebReader</em> (95)&nbsp;=</p>
     <code><pre>
 
@@ -4176,7 +4196,7 @@ details.
 
 
     <a name="pyweb96"></a>
-    <!--line number 2544-->
+    <!--line number 2563-->
     <p><em>Web add full chunk names, ignoring abbreviated names</em> (96)&nbsp;=</p>
     <code><pre>
 
@@ -4203,7 +4223,7 @@ tangling.
 </p>
 
     <a name="pyweb97"></a>
-    <!--line number 2563-->
+    <!--line number 2582-->
     <p><em>Web add an anonymous chunk</em> (97)&nbsp;=</p>
     <code><pre>
 
@@ -4242,7 +4262,7 @@ in the list.  Otherwise, it's false.
 
 
     <a name="pyweb98"></a>
-    <!--line number 2594-->
+    <!--line number 2613-->
     <p><em>Web add a named macro chunk</em> (98)&nbsp;=</p>
     <code><pre>
 
@@ -4293,7 +4313,7 @@ If the chunk list was empty, this is the first chunk, the
 
 
     <a name="pyweb99"></a>
-    <!--line number 2637-->
+    <!--line number 2656-->
     <p><em>Web add an output file definition chunk</em> (99)&nbsp;=</p>
     <code><pre>
 
@@ -4341,7 +4361,7 @@ key is the full name.</li>
 
 
     <a name="pyweb100"></a>
-    <!--line number 2677-->
+    <!--line number 2696-->
     <p><em>Web Chunk name resolution methods</em> (100)&nbsp;=</p>
     <code><pre>
 
@@ -4374,7 +4394,7 @@ catch multiple errors in a single run of <em>pyWeb</em>.</p>
  
 
     <a name="pyweb101"></a>
-    <!--line number 2702-->
+    <!--line number 2721-->
     <p><em>Web Chunk name resolution methods</em> (101)&nbsp;+=</p>
     <code><pre>
 
@@ -4419,7 +4439,7 @@ reference, it also assures that all chunks are used exactly once.</p>
 
 
     <a name="pyweb102"></a>
-    <!--line number 2739-->
+    <!--line number 2758-->
     <p><em>Web Chunk cross reference methods</em> (102)&nbsp;=</p>
     <code><pre>
 
@@ -4446,7 +4466,7 @@ chunk is exactly one.  We don't gracefully tolerate multiple references to
 a chunk or unreferenced chunks.</p>
 
     <a name="pyweb103"></a>
-    <!--line number 2758-->
+    <!--line number 2777-->
     <p><em>Web Chunk check reference counts are all one</em> (103)&nbsp;=</p>
     <code><pre>
 
@@ -4486,7 +4506,7 @@ is a list of chunks referenced but not defined.
 
 
     <a name="pyweb104"></a>
-    <!--line number 2789-->
+    <!--line number 2808-->
     <p><em>Web Chunk cross reference methods</em> (104)&nbsp;+=</p>
     <code><pre>
 
@@ -4512,7 +4532,7 @@ but applies it to the <i>named</i> mapping.
 
 
     <a name="pyweb105"></a>
-    <!--line number 2807-->
+    <!--line number 2826-->
     <p><em>Web Chunk cross reference methods</em> (105)&nbsp;+=</p>
     <code><pre>
 
@@ -4553,7 +4573,7 @@ updates the <span class="code">Web</span> class cross reference information.</li
 
 
     <a name="pyweb106"></a>
-    <!--line number 2840-->
+    <!--line number 2859-->
     <p><em>Web Chunk cross reference methods</em> (106)&nbsp;+=</p>
     <code><pre>
 
@@ -4585,7 +4605,7 @@ list as a default action.
  
 
     <a name="pyweb107"></a>
-    <!--line number 2864-->
+    <!--line number 2883-->
     <p><em>collect all user identifiers from a given map into ux</em> (107)&nbsp;=</p>
     <code><pre>
 
@@ -4609,7 +4629,7 @@ this is appended to the sequence of chunks that reference the original user iden
 
 
     <a name="pyweb108"></a>
-    <!--line number 2879-->
+    <!--line number 2898-->
     <p><em>find user identifier usage and update ux from the given map</em> (108)&nbsp;=</p>
     <code><pre>
 
@@ -4639,7 +4659,7 @@ typically begin with '%' or '\'.
 
 
     <a name="pyweb109"></a>
-    <!--line number 2900-->
+    <!--line number 2919-->
     <p><em>Web determination of the language from the first chunk</em> (109)&nbsp;=</p>
     <code><pre>
 
@@ -4669,7 +4689,7 @@ chunk.  This transitive tangling of an individual chunk is handled by the
 
 
     <a name="pyweb110"></a>
-    <!--line number 2922-->
+    <!--line number 2941-->
     <p><em>Web tangle the output files</em> (110)&nbsp;=</p>
     <code><pre>
 
@@ -4707,7 +4727,7 @@ The decision is delegated to the referenced chunk.
 
 
     <a name="pyweb111"></a>
-    <!--line number 2952-->
+    <!--line number 2971-->
     <p><em>Web weave the output document</em> (111)&nbsp;=</p>
     <code><pre>
 
@@ -4805,7 +4825,7 @@ the input into tokens.</li>
 
 
     <a name="pyweb112"></a>
-    <!--line number 3042-->
+    <!--line number 3061-->
     <p><em>WebReader class - parses the input file, building the Web structure</em> (112)&nbsp;=</p>
     <code><pre>
 
@@ -4855,7 +4875,7 @@ class WebReader( object ):
 
 
     <a name="pyweb113"></a>
-    <!--line number 3083-->
+    <!--line number 3102-->
     <p><em>WebReader fluent property-like methods</em> (113)&nbsp;=</p>
     <code><pre>
 
@@ -4897,7 +4917,7 @@ So we use a queue of tokens and a stack for pushback.
 
 
     <a name="pyweb114"></a>
-    <!--line number 3116-->
+    <!--line number 3135-->
     <p><em>WebReader tokenize the input</em> (114)&nbsp;=</p>
     <code><pre>
 
@@ -4938,7 +4958,7 @@ to correctly reference the original input files.
 
 
     <a name="pyweb115"></a>
-    <!--line number 3149-->
+    <!--line number 3168-->
     <p><em>WebReader location in the input stream</em> (115)&nbsp;=</p>
     <code><pre>
 
@@ -4973,7 +4993,7 @@ by <span class="code">load()</span> is to treat the command a text, but also iss
 
 
     <a name="pyweb116"></a>
-    <!--line number 3176-->
+    <!--line number 3195-->
     <p><em>WebReader handle a command string</em> (116)&nbsp;=</p>
     <code><pre>
 
@@ -4999,7 +5019,7 @@ the major commands that partition the input into separate <span class="code">Chu
 </p>
 
     <a name="pyweb117"></a>
-    <!--line number 3194-->
+    <!--line number 3213-->
     <p><em>major commands segment the input into separate Chunks</em> (117)&nbsp;=</p>
     <code><pre>
 
@@ -5033,7 +5053,7 @@ will handle the parsing into quoted fields.
 
 
     <a name="pyweb118"></a>
-    <!--line number 3219-->
+    <!--line number 3238-->
     <p><em>Imports</em> (118)&nbsp;+=</p>
     <code><pre>
 import shlex
@@ -5046,7 +5066,7 @@ import shlex
 
 
     <a name="pyweb119"></a>
-    <!--line number 3224-->
+    <!--line number 3243-->
     <p><em>start an OutputChunk, adding it to the web</em> (119)&nbsp;=</p>
     <code><pre>
 
@@ -5080,7 +5100,7 @@ end the chunk.
 
 
     <a name="pyweb120"></a>
-    <!--line number 3249-->
+    <!--line number 3268-->
     <p><em>start a NamedChunk or NamedDocumentChunk, adding it to the web</em> (120)&nbsp;=</p>
     <code><pre>
 
@@ -5117,7 +5137,7 @@ of the file so that processing can resume with an anonymous <span class="code">C
 
 
     <a name="pyweb121"></a>
-    <!--line number 3277-->
+    <!--line number 3296-->
     <p><em>import another file</em> (121)&nbsp;=</p>
     <code><pre>
 
@@ -5164,7 +5184,7 @@ For the base <span class="code">Chunk</span> class, this would be false, but for
 
 
     <a name="pyweb122"></a>
-    <!--line number 3315-->
+    <!--line number 3334-->
     <p><em>finish a chunk, start a new Chunk adding it to the web</em> (122)&nbsp;=</p>
     <code><pre>
 
@@ -5183,7 +5203,7 @@ the minor commands that add <span class="code">Command</span> instances to the c
 
 
     <a name="pyweb123"></a>
-    <!--line number 3325-->
+    <!--line number 3344-->
     <p><em>minor commands add Commands to the current Chunk</em> (123)&nbsp;=</p>
     <code><pre>
 
@@ -5219,7 +5239,7 @@ For the base <span class="code">Chunk</span> class, this would be false, but for
 
 
     <a name="pyweb124"></a>
-    <!--line number 3352-->
+    <!--line number 3371-->
     <p><em>assign user identifiers to the current chunk</em> (124)&nbsp;=</p>
     <code><pre>
 
@@ -5244,7 +5264,7 @@ tokens from the input, the middle token is the referenced name.
 
 
     <a name="pyweb125"></a>
-    <!--line number 3368-->
+    <!--line number 3387-->
     <p><em>add a reference command to the current chunk</em> (125)&nbsp;=</p>
     <code><pre>
 
@@ -5281,7 +5301,7 @@ is append to the current <span class="code">Chunk</span>.</li>
 
 
     <a name="pyweb126"></a>
-    <!--line number 3396-->
+    <!--line number 3415-->
     <p><em>add an expression command to the current chunk</em> (126)&nbsp;=</p>
     <code><pre>
 
@@ -5313,7 +5333,7 @@ create a new, empty <span class="code">TextCommand</span>.
 </p>
 
     <a name="pyweb127"></a>
-    <!--line number 3419-->
+    <!--line number 3438-->
     <p><em>double at-sign replacement, append this character to previous TextCommand</em> (127)&nbsp;=</p>
     <code><pre>
 
@@ -5350,7 +5370,7 @@ test output into the final document via the @i command.
 
 
     <a name="pyweb128"></a>
-    <!--line number 3447-->
+    <!--line number 3466-->
     <p><em>WebReader load the web</em> (128)&nbsp;=</p>
     <code><pre>
 
@@ -5385,7 +5405,7 @@ def load( self ):
 
 
     <a name="pyweb129"></a>
-    <!--line number 3474-->
+    <!--line number 3493-->
     <p><em>other command-like sequences are appended as a TextCommand</em> (129)&nbsp;=</p>
     <code><pre>
 
@@ -5408,7 +5428,7 @@ command character.
 
 
     <a name="pyweb130"></a>
-    <!--line number 3488-->
+    <!--line number 3507-->
     <p><em>WebReader command literals</em> (130)&nbsp;=</p>
     <code><pre>
 
@@ -5473,7 +5493,7 @@ that defines the application options, inputs and results.</p>
 
 
     <a name="pyweb131"></a>
-    <!--line number 3544-->
+    <!--line number 3563-->
     <p><em>Action class hierarchy - used to describe basic actions of the application</em> (131)&nbsp;=</p>
     <code><pre>
 
@@ -5527,7 +5547,7 @@ anOp()
 
 
     <a name="pyweb132"></a>
-    <!--line number 3589-->
+    <!--line number 3608-->
     <p><em>Action superclass has common features of all actions</em> (132)&nbsp;=</p>
     <code><pre>
 
@@ -5553,7 +5573,7 @@ For the superclass, it merely logs a message.  This is overridden
 by a subclass.</p>
 
     <a name="pyweb133"></a>
-    <!--line number 3607-->
+    <!--line number 3626-->
     <p><em>Action call method actually performs the action</em> (133)&nbsp;=</p>
     <code><pre>
 
@@ -5572,7 +5592,7 @@ statistics for this action.
 </p>
 
     <a name="pyweb134"></a>
-    <!--line number 3617-->
+    <!--line number 3636-->
     <p><em>Action final summary method</em> (134)&nbsp;=</p>
     <code><pre>
 
@@ -5607,7 +5627,7 @@ an <span class="code">append()</span> method that is used to construct the seque
 
 
     <a name="pyweb135"></a>
-    <!--line number 3644-->
+    <!--line number 3663-->
     <p><em>ActionSequence subclass that holds a sequence of other actions</em> (135)&nbsp;=</p>
     <code><pre>
 
@@ -5636,7 +5656,7 @@ sub-action.</p>
 
 
     <a name="pyweb136"></a>
-    <!--line number 3665-->
+    <!--line number 3684-->
     <p><em>ActionSequence call method delegates the sequence of ations</em> (136)&nbsp;=</p>
     <code><pre>
 
@@ -5656,7 +5676,7 @@ we delegate sequence related actions directly to the underlying sequence.</p>
 
 
     <a name="pyweb137"></a>
-    <!--line number 3676-->
+    <!--line number 3695-->
     <p><em>ActionSequence append adds a new action to the sequence</em> (137)&nbsp;=</p>
     <code><pre>
 
@@ -5674,7 +5694,7 @@ statistics for each step of this action.
 </p>
 
     <a name="pyweb138"></a>
-    <!--line number 3685-->
+    <!--line number 3704-->
     <p><em>ActionSequence summary summarizes each step</em> (138)&nbsp;=</p>
     <code><pre>
 
@@ -5708,7 +5728,7 @@ also an element of the "do everything" macro.</p>
 
 
     <a name="pyweb139"></a>
-    <!--line number 3710-->
+    <!--line number 3729-->
     <p><em>WeaveAction subclass initiates the weave action</em> (139)&nbsp;=</p>
     <code><pre>
 
@@ -5738,7 +5758,7 @@ is never defined.</p>
 
 
     <a name="pyweb140"></a>
-    <!--line number 3731-->
+    <!--line number 3750-->
     <p><em>WeaveAction call method does weaving of the document file</em> (140)&nbsp;=</p>
     <code><pre>
 
@@ -5766,7 +5786,7 @@ statistics for the weave action.
 </p>
 
     <a name="pyweb141"></a>
-    <!--line number 3750-->
+    <!--line number 3769-->
     <p><em>WeaveAction summary method provides line counts</em> (141)&nbsp;=</p>
     <code><pre>
 
@@ -5802,7 +5822,7 @@ also an element of the "do everything" macro.</p>
 
 
     <a name="pyweb142"></a>
-    <!--line number 3777-->
+    <!--line number 3796-->
     <p><em>TangleAction subclass initiates the tangle action</em> (142)&nbsp;=</p>
     <code><pre>
 
@@ -5827,7 +5847,7 @@ with any of <tt>@d</tt> or <tt>@o</tt>  and use <tt>@{</tt> <tt>@}</tt> brackets
 
 
     <a name="pyweb143"></a>
-    <!--line number 3793-->
+    <!--line number 3812-->
     <p><em>TangleAction call method does tangling of the output files</em> (143)&nbsp;=</p>
     <code><pre>
 
@@ -5852,7 +5872,7 @@ statistics for the tangle action.
 </p>
 
     <a name="pyweb144"></a>
-    <!--line number 3809-->
+    <!--line number 3828-->
     <p><em>TangleAction summary method provides total lines tangled</em> (144)&nbsp;=</p>
     <code><pre>
 
@@ -5884,7 +5904,7 @@ this class is part of any of the weave, tangle and "do everything" action.</p>
 
 
     <a name="pyweb145"></a>
-    <!--line number 3832-->
+    <!--line number 3851-->
     <p><em>LoadAction subclass loads the document web</em> (145)&nbsp;=</p>
     <code><pre>
 
@@ -5923,7 +5943,7 @@ chunk reference cannot be resolved to a named chunk.</li>
 
 
     <a name="pyweb146"></a>
-    <!--line number 3862-->
+    <!--line number 3881-->
     <p><em>LoadAction call method loads the input files</em> (146)&nbsp;=</p>
     <code><pre>
 
@@ -5949,7 +5969,7 @@ statistics for the load action.
 </p>
 
     <a name="pyweb147"></a>
-    <!--line number 3879-->
+    <!--line number 3898-->
     <p><em>LoadAction summary provides lines read</em> (147)&nbsp;=</p>
     <code><pre>
 
@@ -5975,7 +5995,7 @@ a global, default, logger.
 
 
     <a name="pyweb148"></a>
-    <!--line number 3897-->
+    <!--line number 3916-->
     <p><em>Module Initialization of global variables</em> (148)&nbsp;=</p>
     <code><pre>
 
@@ -5994,7 +6014,7 @@ Application.
 
 
     <a name="pyweb149"></a>
-    <!--line number 3907-->
+    <!--line number 3926-->
     <p><em>Module Initialization of global variables</em> (149)&nbsp;+=</p>
     <code><pre>
 
@@ -6018,15 +6038,15 @@ weavers = {
 <p>The <em>pyWeb</em> application file is shown below:</p>
 
 <a name="pyweb150"></a>
-    <!--line number 3923-->
+    <!--line number 3942-->
     <p><tt>pyweb.py</tt> (150)&nbsp;=</p>
     <code><pre>
-<a href="#pyweb152">&rarr;<em>Overheads</em> (152)</a><a href="#pyweb153">(153)</a><a href="#pyweb154">(154)</a><a href="#pyweb155">(155)</a>
-<a href="#pyweb12">&rarr;<em>Imports</em> (12)</a><a href="#pyweb47">(47)</a><a href="#pyweb118">(118)</a><a href="#pyweb151">(151)</a><a href="#pyweb156">(156)</a>
-<a href="#pyweb1">&rarr;<em>Base Class Definitions</em> (1)</a>
-<a href="#pyweb157">&rarr;<em>Application Class</em> (157)</a>
-<a href="#pyweb148">&rarr;<em>Module Initialization of global variables</em> (148)</a><a href="#pyweb149">(149)</a>
-<a href="#pyweb161">&rarr;<em>Interface Functions</em> (161)</a>
+    <a href="#pyweb152">&rarr;<em>Overheads</em> (152)</a>    <a href="#pyweb153">(153)</a>    <a href="#pyweb154">(154)</a>    <a href="#pyweb155">(155)</a>    
+    <a href="#pyweb12">&rarr;<em>Imports</em> (12)</a>    <a href="#pyweb47">(47)</a>    <a href="#pyweb118">(118)</a>    <a href="#pyweb151">(151)</a>    <a href="#pyweb156">(156)</a>    
+    <a href="#pyweb1">&rarr;<em>Base Class Definitions</em> (1)</a>    
+    <a href="#pyweb157">&rarr;<em>Application Class</em> (157)</a>    
+    <a href="#pyweb148">&rarr;<em>Module Initialization of global variables</em> (148)</a>    <a href="#pyweb149">(149)</a>    
+    <a href="#pyweb161">&rarr;<em>Interface Functions</em> (161)</a>    
 </pre></code>
     <p>&loz; <tt>pyweb.py</tt> (150).
     
@@ -6066,7 +6086,7 @@ as well as log messages.</li>
 
 
     <a name="pyweb151"></a>
-    <!--line number 3963-->
+    <!--line number 3982-->
     <p><em>Imports</em> (151)&nbsp;+=</p>
     <code><pre>
 import sys
@@ -6092,7 +6112,7 @@ file as standard input.
 
 
     <a name="pyweb152"></a>
-    <!--line number 3981-->
+    <!--line number 4000-->
     <p><em>Overheads</em> (152)&nbsp;=</p>
     <code><pre>
 #!/usr/bin/env python
@@ -6109,7 +6129,7 @@ modules.  That means at least Python 2.6.</p>
 
 
     <a name="pyweb153"></a>
-    <!--line number 3989-->
+    <!--line number 4008-->
     <p><em>Overheads</em> (153)&nbsp;+=</p>
     <code><pre>
 from __future__ import print_function
@@ -6128,7 +6148,7 @@ detailed usage information.
 
 
     <a name="pyweb154"></a>
-    <!--line number 3999-->
+    <!--line number 4018-->
     <p><em>Overheads</em> (154)&nbsp;+=</p>
     <code><pre>
 &quot;&quot;&quot;pyWeb Literate Programming - tangle and weave tool.
@@ -6172,14 +6192,14 @@ source files.</p>
 
 
     <a name="pyweb155"></a>
-    <!--line number 4034-->
+    <!--line number 4053-->
     <p><em>Overheads</em> (155)&nbsp;+=</p>
     <code><pre>
 __version__ = &quot;&quot;&quot;$Revision$&quot;&quot;&quot;
 
 ### DO NOT EDIT THIS FILE!
-### It was created by /Users/slott/Documents/Projects/pyWeb-2.1/pyweb/pyweb.py, __version__='$Revision$'.
-### From source pyweb.w modified Sat Feb 27 07:18:21 2010.
+### It was created by pyweb.py, __version__='$Revision$'.
+### From source pyweb.w modified Thu Dec 30 06:56:16 2010.
 ### In working directory '/Users/slott/Documents/Projects/pyWeb-2.1/pyweb'.
 
     </pre></code>
@@ -6235,7 +6255,7 @@ expected default behavior for this module when it is used as the main program.
 
 
     <a name="pyweb156"></a>
-    <!--line number 4088-->
+    <!--line number 4107-->
     <p><em>Imports</em> (156)&nbsp;+=</p>
     <code><pre>
 import optparse
@@ -6248,7 +6268,7 @@ import optparse
 
 
     <a name="pyweb157"></a>
-    <!--line number 4093-->
+    <!--line number 4112-->
     <p><em>Application Class</em> (157)&nbsp;=</p>
     <code><pre>
 
@@ -6292,7 +6312,7 @@ input file.</i>
 
 
     <a name="pyweb158"></a>
-    <!--line number 4129-->
+    <!--line number 4148-->
     <p><em>Application default options</em> (158)&nbsp;=</p>
     <code><pre>
 
@@ -6320,7 +6340,7 @@ provide default values, and the parse the command-line arguments.
 </p>
 
     <a name="pyweb159"></a>
-    <!--line number 4148-->
+    <!--line number 4167-->
     <p><em>Application parse command line</em> (159)&nbsp;=</p>
     <code><pre>
 
@@ -6383,7 +6403,7 @@ outermost main program.</p>
 
 
     <a name="pyweb160"></a>
-    <!--line number 4203-->
+    <!--line number 4222-->
     <p><em>Application class process all files</em> (160)&nbsp;=</p>
     <code><pre>
 
@@ -6424,7 +6444,7 @@ This two-step process allows for some dependency injection to customize argument
 
 
     <a name="pyweb161"></a>
-    <!--line number 4236-->
+    <!--line number 4255-->
     <p><em>Interface Functions</em> (161)&nbsp;=</p>
     <code><pre>
 
@@ -6477,33 +6497,33 @@ to be omitted from the tangle operation.
 </p>
 
 <a name="pyweb162"></a>
-    <!--line number 4281-->
+    <!--line number 4300-->
     <p><tt>tangle.py</tt> (162)&nbsp;=</p>
     <code><pre>
-#!/usr/bin/env python
-&quot;&quot;&quot;Sample tangle.py script.&quot;&quot;&quot;
-import pyweb
-import logging, sys
-
-logging.basicConfig( stream=sys.stderr, level=logging.INFO )
-logger= logging.getLogger(__file__)
-
-w= pyweb.Web( &quot;pyweb.w&quot; ) # The web we'll work on.
-
-permitList= ['@i']
-commandChar= '@'
-load= pyweb.LoadAction()
-load.webReader= pyweb.WebReader( command=commandChar, permit=permitList )
-load.webReader.web( w ).source( &quot;pyweb.w&quot; )
-load.web= w
-load()
-logger.info( load.summary() )
-
-tangle= pyweb.TangleAction()
-tangle.theTangler= pyweb.TanglerMake()
-tangle.web= w
-tangle()
-logger.info( tangle.summary() )
+    #!/usr/bin/env python
+    &quot;&quot;&quot;Sample tangle.py script.&quot;&quot;&quot;
+    import pyweb
+    import logging, sys
+    
+    logging.basicConfig( stream=sys.stderr, level=logging.INFO )
+    logger= logging.getLogger(__file__)
+    
+    w= pyweb.Web( &quot;pyweb.w&quot; ) # The web we'll work on.
+    
+    permitList= ['@i']
+    commandChar= '@'
+    load= pyweb.LoadAction()
+    load.webReader= pyweb.WebReader( command=commandChar, permit=permitList )
+    load.webReader.web( w ).source( &quot;pyweb.w&quot; )
+    load.web= w
+    load()
+    logger.info( load.summary() )
+    
+    tangle= pyweb.TangleAction()
+    tangle.theTangler= pyweb.TanglerMake()
+    tangle.web= w
+    tangle()
+    logger.info( tangle.summary() )
 </pre></code>
     <p>&loz; <tt>tangle.py</tt> (162).
     
@@ -6518,12 +6538,12 @@ to define a customized set of templates for a different markup language.
 <p>A customized weaver generally has three parts.</p>
 
 <a name="pyweb163"></a>
-    <!--line number 4315-->
+    <!--line number 4334-->
     <p><tt>weave.py</tt> (163)&nbsp;=</p>
     <code><pre>
-<a href="#pyweb164">&rarr;<em>weave.py overheads for correct operation of a script</em> (164)</a>
-<a href="#pyweb165">&rarr;<em>weave.py weaver definition to customize the Weaver being used</em> (165)</a>
-<a href="#pyweb166">&rarr;<em>weaver.py actions to load and weave the document</em> (166)</a>
+    <a href="#pyweb164">&rarr;<em>weave.py overheads for correct operation of a script</em> (164)</a>    
+    <a href="#pyweb165">&rarr;<em>weave.py weaver definition to customize the Weaver being used</em> (165)</a>    
+    <a href="#pyweb166">&rarr;<em>weaver.py actions to load and weave the document</em> (166)</a>    
 </pre></code>
     <p>&loz; <tt>weave.py</tt> (163).
     
@@ -6532,7 +6552,7 @@ to define a customized set of templates for a different markup language.
 
 
     <a name="pyweb164"></a>
-    <!--line number 4321-->
+    <!--line number 4340-->
     <p><em>weave.py overheads for correct operation of a script</em> (164)&nbsp;=</p>
     <code><pre>
 #!/usr/bin/env python
@@ -6551,7 +6571,7 @@ logger= logging.getLogger(__file__)
 
 
     <a name="pyweb165"></a>
-    <!--line number 4331-->
+    <!--line number 4350-->
     <p><em>weave.py weaver definition to customize the Weaver being used</em> (165)&nbsp;=</p>
     <code><pre>
 
@@ -6606,7 +6626,7 @@ class MyHTML( pyweb.HTML ):
 
 
     <a name="pyweb166"></a>
-    <!--line number 4377-->
+    <!--line number 4396-->
     <p><em>weaver.py actions to load and weave the document</em> (166)&nbsp;=</p>
     <code><pre>
 
@@ -6637,28 +6657,28 @@ logger.info( weave.summary() )
 <p>In order to support a pleasant installation, the <tt>setup.py</tt> file is helpful.</p>
 
 <a name="pyweb167"></a>
-    <!--line number 4400-->
+    <!--line number 4419-->
     <p><tt>setup.py</tt> (167)&nbsp;=</p>
     <code><pre>
-#!/usr/bin/env python
-&quot;&quot;&quot;Setup for pyWeb.&quot;&quot;&quot;
-
-from distutils.core import setup
-
-setup(name='pyweb',
-      version='2.1',
-      description='pyWeb 2.1: In Python, Yet Another Literate Programming Tool',
-      author='S. Lott',
-      author_email='s_lott@yahoo.com',
-      url='http://slott-softwarearchitect.blogspot.com/',
-      py_modules=['pyweb'],
-      classifiers=[
-      'Intended Audience :: Developers',
-      'Topic :: Documentation',
-      'Topic :: Software Development :: Documentation', 
-      'Topic :: Text Processing :: Markup',
-      ]
-   )
+    #!/usr/bin/env python
+    &quot;&quot;&quot;Setup for pyWeb.&quot;&quot;&quot;
+    
+    from distutils.core import setup
+    
+    setup(name='pyweb',
+          version='2.2',
+          description='pyWeb 2.2: In Python, Yet Another Literate Programming Tool',
+          author='S. Lott',
+          author_email='s_lott@yahoo.com',
+          url='http://slott-softwarearchitect.blogspot.com/',
+          py_modules=['pyweb'],
+          classifiers=[
+          'Intended Audience :: Developers',
+          'Topic :: Documentation',
+          'Topic :: Software Development :: Documentation', 
+          'Topic :: Text Processing :: Markup',
+          ]
+       )
 </pre></code>
     <p>&loz; <tt>setup.py</tt> (167).
     
@@ -6672,11 +6692,12 @@ We use a simple inclusion to augment the default manifest rules.
 </p>
 
 <a name="pyweb168"></a>
-    <!--line number 4428-->
+    <!--line number 4447-->
     <p><tt>MANIFEST.in</tt> (168)&nbsp;=</p>
     <code><pre>
-include *.w *.css *.html
-include test/*.w test/*.css test/*.html test/*.py
+    include *.w *.css *.html
+    include test/*.w test/*.css test/*.html test/*.py
+    include jedit/*
 </pre></code>
     <p>&loz; <tt>MANIFEST.in</tt> (168).
     
@@ -6686,77 +6707,314 @@ include test/*.w test/*.css test/*.html test/*.py
 <p>Generally, a <tt>README</tt> is also considered to be good form.</p>
 
 <a name="pyweb169"></a>
-    <!--line number 4435-->
+    <!--line number 4455-->
     <p><tt>README</tt> (169)&nbsp;=</p>
     <code><pre>
-pyWeb 2.1: In Python, Yet Another Literate Programming Tool
-
-Literate programming is an attempt to reconcile the opposing needs
-of clear presentation to people with the technical issues of 
-creating code that will work with our current set of tools.
-
-Presentation to people requires extensive and sophisticated typesetting
-techniques.  Further, the &quot;narrative arc&quot; of a presentation may not 
-follow the source code as layed out for the compiler.
-
-pyWeb is a literate programming tool that combines the actions
-of weaving a document with tangling source files.
-It is independent of any particular document markup or source language.
-Is uses a simple set of markup tags to define chunks of code and 
-documentation.
-
-The pyweb.w file is the source for the various pyweb module and script files, plus
-the pyweb.html file.  The various source code files are created by applying a 
-tangle operation to the .w file.  The final documentation is created by
-applying a weave operation to the .w file.
-
-Installation
--------------
-
-::
-
-    python setup.py install
-
-This will install the pyweb module.  
-
-Authoring
----------
-
-The pyweb document describes the simple markup used to define code chunks
-and assemble those code chunks into a coherent document as well as working code.
-
-Operation
----------
-
-You can then run pyweb with
-
-::
-
-    python -m pyweb pyweb.w 
-
-This will create the various output files from the source .w file.
-
--   pyweb.html is the final woven document.
-
--   pyweb.py, tangle.py, weave.py, readme, setup.py and MANIFEST.in are tangled output files.
-
-Testing
--------
-
-The test directory includes pyweb_test.w, which will create a 
-complete test suite.
-
-This weaves a pyweb_test.html file.
-
-This tangles several test modules:  test.py, test_tangler.py, test_weaver.py,
-test_loader.py and test_unit.py.  Running the test.py module will include and
-execute all 71 tests.
-
+    pyWeb 2.2: In Python, Yet Another Literate Programming Tool
+    
+    Literate programming is an attempt to reconcile the opposing needs
+    of clear presentation to people with the technical issues of 
+    creating code that will work with our current set of tools.
+    
+    Presentation to people requires extensive and sophisticated typesetting
+    techniques.  Further, the &quot;narrative arc&quot; of a presentation may not 
+    follow the source code as layed out for the compiler.
+    
+    pyWeb is a literate programming tool that combines the actions
+    of weaving a document with tangling source files.
+    It is independent of any particular document markup or source language.
+    Is uses a simple set of markup tags to define chunks of code and 
+    documentation.
+    
+    The pyweb.w file is the source for the various pyweb module and script files, plus
+    the pyweb.html file.  The various source code files are created by applying a 
+    tangle operation to the .w file.  The final documentation is created by
+    applying a weave operation to the .w file.
+    
+    Installation
+    -------------
+    
+    ::
+    
+        python setup.py install
+    
+    This will install the pyweb module.  
+    
+    Authoring
+    ---------
+    
+    The pyweb document describes the simple markup used to define code chunks
+    and assemble those code chunks into a coherent document as well as working code.
+    
+    If you're a JEdit user, the &lt;tt&gt;jedit&lt;/tt&gt; directory can be used
+    to configure syntax highlighting that includes PyWeb and RST.
+    
+    Operation
+    ---------
+    
+    You can then run pyweb with
+    
+    ::
+    
+        python -m pyweb pyweb.w 
+    
+    This will create the various output files from the source .w file.
+    
+    -   pyweb.html is the final woven document.
+    
+    -   pyweb.py, tangle.py, weave.py, readme, setup.py and MANIFEST.in are tangled output files.
+    
+    Testing
+    -------
+    
+    The test directory includes pyweb_test.w, which will create a 
+    complete test suite.
+    
+    This weaves a pyweb_test.html file.
+    
+    This tangles several test modules:  test.py, test_tangler.py, test_weaver.py,
+    test_loader.py and test_unit.py.  Running the test.py module will include and
+    execute all 71 tests.
+    
 </pre></code>
     <p>&loz; <tt>README</tt> (169).
     
     </p>
 </div>
+
+<a name="addl"></a><h1>Additional Support</h1>
+<div class="chapter">
+
+<!-- pyweb/additional.w -->
+
+<p>Here are some additional support components.</p>
+
+<h2>JEdit Configuration</h2>
+<p>Here's the <tt>pyweb.xml</tt> file that you'll  need to configure
+JEdit so that it properly highlights your PyWeb commands.
+</p>
+
+<p>We'll define the overall properties plus two sets of rules.</p>
+<a name="pyweb170"></a>
+    <!--line number 11-->
+    <p><tt>jedit/pyweb.xml</tt> (170)&nbsp;=</p>
+    <code><pre>
+    &lt;?xml version=&quot;1.0&quot;?&gt;
+    &lt;!DOCTYPE MODE SYSTEM &quot;xmode.dtd&quot;&gt;
+    
+    &lt;MODE&gt;
+            <a href="#pyweb171">&rarr;<em>props for JEdit mode</em> (171)</a>    
+            <a href="#pyweb172">&rarr;<em>rules for JEdit PyWeb and RST</em> (172)</a>    
+            <a href="#pyweb173">&rarr;<em>rules for JEdit PyWeb XML-Like Constructs</em> (173)</a>    
+    &lt;/MODE&gt;
+</pre></code>
+    <p>&loz; <tt>jedit/pyweb.xml</tt> (170).
+    
+    </p>
+
+
+<p>Here are some properties to define RST constructs to JEdit</p>
+
+    <a name="pyweb171"></a>
+    <!--line number 23-->
+    <p><em>props for JEdit mode</em> (171)&nbsp;=</p>
+    <code><pre>
+
+&lt;PROPS&gt;
+    &lt;PROPERTY NAME=&quot;lineComment&quot; VALUE=&quot;.. &quot;/&gt;
+    &lt;!-- indent after literal blocks and directives --&gt;
+    &lt;PROPERTY NAME=&quot;indentNextLines&quot; VALUE=&quot;.*::$&quot;/&gt;
+    &lt;!--
+    &lt;PROPERTY NAME=&quot;commentStart&quot; VALUE=&quot;@{&quot; /&gt;
+    &lt;PROPERTY NAME=&quot;commentEnd&quot; VALUE=&quot;@}&quot; /&gt;
+    --&gt;
+&lt;/PROPS&gt;
+
+    </pre></code>
+    <p>&loz; <em>props for JEdit mode</em> (171).
+      Used by <a href="#pyweb170"><em>jedit/pyweb.xml</em>&nbsp;(170)</a>.
+    </p>
+
+
+<p>Here are some rules to define PyWeb and RST constructs to JEdit.</p>
+
+
+    <a name="pyweb172"></a>
+    <!--line number 38-->
+    <p><em>rules for JEdit PyWeb and RST</em> (172)&nbsp;=</p>
+    <code><pre>
+
+&lt;RULES IGNORE_CASE=&quot;FALSE&quot; HIGHLIGHT_DIGITS=&quot;FALSE&quot;&gt;
+
+    &lt;!-- targets --&gt;
+    &lt;EOL_SPAN AT_LINE_START=&quot;TRUE&quot; TYPE=&quot;KEYWORD3&quot;&gt;__&lt;/EOL_SPAN&gt;
+    &lt;EOL_SPAN AT_LINE_START=&quot;TRUE&quot; TYPE=&quot;KEYWORD3&quot;&gt;.. _&lt;/EOL_SPAN&gt;
+
+    &lt;!-- section titles --&gt;
+    &lt;SEQ_REGEXP HASH_CHAR=&quot;===&quot; TYPE=&quot;LABEL&quot;&gt;={3,}&lt;/SEQ_REGEXP&gt;
+    &lt;SEQ_REGEXP HASH_CHAR=&quot;---&quot; TYPE=&quot;LABEL&quot;&gt;-{3,}&lt;/SEQ_REGEXP&gt;
+    &lt;SEQ_REGEXP HASH_CHAR=&quot;~~~&quot; TYPE=&quot;LABEL&quot;&gt;~{3,}&lt;/SEQ_REGEXP&gt;
+    &lt;SEQ_REGEXP HASH_CHAR=&quot;###&quot; TYPE=&quot;LABEL&quot;&gt;#{3,}&lt;/SEQ_REGEXP&gt;
+    &lt;SEQ_REGEXP HASH_CHAR='&quot;&quot;&quot;' TYPE=&quot;LABEL&quot;&gt;&quot;{3,}&lt;/SEQ_REGEXP&gt;
+    &lt;SEQ_REGEXP HASH_CHAR=&quot;^^^&quot; TYPE=&quot;LABEL&quot;&gt;\^{3,}&lt;/SEQ_REGEXP&gt;
+    &lt;SEQ_REGEXP HASH_CHAR=&quot;+++&quot; TYPE=&quot;LABEL&quot;&gt;\+{3,}&lt;/SEQ_REGEXP&gt;
+    &lt;SEQ_REGEXP HASH_CHAR=&quot;***&quot; TYPE=&quot;LABEL&quot;&gt;\*{3,}&lt;/SEQ_REGEXP&gt;
+
+    &lt;!-- replacement --&gt;
+    &lt;SEQ_REGEXP
+        HASH_CHAR=&quot;..&quot;
+        AT_LINE_START=&quot;TRUE&quot;
+        TYPE=&quot;LITERAL3&quot;
+    &gt;\.\.\s\|[^|]+\|&lt;/SEQ_REGEXP&gt;
+
+    &lt;!-- substitution --&gt;
+    &lt;SEQ_REGEXP
+        HASH_CHAR=&quot;|&quot;
+        AT_LINE_START=&quot;FALSE&quot;
+        TYPE=&quot;LITERAL4&quot;
+    &gt;\|[^|]+\|&lt;/SEQ_REGEXP&gt;
+
+    &lt;!-- directives: .. name:: --&gt;
+    &lt;SEQ_REGEXP
+        HASH_CHAR=&quot;..&quot;
+        AT_LINE_START=&quot;TRUE&quot;
+        TYPE=&quot;LITERAL2&quot;
+    &gt;\.\.\s[A-z][A-z0-9-_]+::&lt;/SEQ_REGEXP&gt;
+
+    &lt;!-- strong emphasis: **...** --&gt;
+    &lt;SEQ_REGEXP
+        HASH_CHAR=&quot;**&quot;
+        AT_LINE_START=&quot;FALSE&quot;
+        TYPE=&quot;KEYWORD2&quot;
+    &gt;\*\*[^*]+\*\*&lt;/SEQ_REGEXP&gt;
+
+    &lt;!-- emphasis: *...* --&gt;
+    &lt;SEQ_REGEXP
+        HASH_CHAR=&quot;*&quot;
+        AT_LINE_START=&quot;FALSE&quot;
+        TYPE=&quot;KEYWORD4&quot;
+    &gt;\*[^\s*][^*]*\*&lt;/SEQ_REGEXP&gt;
+
+    &lt;!-- comments --&gt;
+    &lt;EOL_SPAN AT_LINE_START=&quot;TRUE&quot; TYPE=&quot;COMMENT1&quot;&gt;.. &lt;/EOL_SPAN&gt;
+
+    &lt;!-- links: `...`_ or `...`__ --&gt;
+    &lt;SEQ_REGEXP
+        HASH_CHAR=&quot;`&quot;
+        TYPE=&quot;LABEL&quot;
+    &gt;`[A-z0-9]+[^`]+`_{1,2}&lt;/SEQ_REGEXP&gt;
+
+    &lt;!-- footnote reference: [0]_ --&gt;
+    &lt;SEQ_REGEXP
+        HASH_CHAR=&quot;[&quot;
+        TYPE=&quot;LABEL&quot;
+    &gt;\[[0-9]+\]_&lt;/SEQ_REGEXP&gt;
+
+    &lt;!-- footnote reference: [#]_ or [#foo]_ --&gt;
+    &lt;SEQ_REGEXP
+        HASH_CHAR=&quot;[#&quot;
+        TYPE=&quot;LABEL&quot;
+    &gt;\[#[A-z0-9_]*\]_&lt;/SEQ_REGEXP&gt;
+
+    &lt;!-- footnote reference: [*]_ --&gt;
+    &lt;SEQ TYPE=&quot;LABEL&quot;&gt;[*]_&lt;/SEQ&gt;
+
+    &lt;!-- citation reference: [foo]_ --&gt;
+    &lt;SEQ_REGEXP
+        HASH_CHAR=&quot;[&quot;
+        TYPE=&quot;LABEL&quot;
+    &gt;\[[A-z][A-z0-9_-]*\]_&lt;/SEQ_REGEXP&gt;
+
+    &lt;!-- inline literal: ``...``--&gt;
+    &lt;!--&lt;SEQ_REGEXP
+        HASH_CHAR=&quot;``&quot;
+        TYPE=&quot;LITERAL1&quot;
+    &gt;``[^`]+``&lt;/SEQ_REGEXP&gt;--&gt;
+    &lt;SPAN TYPE=&quot;LITERAL1&quot; ESCAPE=&quot;\&quot;&gt;
+        &lt;BEGIN&gt;``&lt;/BEGIN&gt;
+        &lt;END&gt;``&lt;/END&gt;
+    &lt;/SPAN&gt;
+
+    &lt;!-- interpreted text: `...` --&gt;
+    &lt;!--
+    &lt;SEQ_REGEXP
+        HASH_CHAR=&quot;`&quot;
+        TYPE=&quot;KEYWORD1&quot;
+    &gt;`[^`]+`&lt;/SEQ_REGEXP&gt;
+    
+    --&gt;
+    &lt;EOL_SPAN TYPE=&quot;COMMENT1&quot;&gt;@d&lt;/EOL_SPAN&gt;
+    &lt;EOL_SPAN TYPE=&quot;COMMENT1&quot;&gt;@o&lt;/EOL_SPAN&gt;
+
+    &lt;SPAN TYPE=&quot;COMMENT1&quot; DELEGATE=&quot;CODE&quot;&gt;
+        &lt;BEGIN&gt;@{&lt;/BEGIN&gt;
+        &lt;END&gt;@}&lt;/END&gt;
+    &lt;/SPAN&gt;
+
+    &lt;SPAN TYPE=&quot;KEYWORD1&quot;&gt;
+        &lt;BEGIN&gt;`&lt;/BEGIN&gt;
+        &lt;END&gt;`&lt;/END&gt;
+    &lt;/SPAN&gt;
+
+    &lt;SEQ_REGEXP HASH_CHAR=&quot;```&quot; TYPE=&quot;LABEL&quot;&gt;`{3,}&lt;/SEQ_REGEXP&gt;
+
+    &lt;!-- :field list: --&gt;
+    &lt;SEQ_REGEXP
+        HASH_CHAR=&quot;:&quot;
+        TYPE=&quot;KEYWORD1&quot;
+    &gt;:[A-z][A-z0-9 	=\s\t_]*:&lt;/SEQ_REGEXP&gt;
+
+    &lt;!-- table --&gt;
+    &lt;SEQ_REGEXP
+        HASH_CHAR=&quot;+-&quot;
+        TYPE=&quot;LABEL&quot;
+    &gt;\+-[+-]+&lt;/SEQ_REGEXP&gt;
+    &lt;SEQ_REGEXP
+        HASH_CHAR=&quot;+?&quot;
+        TYPE=&quot;LABEL&quot;
+    &gt;\+=[+=]+&lt;/SEQ_REGEXP&gt;
+
+&lt;/RULES&gt;
+
+    </pre></code>
+    <p>&loz; <em>rules for JEdit PyWeb and RST</em> (172).
+      Used by <a href="#pyweb170"><em>jedit/pyweb.xml</em>&nbsp;(170)</a>.
+    </p>
+
+
+<p>Here are some additional rules to define PyWeb constructs to JEdit
+that look like XML.</p>
+
+
+    <a name="pyweb173"></a>
+    <!--line number 176-->
+    <p><em>rules for JEdit PyWeb XML-Like Constructs</em> (173)&nbsp;=</p>
+    <code><pre>
+
+&lt;RULES SET=&quot;CODE&quot; DEFAULT=&quot;KEYWORD1&quot;&gt;
+    &lt;SPAN TYPE=&quot;MARKUP&quot;&gt;
+        &lt;BEGIN&gt;@&amp;lt;&lt;/BEGIN&gt;
+        &lt;END&gt;@&amp;gt;&lt;/END&gt;
+    &lt;/SPAN&gt;
+&lt;/RULES&gt;
+
+    </pre></code>
+    <p>&loz; <em>rules for JEdit PyWeb XML-Like Constructs</em> (173).
+      Used by <a href="#pyweb170"><em>jedit/pyweb.xml</em>&nbsp;(170)</a>.
+    </p>
+
+
+<p>Additionally, you'll want to update the JEdit catalog.</p>
+<code><pre>
+&lt;?xml version="1.0"?&gt;
+&lt;!DOCTYPE MODES SYSTEM "catalog.dtd"&gt;
+&lt;MODES&gt;
+
+&lt;!-- Add lines like the following, one for each edit mode you add: --&gt;
+&lt;MODE NAME="pyweb" FILE="pyweb.xml" FILE_NAME_GLOB="*.w" /&gt;
+
+&lt;/MODES&gt;
+</pre></code></div>
 
 <a name="ix"></a><h1>Indices</h1>
 <div class="chapter">
@@ -6765,6 +7023,7 @@ execute all 71 tests.
 <dl>
 <dt>MANIFEST.in</dt><dd><a href="#pyweb168">(168)</a></dd>
 <dt>README</dt><dd><a href="#pyweb169">(169)</a></dd>
+<dt>jedit/pyweb.xml</dt><dd><a href="#pyweb170">(170)</a></dd>
 <dt>pyweb.py</dt><dd><a href="#pyweb150">(150)</a></dd>
 <dt>setup.py</dt><dd><a href="#pyweb167">(167)</a></dd>
 <dt>tangle.py</dt><dd><a href="#pyweb162">(162)</a></dd>
@@ -6875,7 +7134,7 @@ execute all 71 tests.
 <dt>WeaveAction summary method provides line counts</dt><dd><a href="#pyweb141">(141)</a></dd>
 <dt>Weaver code chunk begin-end</dt><dd><a href="#pyweb18">(18)</a></dd>
 <dt>Weaver cross reference output methods</dt><dd><a href="#pyweb21">(21)</a> <a href="#pyweb22">(22)</a></dd>
-<dt>Weaver doOpen, doClose and doWrite overrides</dt><dd><a href="#pyweb14">(14)</a></dd>
+<dt>Weaver doOpen, doClose, doWrite and resetIndent overrides</dt><dd><a href="#pyweb14">(14)</a></dd>
 <dt>Weaver document chunk begin-end</dt><dd><a href="#pyweb16">(16)</a></dd>
 <dt>Weaver file chunk begin-end</dt><dd><a href="#pyweb19">(19)</a></dd>
 <dt>Weaver quoted characters</dt><dd><a href="#pyweb15">(15)</a></dd>
@@ -6913,6 +7172,9 @@ execute all 71 tests.
 <dt>major commands segment the input into separate Chunks</dt><dd><a href="#pyweb117">(117)</a></dd>
 <dt>minor commands add Commands to the current Chunk</dt><dd><a href="#pyweb123">(123)</a></dd>
 <dt>other command-like sequences are appended as a TextCommand</dt><dd><a href="#pyweb129">(129)</a></dd>
+<dt>props for JEdit mode</dt><dd><a href="#pyweb171">(171)</a></dd>
+<dt>rules for JEdit PyWeb XML-Like Constructs</dt><dd><a href="#pyweb173">(173)</a></dd>
+<dt>rules for JEdit PyWeb and RST</dt><dd><a href="#pyweb172">(172)</a></dd>
 <dt>start a NamedChunk or NamedDocumentChunk, adding it to the web</dt><dd><a href="#pyweb120">(120)</a></dd>
 <dt>start an OutputChunk, adding it to the web</dt><dd><a href="#pyweb119">(119)</a></dd>
 <dt>weave.py overheads for correct operation of a script</dt><dd><a href="#pyweb164">(164)</a></dd>
@@ -6931,8 +7193,8 @@ execute all 71 tests.
 <dt>Emitter</dt><dd><a href="#pyweb3"><b>&bull;3</b></a> <a href="#pyweb13">13</a> <a href="#pyweb43">43</a></dd>
 <dt>Error</dt><dd><a href="#pyweb59">59</a> <a href="#pyweb61">61</a> <a href="#pyweb62">62</a> <a href="#pyweb66">66</a> <a href="#pyweb67">67</a> <a href="#pyweb70">70</a> <a href="#pyweb73">73</a> <a href="#pyweb74">74</a> <a href="#pyweb81">81</a> <a href="#pyweb89">89</a> <a href="#pyweb90"><b>&bull;90</b></a> <a href="#pyweb98">98</a> <a href="#pyweb100">100</a> <a href="#pyweb101">101</a> <a href="#pyweb110">110</a> <a href="#pyweb111">111</a> <a href="#pyweb116">116</a> <a href="#pyweb121">121</a> <a href="#pyweb124">124</a> <a href="#pyweb128">128</a> <a href="#pyweb140">140</a> <a href="#pyweb143">143</a> <a href="#pyweb146">146</a> <a href="#pyweb160">160</a></dd>
 <dt>FileXrefCommand</dt><dd><a href="#pyweb82"><b>&bull;82</b></a> <a href="#pyweb123">123</a></dd>
-<dt>HTML</dt><dd><a href="#pyweb17">17</a> <a href="#pyweb19">19</a> <a href="#pyweb21">21</a> <a href="#pyweb22">22</a> <a href="#pyweb31">31</a> <a href="#pyweb32"><b>&bull;32</b></a> <a href="#pyweb109">109</a> <a href="#pyweb149">149</a> <a href="#pyweb154">154</a> <a href="#pyweb165">165</a></dd>
-<dt>LaTeX</dt><dd><a href="#pyweb18">18</a> <a href="#pyweb23"><b>&bull;23</b></a> <a href="#pyweb109">109</a> <a href="#pyweb149">149</a> <a href="#pyweb154">154</a></dd>
+<dt>HTML</dt><dd><a href="#pyweb17">17</a> <a href="#pyweb21">21</a> <a href="#pyweb22">22</a> <a href="#pyweb31">31</a> <a href="#pyweb32"><b>&bull;32</b></a> <a href="#pyweb109">109</a> <a href="#pyweb149">149</a> <a href="#pyweb154">154</a> <a href="#pyweb165">165</a></dd>
+<dt>LaTeX</dt><dd><a href="#pyweb23"><b>&bull;23</b></a> <a href="#pyweb109">109</a> <a href="#pyweb149">149</a> <a href="#pyweb154">154</a></dd>
 <dt>LoadAction</dt><dd><a href="#pyweb145"><b>&bull;145</b></a> <a href="#pyweb146">146</a> <a href="#pyweb158">158</a> <a href="#pyweb162">162</a> <a href="#pyweb166">166</a></dd>
 <dt>MacroXrefCommand</dt><dd><a href="#pyweb83"><b>&bull;83</b></a> <a href="#pyweb123">123</a></dd>
 <dt>NamedChunk</dt><dd><a href="#pyweb63"><b>&bull;63</b></a> <a href="#pyweb68">68</a> <a href="#pyweb72">72</a> <a href="#pyweb120">120</a> <a href="#pyweb124">124</a></dd>
@@ -6995,20 +7257,20 @@ execute all 71 tests.
 <dt>nextToken</dt><dd><a href="#pyweb114"><b>&bull;114</b></a> <a href="#pyweb119">119</a> <a href="#pyweb120">120</a> <a href="#pyweb121">121</a> <a href="#pyweb124">124</a> <a href="#pyweb125">125</a> <a href="#pyweb126">126</a> <a href="#pyweb128">128</a></dd>
 <dt>no_definition</dt><dd><a href="#pyweb103">103</a> <a href="#pyweb104"><b>&bull;104</b></a></dd>
 <dt>no_reference</dt><dd><a href="#pyweb103">103</a> <a href="#pyweb104"><b>&bull;104</b></a></dd>
-<dt>open</dt><dd><a href="#pyweb4"><b>&bull;4</b></a> <a href="#pyweb14">14</a> <a href="#pyweb44">44</a> <a href="#pyweb49">49</a> <a href="#pyweb110">110</a> <a href="#pyweb111">111</a> <a href="#pyweb114">114</a> <a href="#pyweb121">121</a> <a href="#pyweb160">160</a></dd>
+<dt>open</dt><dd><a href="#pyweb4"><b>&bull;4</b></a> <a href="#pyweb14">14</a> <a href="#pyweb44">44</a> <a href="#pyweb110">110</a> <a href="#pyweb111">111</a> <a href="#pyweb114">114</a> <a href="#pyweb121">121</a> <a href="#pyweb160">160</a></dd>
 <dt>openSource</dt><dd><a href="#pyweb114"><b>&bull;114</b></a> <a href="#pyweb128">128</a></dd>
 <dt>optparse</dt><dd><a href="#pyweb156"><b>&bull;156</b></a> <a href="#pyweb159">159</a></dd>
-<dt>os</dt><dd><a href="#pyweb14">14</a> <a href="#pyweb50">50</a> <a href="#pyweb151"><b>&bull;151</b></a></dd>
+<dt>os</dt><dd><a href="#pyweb14">14</a> <a href="#pyweb44">44</a> <a href="#pyweb49">49</a> <a href="#pyweb50">50</a> <a href="#pyweb151"><b>&bull;151</b></a></dd>
 <dt>parseArgs</dt><dd><a href="#pyweb159"><b>&bull;159</b></a> <a href="#pyweb161">161</a></dd>
 <dt>perform</dt><dd><a href="#pyweb146"><b>&bull;146</b></a></dd>
 <dt>process</dt><dd><a href="#pyweb126">126</a> <a href="#pyweb160"><b>&bull;160</b></a> <a href="#pyweb161">161</a></dd>
 <dt>pushBack</dt><dd><a href="#pyweb114"><b>&bull;114</b></a> <a href="#pyweb121">121</a></dd>
 <dt>quoted_chars</dt><dd><a href="#pyweb9">9</a> <a href="#pyweb15">15</a> <a href="#pyweb29">29</a> <a href="#pyweb38"><b>&bull;38</b></a></dd>
-<dt>re</dt><dd><a href="#pyweb108">108</a> <a href="#pyweb114">114</a> <a href="#pyweb151"><b>&bull;151</b></a></dd>
+<dt>re</dt><dd><a href="#pyweb108">108</a> <a href="#pyweb114">114</a> <a href="#pyweb151"><b>&bull;151</b></a> <a href="#pyweb169">169</a></dd>
 <dt>ref</dt><dd><a href="#pyweb28">28</a> <a href="#pyweb59">59</a> <a href="#pyweb78"><b>&bull;78</b></a> <a href="#pyweb87">87</a></dd>
 <dt>referenceTo</dt><dd><a href="#pyweb20">20</a> <a href="#pyweb21">21</a> <a href="#pyweb39"><b>&bull;39</b></a> <a href="#pyweb66">66</a></dd>
 <dt>references</dt><dd><a href="#pyweb17"><b>&bull;17</b></a> <a href="#pyweb18">18</a> <a href="#pyweb19">19</a> <a href="#pyweb25">25</a> <a href="#pyweb32">32</a> <a href="#pyweb34">34</a> <a href="#pyweb36">36</a> <a href="#pyweb52">52</a> <a href="#pyweb59">59</a> <a href="#pyweb103">103</a> <a href="#pyweb124">124</a> <a href="#pyweb165">165</a></dd>
-<dt>resetIndent</dt><dd><a href="#pyweb11"><b>&bull;11</b></a></dd>
+<dt>resetIndent</dt><dd><a href="#pyweb11"><b>&bull;11</b></a> <a href="#pyweb14">14</a></dd>
 <dt>resolve</dt><dd><a href="#pyweb67">67</a> <a href="#pyweb86"><b>&bull;86</b></a> <a href="#pyweb87">87</a> <a href="#pyweb88">88</a> <a href="#pyweb89">89</a> <a href="#pyweb101">101</a></dd>
 <dt>searchForRE</dt><dd><a href="#pyweb57">57</a> <a href="#pyweb58">58</a> <a href="#pyweb77"><b>&bull;77</b></a> <a href="#pyweb79">79</a> <a href="#pyweb108">108</a></dd>
 <dt>setIndent</dt><dd><a href="#pyweb11"><b>&bull;11</b></a> <a href="#pyweb66">66</a> <a href="#pyweb89">89</a></dd>
@@ -7040,9 +7302,9 @@ execute all 71 tests.
 </div>
 
 <hr />
-<p><small>Created by /Users/slott/Documents/Projects/pyWeb-2.1/pyweb/pyweb.py at Mon Mar  1 07:58:19 2010.</small></p>
+<p><small>Created by pyweb.py at Thu Dec 30 11:16:52 2010.</small></p>
 <p><small>pyweb.__version__ '$Revision$'.</small></p>
-<p><small>Source pyweb.w modified Sat Feb 27 07:18:21 2010.
+<p><small>Source pyweb.w modified Thu Dec 30 06:56:16 2010.
 </small></p>
 <p><small>Working directory '/Users/slott/Documents/Projects/pyWeb-2.1/pyweb'.</small></p>
 
