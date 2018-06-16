@@ -1,24 +1,28 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """Sample tangle.py script."""
 import pyweb
-import logging, sys
+import logging
+import argparse
+		
+with pyweb.Logger( pyweb.log_config ):
+	logger= logging.getLogger(__file__)
 
-logging.basicConfig( stream=sys.stderr, level=logging.INFO )
-logger= logging.getLogger(__file__)
+	options = argparse.Namespace(
+		webFileName= "pyweb.w",
+		verbosity= logging.INFO,
+		command= '@',
+		permitList= ['@i'],
+		tangler_line_numbers= False,
+		reference_style = pyweb.SimpleReference(),
+		theTangler= pyweb.TanglerMake(),
+		webReader= pyweb.WebReader(),
+		)
 
-w= pyweb.Web( "pyweb.w" ) # The web we'll work on.
+	w= pyweb.Web() 
+	
+	for action in LoadAction(), TangleAction():
+		action.web= w
+		action.options= options
+		action()
+		logger.info( action.summary() )
 
-permitList= ['@i']
-commandChar= '@'
-load= pyweb.LoadAction()
-load.webReader= pyweb.WebReader( command=commandChar, permit=permitList )
-load.webReader.web( w ).source( "pyweb.w" )
-load.web= w
-load()
-logger.info( load.summary() )
-
-tangle= pyweb.TangleAction()
-tangle.theTangler= pyweb.TanglerMake()
-tangle.web= w
-tangle()
-logger.info( tangle.summary() )

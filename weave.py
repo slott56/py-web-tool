@@ -1,10 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """Sample weave.py script."""
 import pyweb
-import logging, sys, string
-
-logging.basicConfig( stream=sys.stderr, level=logging.INFO )
-logger= logging.getLogger(__file__)
+import logging
+import argparse
+import string
 
 
 class MyHTML( pyweb.HTML ):
@@ -24,11 +23,11 @@ class MyHTML( pyweb.HTML ):
         
     fb_template= string.Template("""<a name="pyweb${seq}"></a>
     <!--line number ${lineNumber}-->
-    <p><tt>${fullName}</tt> (${seq})&nbsp;${concat}</p>
+    <p>``${fullName}`` (${seq})&nbsp;${concat}</p>
     <code><pre>\n""") # Prevent indent
         
     fe_template= string.Template( """</pre></code>
-    <p>&loz; <tt>${fullName}</tt> (${seq}).
+    <p>&loz; ``${fullName}`` (${seq}).
     ${references}
     </p>\n""")
         
@@ -51,20 +50,26 @@ class MyHTML( pyweb.HTML ):
     name_ref_template = string.Template( '<a href="#pyweb${seq}">${seq}</a>' )
 
 
-w= pyweb.Web( "pyweb.w" ) # The web we'll work on.
+with pyweb.Logger( pyweb.log_config ):
+	logger= logging.getLogger(__file__)
 
-permitList= []
-commandChar= '@'
-load= pyweb.LoadAction()
-load.webReader=  pyweb.WebReader( command=commandChar, permit=permitList )
-load.webReader.web( w ).source( "pyweb.w" )
-load.web= w
-load()
-logger.info( load.summary() )
+	options = argparse.Namespace(
+		webFileName= "pyweb.w",
+		verbosity= logging.INFO,
+		command= '@',
+		theWeaver= MyHTML(),
+		permitList= [],
+		tangler_line_numbers= False,
+		reference_style = pyweb.SimpleReference(),
+		theTangler= pyweb.TanglerMake(),
+		webReader= pyweb.WebReader(),
+		)
 
-weave= pyweb.WeaveAction()
-weave.theWeaver= MyHTML()
-weave.web= w
-weave()
-logger.info( weave.summary() )
+	w= pyweb.Web() 
+
+	for action in LoadAction(), WeaveAction():
+		action.web= w
+		action.options= options
+		action()
+		logger.info( action.summary() )
 

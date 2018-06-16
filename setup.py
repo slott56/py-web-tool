@@ -1,11 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """Setup for pyWeb."""
 
 from distutils.core import setup
 
 setup(name='pyweb',
-      version='2.2',
-      description='pyWeb 2.2: In Python, Yet Another Literate Programming Tool',
+      version='3.0',
+      description='pyWeb 3.0: Yet Another Literate Programming Tool',
       author='S. Lott',
       author_email='s_lott@yahoo.com',
       url='http://slott-softwarearchitect.blogspot.com/',

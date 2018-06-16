@@ -1,0 +1,17 @@
+/* Page layout tweaks */
+div.document { width: 7in; }
+.small { font-size: smaller; }
+.code
+{
+	color: #101080;
+	display: block;
+	border-color: black;
+	border-width: thin;
+	border-style: solid;
+	background-color: #E0FFFF;
+	/*#99FFFF*/
+	padding: 0 0 0 1%;
+	margin: 0 6% 0 6%;
+	text-align: left;
+	font-size: smaller;
+}

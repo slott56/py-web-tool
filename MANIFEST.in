@@ -1,2 +1,3 @@
-include *.w *.css *.html
-include test/*.w test/*.css test/*.html test/*.py
+include *.w *.css *.html *.conf *.rst
+include test/*.w test/*.css test/*.html test/*.conf test/*.py
+include jedit/*.xml
