@@ -8,7 +8,7 @@ Presentation to people requires extensive and sophisticated typesetting
 techniques.  Further, the "narrative arc" of a presentation may not 
 follow the source code as layed out for the compiler.
 
-pyWeb is a literate programming tool based on Knuth's Web to combine the actions
+pyWeb is a literate programming tool based on Knuth's Web_ to combine the actions
 of weaving a document with tangling source files.
 It is independent of any particular document markup or source language.
 Is uses a simple set of markup tags to define chunks of code and 
@@ -83,3 +83,4 @@ execute all tests.
 	rst2html.py pyweb_test.rst pyweb_test.html
 
 
+.. _Web: https://doi.org/10.1093/comjnl/27.2.97
