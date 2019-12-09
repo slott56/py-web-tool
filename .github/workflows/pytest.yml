@@ -20,15 +20,15 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install python3-docutils
+        pip install docutils
     - name: Install pyweb
       run: python setup.py install
     - name: Build the documentation (TODO save artifacts)
       run: |
         python -m pyweb pyweb.w
-        sudo mkdir -p /Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6
+        mkdir -p /Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6
         ls /usr/share
-        sudo ln -s /usr/share /Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages
+        ln -s /usr/share /Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages
         rst2html.py pyweb.rst docs/pyweb.html
     - name: Run the test suite
       run: |
