@@ -26,6 +26,8 @@ jobs:
     - name: Build the documentation (TODO save artifacts)
       run: |
         python -m pyweb pyweb.w
+        sudo mkdir -p /Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6
+        sudo ln -s /usr/share /Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages
         rst2html.py pyweb.rst docs/pyweb.html
     - name: Run the test suite
       run: |
