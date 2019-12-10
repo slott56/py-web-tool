@@ -28,7 +28,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install jq
         sudo python -m pip install --upgrade pip
-        pip install python3-docutils
+        pip install docutils
     - name: Install pyweb
       run: python setup.py install
     - name: Build the documentation (TODO save artifacts)
@@ -56,7 +56,7 @@ jobs:
         git config user.name "Github Actions Bot"
         git commit -am "${COMMIT_MSG}"
         #test "$? -gt 0"
+        git remote add staging https://x-access-token:$GITHUB_TOKEN@github.com/:owner/:repo.git
         echo "$?" 
-        #TODO git remote add staging https://x-access-token:$GITHUB_TOKEN@github.com/:owner/:repo.git
-        #TODO git push staging master -f
+        #git push staging master -f
         
