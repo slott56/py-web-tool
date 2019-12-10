@@ -52,7 +52,8 @@ jobs:
       run: |
         git config user.email $(jq .pusher.email $GITHUB_PAYLOAD)
         git config user.name $(jq .pusher.username $GITHUB_PAYLOAD)
-        test '$(git commit -am "${COMMIT_MSG}"; echo $?) -gt 0'; 
+        git commit -am "${COMMIT_MSG}"
+        test "$? -gt 0" 
         #TODO git remote add staging https://x-access-token:$GITHUB_TOKEN@github.com/:owner/:repo.git
         #TODO git push staging master -f
         
