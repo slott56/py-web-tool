@@ -50,6 +50,8 @@ jobs:
           Committing artifacts to docs
           skip-checks: true
       run: |
+        git config user.email $(jq .pusher.email $GITHUB_PAYLOAD)
+        git config user.name $(jq .pusher.username $GITHUB_PAYLOAD)
         git commit -am "${COMMIT_MSG}"; 
         #TODO git remote add staging https://x-access-token:$GITHUB_TOKEN@github.com/:owner/:repo.git
         #TODO git push staging master -f
