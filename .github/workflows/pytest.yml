@@ -47,7 +47,8 @@ jobs:
         popd
     - name: Commit to repository
       env:
-        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.github_token }}
+        ACCESS_TOKEN: ${{ secrets.access_token }}
         COMMIT_MSG: |
           Committing artifacts to docs
           skip-checks: true
@@ -56,7 +57,7 @@ jobs:
         git config user.name "Github Actions Bot"
         git commit -am "${COMMIT_MSG}"
         #test "$? -gt 0"
-        git remote add staging "https://git:${ACCESS_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+        git remote add staging https://x-access-token:$GITHUB_TOKEN@github.com/:owner/:repo.git
         echo "$?" 
         #git push staging master -f
         
