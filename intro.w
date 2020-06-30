@@ -508,7 +508,7 @@ is shown in the following example:
 
     @@o myFile.py 
     @@{
-    @@<imports of the various packages used>
+    @@<imports of the various packages used@@>
     print( math.pi,time.time() )
     @@}
 
