@@ -3,7 +3,7 @@
         "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-    <title>pyWeb Literate Programming 2.1 - Test Suite</title>
+    <title>pyWeb Literate Programming 2.3 - Test Suite</title>
     <meta name="generator" content="BBEdit 6.5.2" />
     <meta name="author" content="Steven F. Lott" />
     <link rel="StyleSheet" href="pyweb.css" type="text/css" />
@@ -12,7 +12,7 @@
 <div class="document">
 
 <!-- title page -->
-<p class="title"><em>pyWeb</em> 2.1 Test Suite</p>
+<p class="title"><em>pyWeb</em> 2.3 Test Suite</p>
 <p class="title">In Python, Yet Another Literate Programming Tool</p>
 <p class="subtitle"><a href="mailto:s_lott@@yahoo.com">Steven F. Lott</a></p>
 
@@ -52,11 +52,12 @@
 </div>
 
 <hr />
-<p><small>Created by @(thisApplication@) at @(time.asctime()@).</small></p>
+<p><small>Created by @(thisApplication@) at @(datetime.datetime.now().ctime()@).</small></p>
 <p><small>pyweb.__version__ '@(__version__@)'.</small></p>
-<p><small>Source @(theFile@) modified @(time.ctime(os.path.getmtime(theFile))@).
+<p><small>Source @(theFile@) modified @(datetime.datetime.fromtimestamp(os.path.getmtime(theFile))@).
 </small></p>
-<p><small>Working directory '@(os.getcwd()@)'.</small></p>
+<p><small>Working directory '@(os.path.realpath('.')@)'.</small></p>
+
 
 </div>
 </body>
