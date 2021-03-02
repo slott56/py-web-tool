@@ -36,7 +36,7 @@ The supplied documentation uses RST markup and requires docutils.
 ::
 
 	python3 -m pyweb pyweb.w
-	rst2html.py pyweb.rst pyweb.html
+	rst2html.py pyweb.rst docs/pyweb.html
 
 Authoring
 ---------
@@ -60,8 +60,7 @@ This will create the various output files from the source .w file.
 
 -   ``pyweb.html`` is the final woven document.
 
--   ``pyweb.py``, ``tangle.py``, ``weave.py``, ``README``, ``setup.py`` and ``MANIFEST.in`` 
-	``.nojekyll`` and ``index.html`` are tangled output files.
+-   ``pyweb.py``, ``tangle.py``, ``weave.py``, ``README``, ``setup.py``, ``MANIFEST.in``, ``.nojekyll`` and ``index.html`` are tangled output files.
 
 Testing
 -------
