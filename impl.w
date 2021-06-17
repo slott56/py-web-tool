@@ -1073,7 +1073,7 @@ cb_template= string.Template("""
 <a name="pyweb${seq}"></a>
 <!--line number ${lineNumber}-->
 <p><em>${fullName}</em> (${seq})&nbsp;${concat}</p>
-<code><pre>\n""")
+<pre><code>\n""")
 @| codeBegin
 @}
 
@@ -1084,7 +1084,7 @@ write the list of chunks that reference this chunk.
 @d HTML code chunk end
 @{
 ce_template= string.Template("""
-</pre></code>
+</code></pre>
 <p>&loz; <em>${fullName}</em> (${seq}).
 ${references}
 </p>\n""")
