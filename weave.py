@@ -13,10 +13,10 @@ class MyHTML( pyweb.HTML ):
     cb_template= string.Template("""<a name="pyweb${seq}"></a>
     <!--line number ${lineNumber}-->
     <p><em>${fullName}</em> (${seq})&nbsp;${concat}</p>
-    <code><pre>\n""")
+    <pre><code>\n""")
 
     ce_template= string.Template("""
-    </pre></code>
+    </code></pre>
     <p>&loz; <em>${fullName}</em> (${seq}).
     ${references}
     </p>\n""")
@@ -24,9 +24,9 @@ class MyHTML( pyweb.HTML ):
     fb_template= string.Template("""<a name="pyweb${seq}"></a>
     <!--line number ${lineNumber}-->
     <p>``${fullName}`` (${seq})&nbsp;${concat}</p>
-    <code><pre>\n""") # Prevent indent
+    <pre><code>\n""") # Prevent indent
         
-    fe_template= string.Template( """</pre></code>
+    fe_template= string.Template( """</code></pre>
     <p>&loz; ``${fullName}`` (${seq}).
     ${references}
     </p>\n""")
