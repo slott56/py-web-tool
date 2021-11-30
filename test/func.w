@@ -475,7 +475,7 @@ expected= """<html>
     <a name="pyweb1"></a>
     <!--line number 9-->
     <p><em>some code</em> (1)&nbsp;=</p>
-    <code><pre>
+    <pre><code>
 
 def fastExp( n, p ):
     r= 1
@@ -486,7 +486,7 @@ def fastExp( n, p ):
 for i in range(24):
     fastExp(2,i)
 
-    </pre></code>
+    </code></pre>
     <p>&loz; <em>some code</em> (1).
     
     </p>

@@ -1099,7 +1099,7 @@ and HTML tags necessary to set the code off visually.
 fb_template= string.Template("""<a name="pyweb${seq}"></a>
 <!--line number ${lineNumber}-->
 <p>``${fullName}`` (${seq})&nbsp;${concat}</p>
-<code><pre>\n""") # Prevent indent
+<pre><code>\n""") # Prevent indent
 @| fileBegin
 @}
 
@@ -1109,7 +1109,7 @@ write the list of chunks that reference this chunk.
 
 @d HTML output file end
 @{
-fe_template= string.Template( """</pre></code>
+fe_template= string.Template( """</code></pre>
 <p>&loz; ``${fullName}`` (${seq}).
 ${references}
 </p>\n""")

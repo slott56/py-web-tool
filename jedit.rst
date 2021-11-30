@@ -2437,7 +2437,7 @@ and HTML tags necessary to set the code off visually.
     <a name="pyweb${seq}"></a>
     <!--line number ${lineNumber}-->
     <p><em>${fullName}</em> (${seq})&nbsp;${concat}</p>
-    <code><pre>\\n""")
+    <pre><code>\\n""")
     
 
 ..
@@ -2459,7 +2459,7 @@ write the list of chunks that reference this chunk.
 
     
     ce\_template= string.Template("""
-    </pre></code>
+    </code></pre>
     <p>&loz; <em>${fullName}</em> (${seq}).
     ${references}
     </p>\\n""")
@@ -2485,7 +2485,7 @@ and HTML tags necessary to set the code off visually.
     fb\_template= string.Template("""<a name="pyweb${seq}"></a>
     <!--line number ${lineNumber}-->
     <p>\`\`${fullName}\`\` (${seq})&nbsp;${concat}</p>
-    <code><pre>\\n""") # Prevent indent
+    <pre><code>\\n""") # Prevent indent
     
 
 ..
@@ -2506,7 +2506,7 @@ write the list of chunks that reference this chunk.
     :class: code
 
     
-    fe\_template= string.Template( """</pre></code>
+    fe\_template= string.Template( """</code></pre>
     <p>&loz; \`\`${fullName}\`\` (${seq}).
     ${references}
     </p>\\n""")
@@ -7716,10 +7716,10 @@ A customized weaver generally has three parts.
         cb\_template= string.Template("""<a name="pyweb${seq}"></a>
         <!--line number ${lineNumber}-->
         <p><em>${fullName}</em> (${seq})&nbsp;${concat}</p>
-        <code><pre>\\n""")
+        <pre><code>\\n""")
     
         ce\_template= string.Template("""
-        </pre></code>
+        </code></pre>
         <p>&loz; <em>${fullName}</em> (${seq}).
         ${references}
         </p>\\n""")
@@ -7727,9 +7727,9 @@ A customized weaver generally has three parts.
         fb\_template= string.Template("""<a name="pyweb${seq}"></a>
         <!--line number ${lineNumber}-->
         <p>\`\`${fullName}\`\` (${seq})&nbsp;${concat}</p>
-        <code><pre>\\n""") # Prevent indent
+        <pre><code>\\n""") # Prevent indent
             
-        fe\_template= string.Template( """</pre></code>
+        fe\_template= string.Template( """</code></pre>
         <p>&loz; \`\`${fullName}\`\` (${seq}).
         ${references}
         </p>\\n""")
