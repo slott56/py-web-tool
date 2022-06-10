@@ -1,64 +1,93 @@
-<?xml version="1.0"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-    <title>pyWeb Literate Programming 2.3 - Test Suite</title>
-    <meta name="generator" content="BBEdit 6.5.2" />
-    <meta name="author" content="Steven F. Lott" />
-    <link rel="StyleSheet" href="pyweb.css" type="text/css" />
-</head>
-<body>
-<div class="document">
+############################################
+pyWeb Literate Programming 3.1 - Test Suite
+############################################    
+    
+    
+=================================================
+Yet Another Literate Programming Tool
+=================================================
 
-<!-- title page -->
-<p class="title"><em>pyWeb</em> 2.3 Test Suite</p>
-<p class="title">In Python, Yet Another Literate Programming Tool</p>
-<p class="subtitle"><a href="mailto:s_lott@@yahoo.com">Steven F. Lott</a></p>
+..	include:: <isoamsa.txt>
+..	include:: <isopub.txt>
 
-<hr />
-<p class="subtitle">Table of Contents</p>
-<!--TOC-->
-<hr />
+..	contents::
 
-<h1>Introduction</h1>
-<div class="chapter">
+
 @i intro.w
-</div>
 
-<a name="unit"></a><h1>Unit Testing</h1>
-<div class="chapter">
 @i unit.w
-</div>
 
-<a name="functional"></a><h1>Functional Testing</h1>
-<div class="chapter">
 @i func.w
-</div>
 
-<h1>Combined Test Script</h1>
-<div class="chapter">
 @i combined.w
-</div>
 
-<h1>Indices</h1>
-<div class="chapter">
-<h2>Files</h2>
+Additional Files
+=================
+
+To get the RST to look good, there are two additional files.
+
+``docutils.conf`` defines two CSS files to use.
+	The default CSS file may need to be customized.
+
+@o docutils.conf 
+@{# docutils.conf
+
+[html4css1 writer]
+stylesheet-path: /Users/slott/miniconda3/envs/pywebtool/lib/python3.10/site-packages/docutils/writers/html4css1/html4css1.css,
+    page-layout.css
+syntax-highlight: long
+@}
+
+``page-layout.css``  This tweaks one CSS to be sure that
+the resulting HTML pages are easier to read. These are minor
+tweaks to the default CSS.
+
+@o page-layout.css 
+@{/* Page layout tweaks */
+div.document { width: 7in; }
+.small { font-size: smaller; }
+.code
+{
+	color: #101080;
+	display: block;
+	border-color: black;
+	border-width: thin;
+	border-style: solid;
+	background-color: #E0FFFF;
+	/*#99FFFF*/
+	padding: 0 0 0 1%;
+	margin: 0 6% 0 6%;
+	text-align: left;
+	font-size: smaller;
+}
+@}
+
+Indices
+=======
+
+Files
+-----
+
 @f
-<h2>Macros</h2>
+
+Macros
+------
+
 @m
-<h2>User Identifiers</h2>
+
+User Identifiers
+----------------
+
 @u
-</div>
 
-<hr />
-<p><small>Created by @(thisApplication@) at @(datetime.datetime.now().ctime()@).</small></p>
-<p><small>pyweb.__version__ '@(__version__@)'.</small></p>
-<p><small>Source @(theFile@) modified @(datetime.datetime.fromtimestamp(os.path.getmtime(theFile))@).
-</small></p>
-<p><small>Working directory '@(os.path.realpath('.')@)'.</small></p>
+----------
 
+..	class:: small
 
-</div>
-</body>
-</html>
+	Created by @(thisApplication@) at @(datetime.datetime.now().ctime()@).
+
+    Source @(theFile@) modified @(datetime.datetime.fromtimestamp(os.path.getmtime(theFile)).ctime()@).
+
+	pyweb.__version__ '@(__version__@)'.
+
+	Working directory '@(os.path.realpath('.')@)'.

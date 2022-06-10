@@ -1,4 +1,4 @@
-pyWeb 3.0: In Python, Yet Another Literate Programming Tool
+pyWeb 3.1: In Python, Yet Another Literate Programming Tool
 
 Literate programming is an attempt to reconcile the opposing needs
 of clear presentation to people with the technical issues of 
@@ -14,7 +14,7 @@ It is independent of any particular document markup or source language.
 Is uses a simple set of markup tags to define chunks of code and 
 documentation.
 
-The ``pyweb.w`` file is the source for the various pyweb module and script files.
+The ``pyweb.w`` file is the source for the various ``pyweb`` module and script files.
 The various source code files are created by applying a
 tangle operation to the ``.w`` file.  The final documentation is created by
 applying a weave operation to the ``.w`` file.
@@ -22,16 +22,24 @@ applying a weave operation to the ``.w`` file.
 Installation
 -------------
 
+This requires Python 3.10.
+
+First, downnload the distribution kit from PyPI.
+
 ::
 
     python3 setup.py install
 
-This will install the pyweb module.
+This will install the ``pyweb`` module, and the ``weave`` and ``tangle`` applications.
 
-Document production
---------------------
+Produce Documentation
+---------------------
 
-The supplied documentation uses RST markup and requires docutils.
+The supplied documentation uses RST markup; it requires docutils.
+
+::
+
+    python3 -m pip install docutils
 
 ::
 
@@ -41,16 +49,16 @@ The supplied documentation uses RST markup and requires docutils.
 Authoring
 ---------
 
-The pyweb document describes the simple markup used to define code chunks
+The ``pyweb.html`` document describes the markup used to define code chunks
 and assemble those code chunks into a coherent document as well as working code.
 
 If you're a JEdit user, the ``jedit`` directory can be used
-to configure syntax highlighting that includes PyWeb and RST.
+to configure syntax highlighting that includes **py-web-tool** and RST.
 
 Operation
 ---------
 
-You can then run pyweb with
+After installation and authoring, you can then run **py-web-tool** with
 
 ::
 
@@ -81,5 +89,6 @@ execute all tests.
 	python3 -m pyweb pyweb_test.w
 	PYTHONPATH=.. python3 test.py
 	rst2html.py pyweb_test.rst pyweb_test.html
+    mypy --strict pyweb.py
 
 

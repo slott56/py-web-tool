@@ -1,0 +1,21 @@
+
+[build-system]
+requires = ["setuptools >= 61.2.0", "wheel >= 0.37.1", "pytest == 7.1.2", "mypy == 0.910"]
+build-backend = "setuptools.build_meta"
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py310
+
+[testenv]
+deps = 
+    pytest == 7.1.2
+    mypy == 0.910
+commands_pre = 
+    python3 pyweb-3.0.py pyweb.w
+    python3 pyweb.py -o test test/pyweb_test.w 
+commands = 
+    python3 test/test.py
+    mypy --strict pyweb.py
+"""

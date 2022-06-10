@@ -15,11 +15,12 @@ have a common origin, then the traditional gaps between intent
 (expressed in the documentation) and action (expressed in the
 working program) are significantly reduced.
 
-**pyWeb** is a literate programming tool that combines the actions
+**py-web-tool** is a literate programming tool that combines the actions
 of *weaving* a document with *tangling* source files.
 It is independent of any source language.
-It is designed to work with RST document markup.
-Is uses a simple set of markup tags to define chunks of code and 
+While is designed to work with RST document markup, it should be amenable to any other
+flavor of markup.
+It uses a small set of markup tags to define chunks of code and 
 documentation.
 
 Background
@@ -71,11 +72,11 @@ like `Literate Programming <http://www.literateprogramming.com>`_,
 and the OASIS
 `XML Cover Pages: Literate Programming with SGML and XML <http://www.oasis-open.org/cover/xmlLitProg.html>`_.
 
-The immediate predecessors to this **pyWeb** tool are 
+The immediate predecessors to this **py-web-tool** tool are 
 `FunnelWeb <http://www.ross.net/funnelweb>`_,
 `noweb <http://www.eecs.harvard.edu/~nr/noweb/>`_ and 
 `nuweb <http://sourceforge.net/projects/nuweb/>`_.  The ideas lifted from these other
-tools created the foundation for **pyWeb**.
+tools created the foundation for **py-web-tool**.
 
 There are several Python-oriented literate programming tools.  
 These include 
@@ -83,7 +84,7 @@ These include
 `interscript <http://interscript.sourceforge.net/>`_,
 `lpy <http://www.danbala.com/python/lpy/>`_,
 `py2html <http://www.egenix.com/files/python/SoftwareDescriptions.html#py2html.py>`_,
-`PyLit <http://pylit.berlios.de/>`_.
+`PyLit-3 <https://github.com/slott56/PyLit-3>`_
 
 The *FunnelWeb* tool is independent of any programming language
 and only mildly dependent on T\ :sub:`e`\ X.
@@ -118,45 +119,45 @@ programming".
 
 The *py2html* tool does very sophisticated syntax coloring.
 
-The *PyLit* tool is perhaps the very best approach to simple Literate
+The *PyLit-3* tool is perhaps the very best approach to Literate
 programming, since it leverages an existing lightweight markup language
 and it's output formatting. However, it's limited in the presentation order,
 making it difficult to present a complex Python module out of the proper
 Python required presentation.
 
-**pyWeb**
----------
+**py-web-tool**
+---------------
 
-**pyWeb** works with any 
+**py-web-tool** works with any 
 programming language. It can work with any markup language, but is currently
-configured to work with RST only.  This philosophy
+configured to work with RST.  This philosophy
 comes from *FunnelWeb*
 *noweb*, *nuweb* and *interscript*.  The primary differences
-between **pyWeb** and other tools are the following.
+between **py-web-tool** and other tools are the following.
 
--   **pyWeb** is object-oriented, permitting easy extension.  
+-   **py-web-tool** is object-oriented, permitting easy extension.  
     *noweb* extensions
     are separate processes that communicate through a sophisticated protocol.
     *nuweb* is not easily extended without rewriting and recompiling
     the C programs.
 
--   **pyWeb** is built in the very portable Python programming 
+-   **py-web-tool** is built in the very portable Python programming 
     language.  This allows it to run anywhere that Python 3.3 runs, with
     only the addition of docutils.  This makes it a useful
     tool for programmers in any language.
 
--   **pyWeb** is much simpler than *FunnelWeb*, *LEO* or *Interscript*.  It has 
+-   **py-web-tool** is much simpler than *FunnelWeb*, *LEO* or *Interscript*.  It has 
     a very limited selection of commands, but can still produce 
     complex programs and HTML documents.
 
--   **pyWeb** does not invent a complex markup language like *Interscript*.
+-   **py-web-tool** does not invent a complex markup language like *Interscript*.
     Because *Iterscript* has its own markup, it can generate L\ :sub:`a`\ T\ :sub:`e`\ X or HTML or other
     output formats from a unique input format.  While powerful, it seems simpler to
-    avoid inventing yet another sophisticated markup language.  The language **pyWeb**
+    avoid inventing yet another sophisticated markup language.  The language **py-web-tool**
     uses is very simple, and the author's use their preferred markup language almost
     exclusively.
 
--   **pyWeb** supports the forward literate programming philosophy, 
+-   **py-web-tool** supports the forward literate programming philosophy, 
     where a source document creates programming language and markup language.
     The alternative, deriving the document from markup embedded in 
     program comments ("inverted literate programming"), seems less appealing.
@@ -164,7 +165,7 @@ between **pyWeb** and other tools are the following.
     can't reflect the original author's preferred order of exposition,
     since that informtion generally isn't part of the source code.
 
--   **pyWeb** also specifically rejects some features of *nuweb*
+-   **py-web-tool** also specifically rejects some features of *nuweb*
     and *FunnelWeb*.  These include the macro capability with parameter
     substitution, and multiple references to a chunk.  These two capabilities
     can be used to grow object-like applications from non-object programming
@@ -172,18 +173,18 @@ between **pyWeb** and other tools are the following.
     Java, C++) are object-oriented, this macro capability is more of a problem
     than a help.
 
--   Since **pyWeb** is built in the Python interpreter, a source document
+-   Since **py-web-tool** is built in the Python interpreter, a source document
     can include Python expressions that are evaluated during weave operation to
     produce time stamps, source file descriptions or other information in the woven 
     or tangled output.
 
 
-**pyWeb** works with any programming language; it can work with any markup language.
+**py-web-tool** works with any programming language; it can work with any markup language.
 The initial release supports RST via simple templates.
 
 The following is extensively quoted from Briggs' *nuweb* documentation, 
 and provides an excellent background in the advantages of the very
-simple approach started by *nuweb* and adopted by **pyWeb**.
+simple approach started by *nuweb* and adopted by **py-web-tool**.
 
     The need to support arbitrary
     programming languages has many consequences:
@@ -234,17 +235,17 @@ simple approach started by *nuweb* and adopted by **pyWeb**.
         but it is also important in many practical situations, *e.g.*, debugging.
 
     :Speed:
-        Since [**pyWeb**] doesn't do too much, it runs very quickly. 
+        Since [**py-web-tool**] doesn't do too much, it runs very quickly. 
         It combines the functions of ``tangle`` and ``weave`` into a single 
         program that performs both functions at once.
 
     :Chunk numbers:
-        Inspired by the example of **noweb**, [**pyWeb**] refers to all program code 
+        Inspired by the example of **noweb**, [**py-web-tool**] refers to all program code 
         chunks by a simple, ascending sequence number through the file.  
         This becomes the HTML anchor name, also.
 
     :Multiple file output:
-        The programmer may specify more than one output file in a single [**pyWeb**] 
+        The programmer may specify more than one output file in a single [**py-web-tool**] 
         source file. This is required when constructing programs in a combination of 
         languages (say, Fortran and C). It's also an advantage when constructing 
         very large programs.
@@ -252,7 +253,7 @@ simple approach started by *nuweb* and adopted by **pyWeb**.
 Use Cases
 -----------
 
-**pyWeb** supports two use cases, `Tangle Source Files`_ and `Weave Documentation`_.
+**py-web-tool** supports two use cases, `Tangle Source Files`_ and `Weave Documentation`_.
 These are often combined into a single request of the application that will both
 weave and tangle.
 
@@ -271,7 +272,7 @@ Outside this use case, the user will debug those source files, possibly updating
 The use case is a failure when the source files cannot be produced, due to 
 errors in the ``.w`` file.  These must be corrected based on information in log messages.
 
-The sequence is simply ``./pyweb.py *theFile*.w``.
+The sequence is ``./pyweb.py *theFile*.w``.
 
 Weave Documentation
 ~~~~~~~~~~~~~~~~~~~~
@@ -288,18 +289,18 @@ Outside this use case, the user will edit the documentation file, possibly updat
 The use case is a failure when the documentation file cannot be produced, due to 
 errors in the ``.w`` file.  These must be corrected based on information in log messages.
 
-The sequence is simply ``./pyweb.py *theFile*.w``.
+The sequence is ``./pyweb.py *theFile*.w``.
 
-Tangle, Regression Test and Weave
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Tangle, Test, and Weave with Test Results
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A user initiates this process when they have a ``.w`` file that contains 
 a description of a document to produce.  The document is described by the entire
-``.w`` file.  Further, their final document should include regression test output 
+``.w`` file.  Further, their final document should include test output 
 from the source files created by the tangle operation.
 
 The use case is successful when the documentation file is produced, including
-current regression test output.
+current test output.
 
 Outside this use case, the user will edit the documentation file, possibly updating the
 ``.w`` file.  This will lead to a need to restart this use case.
@@ -308,7 +309,7 @@ The use case is a failure when the documentation file cannot be produced, due to
 errors in the ``.w`` file.  These must be corrected based on information in log messages.
 
 The use case is a failure when the documentation file does not include current
-regression test output.
+test output.
 
 The sequence is as follows:
 
@@ -318,35 +319,42 @@ The sequence is as follows:
     python *theTest* >\ *aLog*
     ./pyweb.py -xt *theFile*\ .w
 
+Another possibility includes the following:
 
+ ..  parsed-literal::
+
+     ./pyweb.py -xw -pi *theFile*\ .w
+     python -m pytest *theTestFile* >\ *aLog*
+     ./pyweb.py -xt *theFile*\ .w
+     
 The first step excludes weaving and permits errors on the ``@@i`` command.  The ``-pi`` option
 is necessary in the event that the log file does not yet exist.  The second step 
-runs the regression test, creating a log file.  The third step weaves the final document,
-including the regression test output.
+runs the test, creating a log file.  The third step weaves the final document,
+including the test output.
 
-Writing **pyWeb** ``.w`` Files
--------------------------------
+Writing **py-web-tool** ``.w`` Files
+-------------------------------------
 
 The essence of literate programming is a markup language that distinguishes code
 from documentation. For tangling, the code is relevant. For weaving, both code
 and documentation are relevant.
 
-The **pyWeb** markup defines a sequence of *Chunks*. 
+The **py-web-tool** markup defines a sequence of *Chunks*. 
 Each Chunk is either program source code to 
 be *tangled* or it is documentation to be *woven*.  The bulk of
 the file is typically documentation chunks that describe the program in
 some human-oriented markup language like RST, HTML, or LaTeX.
 
 
-The **pyWeb** tool parses the input, and performs the
+The **py-web-tool** tool parses the input, and performs the
 tangle and weave operations.  It *tangles* each individual output file
 from the program source chunks.  It *weaves* a final documentation file
 file from the entire sequence of chunks provided, mixing the author's 
 original documentation with some markup around the embedded program source.
 
-**pyWeb** markup surrounds the code with tags. Everything else is documentation.
+**py-web-tool** markup surrounds the code with tags. Everything else is documentation.
 When tangling, the tagged code is assembled into the final file.
-When weaving, the tags are replaced with output markup. This means that **pyWeb**
+When weaving, the tags are replaced with output markup. This means that **py-web-tool**
 is not **totally** independent of the output markup.
 
 The code chunks will have their indentation adjusted to match the context in which
@@ -354,9 +362,9 @@ they were originally defined. This assures that Python (which relies on indentat
 parses correctly. For other languages, proper indentation is expected but not required.
 
 The non-code chunks are not transformed up in any way.  Everything that's not
-explicitly a code chunk is simply output without modification.
+explicitly a code chunk is output without modification.
 
-All of the **pyWeb** tags begin with ``@@``.  This can be changed.
+All of the **py-web-tool** tags begin with ``@@``.  This can be changed.
 
 The *Structural* tags (historically called "major commands") partition the input and define the
 various chunks.  The *Inline* tags are (called "minor commands") are used to control the
@@ -509,7 +517,7 @@ is shown in the following example:
     @@o myFile.py 
     @@{
     @@<imports of the various packages used@@>
-    print( math.pi,time.time() )
+    print(math.pi,time.time())
     @@}
 
     Some notes on the packages used.
@@ -557,14 +565,14 @@ fairly complex output files.
 
     @@o myFile.py 
     @@{
-    import math,time
+    import math, time
     @@}
 
     Some notes on the packages used.
 
     @@o myFile.py
     @@{
-    print math.pi,time.time()
+    print(math.pi, time.time())
     @@}
 
     Some more HTML documentation.
@@ -593,7 +601,7 @@ named chunk was defined with the following.
 ..  parsed-literal::
 
     @@{
-    import math,time
+    import math, time
     @@}
 
 This puts a newline character before and after the import line.
@@ -622,7 +630,7 @@ Here's how the context-sensitive indentation works.
 
     @@o myFile.py 
     @@{
-    def aFunction( a, b ):
+    def aFunction(a, b):
         @@<body of aFunction@@>
     @@| aFunction @@}
 
@@ -642,7 +650,7 @@ more obvious.
 ..  parsed-literal::
 
     ~
-    ~def aFunction( a, b ):
+    ~def aFunction(a, b):
     ~        
     ~    """doc string"""
     ~    return a + b
@@ -733,14 +741,19 @@ expression in the input.
 
 
 In this implementation, we adopt the latter approach, and evaluate expressions immediately.
-A simple global context is created with the following variables defined.
+A global context is created with the following variables defined.
 
 :os.path:
-    This is the standard ``os.path`` module. The complete ``os`` module is not
-    available. Just this one item.
+    This is the standard ``os.path`` module. 
+    
+:os.getcwd:
+    The complete ``os`` module is not available. Just this function.
     
 :datetime:
     This is the standard ``datetime`` module.
+    
+:time:
+    The standard ``time`` module.
 
 :platform:
     This is the standard ``platform`` module.
@@ -760,14 +773,14 @@ A simple global context is created with the following variables defined.
     The ``.w`` file being processed.
     
 :thisApplication:
-    The name of the running **pyWeb** application. It may not be pyweb.py, 
+    The name of the running **py-web-tool** application. It may not be pyweb.py, 
     if some other script is being used.
 
 :__version__:
-    The version string in the **pyWeb** application.
+    The version string in the **py-web-tool** application.
 
 
-Running **pyWeb** to Tangle and Weave
+Running **py-web-tool** to Tangle and Weave
 --------------------------------------
 
 Assuming that you have marked ``pyweb.py`` as executable,
@@ -816,7 +829,7 @@ Currently, the following command line options are accepted.
 Bootstrapping
 --------------
 
-**pyWeb** is written using **pyWeb**. The distribution includes the original ``.w``
+**py-web-tool** is written using **py-web-tool**. The distribution includes the original ``.w``
 files as well as a ``.py`` module.
 
 The bootstrap procedure is this.
@@ -840,7 +853,7 @@ Similarly, the tests are bootstrapped from ``.w`` files.
 Dependencies
 -------------
 
-**pyWeb** requires Python 3.3 or newer.
+**py-web-tool** requires Python 3.10 or newer.
 
 If you create RST output, you'll want to use docutils to translate
 the RST to HTML or LaTeX or any of the other formats supported by docutils.
@@ -856,10 +869,9 @@ This application is very directly based on (derived from?) work that
 -   Norman Ramsey's *noweb* http://www.eecs.harvard.edu/~nr/noweb/
 
 -   Preston Briggs' *nuweb* http://sourceforge.net/projects/nuweb/
-
     Currently supported by Charles Martin and Marc W. Mengel
 
 Also, after using John Skaller's *interscript* http://interscript.sourceforge.net/
-for two large development efforts, I finally understood the feature set I really needed.
+for two large development efforts, I finally understood the feature set I really wanted.
 
-Jason Fruit contributed to the previous version.
+Jason Fruit and others contributed to the previous version.

@@ -1,5 +1,5 @@
 ##############################
-pyWeb Literate Programming 3.0
+pyWeb Literate Programming 3.1
 ##############################
 
 =================================================
@@ -29,11 +29,12 @@ have a common origin, then the traditional gaps between intent
 (expressed in the documentation) and action (expressed in the
 working program) are significantly reduced.
 
-**pyWeb** is a literate programming tool that combines the actions
+**py-web-tool** is a literate programming tool that combines the actions
 of *weaving* a document with *tangling* source files.
 It is independent of any source language.
-It is designed to work with RST document markup.
-Is uses a simple set of markup tags to define chunks of code and 
+While is designed to work with RST document markup, it should be amenable to any other
+flavor of markup.
+It uses a small set of markup tags to define chunks of code and 
 documentation.
 
 Background
@@ -85,11 +86,11 @@ like `Literate Programming <http://www.literateprogramming.com>`_,
 and the OASIS
 `XML Cover Pages: Literate Programming with SGML and XML <http://www.oasis-open.org/cover/xmlLitProg.html>`_.
 
-The immediate predecessors to this **pyWeb** tool are 
+The immediate predecessors to this **py-web-tool** tool are 
 `FunnelWeb <http://www.ross.net/funnelweb>`_,
 `noweb <http://www.eecs.harvard.edu/~nr/noweb/>`_ and 
 `nuweb <http://sourceforge.net/projects/nuweb/>`_.  The ideas lifted from these other
-tools created the foundation for **pyWeb**.
+tools created the foundation for **py-web-tool**.
 
 There are several Python-oriented literate programming tools.  
 These include 
@@ -97,7 +98,7 @@ These include
 `interscript <http://interscript.sourceforge.net/>`_,
 `lpy <http://www.danbala.com/python/lpy/>`_,
 `py2html <http://www.egenix.com/files/python/SoftwareDescriptions.html#py2html.py>`_,
-`PyLit <http://pylit.berlios.de/>`_.
+`PyLit-3 <https://github.com/slott56/PyLit-3>`_
 
 The *FunnelWeb* tool is independent of any programming language
 and only mildly dependent on T\ :sub:`e`\ X.
@@ -132,45 +133,45 @@ programming".
 
 The *py2html* tool does very sophisticated syntax coloring.
 
-The *PyLit* tool is perhaps the very best approach to simple Literate
+The *PyLit-3* tool is perhaps the very best approach to Literate
 programming, since it leverages an existing lightweight markup language
 and it's output formatting. However, it's limited in the presentation order,
 making it difficult to present a complex Python module out of the proper
 Python required presentation.
 
-**pyWeb**
----------
+**py-web-tool**
+---------------
 
-**pyWeb** works with any 
+**py-web-tool** works with any 
 programming language. It can work with any markup language, but is currently
-configured to work with RST only.  This philosophy
+configured to work with RST.  This philosophy
 comes from *FunnelWeb*
 *noweb*, *nuweb* and *interscript*.  The primary differences
-between **pyWeb** and other tools are the following.
+between **py-web-tool** and other tools are the following.
 
--   **pyWeb** is object-oriented, permitting easy extension.  
+-   **py-web-tool** is object-oriented, permitting easy extension.  
     *noweb* extensions
     are separate processes that communicate through a sophisticated protocol.
     *nuweb* is not easily extended without rewriting and recompiling
     the C programs.
 
--   **pyWeb** is built in the very portable Python programming 
+-   **py-web-tool** is built in the very portable Python programming 
     language.  This allows it to run anywhere that Python 3.3 runs, with
     only the addition of docutils.  This makes it a useful
     tool for programmers in any language.
 
--   **pyWeb** is much simpler than *FunnelWeb*, *LEO* or *Interscript*.  It has 
+-   **py-web-tool** is much simpler than *FunnelWeb*, *LEO* or *Interscript*.  It has 
     a very limited selection of commands, but can still produce 
     complex programs and HTML documents.
 
--   **pyWeb** does not invent a complex markup language like *Interscript*.
+-   **py-web-tool** does not invent a complex markup language like *Interscript*.
     Because *Iterscript* has its own markup, it can generate L\ :sub:`a`\ T\ :sub:`e`\ X or HTML or other
     output formats from a unique input format.  While powerful, it seems simpler to
-    avoid inventing yet another sophisticated markup language.  The language **pyWeb**
+    avoid inventing yet another sophisticated markup language.  The language **py-web-tool**
     uses is very simple, and the author's use their preferred markup language almost
     exclusively.
 
--   **pyWeb** supports the forward literate programming philosophy, 
+-   **py-web-tool** supports the forward literate programming philosophy, 
     where a source document creates programming language and markup language.
     The alternative, deriving the document from markup embedded in 
     program comments ("inverted literate programming"), seems less appealing.
@@ -178,7 +179,7 @@ between **pyWeb** and other tools are the following.
     can't reflect the original author's preferred order of exposition,
     since that informtion generally isn't part of the source code.
 
--   **pyWeb** also specifically rejects some features of *nuweb*
+-   **py-web-tool** also specifically rejects some features of *nuweb*
     and *FunnelWeb*.  These include the macro capability with parameter
     substitution, and multiple references to a chunk.  These two capabilities
     can be used to grow object-like applications from non-object programming
@@ -186,18 +187,18 @@ between **pyWeb** and other tools are the following.
     Java, C++) are object-oriented, this macro capability is more of a problem
     than a help.
 
--   Since **pyWeb** is built in the Python interpreter, a source document
+-   Since **py-web-tool** is built in the Python interpreter, a source document
     can include Python expressions that are evaluated during weave operation to
     produce time stamps, source file descriptions or other information in the woven 
     or tangled output.
 
 
-**pyWeb** works with any programming language; it can work with any markup language.
+**py-web-tool** works with any programming language; it can work with any markup language.
 The initial release supports RST via simple templates.
 
 The following is extensively quoted from Briggs' *nuweb* documentation, 
 and provides an excellent background in the advantages of the very
-simple approach started by *nuweb* and adopted by **pyWeb**.
+simple approach started by *nuweb* and adopted by **py-web-tool**.
 
     The need to support arbitrary
     programming languages has many consequences:
@@ -248,17 +249,17 @@ simple approach started by *nuweb* and adopted by **pyWeb**.
         but it is also important in many practical situations, *e.g.*, debugging.
 
     :Speed:
-        Since [**pyWeb**] doesn't do too much, it runs very quickly. 
+        Since [**py-web-tool**] doesn't do too much, it runs very quickly. 
         It combines the functions of ``tangle`` and ``weave`` into a single 
         program that performs both functions at once.
 
     :Chunk numbers:
-        Inspired by the example of **noweb**, [**pyWeb**] refers to all program code 
+        Inspired by the example of **noweb**, [**py-web-tool**] refers to all program code 
         chunks by a simple, ascending sequence number through the file.  
         This becomes the HTML anchor name, also.
 
     :Multiple file output:
-        The programmer may specify more than one output file in a single [**pyWeb**] 
+        The programmer may specify more than one output file in a single [**py-web-tool**] 
         source file. This is required when constructing programs in a combination of 
         languages (say, Fortran and C). It's also an advantage when constructing 
         very large programs.
@@ -266,7 +267,7 @@ simple approach started by *nuweb* and adopted by **pyWeb**.
 Use Cases
 -----------
 
-**pyWeb** supports two use cases, `Tangle Source Files`_ and `Weave Documentation`_.
+**py-web-tool** supports two use cases, `Tangle Source Files`_ and `Weave Documentation`_.
 These are often combined into a single request of the application that will both
 weave and tangle.
 
@@ -285,7 +286,7 @@ Outside this use case, the user will debug those source files, possibly updating
 The use case is a failure when the source files cannot be produced, due to 
 errors in the ``.w`` file.  These must be corrected based on information in log messages.
 
-The sequence is simply ``./pyweb.py *theFile*.w``.
+The sequence is ``./pyweb.py *theFile*.w``.
 
 Weave Documentation
 ~~~~~~~~~~~~~~~~~~~~
@@ -302,18 +303,18 @@ Outside this use case, the user will edit the documentation file, possibly updat
 The use case is a failure when the documentation file cannot be produced, due to 
 errors in the ``.w`` file.  These must be corrected based on information in log messages.
 
-The sequence is simply ``./pyweb.py *theFile*.w``.
+The sequence is ``./pyweb.py *theFile*.w``.
 
-Tangle, Regression Test and Weave
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Tangle, Test, and Weave with Test Results
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A user initiates this process when they have a ``.w`` file that contains 
 a description of a document to produce.  The document is described by the entire
-``.w`` file.  Further, their final document should include regression test output 
+``.w`` file.  Further, their final document should include test output 
 from the source files created by the tangle operation.
 
 The use case is successful when the documentation file is produced, including
-current regression test output.
+current test output.
 
 Outside this use case, the user will edit the documentation file, possibly updating the
 ``.w`` file.  This will lead to a need to restart this use case.
@@ -322,7 +323,7 @@ The use case is a failure when the documentation file cannot be produced, due to
 errors in the ``.w`` file.  These must be corrected based on information in log messages.
 
 The use case is a failure when the documentation file does not include current
-regression test output.
+test output.
 
 The sequence is as follows:
 
@@ -332,35 +333,42 @@ The sequence is as follows:
     python *theTest* >\ *aLog*
     ./pyweb.py -xt *theFile*\ .w
 
+Another possibility includes the following:
 
+ ..  parsed-literal::
+
+     ./pyweb.py -xw -pi *theFile*\ .w
+     python -m pytest *theTestFile* >\ *aLog*
+     ./pyweb.py -xt *theFile*\ .w
+     
 The first step excludes weaving and permits errors on the ``@i`` command.  The ``-pi`` option
 is necessary in the event that the log file does not yet exist.  The second step 
-runs the regression test, creating a log file.  The third step weaves the final document,
-including the regression test output.
+runs the test, creating a log file.  The third step weaves the final document,
+including the test output.
 
-Writing **pyWeb** ``.w`` Files
--------------------------------
+Writing **py-web-tool** ``.w`` Files
+-------------------------------------
 
 The essence of literate programming is a markup language that distinguishes code
 from documentation. For tangling, the code is relevant. For weaving, both code
 and documentation are relevant.
 
-The **pyWeb** markup defines a sequence of *Chunks*. 
+The **py-web-tool** markup defines a sequence of *Chunks*. 
 Each Chunk is either program source code to 
 be *tangled* or it is documentation to be *woven*.  The bulk of
 the file is typically documentation chunks that describe the program in
 some human-oriented markup language like RST, HTML, or LaTeX.
 
 
-The **pyWeb** tool parses the input, and performs the
+The **py-web-tool** tool parses the input, and performs the
 tangle and weave operations.  It *tangles* each individual output file
 from the program source chunks.  It *weaves* a final documentation file
 file from the entire sequence of chunks provided, mixing the author's 
 original documentation with some markup around the embedded program source.
 
-**pyWeb** markup surrounds the code with tags. Everything else is documentation.
+**py-web-tool** markup surrounds the code with tags. Everything else is documentation.
 When tangling, the tagged code is assembled into the final file.
-When weaving, the tags are replaced with output markup. This means that **pyWeb**
+When weaving, the tags are replaced with output markup. This means that **py-web-tool**
 is not **totally** independent of the output markup.
 
 The code chunks will have their indentation adjusted to match the context in which
@@ -368,9 +376,9 @@ they were originally defined. This assures that Python (which relies on indentat
 parses correctly. For other languages, proper indentation is expected but not required.
 
 The non-code chunks are not transformed up in any way.  Everything that's not
-explicitly a code chunk is simply output without modification.
+explicitly a code chunk is output without modification.
 
-All of the **pyWeb** tags begin with ``@``.  This can be changed.
+All of the **py-web-tool** tags begin with ``@``.  This can be changed.
 
 The *Structural* tags (historically called "major commands") partition the input and define the
 various chunks.  The *Inline* tags are (called "minor commands") are used to control the
@@ -522,8 +530,8 @@ is shown in the following example:
 
     @o myFile.py 
     @{
-    @<imports of the various packages used>
-    print( math.pi,time.time() )
+    @<imports of the various packages used@>
+    print(math.pi,time.time())
     @}
 
     Some notes on the packages used.
@@ -571,14 +579,14 @@ fairly complex output files.
 
     @o myFile.py 
     @{
-    import math,time
+    import math, time
     @}
 
     Some notes on the packages used.
 
     @o myFile.py
     @{
-    print math.pi,time.time()
+    print(math.pi, time.time())
     @}
 
     Some more HTML documentation.
@@ -607,7 +615,7 @@ named chunk was defined with the following.
 ..  parsed-literal::
 
     @{
-    import math,time
+    import math, time
     @}
 
 This puts a newline character before and after the import line.
@@ -636,7 +644,7 @@ Here's how the context-sensitive indentation works.
 
     @o myFile.py 
     @{
-    def aFunction( a, b ):
+    def aFunction(a, b):
         @<body of aFunction@>
     @| aFunction @}
 
@@ -656,7 +664,7 @@ more obvious.
 ..  parsed-literal::
 
     ~
-    ~def aFunction( a, b ):
+    ~def aFunction(a, b):
     ~        
     ~    """doc string"""
     ~    return a + b
@@ -747,14 +755,19 @@ expression in the input.
 
 
 In this implementation, we adopt the latter approach, and evaluate expressions immediately.
-A simple global context is created with the following variables defined.
+A global context is created with the following variables defined.
 
 :os.path:
-    This is the standard ``os.path`` module. The complete ``os`` module is not
-    available. Just this one item.
+    This is the standard ``os.path`` module. 
+    
+:os.getcwd:
+    The complete ``os`` module is not available. Just this function.
     
 :datetime:
     This is the standard ``datetime`` module.
+    
+:time:
+    The standard ``time`` module.
 
 :platform:
     This is the standard ``platform`` module.
@@ -774,14 +787,14 @@ A simple global context is created with the following variables defined.
     The ``.w`` file being processed.
     
 :thisApplication:
-    The name of the running **pyWeb** application. It may not be pyweb.py, 
+    The name of the running **py-web-tool** application. It may not be pyweb.py, 
     if some other script is being used.
 
 :__version__:
-    The version string in the **pyWeb** application.
+    The version string in the **py-web-tool** application.
 
 
-Running **pyWeb** to Tangle and Weave
+Running **py-web-tool** to Tangle and Weave
 --------------------------------------
 
 Assuming that you have marked ``pyweb.py`` as executable,
@@ -830,7 +843,7 @@ Currently, the following command line options are accepted.
 Bootstrapping
 --------------
 
-**pyWeb** is written using **pyWeb**. The distribution includes the original ``.w``
+**py-web-tool** is written using **py-web-tool**. The distribution includes the original ``.w``
 files as well as a ``.py`` module.
 
 The bootstrap procedure is this.
@@ -854,7 +867,7 @@ Similarly, the tests are bootstrapped from ``.w`` files.
 Dependencies
 -------------
 
-**pyWeb** requires Python 3.3 or newer.
+**py-web-tool** requires Python 3.10 or newer.
 
 If you create RST output, you'll want to use docutils to translate
 the RST to HTML or LaTeX or any of the other formats supported by docutils.
@@ -870,13 +883,13 @@ This application is very directly based on (derived from?) work that
 -   Norman Ramsey's *noweb* http://www.eecs.harvard.edu/~nr/noweb/
 
 -   Preston Briggs' *nuweb* http://sourceforge.net/projects/nuweb/
-
     Currently supported by Charles Martin and Marc W. Mengel
 
 Also, after using John Skaller's *interscript* http://interscript.sourceforge.net/
-for two large development efforts, I finally understood the feature set I really needed.
+for two large development efforts, I finally understood the feature set I really wanted.
 
-Jason Fruit contributed to the previous version.
+Jason Fruit and others contributed to the previous version.
+
 
 .. pyweb/overview.w 
 
@@ -910,7 +923,8 @@ includes the sequence of Chunks as well as an index for the named chunks.
 Note that a named chunk may be created through a number of ``@d`` commands.
 This means that
 each named chunk may be a sequence of Chunks with a common name.
-
+They are concatenated in order to permit decomposing a single concept into sequentially described pieces.
+ 
 Because a Chunk is composed of a sequence Commands, the weave and tangle actions can be 
 delegated to each Chunk, and in turn, delegated to each Command that
 composes a Chunk.
@@ -965,7 +979,7 @@ Weaving
 The weaving operation depends on the target document markup language.
 There are several approaches to this problem.  
 
--	We can use a markup language unique to **pyWeb**, 
+-	We can use a markup language unique to **py-web-tool**, 
 	and weave using markup in the desired target language.
 	
 -	We can use a standard markup language and use converters to transform
@@ -978,11 +992,11 @@ with common templates. We hate to repeat these templates; that's the
 job of a literate programming tool. Also, certain code characters must
 be properly escaped.
 
-Since **pyWeb** must transform the code into a specific markup language,
+Since **py-web-tool** must transform the code into a specific markup language,
 we opt using a **Strategy** pattern to encapsulate markup language details.
 Each alternative markup strategy is then a subclass of **Weaver**.  This 
 simplifies adding additional markup languages without inventing a 
-markup language unique to **pyWeb**.
+markup language unique to **py-web-tool**.
 The author uses their preferred markup, and their preferred
 toolset to convert to other output languages.
 
@@ -998,7 +1012,7 @@ provide a correct indentation.  This required a command-line parameter
 to turn off indentation for languages like Fortran, where identation
 is not used.  
 
-In **pyWeb**, there are two options. The default behavior is that the
+In **py-web-tool**, there are two options. The default behavior is that the
 indent of a ``@<`` command is used to set the indent of the 
 material is expanded in place of this reference.  If all ``@<`` commands are presented at the
 left margin, no indentation will be done.  This is helpful simplification,
@@ -1011,12 +1025,12 @@ Application
 ------------
 
 The overall application has two layers to it. There are actions (Load, Tangle, Weave)
-as well as a top-level application that parses the command line, creates
+as well as a top-level main function that parses the command line, creates
 and configures the actions, and then closes up shop when all done.
 
-The idea is that the Weaver Action should fit with SCons Builder.
-We can see ``Weave( "someFile.w" )`` as sensible.  Tangling is tougher
-because the ``@o`` commands define the file dependencies there.  
+The idea is that the Weaver Action should be visible to tools like `PyInvoke <https://docs.pyinvoke.org/en/stable/index.html>`_.
+We want ``Weave("someFile.w")`` to be a sensible task.  
+
 
 .. pyweb/impl.w
 
@@ -1110,23 +1124,23 @@ fit elsewhere
     :class: code
 
     
-    |srarr|\ Error class - defines the errors raised (`94`_)
-    |srarr|\ Command class hierarchy - used to describe individual commands (`76`_)
+    |srarr|\ Error class - defines the errors raised (`95`_)
+    |srarr|\ Command class hierarchy - used to describe individual commands (`77`_)
     |srarr|\ Chunk class hierarchy - used to describe input chunks (`51`_)
-    |srarr|\ Web class - describes the overall "web" of chunks (`95`_)
-    |srarr|\ Tokenizer class - breaks input into tokens (`132`_)
-    |srarr|\ Option Parser class - locates optional values on commands (`134`_), |srarr|\ (`135`_)
-    |srarr|\ WebReader class - parses the input file, building the Web structure (`114`_)
+    |srarr|\ Web class - describes the overall "web" of chunks (`96`_)
+    |srarr|\ Tokenizer class - breaks input into tokens (`134`_)
+    |srarr|\ Option Parser class - locates optional values on commands (`136`_), |srarr|\ (`137`_), |srarr|\ (`138`_)
+    |srarr|\ WebReader class - parses the input file, building the Web structure (`115`_)
     |srarr|\ Emitter class hierarchy - used to control output files (`2`_)
-    |srarr|\ Reference class hierarchy - strategies for references to a chunk (`91`_), |srarr|\ (`92`_), |srarr|\ (`93`_) 
+    |srarr|\ Reference class hierarchy - strategies for references to a chunk (`92`_), |srarr|\ (`93`_), |srarr|\ (`94`_) 
     
-    |srarr|\ Action class hierarchy - used to describe basic actions of the application (`136`_)
+    |srarr|\ Action class hierarchy - used to describe basic actions of the application (`139`_)
 
 ..
 
     ..  class:: small
 
-        |loz| *Base Class Definitions (1)*. Used by: pyweb.py (`153`_)
+        |loz| *Base Class Definitions (1)*. Used by: pyweb.py (`156`_)
 
 
 Emitters
@@ -1176,7 +1190,7 @@ weaving files that include source code plus markup (``Weaver``).
 Further specialization is required when weaving HTML or LaTeX.  Generally, this is 
 a matter of providing three things:
 
--   Boilerplate text to replace various pyWeb constructs,
+-   Boilerplate text to replace various **py-web-tool** constructs,
 
 -   Escape rules to make source code amenable to the markup language,
 
@@ -1248,7 +1262,7 @@ directs us to factor the basic open(), close() and write() methods into two step
 
 ..  parsed-literal::
 
-    def open( self ):
+    def open(self) -> "Emitter":
         *common preparation*
         self.doOpen() *#overridden by subclasses*
         return self
@@ -1302,19 +1316,26 @@ The ``codeBlock()`` method to indent each line written.
     
     class Emitter:
         """Emit an output file; handling indentation context."""
-        code\_indent= 0 # Used by a Tangler
-        def \_\_init\_\_( self ):
-            self.fileName= ""
-            self.theFile= None
-            self.linesWritten= 0
-            self.totalFiles= 0
-            self.totalLines= 0
-            self.fragment= False
-            self.logger= logging.getLogger( self.\_\_class\_\_.\_\_qualname\_\_ )
-            self.log\_indent= logging.getLogger( "indent." + self.\_\_class\_\_.\_\_qualname\_\_ )
-            self.readdIndent( self.code\_indent ) # Create context and initial lastIndent values
-        def \_\_str\_\_( self ):
+        code\_indent = 0 # Used by a Tangler
+        
+        theFile: TextIO
+        def \_\_init\_\_(self) -> None:
+            self.fileName = ""
+            self.logger = logging.getLogger(self.\_\_class\_\_.\_\_qualname\_\_)
+            self.log\_indent = logging.getLogger("indent." + self.\_\_class\_\_.\_\_qualname\_\_)
+            # Summary
+            self.linesWritten = 0
+            self.totalFiles = 0
+            self.totalLines = 0
+            # Working State
+            self.lastIndent = 0
+            self.fragment = False
+            self.context: list[int] = []
+            self.readdIndent(self.code\_indent) # Create context and initial lastIndent values
+            
+        def \_\_str\_\_(self) -> str:
             return self.\_\_class\_\_.\_\_name\_\_
+            
         |srarr|\ Emitter core open, close and write (`4`_)
         |srarr|\ Emitter write a block of code (`7`_), |srarr|\ (`8`_), |srarr|\ (`9`_)
         |srarr|\ Emitter indent control: set, clear and reset (`10`_)
@@ -1348,28 +1369,32 @@ characters to the file.
     :class: code
 
     
-    def open( self, aFile ):
+    def open(self, aFile: str) -> "Emitter":
         """Open a file."""
-        self.fileName= aFile
-        self.linesWritten= 0
-        self.doOpen( aFile )
+        self.fileName = aFile
+        self.linesWritten = 0
+        self.doOpen(aFile)
         return self
+        
     |srarr|\ Emitter doOpen, to be overridden by subclasses (`5`_)
-    def close( self ):
+    
+    def close(self) -> None:
         self.codeFinish() # Trailing newline for tangler only.
         self.doClose()
         self.totalFiles += 1
         self.totalLines += self.linesWritten
+        
     |srarr|\ Emitter doClose, to be overridden by subclasses (`6`_)
-    def write( self, text ):
+    
+    def write(self, text: str) -> None:
         if text is None: return
         self.linesWritten += text.count('\\n')
-        self.theFile.write( text )
+        self.theFile.write(text)
     
-    # Context Manager
-    def \_\_enter\_\_( self ):
+    # Context Manager Interface -- used by \`\`open()\`\` method
+    def \_\_enter\_\_(self) -> "Emitter":
         return self
-    def \_\_exit\_\_( self, \*exc ):
+    def \_\_exit\_\_(self, \*exc: Any) -> Literal[False]:
         self.close()
         return False
         
@@ -1393,8 +1418,8 @@ perform the unique operation for the subclass.
     :class: code
 
     
-    def doOpen( self, aFile ):
-        self.logger.debug( "creating {!r}".format(self.fileName) )
+    def doOpen(self, aFile: str) -> None:
+        self.logger.debug("creating {!r}".format(self.fileName))
     
 
 ..
@@ -1411,9 +1436,8 @@ perform the unique operation for the subclass.
     :class: code
 
     
-    def doClose( self ):
-        self.logger.debug( "wrote {:d} lines to {!s}".format(
-            self.linesWritten, self.fileName) )
+    def doClose(self) -> None:
+        self.logger.debug( "wrote {:d} lines to {!s}".format(        self.linesWritten, self.fileName))
     
 
 ..
@@ -1477,29 +1501,38 @@ a NamedChunk. It's not really a general feature of emitters or even tanglers.
     :class: code
 
     
-    def codeBlock( self, text ):
+    def codeBlock(self, text: str) -> None:
         """Indented write of a block of code. We buffer
         The spaces from the last line to act as the indent for the next line.
         """
-        indent= self.context[-1]
-        lines= text.split( '\\n' )
-        if len(lines) == 1: # Fragment with no newline.
-            self.write('{!s}{!s}'.format(self.lastIndent\*' ', lines[0]) )
-            self.lastIndent= 0
-            self.fragment= True
+        indent = self.context[-1]
+        lines = text.split('\\n')
+        if len(lines) == 1: 
+            # Fragment with no newline.
+            self.logger.debug(f"Fragment: {self.lastIndent}, {lines[0]!r}")
+            self.write('{!s}{!s}'.format(self.lastIndent\*' ', lines[0]))
+            self.lastIndent = 0
+            self.fragment = True
         else:
-            first, rest= lines[:1], lines[1:]
-            self.write('{!s}{!s}\\n'.format(self.lastIndent\*' ', first[0]) )
+            # Multiple lines with one or more newlines.
+            first, rest = lines[:1], lines[1:]
+            self.logger.debug(f"First Line: {self.lastIndent}, {first[0]!r}")
+            self.write('{!s}{!s}\\n'.format(self.lastIndent\*' ', first[0]))
             for l in rest[:-1]:
-                self.write( '{!s}{!s}\\n'.format(indent\*' ', l) )
+                self.logger.debug(f"Next Line: {indent}, {l!r}")
+                self.write('{!s}{!s}\\n'.format(indent\*' ', l))
             if rest[-1]:
-                self.write( '{!s}{!s}'.format(indent\*' ', rest[-1]) )
-                self.lastIndent= 0
-                self.fragment= True
+                # Last line is non-empty.
+                self.logger.debug(f"Last (Partial) Line: {indent}, {rest[-1]!r}")
+                self.write('{!s}{!s}'.format(indent\*' ', rest[-1]))
+                self.lastIndent = 0
+                self.fragment = True
             else:
+                # Last line was empty, a trailing newline.
+                self.logger.debug(f"Last (Empty) Line: indent is {len(rest[-1]) + indent}")
                 # Buffer a next indent
-                self.lastIndent= len(rest[-1]) + indent
-                self.fragment= False
+                self.lastIndent = len(rest[-1]) + indent
+                self.fragment = False
     
 
 ..
@@ -1526,15 +1559,15 @@ HTML these will not be altered.
     :class: code
 
     
-    quoted\_chars = [
+    quoted\_chars: list[tuple[str, str]] = [
         # Must be empty for tangling.
     ]
     
-    def quote( self, aLine ):
+    def quote(self, aLine: str) -> str:
         """Each individual line of code; often overridden by weavers to quote the code."""
-        clean= aLine
+        clean = aLine
         for from\_, to\_ in self.quoted\_chars:
-            clean= clean.replace( from\_, to\_ )
+            clean = clean.replace(from\_, to\_)
         return clean
     
 
@@ -1554,7 +1587,7 @@ The ``codeFinish()`` method handles a trailing fragmentary line when tangling.
     :class: code
 
     
-    def codeFinish( self ):
+    def codeFinish(self) -> None:
         if self.fragment:
             self.write('\\n')
     
@@ -1600,23 +1633,24 @@ requires this. ``readdIndent()`` uses this initial offset for weaving.
     :class: code
 
     
-    def addIndent( self, increment ):
-        self.lastIndent= self.context[-1]+increment
-        self.context.append( self.lastIndent )
-        self.log\_indent.debug( "addIndent {!s}: {!r}".format(increment, self.context) )
-    def setIndent( self, indent ):
-        self.lastIndent= self.context[-1]
-        self.context.append( indent )
-        self.log\_indent.debug( "setIndent {!s}: {!r}".format(indent, self.context) )
-    def clrIndent( self ):
+    def addIndent(self, increment: int) -> None:
+        self.lastIndent = self.context[-1]+increment
+        self.context.append(self.lastIndent)
+        self.log\_indent.debug("addIndent {!s}: {!r}".format(increment, self.context))
+    def setIndent(self, indent: int) -> None:
+        self.context.append(indent)
+        self.lastIndent = self.context[-1]
+        self.log\_indent.debug("setIndent {!s}: {!r}".format(indent, self.context))
+    def clrIndent(self) -> None:
         if len(self.context) > 1:
             self.context.pop()
-        self.lastIndent= self.context[-1]
-        self.log\_indent.debug( "clrIndent {!r}".format(self.context) )
-    def readdIndent( self, indent=0 ):
-        self.lastIndent= indent
-        self.context= [self.lastIndent]
-        self.log\_indent.debug( "readdIndent {!s}: {!r}".format(indent, self.context) )
+        self.lastIndent = self.context[-1]
+        self.log\_indent.debug("clrIndent {!r}".format(self.context))
+    def readdIndent(self, indent: int = 0) -> None:
+        """Resets the indentation context."""
+        self.lastIndent = indent
+        self.context = [self.lastIndent]
+        self.log\_indent.debug("readdIndent {!s}: {!r}".format(indent, self.context))
     
 
 ..
@@ -1631,7 +1665,7 @@ Weaver subclass of Emitter
 
 A Weaver is an Emitter that produces the final user-focused document.
 This will include the source document with the code blocks surrounded by
-markup to present that code properly.  In effect, the pyWeb ``@`` commands
+markup to present that code properly.  In effect, the **py-web-tool**  ``@`` commands
 are replaced by markup.
 
 The Weaver class uses a simple set of templates to product RST markup as the default
@@ -1685,7 +1719,7 @@ Instance-level configuration values:
 
     ..  class:: small
 
-        |loz| *Imports (11)*. Used by: pyweb.py (`153`_)
+        |loz| *Imports (11)*. Used by: pyweb.py (`156`_)
 
 
 
@@ -1695,19 +1729,20 @@ Instance-level configuration values:
     :class: code
 
     
-    class Weaver( Emitter ):
+    class Weaver(Emitter):
         """Format various types of XRef's and code blocks when weaving.
         RST format. 
         Requires \`\`..  include:: <isoamsa.txt>\`\`
         and      \`\`..  include:: <isopub.txt>\`\`
         """
-        extension= ".rst" 
-        code\_indent= 4
-        header= """\\n..  include:: <isoamsa.txt>\\n..  include:: <isopub.txt>\\n"""
+        extension = ".rst" 
+        code\_indent = 4
+        header = """\\n..  include:: <isoamsa.txt>\\n..  include:: <isopub.txt>\\n"""
         
-        def \_\_init\_\_( self ):
+        reference\_style : "Reference"
+        
+        def \_\_init\_\_(self) -> None:
             super().\_\_init\_\_()
-            self.reference\_style= None # Must be configured.
         
         |srarr|\ Weaver doOpen, doClose and addIndent overrides (`13`_)
         
@@ -1746,20 +1781,19 @@ we're not always starting a fresh line with ``weaveReferenceTo()``.
     :class: code
 
     
-    def doOpen( self, basename ):
-        self.fileName= basename + self.extension
-        self.logger.info( "Weaving {!r}".format(self.fileName) )
-        self.theFile= open( self.fileName, "w" )
-        self.readdIndent( self.code\_indent )
-    def doClose( self ):
+    def doOpen(self, basename: str) -> None:
+        self.fileName = basename + self.extension
+        self.logger.info("Weaving {!r}".format(self.fileName))
+        self.theFile = open(self.fileName, "w")
+        self.readdIndent(self.code\_indent)
+    def doClose(self) -> None:
         self.theFile.close()
-        self.logger.info( "Wrote {:d} lines to {!r}".format(
-            self.linesWritten, self.fileName) )
-    def addIndent( self, increment=0 ):
+        self.logger.info( "Wrote {:d} lines to {!r}".format(        self.linesWritten, self.fileName))
+    def addIndent(self, increment: int = 0) -> None:
         """increment not used when weaving"""
-        self.context.append( self.context[-1] )
-        self.log\_indent.debug( "addIndent {!s}: {!r}".format(self.lastIndent, self.context) )
-    def codeFinish( self ):
+        self.context.append(self.context[-1])
+        self.log\_indent.debug("addIndent {!s}: {!r}".format(self.lastIndent, self.context))
+    def codeFinish(self) -> None:
         pass # Not needed when weaving
     
 
@@ -1785,7 +1819,7 @@ to look for paired RST inline markup and quote just these special character occu
     :class: code
 
     
-    quoted\_chars = [
+    quoted\_chars: list[tuple[str, str]] = [
         # prevent some RST markup from being recognized
         ('\\\\',r'\\\\'), # Must be first.
         ('\`',r'\\\`'),
@@ -1817,9 +1851,9 @@ of possible additional processing.
     :class: code
 
     
-    def docBegin( self, aChunk ):
+    def docBegin(self, aChunk: Chunk) -> None:
         pass
-    def docEnd( self, aChunk ):
+    def docEnd(self, aChunk: Chunk) -> None:
         pass
     
 
@@ -1845,16 +1879,16 @@ Each code chunk includes the places where the chunk is referenced.
     :class: code
 
     
-    ref\_template = string.Template( "${refList}" )
+    ref\_template = string.Template("${refList}")
     ref\_separator = "; "
-    ref\_item\_template = string.Template( "$fullName (\`${seq}\`\_)" )
-    def references( self, aChunk ):
-        references= aChunk.references\_list( self )
+    ref\_item\_template = string.Template("$fullName (\`${seq}\`\_)")
+    def references(self, aChunk: Chunk) -> str:
+        references = aChunk.references(self)
         if len(references) != 0:
-            refList= [ 
-                self.ref\_item\_template.substitute( seq=s, fullName=n )
+            refList = [ 
+                self.ref\_item\_template.substitute(seq=s, fullName=n)
                 for n,s in references ]
-            return self.ref\_template.substitute( refList=self.ref\_separator.join( refList ) )
+            return self.ref\_template.substitute(refList=self.ref\_separator.join(refList))
         else:
             return ""
     
@@ -1883,25 +1917,25 @@ refer to this chunk can be emitted.
     :class: code
 
     
-    cb\_template = string.Template( "\\n..  \_\`${seq}\`:\\n..  rubric:: ${fullName} (${seq}) ${concat}\\n..  parsed-literal::\\n    :class: code\\n\\n" )
+    cb\_template = string.Template("\\n..  \_\`${seq}\`:\\n..  rubric:: ${fullName} (${seq}) ${concat}\\n..  parsed-literal::\\n    :class: code\\n\\n")
     
-    def codeBegin( self, aChunk ):
+    def codeBegin(self, aChunk: Chunk) -> None:
         txt = self.cb\_template.substitute( 
-            seq= aChunk.seq,
-            lineNumber= aChunk.lineNumber, 
-            fullName= aChunk.fullName,
-            concat= "=" if aChunk.initial else "+=", # RST Separator
+            seq = aChunk.seq,
+            lineNumber = aChunk.lineNumber, 
+            fullName = aChunk.fullName,
+            concat = "=" if aChunk.initial else "+=", # RST Separator
         )
-        self.write( txt )
+        self.write(txt)
         
-    ce\_template = string.Template( "\\n..\\n\\n    ..  class:: small\\n\\n        \|loz\| \*${fullName} (${seq})\*. Used by: ${references}\\n" )
+    ce\_template = string.Template("\\n..\\n\\n    ..  class:: small\\n\\n        \|loz\| \*${fullName} (${seq})\*. Used by: ${references}\\n")
     
-    def codeEnd( self, aChunk ):
+    def codeEnd(self, aChunk: Chunk) -> None:
         txt = self.ce\_template.substitute( 
-            seq= aChunk.seq,
-            lineNumber= aChunk.lineNumber, 
-            fullName= aChunk.fullName,
-            references= self.references( aChunk ),
+            seq = aChunk.seq,
+            lineNumber = aChunk.lineNumber, 
+            fullName = aChunk.fullName,
+            references = self.references(aChunk),
         )
         self.write(txt)
     
@@ -1931,27 +1965,27 @@ list is always empty.
     :class: code
 
     
-    fb\_template = string.Template( "\\n..  \_\`${seq}\`:\\n..  rubric:: ${fullName} (${seq}) ${concat}\\n..  parsed-literal::\\n    :class: code\\n\\n" )
+    fb\_template = string.Template("\\n..  \_\`${seq}\`:\\n..  rubric:: ${fullName} (${seq}) ${concat}\\n..  parsed-literal::\\n    :class: code\\n\\n")
     
-    def fileBegin( self, aChunk ):
-        txt= self.fb\_template.substitute(
-            seq= aChunk.seq, 
-            lineNumber= aChunk.lineNumber, 
-            fullName= aChunk.fullName,
-            concat= "=" if aChunk.initial else "+=", # RST Separator
+    def fileBegin(self, aChunk: Chunk) -> None:
+        txt = self.fb\_template.substitute(
+            seq = aChunk.seq, 
+            lineNumber = aChunk.lineNumber, 
+            fullName = aChunk.fullName,
+            concat = "=" if aChunk.initial else "+=", # RST Separator
         )
-        self.write( txt )
+        self.write(txt)
     
-    fe\_template= string.Template( "\\n..\\n\\n    ..  class:: small\\n\\n        \|loz\| \*${fullName} (${seq})\*.\\n" )
+    fe\_template = string.Template("\\n..\\n\\n    ..  class:: small\\n\\n        \|loz\| \*${fullName} (${seq})\*.\\n")
     
-    def fileEnd( self, aChunk ):
-        assert len(self.references( aChunk )) == 0
-        txt= self.fe\_template.substitute(
-            seq= aChunk.seq, 
-            lineNumber= aChunk.lineNumber, 
-            fullName= aChunk.fullName,
-            references= [] )
-        self.write( txt )
+    def fileEnd(self, aChunk: Chunk) -> None:
+        assert len(self.references(aChunk)) == 0
+        txt = self.fe\_template.substitute(
+            seq = aChunk.seq, 
+            lineNumber = aChunk.lineNumber, 
+            fullName = aChunk.fullName,
+            references = [] )
+        self.write(txt)
     
 
 ..
@@ -1980,20 +2014,20 @@ a simple ``" "`` because it looks better.
     :class: code
 
     
-    refto\_name\_template= string.Template(r"\|srarr\|\\ ${fullName} (\`${seq}\`\_)")
-    refto\_seq\_template= string.Template("\|srarr\|\\ (\`${seq}\`\_)")
-    refto\_seq\_separator= ", "
+    refto\_name\_template = string.Template(r"\|srarr\|\\ ${fullName} (\`${seq}\`\_)")
+    refto\_seq\_template = string.Template("\|srarr\|\\ (\`${seq}\`\_)")
+    refto\_seq\_separator = ", "
     
-    def referenceTo( self, aName, seq ):
+    def referenceTo(self, aName: str \| None, seq: int) -> str:
         """Weave a reference to a chunk.
         Provide name to get a full reference.
         name=None to get a short reference."""
         if aName:
-            return self.refto\_name\_template.substitute( fullName= aName, seq= seq )
+            return self.refto\_name\_template.substitute(fullName=aName, seq=seq)
         else:
-            return self.refto\_seq\_template.substitute( seq= seq )
+            return self.refto\_seq\_template.substitute(seq=seq)
             
-    def referenceSep( self ):
+    def referenceSep(self) -> str:
         """Separator between references."""
         return self.refto\_seq\_separator
     
@@ -2035,26 +2069,26 @@ to change the look of the final woven document.
     :class: code
 
     
-    xref\_head\_template = string.Template( "\\n" )
-    xref\_foot\_template = string.Template( "\\n" )
-    xref\_item\_template = string.Template( ":${fullName}:\\n    ${refList}\\n" )
-    xref\_empty\_template = string.Template( "(None)\\n" )
+    xref\_head\_template = string.Template("\\n")
+    xref\_foot\_template = string.Template("\\n")
+    xref\_item\_template = string.Template(":${fullName}:\\n    ${refList}\\n")
+    xref\_empty\_template = string.Template("(None)\\n")
     
-    def xrefHead( self ):
+    def xrefHead(self) -> None:
         txt = self.xref\_head\_template.substitute()
-        self.write( txt )
+        self.write(txt)
     
-    def xrefFoot( self ):
+    def xrefFoot(self) -> None:
         txt = self.xref\_foot\_template.substitute()
-        self.write( txt )
+        self.write(txt)
     
-    def xrefLine( self, name, refList ):
-        refList= [ self.referenceTo( None, r ) for r in refList ]
-        txt= self.xref\_item\_template.substitute( fullName= name, refList = " ".join(refList) ) # RST Separator
-        self.write( txt )
+    def xrefLine(self, name: str, refList: list[int]) -> None:
+        refList\_txt = [self.referenceTo(None, r) for r in refList]
+        txt = self.xref\_item\_template.substitute(fullName=name, refList = " ".join(refList\_txt)) # RST Separator
+        self.write(txt)
     
-    def xrefEmpty( self ):
-        self.write( self.xref\_empty\_template.substitute() )
+    def xrefEmpty(self) -> None:
+        self.write(self.xref\_empty\_template.substitute())
 
 ..
 
@@ -2072,17 +2106,19 @@ Cross-reference definition line
     :class: code
 
     
-    name\_def\_template = string.Template( '[\`${seq}\`\_]' )
-    name\_ref\_template = string.Template( '\`${seq}\`\_' )
+    name\_def\_template = string.Template('[\`${seq}\`\_]')
+    name\_ref\_template = string.Template('\`${seq}\`\_')
     
-    def xrefDefLine( self, name, defn, refList ):
-        templates = { defn: self.name\_def\_template }
-        refTxt= [ templates.get(r,self.name\_ref\_template).substitute( seq= r )
-            for r in sorted( refList + [defn] ) 
-            ]
+    def xrefDefLine(self, name: str, defn: int, refList: list[int]) -> None:
+        """Special template for the definition, default reference for all others."""
+        templates = {defn: self.name\_def\_template}
+        refTxt = [
+            templates.get(r, self.name\_ref\_template).substitute(seq=r)
+            for r in sorted(refList + [defn]) 
+        ]
         # Generic space separator
-        txt= self.xref\_item\_template.substitute( fullName= name, refList = " ".join(refTxt) ) 
-        self.write( txt )
+        txt = self.xref\_item\_template.substitute(fullName=name, refList=" ".join(refTxt)) 
+        self.write(txt)
     
 
 ..
@@ -2127,10 +2163,10 @@ given to the ``weave()`` method of the Web.
 
 ..  parsed-literal::
 
-    w= Web()
+    w = Web()
     WebReader().load(w,"somefile.w") 
-    weave_latex= LaTeX()
-    w.weave( weave_latex )
+    weave_latex = LaTeX()
+    w.weave(weave_latex)
 
 Note that the template language and LaTeX both use ``$``.
 This means that all  ``$`` that are intended to be output to LaTeX
@@ -2150,13 +2186,13 @@ function pretty well in most L\ !sub:`A`\ T\ !sub:`E`\ X documents.
     :class: code
 
     
-    class LaTeX( Weaver ):
+    class LaTeX(Weaver):
         """LaTeX formatting for XRef's and code blocks when weaving.
         Requires \\\\usepackage{fancyvrb}
         """
-        extension= ".tex"
-        code\_indent= 0
-        header= """\\n\\\\usepackage{fancyvrb}\\n"""
+        extension = ".tex"
+        code\_indent = 0
+        header = """\\n\\\\usepackage{fancyvrb}\\n"""
     
         |srarr|\ LaTeX code chunk begin (`24`_)
         |srarr|\ LaTeX code chunk end (`25`_)
@@ -2217,7 +2253,7 @@ indentation.
     :class: code
 
     
-    ce\_template= string.Template("""
+    ce\_template = string.Template("""
     \\\\end{Verbatim}
     ${references}
     \\\\end{flushleft}\\n""") # Prevent indentation
@@ -2243,7 +2279,7 @@ start of a code chunk.
     :class: code
 
     
-    fb\_template= cb\_template
+    fb\_template = cb\_template
     
 
 ..
@@ -2265,7 +2301,7 @@ invokes this chunk, and restores normal indentation.
     :class: code
 
     
-    fe\_template= ce\_template
+    fe\_template = ce\_template
     
 
 ..
@@ -2319,7 +2355,7 @@ block.  Our one compromise is a thin space if the phrase
     :class: code
 
     
-    quoted\_chars = [
+    quoted\_chars: list[tuple[str, str]] = [
         ("\\\\end{Verbatim}", "\\\\end\\,{Verbatim}"), # Allow \\end{Verbatim}
         ("\\\\{","\\\\\\,{"), # Prevent unexpected commands in Verbatim
         ("$","\\\\$"), # Prevent unexpected math in Verbatim
@@ -2345,8 +2381,8 @@ the current line of code.
     :class: code
 
     
-    refto\_name\_template= string.Template("""$$\\\\triangleright$$ Code Example ${fullName} (${seq})""")
-    refto\_seq\_template= string.Template("""(${seq})""")
+    refto\_name\_template = string.Template("""$$\\\\triangleright$$ Code Example ${fullName} (${seq})""")
+    refto\_seq\_template = string.Template("""(${seq})""")
     
 
 ..
@@ -2368,10 +2404,10 @@ given to the ``weave()`` method of the Web.
 ..  parsed-literal::
 
 
-    w= Web()
+    w = Web()
     WebReader().load(w,"somefile.w") 
-    weave_html= HTML()
-    w.weave( weave_html )
+    weave_html = HTML()
+    w.weave(weave_html)
 
 
 Variations in the output formatting are accomplished by having
@@ -2396,11 +2432,11 @@ with abbreviated (no name) cross references at the end of the chunk.
     :class: code
 
     
-    class HTML( Weaver ):
+    class HTML(Weaver):
         """HTML formatting for XRef's and code blocks when weaving."""
-        extension= ".html"
-        code\_indent= 0
-        header= ""
+        extension = ".html"
+        code\_indent = 0
+        header = ""
         |srarr|\ HTML code chunk begin (`33`_)
         |srarr|\ HTML code chunk end (`34`_)
         |srarr|\ HTML output file begin (`35`_)
@@ -2425,7 +2461,7 @@ with abbreviated (no name) cross references at the end of the chunk.
     :class: code
 
     
-    class HTMLShort( HTML ):
+    class HTMLShort(HTML):
         """HTML formatting for XRef's and code blocks when weaving with short references."""
         |srarr|\ HTML short references summary at the end of a chunk (`42`_)
     
@@ -2448,7 +2484,7 @@ and HTML tags necessary to set the code off visually.
     :class: code
 
     
-    cb\_template= string.Template("""
+    cb\_template = string.Template("""
     <a name="pyweb${seq}"></a>
     <!--line number ${lineNumber}-->
     <p><em>${fullName}</em> (${seq})&nbsp;${concat}</p>
@@ -2473,7 +2509,7 @@ write the list of chunks that reference this chunk.
     :class: code
 
     
-    ce\_template= string.Template("""
+    ce\_template = string.Template("""
     </code></pre>
     <p>&loz; <em>${fullName}</em> (${seq}).
     ${references}
@@ -2497,7 +2533,7 @@ and HTML tags necessary to set the code off visually.
     :class: code
 
     
-    fb\_template= string.Template("""<a name="pyweb${seq}"></a>
+    fb\_template = string.Template("""<a name="pyweb${seq}"></a>
     <!--line number ${lineNumber}-->
     <p>\`\`${fullName}\`\` (${seq})&nbsp;${concat}</p>
     <pre><code>\\n""") # Prevent indent
@@ -2521,7 +2557,7 @@ write the list of chunks that reference this chunk.
     :class: code
 
     
-    fe\_template= string.Template( """</code></pre>
+    fe\_template = string.Template( """</code></pre>
     <p>&loz; \`\`${fullName}\`\` (${seq}).
     ${references}
     </p>\\n""")
@@ -2545,10 +2581,8 @@ transitive references.
     :class: code
 
     
-    ref\_item\_template = string.Template(
-    '<a href="#pyweb${seq}"><em>${fullName}</em>&nbsp;(${seq})</a>'
-    )
-    ref\_template = string.Template( '  Used by ${refList}.'  )
+    ref\_item\_template = string.Template('<a href="#pyweb${seq}"><em>${fullName}</em>&nbsp;(${seq})</a>')
+    ref\_template = string.Template('  Used by ${refList}.' )
     
 
 ..
@@ -2569,7 +2603,7 @@ as HTML.
     :class: code
 
     
-    quoted\_chars = [
+    quoted\_chars: list[tuple[str, str]] = [
         ("&", "&amp;"), # Must be first
         ("<", "&lt;"),
         (">", "&gt;"),
@@ -2595,12 +2629,8 @@ surrounding source code.
     :class: code
 
     
-    refto\_name\_template = string.Template(
-    '<a href="#pyweb${seq}">&rarr;<em>${fullName}</em> (${seq})</a>'
-    )
-    refto\_seq\_template = string.Template(
-    '<a href="#pyweb${seq}">(${seq})</a>'
-    )
+    refto\_name\_template = string.Template('<a href="#pyweb${seq}">&rarr;<em>${fullName}</em> (${seq})</a>')
+    refto\_seq\_template = string.Template('<a href="#pyweb${seq}">(${seq})</a>')
     
 
 ..
@@ -2626,9 +2656,9 @@ The ``xrefLine()`` method writes a line for the file or macro cross reference bl
     :class: code
 
     
-    xref\_head\_template = string.Template( "<dl>\\n" )
-    xref\_foot\_template = string.Template( "</dl>\\n" )
-    xref\_item\_template = string.Template( "<dt>${fullName}</dt><dd>${refList}</dd>\\n" )
+    xref\_head\_template = string.Template("<dl>\\n")
+    xref\_foot\_template = string.Template("</dl>\\n")
+    xref\_item\_template = string.Template("<dt>${fullName}</dt><dd>${refList}</dd>\\n")
     |srarr|\ HTML write user id cross reference line (`41`_)
     
 
@@ -2651,8 +2681,8 @@ is included in the correct order with the other instances, but is bold and marke
     :class: code
 
     
-    name\_def\_template = string.Template( '<a href="#pyweb${seq}"><b>&bull;${seq}</b></a>' )
-    name\_ref\_template = string.Template( '<a href="#pyweb${seq}">${seq}</a>' )
+    name\_def\_template = string.Template('<a href="#pyweb${seq}"><b>&bull;${seq}</b></a>')
+    name\_ref\_template = string.Template('<a href="#pyweb${seq}">${seq}</a>')
     
 
 ..
@@ -2675,7 +2705,7 @@ transitive references.
     :class: code
 
     
-    ref\_item\_template = string.Template( '<a href="#pyweb${seq}">(${seq})</a>' )
+    ref\_item\_template = string.Template('<a href="#pyweb${seq}">(${seq})</a>')
     
 
 ..
@@ -2693,10 +2723,10 @@ instance of ``Tangler`` is given to the ``Web`` class ``tangle()`` method.
 
 ..  parsed-literal::
 
-    w= Web()
+    w = Web()
     WebReader().load(w,"somefile.w") 
-    t= Tangler()
-    w.tangle( t )
+    t = Tangler()
+    w.tangle(t)
 
 
 The ``Tangler`` subclass extends an Emitter to **tangle** the various
@@ -2729,13 +2759,13 @@ There are three configurable values:
     :class: code
 
     
-    class Tangler( Emitter ):
+    class Tangler(Emitter):
         """Tangle output files."""
-        def \_\_init\_\_( self ):
+        def \_\_init\_\_(self) -> None:
             super().\_\_init\_\_()
-            self.comment\_start= None
-            self.comment\_end= ""
-            self.include\_line\_numbers= False
+            self.comment\_start: str = "#"
+            self.comment\_end: str = ""
+            self.include\_line\_numbers = False
         |srarr|\ Tangler doOpen, and doClose overrides (`44`_)
         |srarr|\ Tangler code chunk begin (`45`_)
         |srarr|\ Tangler code chunk end (`46`_)
@@ -2764,24 +2794,23 @@ actual file created by open.
     :class: code
 
     
-    def checkPath( self ):
+    def checkPath(self) -> None:
         if "/" in self.fileName:
             dirname, \_, \_ = self.fileName.rpartition("/")
             try:
-                os.makedirs( dirname )
-                self.logger.info( "Creating {!r}".format(dirname) )
+                os.makedirs(dirname)
+                self.logger.info("Creating {!r}".format(dirname))
             except OSError as e:
                 # Already exists.  Could check for errno.EEXIST.
-                self.logger.debug( "Exception {!r} creating {!r}".format(e, dirname) )
-    def doOpen( self, aFile ):
-        self.fileName= aFile
+                self.logger.debug("Exception {!r} creating {!r}".format(e, dirname))
+    def doOpen(self, aFile: str) -> None:
+        self.fileName = aFile
         self.checkPath()
-        self.theFile= open( aFile, "w" )
-        self.logger.info( "Tangling {!r}".format(aFile) )
-    def doClose( self ):
+        self.theFile = open(aFile, "w")
+        self.logger.info("Tangling {!r}".format(aFile))
+    def doClose(self) -> None:
         self.theFile.close()
-        self.logger.info( "Wrote {:d} lines to {!r}".format(
-            self.linesWritten, self.fileName) )
+        self.logger.info( "Wrote {:d} lines to {!r}".format(        self.linesWritten, self.fileName))
     
 
 ..
@@ -2802,18 +2831,21 @@ prevailing indent at the start of the ``@<`` reference command.
     :class: code
 
     
-    def codeBegin( self, aChunk ):
-        self.log\_indent.debug( "<tangle {!s}:".format(aChunk.fullName) )
-        if self.include\_line\_numbers and self.comment\_start is not None:
-            self.write( "\\n{start!s} Web: {filename!s}:{line:d} {fullname!s}({seq:d}) {end!s}\\n".format( 
-                start=  self.comment\_start, 
-                webfilename= aChunk.web().webFileName, 
-                filename= aChunk.fileName,
-                fullname= aChunk.fullName, 
-                name= aChunk.name,
-                seq= aChunk.seq, 
-                line= aChunk.lineNumber, 
-                end= self.comment\_end) )
+    def codeBegin(self, aChunk: Chunk) -> None:
+        self.log\_indent.debug("<tangle {!s}:".format(aChunk.fullName))
+        if self.include\_line\_numbers:
+            self.write(
+                "\\n{start!s} Web: {filename!s}:{line!r} {fullname!s}({seq:d}) {end!s}\\n".format( 
+                    start=self.comment\_start, 
+                    # webfilename=aChunk.web().webFileName, 
+                    filename=aChunk.fileName,
+                    fullname=aChunk.fullName, 
+                    # name=aChunk.name,
+                    seq=aChunk.seq, 
+                    line=aChunk.lineNumber, 
+                    end=self.comment\_end
+                )
+            )
     
 
 ..
@@ -2835,8 +2867,8 @@ setting.
     :class: code
 
     
-    def codeEnd( self, aChunk ):
-        self.log\_indent.debug( ">{!s}".format(aChunk.fullName) )
+    def codeEnd(self, aChunk: Chunk) -> None:
+        self.log\_indent.debug(">{!s}".format(aChunk.fullName))
     
 
 ..
@@ -2854,15 +2886,15 @@ instance of ``TanglerMake`` is given to the ``Web`` class ``tangle()`` method.
 
 ..  parsed-literal::
 
-    w= Web()
+    w = Web()
     WebReader().load(w,"somefile.w") 
-    t= TanglerMake()
-    w.tangle( t )
+    t = TanglerMake()
+    w.tangle(t)
 
 The ``TanglerMake`` subclass extends ``Tangler`` to make the source files
 more make-friendly.  This subclass of ``Tangler`` 
 does not **touch** an output file
-where there is no change.  This is helpful when **pyWeb**\ 's output is
+where there is no change.  This is helpful when **py-web-tool**\ 's output is
 sent to **make**.  Using ``TanglerMake`` assures that only files with real changes
 are rewritten, minimizing recompilation of an application for changes to
 the associated documentation.
@@ -2884,7 +2916,7 @@ are opened and closed.
 
     ..  class:: small
 
-        |loz| *Imports (47)*. Used by: pyweb.py (`153`_)
+        |loz| *Imports (47)*. Used by: pyweb.py (`156`_)
 
 
 
@@ -2894,12 +2926,14 @@ are opened and closed.
     :class: code
 
     
-    class TanglerMake( Tangler ):
+    class TanglerMake(Tangler):
         """Tangle output files, leaving files untouched if there are no changes."""
-        def \_\_init\_\_( self, \*args ):
-            super().\_\_init\_\_( \*args )
-            self.tempname= None
+        tempname : str
+        def \_\_init\_\_(self, \*args: Any) -> None:
+            super().\_\_init\_\_(\*args)
+    
         |srarr|\ TanglerMake doOpen override, using a temporary file (`49`_)
+    
         |srarr|\ TanglerMake doClose override, comparing temporary to original (`50`_)
     
 
@@ -2923,10 +2957,10 @@ a "touch" if the new file is the same as the original.
     :class: code
 
     
-    def doOpen( self, aFile ):
-        fd, self.tempname= tempfile.mkstemp( dir=os.curdir )
-        self.theFile= os.fdopen( fd, "w" )
-        self.logger.info( "Tangling {!r}".format(aFile) )
+    def doOpen(self, aFile: str) -> None:
+        fd, self.tempname = tempfile.mkstemp(dir=os.curdir)
+        self.theFile = os.fdopen(fd, "w")
+        self.logger.info("Tangling {!r}".format(aFile))
     
 
 ..
@@ -2952,25 +2986,24 @@ and time) if nothing has changed.
     :class: code
 
     
-    def doClose( self ):
+    def doClose(self) -> None:
         self.theFile.close()
         try:
-            same= filecmp.cmp( self.tempname, self.fileName )
+            same = filecmp.cmp(self.tempname, self.fileName)
         except OSError as e:
-            same= False # Doesn't exist.  Could check for errno.ENOENT
+            same = False # Doesn't exist.  Could check for errno.ENOENT
         if same:
-            self.logger.info( "No change to {!r}".format(self.fileName) )
-            os.remove( self.tempname )
+            self.logger.info("No change to {!r}".format(self.fileName))
+            os.remove(self.tempname)
         else:
             # Windows requires the original file name be removed first.
             self.checkPath()
             try: 
-                os.remove( self.fileName )
+                os.remove(self.fileName)
             except OSError as e:
                 pass # Doesn't exist.  Could check for errno.ENOENT
-            os.rename( self.tempname, self.fileName )
-            self.logger.info( "Wrote {:d} lines to {!r}".format(
-                self.linesWritten, self.fileName) )
+            os.rename(self.tempname, self.fileName)
+            self.logger.info("Wrote {:d} lines to {!r}".format(self.linesWritten, self.fileName))
     
 
 ..
@@ -3005,9 +3038,9 @@ This text can be program source, a reference command, or the documentation sourc
 
     
     |srarr|\ Chunk class (`52`_)
-    |srarr|\ NamedChunk class (`63`_), |srarr|\ (`68`_)
-    |srarr|\ OutputChunk class (`69`_)
-    |srarr|\ NamedDocumentChunk class (`73`_)
+    |srarr|\ NamedChunk class (`64`_), |srarr|\ (`69`_)
+    |srarr|\ OutputChunk class (`70`_)
+    |srarr|\ NamedDocumentChunk class (`74`_)
 
 ..
 
@@ -3052,11 +3085,11 @@ The basic outline for creating a ``Chunk`` instance is as follows:
 
 ..  parsed-literal::
 
-    w= Web( )
-    c= Chunk()
-    c.webAdd( w )
-    c.append( *...some Command...* )
-    c.append( *...some Command...* )
+    w = Web()
+    c = Chunk()
+    c.webAdd(w)
+    c.append(*...some Command...*)
+    c.append(*...some Command...*)
 
 Before weaving or tangling, a cross reference is created for all
 user identifiers in all of the ``Chunk`` instances.
@@ -3067,13 +3100,13 @@ the identifier.
 
 ..  parsed-literal::
 
-    ident= []
+    ident = []
     for c in *the Web's named chunk list*:
-        ident.extend( c.getUserIDRefs() )
+        ident.extend(c.getUserIDRefs())
     for i in ident:
-        pattern= re.compile('\W{!s}\W'.format(i) )
+        pattern = re.compile('\W{!s}\W'.format(i) )
         for c in *the Web's named chunk list*:
-            c.searchForRE( pattern )
+            c.searchForRE(pattern)
 
 A ``Chunk`` is woven or tangled by the ``Web``.  The basic outline for weaving is
 as follows.  The tangling action is essentially the same.
@@ -3081,7 +3114,7 @@ as follows.  The tangling action is essentially the same.
 ..  parsed-literal::
 
     for c in *the Web's chunk list*:
-        c.weave( aWeaver )
+        c.weave(aWeaver)
 
 The ``Chunk`` class contains the overall definitions for all of the
 various specialized subclasses.  In particular, it contains the ``append()``,
@@ -3166,34 +3199,38 @@ The ``Chunk`` constructor initializes the following instance variables:
     
     class Chunk:
         """Anonymous piece of input file: will be output through the weaver only."""
-        # construction and insertion into the web
-        def \_\_init\_\_( self ):
-            self.commands= [ ] # The list of children of this chunk
-            self.user\_id\_list= None
-            self.initial= None
-            self.name= ''
-            self.fullName= None
-            self.seq= None
-            self.fileName= ''
-            self.referencedBy= [] # Chunks which reference this chunk.  Ideally just one.
-            self.references= [] # Names that this chunk references
-                    
-        def \_\_str\_\_( self ):
-            return "\\n".join( map( str, self.commands ) )
-        def \_\_repr\_\_( self ):
-            return "{!s}('{!s}')".format( self.\_\_class\_\_.\_\_name\_\_, self.name )
+        web : weakref.ReferenceType["Web"]
+        previous\_command : "Command"
+        initial: bool
+        def \_\_init\_\_(self) -> None:
+            self.logger = logging.getLogger(self.\_\_class\_\_.\_\_qualname\_\_)
+            self.commands: list["Command"] = [ ]  # The list of children of this chunk
+            self.user\_id\_list: list[str] = []
+            self.name: str = ''
+            self.fullName: str = ""
+            self.seq: int = 0
+            self.fileName = ''
+            self.referencedBy: list[Chunk] = []  # Chunks which reference this chunk.  Ideally just one.
+            self.references\_list: list[str] = []  # Names that this chunk references
+            self.refCount = 0
+            
+        def \_\_str\_\_(self) -> str:
+            return "\\n".join(map(str, self.commands))
+        def \_\_repr\_\_(self) -> str:
+            return "{!s}('{!s}')".format(self.\_\_class\_\_.\_\_name\_\_, self.name)
+            
         |srarr|\ Chunk append a command (`53`_)
         |srarr|\ Chunk append text (`54`_)
         |srarr|\ Chunk add to the web (`55`_)
         
-        |srarr|\ Chunk generate references from this Chunk (`58`_)
+        |srarr|\ Chunk generate references from this Chunk (`59`_)
         |srarr|\ Chunk superclass make Content definition (`56`_)
-        |srarr|\ Chunk examination: starts with, matches pattern (`57`_)
-        |srarr|\ Chunk references to this Chunk (`59`_)
+        |srarr|\ Chunk examination: starts with, matches pattern (`58`_)
+        |srarr|\ Chunk references to this Chunk (`60`_)
         
-        |srarr|\ Chunk weave this Chunk into the documentation (`60`_)
-        |srarr|\ Chunk tangle this Chunk into a code file (`61`_)
-        |srarr|\ Chunk indent adjustments (`62`_)
+        |srarr|\ Chunk weave this Chunk into the documentation (`61`_)
+        |srarr|\ Chunk tangle this Chunk into a code file (`62`_)
+        |srarr|\ Chunk indent adjustments (`63`_)
     
 
 ..
@@ -3212,10 +3249,10 @@ The ``append()`` method simply appends a ``Command`` instance to this chunk.
     :class: code
 
     
-    def append( self, command ):
+    def append(self, command: Command) -> None:
         """Add another Command to this chunk."""
-        self.commands.append( command )
-        command.chunk= self
+        self.commands.append(command)
+        command.chunk = self
     
 
 ..
@@ -3242,17 +3279,17 @@ be a separate ``TextCommand`` because it will wind up indented.
     :class: code
 
     
-    def appendText( self, text, lineNumber=0 ):
+    def appendText(self, text: str, lineNumber: int = 0) -> None:
         """Append a single character to the most recent TextCommand."""
         try:
             # Works for TextCommand, otherwise breaks
             self.commands[-1].text += text
         except IndexError as e:
             # First command?  Then the list will have been empty.
-            self.commands.append( self.makeContent(text,lineNumber) )
+            self.commands.append(self.makeContent(text,lineNumber))
         except AttributeError as e:
             # Not a TextCommand?  Then there won't be a text attribute.
-            self.commands.append( self.makeContent(text,lineNumber) )
+            self.commands.append(self.makeContent(text,lineNumber))
     
 
 ..
@@ -3275,9 +3312,9 @@ of the ``Web`` class to append an anonymous, unindexed chunk.
     :class: code
 
     
-    def webAdd( self, web ):
+    def webAdd(self, web: "Web") -> None:
         """Add self to a Web as anonymous chunk."""
-        web.add( self )
+        web.add(self)
     
 
 ..
@@ -3301,8 +3338,8 @@ A Named Chunk using ``@[`` and ``@]`` creates text.
     :class: code
 
     
-    def makeContent( self, text, lineNumber=0 ):
-        return TextCommand( text, lineNumber )
+    def makeContent(self, text: str, lineNumber: int = 0) -> Command:
+        return TextCommand(text, lineNumber)
     
 
 ..
@@ -3332,28 +3369,48 @@ and accumulated as part of a cross reference for this ``Chunk``.
 
 
 ..  _`57`:
-..  rubric:: Chunk examination: starts with, matches pattern (57) =
+..  rubric:: Imports (57) +=
+..  parsed-literal::
+    :class: code
+
+    from typing import Pattern, Match, Optional, Any, Literal
+
+..
+
+    ..  class:: small
+
+        |loz| *Imports (57)*. Used by: pyweb.py (`156`_)
+
+
+
+..  _`58`:
+..  rubric:: Chunk examination: starts with, matches pattern (58) =
 ..  parsed-literal::
     :class: code
 
     
-    def startswith( self, prefix ):
+    def startswith(self, prefix: str) -> bool:
         """Examine the first command's starting text."""
-        return len(self.commands) >= 1 and self.commands[0].startswith( prefix )
+        return len(self.commands) >= 1 and self.commands[0].startswith(prefix)
     
-    def searchForRE( self, rePat ):
+    def searchForRE(self, rePat: Pattern[str]) -> Optional["Chunk"]:
         """Visit each command, applying the pattern."""
         for c in self.commands:
-            if c.searchForRE( rePat ):
+            if c.searchForRE(rePat):
                 return self
         return None
     
     @property
-    def lineNumber( self ):
+    def lineNumber(self) -> int \| None:
         """Return the first command's line number or None."""
         return self.commands[0].lineNumber if len(self.commands) >= 1 else None
     
-    def getUserIDRefs( self ):
+    def setUserIDRefs(self, text: str) -> None:
+        """Used by NamedChunk subclass."""
+        pass
+        
+    def getUserIDRefs(self) -> list[str]:
+        """Used by NamedChunk subclass."""
         return []
     
 
@@ -3361,7 +3418,7 @@ and accumulated as part of a cross reference for this ``Chunk``.
 
     ..  class:: small
 
-        |loz| *Chunk examination: starts with, matches pattern (57)*. Used by: Chunk class (`52`_)
+        |loz| *Chunk examination: starts with, matches pattern (58)*. Used by: Chunk class (`52`_)
 
 
 The chunk search in the ``searchForRE()`` method parallels weaving and tangling a ``Chunk``.
@@ -3377,17 +3434,17 @@ context information.
 
 
 
-..  _`58`:
-..  rubric:: Chunk generate references from this Chunk (58) =
+..  _`59`:
+..  rubric:: Chunk generate references from this Chunk (59) =
 ..  parsed-literal::
     :class: code
 
     
-    def genReferences( self, aWeb ):
+    def genReferences(self, aWeb: "Web") -> Iterator[str]:
         """Generate references from this Chunk."""
         try:
             for t in self.commands:
-                ref= t.ref( aWeb )
+                ref = t.ref(aWeb)
                 if ref is not None:
                     yield ref
         except Error as e:
@@ -3398,7 +3455,7 @@ context information.
 
     ..  class:: small
 
-        |loz| *Chunk generate references from this Chunk (58)*. Used by: Chunk class (`52`_)
+        |loz| *Chunk generate references from this Chunk (59)*. Used by: Chunk class (`52`_)
 
 
 The list of references to a Chunk uses a **Strategy** plug-in
@@ -3409,22 +3466,24 @@ configuration item. This is a **Strategy** showing how to compute the list of re
 The Weaver pushed it into the Web so that it is available for each ``Chunk``.
 
 
-..  _`59`:
-..  rubric:: Chunk references to this Chunk (59) =
+..  _`60`:
+..  rubric:: Chunk references to this Chunk (60) =
 ..  parsed-literal::
     :class: code
 
     
-    def references\_list( self, theWeaver ):
+    def references(self, theWeaver: "Weaver") -> list[tuple[str, int]]:
         """Extract name, sequence from Chunks into a list."""
-        return [ (c.name, c.seq) 
-            for c in theWeaver.reference\_style.chunkReferencedBy( self ) ]
+        return [ 
+            (c.name, c.seq) 
+            for c in theWeaver.reference\_style.chunkReferencedBy(self) 
+        ]
 
 ..
 
     ..  class:: small
 
-        |loz| *Chunk references to this Chunk (59)*. Used by: Chunk class (`52`_)
+        |loz| *Chunk references to this Chunk (60)*. Used by: Chunk class (`52`_)
 
 
 The ``weave()`` method weaves this chunk into the final document as follows:
@@ -3443,22 +3502,22 @@ context information.
 
 
 
-..  _`60`:
-..  rubric:: Chunk weave this Chunk into the documentation (60) =
+..  _`61`:
+..  rubric:: Chunk weave this Chunk into the documentation (61) =
 ..  parsed-literal::
     :class: code
 
     
-    def weave( self, aWeb, aWeaver ):
+    def weave(self, aWeb: "Web", aWeaver: "Weaver") -> None:
         """Create the nicely formatted document from an anonymous chunk."""
-        aWeaver.docBegin( self )
+        aWeaver.docBegin(self)
         for cmd in self.commands:
-            cmd.weave( aWeb, aWeaver )
-        aWeaver.docEnd( self )
-    def weaveReferenceTo( self, aWeb, aWeaver ):
+            cmd.weave(aWeb, aWeaver)
+        aWeaver.docEnd(self)
+    def weaveReferenceTo(self, aWeb: "Web", aWeaver: "Weaver") -> None:
         """Create a reference to this chunk -- except for anonymous chunks."""
         raise Exception( "Cannot reference an anonymous chunk.""")
-    def weaveShortReferenceTo( self, aWeb, aWeaver ):
+    def weaveShortReferenceTo(self, aWeb: "Web", aWeaver: "Weaver") -> None:
         """Create a short reference to this chunk -- except for anonymous chunks."""
         raise Exception( "Cannot reference an anonymous chunk.""")
     
@@ -3467,29 +3526,29 @@ context information.
 
     ..  class:: small
 
-        |loz| *Chunk weave this Chunk into the documentation (60)*. Used by: Chunk class (`52`_)
+        |loz| *Chunk weave this Chunk into the documentation (61)*. Used by: Chunk class (`52`_)
 
 
 Anonymous chunks cannot be tangled.  Any attempt indicates a serious
 problem with this program or the input file.
 
 
-..  _`61`:
-..  rubric:: Chunk tangle this Chunk into a code file (61) =
+..  _`62`:
+..  rubric:: Chunk tangle this Chunk into a code file (62) =
 ..  parsed-literal::
     :class: code
 
     
-    def tangle( self, aWeb, aTangler ):
+    def tangle(self, aWeb: "Web", aTangler: "Tangler") -> None:
         """Create source code -- except anonymous chunks should not be tangled"""
-        raise Error( 'Cannot tangle an anonymous chunk', self )
+        raise Error('Cannot tangle an anonymous chunk', self)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *Chunk tangle this Chunk into a code file (61)*. Used by: Chunk class (`52`_)
+        |loz| *Chunk tangle this Chunk into a code file (62)*. Used by: Chunk class (`52`_)
 
 
 Generally, a Chunk with a reference will adjust the indentation for
@@ -3498,23 +3557,23 @@ a subclass may not indent when tangling and may -- instead -- put stuff flush at
 left margin by forcing the local indent to zero.
 
 
-..  _`62`:
-..  rubric:: Chunk indent adjustments (62) =
+..  _`63`:
+..  rubric:: Chunk indent adjustments (63) =
 ..  parsed-literal::
     :class: code
 
     
-    def reference\_indent( self, aWeb, aTangler, amount ):
-        aTangler.addIndent( amount )  # Or possibly set indent to local zero.
+    def reference\_indent(self, aWeb: "Web", aTangler: "Tangler", amount: int) -> None:
+        aTangler.addIndent(amount)  # Or possibly set indent to local zero.
         
-    def reference\_dedent( self, aWeb, aTangler ):
+    def reference\_dedent(self, aWeb: "Web", aTangler: "Tangler") -> None:
         aTangler.clrIndent()
 
 ..
 
     ..  class:: small
 
-        |loz| *Chunk indent adjustments (62)*. Used by: Chunk class (`52`_)
+        |loz| *Chunk indent adjustments (63)*. Used by: Chunk class (`52`_)
 
 
 NamedChunk class
@@ -3567,34 +3626,37 @@ This class introduces some additional attributes.
 
 
 
-..  _`63`:
-..  rubric:: NamedChunk class (63) =
+..  _`64`:
+..  rubric:: NamedChunk class (64) =
 ..  parsed-literal::
     :class: code
 
     
-    class NamedChunk( Chunk ):
+    class NamedChunk(Chunk):
         """Named piece of input file: will be output as both tangler and weaver."""
-        def \_\_init\_\_( self, name ):
+        def \_\_init\_\_(self, name: str) -> None:
             super().\_\_init\_\_()
-            self.name= name
-            self.user\_id\_list= []
-            self.refCount= 0
-        def \_\_str\_\_( self ):
-            return "{!r}: {!s}".format( self.name, Chunk.\_\_str\_\_(self) )
-        def makeContent( self, text, lineNumber=0 ):
-            return CodeCommand( text, lineNumber )
-        |srarr|\ NamedChunk user identifiers set and get (`64`_)
-        |srarr|\ NamedChunk add to the web (`65`_)
-        |srarr|\ NamedChunk weave into the documentation (`66`_)
-        |srarr|\ NamedChunk tangle into the source file (`67`_)
+            self.name = name
+            self.user\_id\_list = []
+            self.refCount = 0
+            
+        def \_\_str\_\_(self) -> str:
+            return "{!r}: {!s}".format(self.name, Chunk.\_\_str\_\_(self))
+            
+        def makeContent(self, text: str, lineNumber: int = 0) -> Command:
+            return CodeCommand(text, lineNumber)
+            
+        |srarr|\ NamedChunk user identifiers set and get (`65`_)
+        |srarr|\ NamedChunk add to the web (`66`_)
+        |srarr|\ NamedChunk weave into the documentation (`67`_)
+        |srarr|\ NamedChunk tangle into the source file (`68`_)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *NamedChunk class (63)*. Used by: Chunk class hierarchy... (`51`_)
+        |loz| *NamedChunk class (64)*. Used by: Chunk class hierarchy... (`51`_)
 
 
 The ``setUserIDRefs()`` method accepts a list of user identifiers that are
@@ -3602,16 +3664,16 @@ associated with this chunk.  These are provided after the ``@|`` separator
 in a ``@d`` named chunk.  These are used by the ``@u`` cross reference generator.
 
 
-..  _`64`:
-..  rubric:: NamedChunk user identifiers set and get (64) =
+..  _`65`:
+..  rubric:: NamedChunk user identifiers set and get (65) =
 ..  parsed-literal::
     :class: code
 
     
-    def setUserIDRefs( self, text ):
+    def setUserIDRefs(self, text: str) -> None:
         """Save user ID's associated with this chunk."""
-        self.user\_id\_list= text.split()
-    def getUserIDRefs( self ):
+        self.user\_id\_list = text.split()
+    def getUserIDRefs(self) -> list[str]:
         return self.user\_id\_list
     
 
@@ -3619,7 +3681,7 @@ in a ``@d`` named chunk.  These are used by the ``@u`` cross reference generator
 
     ..  class:: small
 
-        |loz| *NamedChunk user identifiers set and get (64)*. Used by: NamedChunk class (`63`_)
+        |loz| *NamedChunk user identifiers set and get (65)*. Used by: NamedChunk class (`64`_)
 
 
 The ``webAdd()`` method adds this chunk to the given document ``Web`` instance.
@@ -3628,22 +3690,22 @@ Each class of ``Chunk`` must override this to be sure that the various
 of the ``Web`` class to append a named chunk.
 
 
-..  _`65`:
-..  rubric:: NamedChunk add to the web (65) =
+..  _`66`:
+..  rubric:: NamedChunk add to the web (66) =
 ..  parsed-literal::
     :class: code
 
     
-    def webAdd( self, web ):
+    def webAdd(self, web: "Web") -> None:
         """Add self to a Web as named chunk, update xrefs."""
-        web.addNamed( self )
+        web.addNamed(self)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *NamedChunk add to the web (65)*. Used by: NamedChunk class (`63`_)
+        |loz| *NamedChunk add to the web (66)*. Used by: NamedChunk class (`64`_)
 
 
 The ``weave()`` method weaves this chunk into the final document as follows:
@@ -3670,37 +3732,37 @@ The woven references simply follow whatever preceded them on the line; the inden
 
 
 
-..  _`66`:
-..  rubric:: NamedChunk weave into the documentation (66) =
+..  _`67`:
+..  rubric:: NamedChunk weave into the documentation (67) =
 ..  parsed-literal::
     :class: code
 
     
-    def weave( self, aWeb, aWeaver ):
+    def weave(self, aWeb: "Web", aWeaver: "Weaver") -> None:
         """Create the nicely formatted document from a chunk of code."""
-        self.fullName= aWeb.fullNameFor( self.name )
+        self.fullName = aWeb.fullNameFor(self.name)
         aWeaver.addIndent()
-        aWeaver.codeBegin( self )
+        aWeaver.codeBegin(self)
         for cmd in self.commands:
-            cmd.weave( aWeb, aWeaver )
+            cmd.weave(aWeb, aWeaver)
         aWeaver.clrIndent( )
-        aWeaver.codeEnd( self )
-    def weaveReferenceTo( self, aWeb, aWeaver ):
+        aWeaver.codeEnd(self)
+    def weaveReferenceTo(self, aWeb: "Web", aWeaver: "Weaver") -> None:
         """Create a reference to this chunk."""
-        self.fullName= aWeb.fullNameFor( self.name )
-        txt= aWeaver.referenceTo( self.fullName, self.seq )
-        aWeaver.codeBlock( txt )
-    def weaveShortReferenceTo( self, aWeb, aWeaver ):
+        self.fullName = aWeb.fullNameFor(self.name)
+        txt = aWeaver.referenceTo(self.fullName, self.seq)
+        aWeaver.codeBlock(txt)
+    def weaveShortReferenceTo(self, aWeb: "Web", aWeaver: "Weaver") -> None:
         """Create a shortened reference to this chunk."""
-        txt= aWeaver.referenceTo( None, self.seq )
-        aWeaver.codeBlock( txt )
+        txt = aWeaver.referenceTo(None, self.seq)
+        aWeaver.codeBlock(txt)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *NamedChunk weave into the documentation (66)*. Used by: NamedChunk class (`63`_)
+        |loz| *NamedChunk weave into the documentation (67)*. Used by: NamedChunk class (`64`_)
 
 
 The ``tangle()`` method tangles this chunk into the final document as follows:
@@ -3717,58 +3779,58 @@ context information.
 
 
 
-..  _`67`:
-..  rubric:: NamedChunk tangle into the source file (67) =
+..  _`68`:
+..  rubric:: NamedChunk tangle into the source file (68) =
 ..  parsed-literal::
     :class: code
 
     
-    def tangle( self, aWeb, aTangler ):
+    def tangle(self, aWeb: "Web", aTangler: "Tangler") -> None:
         """Create source code.
         Use aWeb to resolve @<namedChunk@>.
         Format as correctly indented source text
         """
-        self.previous\_command= TextCommand( "", self.commands[0].lineNumber )
-        aTangler.codeBegin( self )
+        self.previous\_command = TextCommand("", self.commands[0].lineNumber)
+        aTangler.codeBegin(self)
         for t in self.commands:
             try:
-                t.tangle( aWeb, aTangler )
+                t.tangle(aWeb, aTangler)
             except Error as e:
                 raise
-            self.previous\_command= t
-        aTangler.codeEnd( self )
+            self.previous\_command = t
+        aTangler.codeEnd(self)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *NamedChunk tangle into the source file (67)*. Used by: NamedChunk class (`63`_)
+        |loz| *NamedChunk tangle into the source file (68)*. Used by: NamedChunk class (`64`_)
 
 
 There's a second variation on NamedChunk, one that doesn't indent based on 
 context. It simply sets an indent at the left margin.
 
 
-..  _`68`:
-..  rubric:: NamedChunk class (68) +=
+..  _`69`:
+..  rubric:: NamedChunk class (69) +=
 ..  parsed-literal::
     :class: code
 
     
-    class NamedChunk\_Noindent( NamedChunk ):
+    class NamedChunk\_Noindent(NamedChunk):
         """Named piece of input file: will be output as both tangler and weaver."""
-        def reference\_indent( self, aWeb, aTangler, amount ):
-            aTangler.setIndent( 0 )
+        def reference\_indent(self, aWeb: "Web", aTangler: "Tangler", amount: int) -> None:
+            aTangler.setIndent(0)
         
-        def reference\_dedent( self, aWeb, aTangler ):
+        def reference\_dedent(self, aWeb: "Web", aTangler: "Tangler") -> None:
             aTangler.clrIndent()
 
 ..
 
     ..  class:: small
 
-        |loz| *NamedChunk class (68)*. Used by: Chunk class hierarchy... (`51`_)
+        |loz| *NamedChunk class (69)*. Used by: Chunk class hierarchy... (`51`_)
 
     
 OutputChunk class
@@ -3790,28 +3852,28 @@ use different ``Weaver`` methods for different kinds of text.
 All other methods, including the tangle method are identical to ``NamedChunk``.
 
 
-..  _`69`:
-..  rubric:: OutputChunk class (69) =
+..  _`70`:
+..  rubric:: OutputChunk class (70) =
 ..  parsed-literal::
     :class: code
 
     
-    class OutputChunk( NamedChunk ):
+    class OutputChunk(NamedChunk):
         """Named piece of input file, defines an output tangle."""
-        def \_\_init\_\_( self, name, comment\_start=None, comment\_end="" ):
-            super().\_\_init\_\_( name )
-            self.comment\_start= comment\_start
-            self.comment\_end= comment\_end
-        |srarr|\ OutputChunk add to the web (`70`_)
-        |srarr|\ OutputChunk weave (`71`_)
-        |srarr|\ OutputChunk tangle (`72`_)
+        def \_\_init\_\_(self, name: str, comment\_start: str = "", comment\_end: str = "") -> None:
+            super().\_\_init\_\_(name)
+            self.comment\_start = comment\_start
+            self.comment\_end = comment\_end
+        |srarr|\ OutputChunk add to the web (`71`_)
+        |srarr|\ OutputChunk weave (`72`_)
+        |srarr|\ OutputChunk tangle (`73`_)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *OutputChunk class (69)*. Used by: Chunk class hierarchy... (`51`_)
+        |loz| *OutputChunk class (70)*. Used by: Chunk class hierarchy... (`51`_)
 
 
 The ``webAdd()`` method adds this chunk to the given document ``Web``.
@@ -3820,22 +3882,22 @@ Each class of ``Chunk`` must override this to be sure that the various
 of the ``Web`` class to append a file output chunk.
 
 
-..  _`70`:
-..  rubric:: OutputChunk add to the web (70) =
+..  _`71`:
+..  rubric:: OutputChunk add to the web (71) =
 ..  parsed-literal::
     :class: code
 
     
-    def webAdd( self, web ):
+    def webAdd(self, web: "Web") -> None:
         """Add self to a Web as output chunk, update xrefs."""
-        web.addOutput( self )
+        web.addOutput(self)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *OutputChunk add to the web (70)*. Used by: OutputChunk class (`69`_)
+        |loz| *OutputChunk add to the web (71)*. Used by: OutputChunk class (`70`_)
 
 
 The ``weave()`` method weaves this chunk into the final document as follows:
@@ -3855,48 +3917,48 @@ context information.
 
 
 
-..  _`71`:
-..  rubric:: OutputChunk weave (71) =
+..  _`72`:
+..  rubric:: OutputChunk weave (72) =
 ..  parsed-literal::
     :class: code
 
     
-    def weave( self, aWeb, aWeaver ):
+    def weave(self, aWeb: "Web", aWeaver: "Weaver") -> None:
         """Create the nicely formatted document from a chunk of code."""
-        self.fullName= aWeb.fullNameFor( self.name )
-        aWeaver.fileBegin( self )
+        self.fullName = aWeb.fullNameFor(self.name)
+        aWeaver.fileBegin(self)
         for cmd in self.commands:
-            cmd.weave( aWeb, aWeaver )
-        aWeaver.fileEnd( self )
+            cmd.weave(aWeb, aWeaver)
+        aWeaver.fileEnd(self)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *OutputChunk weave (71)*. Used by: OutputChunk class (`69`_)
+        |loz| *OutputChunk weave (72)*. Used by: OutputChunk class (`70`_)
 
 
 When we tangle, we provide the output Chunk's comment information to the Tangler
 to be sure that -- if line numbers were requested -- they can be included properly.
 
 
-..  _`72`:
-..  rubric:: OutputChunk tangle (72) =
+..  _`73`:
+..  rubric:: OutputChunk tangle (73) =
 ..  parsed-literal::
     :class: code
 
     
-    def tangle( self, aWeb, aTangler ):
-        aTangler.comment\_start= self.comment\_start
-        aTangler.comment\_end= self.comment\_end
-        super().tangle( aWeb, aTangler )
+    def tangle(self, aWeb: "Web", aTangler: "Tangler") -> None:
+        aTangler.comment\_start = self.comment\_start
+        aTangler.comment\_end = self.comment\_end
+        super().tangle(aWeb, aTangler)
 
 ..
 
     ..  class:: small
 
-        |loz| *OutputChunk tangle (72)*. Used by: OutputChunk class (`69`_)
+        |loz| *OutputChunk tangle (73)*. Used by: OutputChunk class (`70`_)
 
 
 NamedDocumentChunk class
@@ -3920,25 +3982,27 @@ All other methods, including the tangle method are identical to ``NamedChunk``.
 
 
 
-..  _`73`:
-..  rubric:: NamedDocumentChunk class (73) =
+..  _`74`:
+..  rubric:: NamedDocumentChunk class (74) =
 ..  parsed-literal::
     :class: code
 
     
-    class NamedDocumentChunk( NamedChunk ):
+    class NamedDocumentChunk(NamedChunk):
         """Named piece of input file with document source, defines an output tangle."""
-        def makeContent( self, text, lineNumber=0 ):
-            return TextCommand( text, lineNumber )
-        |srarr|\ NamedDocumentChunk weave (`74`_)
-        |srarr|\ NamedDocumentChunk tangle (`75`_)
+        
+        def makeContent(self, text: str, lineNumber: int = 0) -> Command:
+            return TextCommand(text, lineNumber)
+            
+        |srarr|\ NamedDocumentChunk weave (`75`_)
+        |srarr|\ NamedDocumentChunk tangle (`76`_)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *NamedDocumentChunk class (73)*. Used by: Chunk class hierarchy... (`51`_)
+        |loz| *NamedDocumentChunk class (74)*. Used by: Chunk class hierarchy... (`51`_)
 
 
 The ``weave()`` method quietly ignores this chunk in the document.
@@ -3954,48 +4018,48 @@ to insert the entire chunk.
 
 
 
-..  _`74`:
-..  rubric:: NamedDocumentChunk weave (74) =
+..  _`75`:
+..  rubric:: NamedDocumentChunk weave (75) =
 ..  parsed-literal::
     :class: code
 
     
-    def weave( self, aWeb, aWeaver ):
+    def weave(self, aWeb: "Web", aWeaver: "Weaver") -> None:
         """Ignore this when producing the document."""
         pass
-    def weaveReferenceTo( self, aWeb, aWeaver ):
+    def weaveReferenceTo(self, aWeb: "Web", aWeaver: "Weaver") -> None:
         """On a reference to this chunk, expand the body in place."""
         for cmd in self.commands:
-            cmd.weave( aWeb, aWeaver )
-    def weaveShortReferenceTo( self, aWeb, aWeaver ):
+            cmd.weave(aWeb, aWeaver)
+    def weaveShortReferenceTo(self, aWeb: "Web", aWeaver: "Weaver") -> None:
         """On a reference to this chunk, expand the body in place."""
-        self.weaveReferenceTo( aWeb, aWeaver )
+        self.weaveReferenceTo(aWeb, aWeaver)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *NamedDocumentChunk weave (74)*. Used by: NamedDocumentChunk class (`73`_)
+        |loz| *NamedDocumentChunk weave (75)*. Used by: NamedDocumentChunk class (`74`_)
 
 
 
-..  _`75`:
-..  rubric:: NamedDocumentChunk tangle (75) =
+..  _`76`:
+..  rubric:: NamedDocumentChunk tangle (76) =
 ..  parsed-literal::
     :class: code
 
     
-    def tangle( self, aWeb, aTangler ):
+    def tangle(self, aWeb: "Web", aTangler: "Tangler") -> None:
         """Raise an exception on an attempt to tangle."""
-        raise Error( "Cannot tangle a chunk defined with @[.""" )
+        raise Error("Cannot tangle a chunk defined with @[.""")
     
 
 ..
 
     ..  class:: small
 
-        |loz| *NamedDocumentChunk tangle (75)*. Used by: NamedDocumentChunk class (`73`_)
+        |loz| *NamedDocumentChunk tangle (76)*. Used by: NamedDocumentChunk class (`74`_)
 
 
 Commands
@@ -4017,26 +4081,26 @@ cross reference information and tangle a file or weave the final document.
 
 
 
-..  _`76`:
-..  rubric:: Command class hierarchy - used to describe individual commands (76) =
+..  _`77`:
+..  rubric:: Command class hierarchy - used to describe individual commands (77) =
 ..  parsed-literal::
     :class: code
 
     
-    |srarr|\ Command superclass (`77`_)
-    |srarr|\ TextCommand class to contain a document text block (`80`_)
-    |srarr|\ CodeCommand class to contain a program source code block (`81`_)
-    |srarr|\ XrefCommand superclass for all cross-reference commands (`82`_)
-    |srarr|\ FileXrefCommand class for an output file cross-reference (`83`_)
-    |srarr|\ MacroXrefCommand class for a named chunk cross-reference (`84`_)
-    |srarr|\ UserIdXrefCommand class for a user identifier cross-reference (`85`_)
-    |srarr|\ ReferenceCommand class for chunk references (`86`_)
+    |srarr|\ Command superclass (`78`_)
+    |srarr|\ TextCommand class to contain a document text block (`81`_)
+    |srarr|\ CodeCommand class to contain a program source code block (`82`_)
+    |srarr|\ XrefCommand superclass for all cross-reference commands (`83`_)
+    |srarr|\ FileXrefCommand class for an output file cross-reference (`84`_)
+    |srarr|\ MacroXrefCommand class for a named chunk cross-reference (`85`_)
+    |srarr|\ UserIdXrefCommand class for a user identifier cross-reference (`86`_)
+    |srarr|\ ReferenceCommand class for chunk references (`87`_)
 
 ..
 
     ..  class:: small
 
-        |loz| *Command class hierarchy - used to describe individual commands (76)*. Used by: Base Class Definitions (`1`_)
+        |loz| *Command class hierarchy - used to describe individual commands (77)*. Used by: Base Class Definitions (`1`_)
 
 
 Command Superclass
@@ -4051,7 +4115,7 @@ of the methods provided in this superclass.
 
 ..  parsed-literal::
 
-    class MyNewCommand( Command ):
+    class MyNewCommand(Command):
         *... overrides for various methods ...*
 
 Additionally, a subclass of ``WebReader`` must be defined to parse the new command
@@ -4100,65 +4164,68 @@ The attributes of a ``Command`` instance includes the line number on which
 the command began, in ``lineNumber``.
 
 
-..  _`77`:
-..  rubric:: Command superclass (77) =
+..  _`78`:
+..  rubric:: Command superclass (78) =
 ..  parsed-literal::
     :class: code
 
     
     class Command:
         """A Command is the lowest level of granularity in the input stream."""
-        def \_\_init\_\_( self, fromLine=0 ):
-            self.lineNumber= fromLine+1 # tokenizer is zero-based
-            self.chunk= None
-            self.logger= logging.getLogger( self.\_\_class\_\_.\_\_qualname\_\_ )
-        def \_\_str\_\_( self ):
+        chunk : "Chunk"
+        text : str
+        def \_\_init\_\_(self, fromLine: int = 0) -> None:
+            self.lineNumber = fromLine+1 # tokenizer is zero-based
+            self.logger = logging.getLogger(self.\_\_class\_\_.\_\_qualname\_\_)
+            
+        def \_\_str\_\_(self) -> str:
             return "at {!r}".format(self.lineNumber)
-        |srarr|\ Command analysis features: starts-with and Regular Expression search (`78`_)
-        |srarr|\ Command tangle and weave functions (`79`_)
+            
+        |srarr|\ Command analysis features: starts-with and Regular Expression search (`79`_)
+        |srarr|\ Command tangle and weave functions (`80`_)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *Command superclass (77)*. Used by: Command class hierarchy... (`76`_)
-
-
-
-..  _`78`:
-..  rubric:: Command analysis features: starts-with and Regular Expression search (78) =
-..  parsed-literal::
-    :class: code
-
-    
-    def startswith( self, prefix ):
-        return None
-    def searchForRE( self, rePat ):
-        return None
-    def indent( self ):
-        return None
-    
-
-..
-
-    ..  class:: small
-
-        |loz| *Command analysis features: starts-with and Regular Expression search (78)*. Used by: Command superclass (`77`_)
+        |loz| *Command superclass (78)*. Used by: Command class hierarchy... (`77`_)
 
 
 
 ..  _`79`:
-..  rubric:: Command tangle and weave functions (79) =
+..  rubric:: Command analysis features: starts-with and Regular Expression search (79) =
 ..  parsed-literal::
     :class: code
 
     
-    def ref( self, aWeb ):
+    def startswith(self, prefix: str) -> bool:
+        return False
+    def searchForRE(self, rePat: Pattern[str]) -> Match[str] \| None:
         return None
-    def weave( self, aWeb, aWeaver ):
+    def indent(self) -> int:
+        return 0
+    
+
+..
+
+    ..  class:: small
+
+        |loz| *Command analysis features: starts-with and Regular Expression search (79)*. Used by: Command superclass (`78`_)
+
+
+
+..  _`80`:
+..  rubric:: Command tangle and weave functions (80) =
+..  parsed-literal::
+    :class: code
+
+    
+    def ref(self, aWeb: "Web") -> str \| None:
+        return None
+    def weave(self, aWeb: "Web", aWeaver: "Weaver") -> None:
         pass
-    def tangle( self, aWeb, aTangler ):
+    def tangle(self, aWeb: "Web", aTangler: "Tangler") -> None:
         pass
     
 
@@ -4166,7 +4233,7 @@ the command began, in ``lineNumber``.
 
     ..  class:: small
 
-        |loz| *Command tangle and weave functions (79)*. Used by: Command superclass (`77`_)
+        |loz| *Command tangle and weave functions (80)*. Used by: Command superclass (`78`_)
 
 
 TextCommand class
@@ -4188,24 +4255,24 @@ or tangler.
 
 
 
-..  _`80`:
-..  rubric:: TextCommand class to contain a document text block (80) =
+..  _`81`:
+..  rubric:: TextCommand class to contain a document text block (81) =
 ..  parsed-literal::
     :class: code
 
     
-    class TextCommand( Command ):
+    class TextCommand(Command):
         """A piece of document source text."""
-        def \_\_init\_\_( self, text, fromLine=0 ):
-            super().\_\_init\_\_( fromLine )
-            self.text= text
-        def \_\_str\_\_( self ):
+        def \_\_init\_\_(self, text: str, fromLine: int = 0) -> None:
+            super().\_\_init\_\_(fromLine)
+            self.text = text
+        def \_\_str\_\_(self) -> str:
             return "at {!r}: {!r}...".format(self.lineNumber,self.text[:32])
-        def startswith( self, prefix ):
-            return self.text.startswith( prefix )
-        def searchForRE( self, rePat ):
-            return rePat.search( self.text )
-        def indent( self ):
+        def startswith(self, prefix: str) -> bool:
+            return self.text.startswith(prefix)
+        def searchForRE(self, rePat: Pattern[str]) -> Match[str] \| None:
+            return rePat.search(self.text)
+        def indent(self) -> int:
             if self.text.endswith('\\n'):
                 return 0
             try:
@@ -4213,17 +4280,17 @@ or tangler.
                 return len(last\_line)
             except IndexError:
                 return 0
-        def weave( self, aWeb, aWeaver ):
-            aWeaver.write( self.text )
-        def tangle( self, aWeb, aTangler ):
-            aTangler.write( self.text )
+        def weave(self, aWeb: "Web", aWeaver: "Weaver") -> None:
+            aWeaver.write(self.text)
+        def tangle(self, aWeb: "Web", aTangler: "Tangler") -> None:
+            aTangler.write(self.text)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *TextCommand class to contain a document text block (80)*. Used by: Command class hierarchy... (`76`_)
+        |loz| *TextCommand class to contain a document text block (81)*. Used by: Command class hierarchy... (`77`_)
 
 
 CodeCommand class
@@ -4247,25 +4314,25 @@ indentation is maintained.
 
 
 
-..  _`81`:
-..  rubric:: CodeCommand class to contain a program source code block (81) =
+..  _`82`:
+..  rubric:: CodeCommand class to contain a program source code block (82) =
 ..  parsed-literal::
     :class: code
 
     
-    class CodeCommand( TextCommand ):
+    class CodeCommand(TextCommand):
         """A piece of program source code."""
-        def weave( self, aWeb, aWeaver ):
-            aWeaver.codeBlock( aWeaver.quote( self.text ) )
-        def tangle( self, aWeb, aTangler ):
-            aTangler.codeBlock( self.text )
+        def weave(self, aWeb: "Web", aWeaver: "Weaver") -> None:
+            aWeaver.codeBlock(aWeaver.quote(self.text))
+        def tangle(self, aWeb: "Web", aTangler: "Tangler") -> None:
+            aTangler.codeBlock(self.text)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *CodeCommand class to contain a program source code block (81)*. Used by: Command class hierarchy... (`76`_)
+        |loz| *CodeCommand class to contain a program source code block (82)*. Used by: Command class hierarchy... (`77`_)
 
 
 XrefCommand superclass
@@ -4294,22 +4361,24 @@ is illegal.  An exception is raised and processing stops.
 
  
 
-..  _`82`:
-..  rubric:: XrefCommand superclass for all cross-reference commands (82) =
+..  _`83`:
+..  rubric:: XrefCommand superclass for all cross-reference commands (83) =
 ..  parsed-literal::
     :class: code
 
     
-    class XrefCommand( Command ):
+    class XrefCommand(Command):
         """Any of the Xref-goes-here commands in the input."""
-        def \_\_str\_\_( self ):
+        def \_\_str\_\_(self) -> str:
             return "at {!r}: cross reference".format(self.lineNumber)
-        def formatXref( self, xref, aWeaver ):
+            
+        def formatXref(self, xref: dict[str, list[int]], aWeaver: "Weaver") -> None:
             aWeaver.xrefHead()
             for n in sorted(xref):
-                aWeaver.xrefLine( n, xref[n] )
+                aWeaver.xrefLine(n, xref[n])
             aWeaver.xrefFoot()
-        def tangle( self, aWeb, aTangler ):
+            
+        def tangle(self, aWeb: "Web", aTangler: "Tangler") -> None:
             raise Error('Illegal tangling of a cross reference command.')
     
 
@@ -4317,7 +4386,7 @@ is illegal.  An exception is raised and processing stops.
 
     ..  class:: small
 
-        |loz| *XrefCommand superclass for all cross-reference commands (82)*. Used by: Command class hierarchy... (`76`_)
+        |loz| *XrefCommand superclass for all cross-reference commands (83)*. Used by: Command class hierarchy... (`77`_)
 
 
 FileXrefCommand class
@@ -4333,24 +4402,24 @@ the  ``formatXref()`` method of the ``XrefCommand`` superclass for format this r
 
 
 
-..  _`83`:
-..  rubric:: FileXrefCommand class for an output file cross-reference (83) =
+..  _`84`:
+..  rubric:: FileXrefCommand class for an output file cross-reference (84) =
 ..  parsed-literal::
     :class: code
 
     
-    class FileXrefCommand( XrefCommand ):
+    class FileXrefCommand(XrefCommand):
         """A FileXref command."""
-        def weave( self, aWeb, aWeaver ):
+        def weave(self, aWeb: "Web", aWeaver: "Weaver") -> None:
             """Weave a File Xref from @o commands."""
-            self.formatXref( aWeb.fileXref(), aWeaver )
+            self.formatXref(aWeb.fileXref(), aWeaver)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *FileXrefCommand class for an output file cross-reference (83)*. Used by: Command class hierarchy... (`76`_)
+        |loz| *FileXrefCommand class for an output file cross-reference (84)*. Used by: Command class hierarchy... (`77`_)
 
 
 MacroXrefCommand class
@@ -4366,24 +4435,24 @@ the ``formatXref()`` method of the ``XrefCommand`` superclass method for format 
 
 
 
-..  _`84`:
-..  rubric:: MacroXrefCommand class for a named chunk cross-reference (84) =
+..  _`85`:
+..  rubric:: MacroXrefCommand class for a named chunk cross-reference (85) =
 ..  parsed-literal::
     :class: code
 
     
-    class MacroXrefCommand( XrefCommand ):
+    class MacroXrefCommand(XrefCommand):
         """A MacroXref command."""
-        def weave( self, aWeb, aWeaver ):
+        def weave(self, aWeb: "Web", aWeaver: "Weaver") -> None:
             """Weave the Macro Xref from @d commands."""
-            self.formatXref( aWeb.chunkXref(), aWeaver )
+            self.formatXref(aWeb.chunkXref(), aWeaver)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *MacroXrefCommand class for a named chunk cross-reference (84)*. Used by: Command class hierarchy... (`76`_)
+        |loz| *MacroXrefCommand class for a named chunk cross-reference (85)*. Used by: Command class hierarchy... (`77`_)
 
 
 UserIdXrefCommand class
@@ -4408,22 +4477,22 @@ algorithm, which is similar to the algorithm in the ``XrefCommand`` superclass.
 
 
 
-..  _`85`:
-..  rubric:: UserIdXrefCommand class for a user identifier cross-reference (85) =
+..  _`86`:
+..  rubric:: UserIdXrefCommand class for a user identifier cross-reference (86) =
 ..  parsed-literal::
     :class: code
 
     
-    class UserIdXrefCommand( XrefCommand ):
+    class UserIdXrefCommand(XrefCommand):
         """A UserIdXref command."""
-        def weave( self, aWeb, aWeaver ):
+        def weave(self, aWeb: "Web", aWeaver: "Weaver") -> None:
             """Weave a user identifier Xref from @d commands."""
-            ux= aWeb.userNamesXref()
+            ux = aWeb.userNamesXref()
             if len(ux) != 0:
                 aWeaver.xrefHead()
                 for u in sorted(ux):
-                    defn, refList= ux[u]
-                    aWeaver.xrefDefLine( u, defn, refList )
+                    defn, refList = ux[u]
+                    aWeaver.xrefDefLine(u, defn, refList)
                 aWeaver.xrefFoot()
             else:
                 aWeaver.xrefEmpty()
@@ -4433,7 +4502,7 @@ algorithm, which is similar to the algorithm in the ``XrefCommand`` superclass.
 
     ..  class:: small
 
-        |loz| *UserIdXrefCommand class for a user identifier cross-reference (85)*. Used by: Command class hierarchy... (`76`_)
+        |loz| *UserIdXrefCommand class for a user identifier cross-reference (86)*. Used by: Command class hierarchy... (`77`_)
 
 
 ReferenceCommand class
@@ -4465,33 +4534,35 @@ of a ``ReferenceCommand``.
 
 
 
-..  _`86`:
-..  rubric:: ReferenceCommand class for chunk references (86) =
+..  _`87`:
+..  rubric:: ReferenceCommand class for chunk references (87) =
 ..  parsed-literal::
     :class: code
 
     
-    class ReferenceCommand( Command ):
+    class ReferenceCommand(Command):
         """A reference to a named chunk, via @<name@>."""
-        def \_\_init\_\_( self, refTo, fromLine=0 ):
-            super().\_\_init\_\_( fromLine )
-            self.refTo= refTo
-            self.fullname= None
-            self.sequenceList= None
-            self.chunkList= []
-        def \_\_str\_\_( self ):
+        def \_\_init\_\_(self, refTo: str, fromLine: int = 0) -> None:
+            super().\_\_init\_\_(fromLine)
+            self.refTo = refTo
+            self.fullname = None
+            self.sequenceList = None
+            self.chunkList: list[Chunk] = []
+            
+        def \_\_str\_\_(self) -> str:
             return "at {!r}: reference to chunk {!r}".format(self.lineNumber,self.refTo)
-        |srarr|\ ReferenceCommand resolve a referenced chunk name (`87`_)
-        |srarr|\ ReferenceCommand refers to a chunk (`88`_)
-        |srarr|\ ReferenceCommand weave a reference to a chunk (`89`_)
-        |srarr|\ ReferenceCommand tangle a referenced chunk (`90`_)
+            
+        |srarr|\ ReferenceCommand resolve a referenced chunk name (`88`_)
+        |srarr|\ ReferenceCommand refers to a chunk (`89`_)
+        |srarr|\ ReferenceCommand weave a reference to a chunk (`90`_)
+        |srarr|\ ReferenceCommand tangle a referenced chunk (`91`_)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *ReferenceCommand class for chunk references (86)*. Used by: Command class hierarchy... (`76`_)
+        |loz| *ReferenceCommand class for chunk references (87)*. Used by: Command class hierarchy... (`77`_)
 
 
 The ``resolve()`` method queries the overall ``Web`` instance for the full
@@ -4501,23 +4572,23 @@ to the chunk.
 
 
 
-..  _`87`:
-..  rubric:: ReferenceCommand resolve a referenced chunk name (87) =
+..  _`88`:
+..  rubric:: ReferenceCommand resolve a referenced chunk name (88) =
 ..  parsed-literal::
     :class: code
 
     
-    def resolve( self, aWeb ):
+    def resolve(self, aWeb: "Web") -> None:
         """Expand our chunk name and list of parts"""
-        self.fullName= aWeb.fullNameFor( self.refTo )
-        self.chunkList= aWeb.getchunk( self.refTo )
+        self.fullName = aWeb.fullNameFor(self.refTo)
+        self.chunkList = aWeb.getchunk(self.refTo)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *ReferenceCommand resolve a referenced chunk name (87)*. Used by: ReferenceCommand class... (`86`_)
+        |loz| *ReferenceCommand resolve a referenced chunk name (88)*. Used by: ReferenceCommand class... (`87`_)
 
 
 The ``ref()`` method is a request that is delegated by a ``Chunk``;
@@ -4527,15 +4598,15 @@ Chinks to which it refers.
 
 
 
-..  _`88`:
-..  rubric:: ReferenceCommand refers to a chunk (88) =
+..  _`89`:
+..  rubric:: ReferenceCommand refers to a chunk (89) =
 ..  parsed-literal::
     :class: code
 
     
-    def ref( self, aWeb ):
+    def ref(self, aWeb: "Web") -> str:
         """Find and return the full name for this reference."""
-        self.resolve( aWeb )
+        self.resolve(aWeb)
         return self.fullName
     
 
@@ -4543,7 +4614,7 @@ Chinks to which it refers.
 
     ..  class:: small
 
-        |loz| *ReferenceCommand refers to a chunk (88)*. Used by: ReferenceCommand class... (`86`_)
+        |loz| *ReferenceCommand refers to a chunk (89)*. Used by: ReferenceCommand class... (`87`_)
 
 
 The ``weave()`` method inserts a markup reference to a named
@@ -4552,23 +4623,23 @@ this appropriately for the document type being woven.
 
 
 
-..  _`89`:
-..  rubric:: ReferenceCommand weave a reference to a chunk (89) =
+..  _`90`:
+..  rubric:: ReferenceCommand weave a reference to a chunk (90) =
 ..  parsed-literal::
     :class: code
 
     
-    def weave( self, aWeb, aWeaver ):
+    def weave(self, aWeb: "Web", aWeaver: "Weaver") -> None:
         """Create the nicely formatted reference to a chunk of code."""
-        self.resolve( aWeb )
-        aWeb.weaveChunk( self.fullName, aWeaver )
+        self.resolve(aWeb)
+        aWeb.weaveChunk(self.fullName, aWeaver)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *ReferenceCommand weave a reference to a chunk (89)*. Used by: ReferenceCommand class... (`86`_)
+        |loz| *ReferenceCommand weave a reference to a chunk (90)*. Used by: ReferenceCommand class... (`87`_)
 
 
 The ``tangle()`` method inserts the resolved chunk in this
@@ -4580,34 +4651,34 @@ Or where indentation is set to a local zero because the included
 Chunk is a no-indent Chunk.
 
 
-..  _`90`:
-..  rubric:: ReferenceCommand tangle a referenced chunk (90) =
+..  _`91`:
+..  rubric:: ReferenceCommand tangle a referenced chunk (91) =
 ..  parsed-literal::
     :class: code
 
     
-    def tangle( self, aWeb, aTangler ):
+    def tangle(self, aWeb: "Web", aTangler: "Tangler") -> None:
         """Create source code."""
-        self.resolve( aWeb )
+        self.resolve(aWeb)
         
-        self.logger.debug( "Indent {!r} + {!r}".format(aTangler.context, self.chunk.previous\_command.indent()) )    
-        self.chunk.reference\_indent( aWeb, aTangler, self.chunk.previous\_command.indent() )
+        self.logger.debug("Indent {!r} + {!r}".format(aTangler.context, self.chunk.previous\_command.indent()))    
+        self.chunk.reference\_indent(aWeb, aTangler, self.chunk.previous\_command.indent())
         
-        self.logger.debug( "Tangling chunk {!r}".format(self.fullName) )
+        self.logger.debug(f"Tangling {self.fullName!r} with chunks {self.chunkList!r}")
         if len(self.chunkList) != 0:
             for p in self.chunkList:
-                p.tangle( aWeb, aTangler )
+                p.tangle(aWeb, aTangler)
         else:
-            raise Error( "Attempt to tangle an undefined Chunk, {!s}.".format( self.fullName, ) )
+            raise Error("Attempt to tangle an undefined Chunk, {!s}.".format(self.fullName,))
     
-        self.chunk.reference\_dedent( aWeb, aTangler )
+        self.chunk.reference\_dedent(aWeb, aTangler)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *ReferenceCommand tangle a referenced chunk (90)*. Used by: ReferenceCommand class... (`86`_)
+        |loz| *ReferenceCommand tangle a referenced chunk (91)*. Used by: ReferenceCommand class... (`87`_)
 
 
 Reference Strategy
@@ -4630,24 +4701,24 @@ this object.
 
 
 
-..  _`91`:
-..  rubric:: Reference class hierarchy - strategies for references to a chunk (91) =
+..  _`92`:
+..  rubric:: Reference class hierarchy - strategies for references to a chunk (92) =
 ..  parsed-literal::
     :class: code
 
     
     class Reference:
-        def \_\_init\_\_( self ):
-            self.logger= logging.getLogger( self.\_\_class\_\_.\_\_qualname\_\_ )
-        def chunkReferencedBy( self, aChunk ):
+        def \_\_init\_\_(self) -> None:
+            self.logger = logging.getLogger(self.\_\_class\_\_.\_\_qualname\_\_)
+        def chunkReferencedBy(self, aChunk: Chunk) -> list[Chunk]:
             """Return a list of Chunks."""
-            pass
+            return []
 
 ..
 
     ..  class:: small
 
-        |loz| *Reference class hierarchy - strategies for references to a chunk (91)*. Used by: Base Class Definitions (`1`_)
+        |loz| *Reference class hierarchy - strategies for references to a chunk (92)*. Used by: Base Class Definitions (`1`_)
 
 
 SimpleReference Class
@@ -4657,22 +4728,22 @@ The SimpleReference subclass does the simplest version of resolution. It returns
 the ``Chunks`` referenced.
     
 
-..  _`92`:
-..  rubric:: Reference class hierarchy - strategies for references to a chunk (92) +=
+..  _`93`:
+..  rubric:: Reference class hierarchy - strategies for references to a chunk (93) +=
 ..  parsed-literal::
     :class: code
 
     
-    class SimpleReference( Reference ):
-        def chunkReferencedBy( self, aChunk ):
-            refBy= aChunk.referencedBy
+    class SimpleReference(Reference):
+        def chunkReferencedBy(self, aChunk: Chunk) -> list[Chunk]:
+            refBy = aChunk.referencedBy
             return refBy
 
 ..
 
     ..  class:: small
 
-        |loz| *Reference class hierarchy - strategies for references to a chunk (92)*. Used by: Base Class Definitions (`1`_)
+        |loz| *Reference class hierarchy - strategies for references to a chunk (93)*. Used by: Base Class Definitions (`1`_)
 
 
 TransitiveReference Class
@@ -4685,32 +4756,32 @@ This requires walking through the ``Web`` to locate "parents" of each referenced
 ``Chunk``.
 
 
-..  _`93`:
-..  rubric:: Reference class hierarchy - strategies for references to a chunk (93) +=
+..  _`94`:
+..  rubric:: Reference class hierarchy - strategies for references to a chunk (94) +=
 ..  parsed-literal::
     :class: code
 
     
-    class TransitiveReference( Reference ):
-        def chunkReferencedBy( self, aChunk ):
-            refBy= aChunk.referencedBy
-            self.logger.debug( "References: {!s}({:d}) {!r}".format(aChunk.name, aChunk.seq, refBy) )
-            return self.allParentsOf( refBy )
-        def allParentsOf( self, chunkList, depth=0 ):
+    class TransitiveReference(Reference):
+        def chunkReferencedBy(self, aChunk: Chunk) -> list[Chunk]:
+            refBy = aChunk.referencedBy
+            self.logger.debug("References: {!s}({:d}) {!r}".format(aChunk.name, aChunk.seq, refBy))
+            return self.allParentsOf(refBy)
+        def allParentsOf(self, chunkList: list[Chunk], depth: int = 0) -> list[Chunk]:
             """Transitive closure of parents via recursive ascent.
             """
             final = []
             for c in chunkList:
-                final.append( c )
-                final.extend( self.allParentsOf( c.referencedBy, depth+1 ) )
-            self.logger.debug( "References: {0:>{indent}s} {1!s}".format('--', final, indent=2\*depth) )
+                final.append(c)
+                final.extend(self.allParentsOf(c.referencedBy, depth+1))
+            self.logger.debug("References: {0:>{indent}s} {1!s}".format('--', final, indent=2\*depth))
             return final
 
 ..
 
     ..  class:: small
 
-        |loz| *Reference class hierarchy - strategies for references to a chunk (93)*. Used by: Base Class Definitions (`1`_)
+        |loz| *Reference class hierarchy - strategies for references to a chunk (94)*. Used by: Base Class Definitions (`1`_)
 
 
 
@@ -4741,9 +4812,9 @@ A typical exception-handling suite might look like this:
     try:
         *...something that may raise an Error or Exception...*
     except Error as e:
-        print( e.args ) # this is a pyWeb internal Error
+        print(e.args) # this is a pyWeb internal Error
     except Exception as w:
-        print( w.args ) # this is some other Python Exception
+        print(w.args) # this is some other Python Exception
 
 The ``Error`` class is a subclass of ``Exception`` used to differentiate 
 application-specific
@@ -4752,19 +4823,19 @@ but merely creates a distinct class to facilitate writing ``except`` statements.
 
 
 
-..  _`94`:
-..  rubric:: Error class - defines the errors raised (94) =
+..  _`95`:
+..  rubric:: Error class - defines the errors raised (95) =
 ..  parsed-literal::
     :class: code
 
     
-    class Error( Exception ): pass
+    class Error(Exception): pass
 
 ..
 
     ..  class:: small
 
-        |loz| *Error class - defines the errors raised (94)*. Used by: Base Class Definitions (`1`_)
+        |loz| *Error class - defines the errors raised (95)*. Used by: Base Class Definitions (`1`_)
 
 
 The Web and WebReader Classes
@@ -4828,37 +4899,39 @@ A web instance has a number of attributes.
     named chunk.
     
 
-..  _`95`:
-..  rubric:: Web class - describes the overall "web" of chunks (95) =
+..  _`96`:
+..  rubric:: Web class - describes the overall "web" of chunks (96) =
 ..  parsed-literal::
     :class: code
 
     
     class Web:
         """The overall Web of chunks."""
-        def \_\_init\_\_( self ):
-            self.webFileName= None
-            self.chunkSeq= [] 
-            self.output= {} # Map filename to Chunk
-            self.named= {} # Map chunkname to Chunk
-            self.sequence= 0
-            self.logger= logging.getLogger( self.\_\_class\_\_.\_\_qualname\_\_ )
-        def \_\_str\_\_( self ):
-            return "Web {!r}".format( self.webFileName, )
+        def \_\_init\_\_(self, filename: str \| None = None) -> None:
+            self.webFileName = filename
+            self.chunkSeq: list[Chunk] = [] 
+            self.output: dict[str, list[Chunk]] = {} # Map filename to Chunk
+            self.named: dict[str, list[Chunk]] = {} # Map chunkname to Chunk
+            self.sequence = 0
+            self.errors = 0
+            self.logger = logging.getLogger(self.\_\_class\_\_.\_\_qualname\_\_)
+            
+        def \_\_str\_\_(self) -> str:
+            return "Web {!r}".format(self.webFileName,)
     
-        |srarr|\ Web construction methods used by Chunks and WebReader (`97`_)
-        |srarr|\ Web Chunk name resolution methods (`102`_), |srarr|\ (`103`_)
-        |srarr|\ Web Chunk cross reference methods (`104`_), |srarr|\ (`106`_), |srarr|\ (`107`_), |srarr|\ (`108`_)
-        |srarr|\ Web determination of the language from the first chunk (`111`_)
-        |srarr|\ Web tangle the output files (`112`_)
-        |srarr|\ Web weave the output document (`113`_)
+        |srarr|\ Web construction methods used by Chunks and WebReader (`98`_)
+        |srarr|\ Web Chunk name resolution methods (`103`_), |srarr|\ (`104`_)
+        |srarr|\ Web Chunk cross reference methods (`105`_), |srarr|\ (`107`_), |srarr|\ (`108`_), |srarr|\ (`109`_)
+        |srarr|\ Web determination of the language from the first chunk (`112`_)
+        |srarr|\ Web tangle the output files (`113`_)
+        |srarr|\ Web weave the output document (`114`_)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *Web class - describes the overall "web" of chunks (95)*. Used by: Base Class Definitions (`1`_)
+        |loz| *Web class - describes the overall "web" of chunks (96)*. Used by: Base Class Definitions (`1`_)
 
 
 Web Construction
@@ -4880,8 +4953,8 @@ to contain a more complete description of the chunk.
 We include a weakref to the ``Web`` to each ``Chunk``.
 
 
-..  _`96`:
-..  rubric:: Imports (96) +=
+..  _`97`:
+..  rubric:: Imports (97) +=
 ..  parsed-literal::
     :class: code
 
@@ -4893,26 +4966,26 @@ We include a weakref to the ``Web`` to each ``Chunk``.
 
     ..  class:: small
 
-        |loz| *Imports (96)*. Used by: pyweb.py (`153`_)
+        |loz| *Imports (97)*. Used by: pyweb.py (`156`_)
 
 
 
-..  _`97`:
-..  rubric:: Web construction methods used by Chunks and WebReader (97) =
+..  _`98`:
+..  rubric:: Web construction methods used by Chunks and WebReader (98) =
 ..  parsed-literal::
     :class: code
 
     
-    |srarr|\ Web add full chunk names, ignoring abbreviated names (`98`_)
-    |srarr|\ Web add an anonymous chunk (`99`_)
-    |srarr|\ Web add a named macro chunk (`100`_)
-    |srarr|\ Web add an output file definition chunk (`101`_)
+    |srarr|\ Web add full chunk names, ignoring abbreviated names (`99`_)
+    |srarr|\ Web add an anonymous chunk (`100`_)
+    |srarr|\ Web add a named macro chunk (`101`_)
+    |srarr|\ Web add an output file definition chunk (`102`_)
 
 ..
 
     ..  class:: small
 
-        |loz| *Web construction methods used by Chunks and WebReader (97)*. Used by: Web class... (`95`_)
+        |loz| *Web construction methods used by Chunks and WebReader (98)*. Used by: Web class... (`96`_)
 
 
 A name is only added to the known names when it is
@@ -4955,22 +5028,22 @@ uses an abbreviated name.
     We would no longer need to return a value from this function, either.
 
 
-..  _`98`:
-..  rubric:: Web add full chunk names, ignoring abbreviated names (98) =
+..  _`99`:
+..  rubric:: Web add full chunk names, ignoring abbreviated names (99) =
 ..  parsed-literal::
     :class: code
 
     
-    def addDefName( self, name ):
+    def addDefName(self, name: str) -> str \| None:
         """Reference to or definition of a chunk name."""
-        nm= self.fullNameFor( name )
+        nm = self.fullNameFor(name)
         if nm is None: return None
         if nm[-3:] == '...':
-            self.logger.debug( "Abbreviated reference {!r}".format(name) )
+            self.logger.debug("Abbreviated reference {!r}".format(name))
             return None # first occurance is a forward reference using an abbreviation
         if nm not in self.named:
-            self.named[nm]= []
-            self.logger.debug( "Adding empty chunk {!r}".format(name) )
+            self.named[nm] = []
+            self.logger.debug("Adding empty chunk {!r}".format(name))
         return nm
     
 
@@ -4978,7 +5051,7 @@ uses an abbreviated name.
 
     ..  class:: small
 
-        |loz| *Web add full chunk names, ignoring abbreviated names (98)*. Used by: Web construction... (`97`_)
+        |loz| *Web add full chunk names, ignoring abbreviated names (99)*. Used by: Web construction... (`98`_)
 
 
 An anonymous ``Chunk`` is kept in a sequence of Chunks, used for
@@ -4986,23 +5059,23 @@ tangling.
 
 
 
-..  _`99`:
-..  rubric:: Web add an anonymous chunk (99) =
+..  _`100`:
+..  rubric:: Web add an anonymous chunk (100) =
 ..  parsed-literal::
     :class: code
 
     
-    def add( self, chunk ):
+    def add(self, chunk: Chunk) -> None:
         """Add an anonymous chunk."""
-        self.chunkSeq.append( chunk )
-        chunk.web= weakref.ref(self)
+        self.chunkSeq.append(chunk)
+        chunk.web = weakref.ref(self)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *Web add an anonymous chunk (99)*. Used by: Web construction... (`97`_)
+        |loz| *Web add an anonymous chunk (100)*. Used by: Web construction... (`98`_)
 
 
 A named ``Chunk`` is defined with a ``@d`` command.
@@ -5036,25 +5109,25 @@ in the list.  Otherwise, it's False.
     The ``addDefName()`` no longer needs to return a value. 
 
 
-..  _`100`:
-..  rubric:: Web add a named macro chunk (100) =
+..  _`101`:
+..  rubric:: Web add a named macro chunk (101) =
 ..  parsed-literal::
     :class: code
 
     
-    def addNamed( self, chunk ):
+    def addNamed(self, chunk: Chunk) -> None:
         """Add a named chunk to a sequence with a given name."""
-        self.chunkSeq.append( chunk )
-        chunk.web= weakref.ref(self)
-        nm= self.addDefName( chunk.name )
+        self.chunkSeq.append(chunk)
+        chunk.web = weakref.ref(self)
+        nm = self.addDefName(chunk.name)
         if nm:
             # We found the full name for this chunk
             self.sequence += 1
-            chunk.seq= self.sequence
-            chunk.fullName= nm
-            self.named[nm].append( chunk )
-            chunk.initial= len(self.named[nm]) == 1
-            self.logger.debug( "Extending chunk {!r} from {!r}".format(nm, chunk.name) )
+            chunk.seq = self.sequence
+            chunk.fullName = nm
+            self.named[nm].append(chunk)
+            chunk.initial = len(self.named[nm]) == 1
+            self.logger.debug("Extending chunk {!r} from {!r}".format(nm, chunk.name))
         else:
             raise Error("No full name for {!r}".format(chunk.name), chunk)
     
@@ -5063,7 +5136,7 @@ in the list.  Otherwise, it's False.
 
     ..  class:: small
 
-        |loz| *Web add a named macro chunk (100)*. Used by: Web construction... (`97`_)
+        |loz| *Web add a named macro chunk (101)*. Used by: Web construction... (`98`_)
 
 
 An output file definition ``Chunk`` is defined with an ``@o``
@@ -5094,23 +5167,23 @@ If the chunk list was empty, this is the first chunk, the
 
 
 
-..  _`101`:
-..  rubric:: Web add an output file definition chunk (101) =
+..  _`102`:
+..  rubric:: Web add an output file definition chunk (102) =
 ..  parsed-literal::
     :class: code
 
     
-    def addOutput( self, chunk ):
+    def addOutput(self, chunk: Chunk) -> None:
         """Add an output chunk to a sequence with a given name."""
-        self.chunkSeq.append( chunk )
-        chunk.web= weakref.ref(self)
+        self.chunkSeq.append(chunk)
+        chunk.web = weakref.ref(self)
         if chunk.name not in self.output:
             self.output[chunk.name] = []
-            self.logger.debug( "Adding chunk {!r}".format(chunk.name) )
+            self.logger.debug("Adding chunk {!r}".format(chunk.name))
         self.sequence += 1
-        chunk.seq= self.sequence
-        chunk.fullName= chunk.name
-        self.output[chunk.name].append( chunk )
+        chunk.seq = self.sequence
+        chunk.fullName = chunk.name
+        self.output[chunk.name].append(chunk)
         chunk.initial = len(self.output[chunk.name]) == 1
     
 
@@ -5118,7 +5191,7 @@ If the chunk list was empty, this is the first chunk, the
 
     ..  class:: small
 
-        |loz| *Web add an output file definition chunk (101)*. Used by: Web construction... (`97`_)
+        |loz| *Web add an output file definition chunk (102)*. Used by: Web construction... (`98`_)
 
 
 Web Chunk Name Resolution
@@ -5149,20 +5222,20 @@ The ``fullNameFor()`` method resolves full name for a chunk as follows:
 
 
 
-..  _`102`:
-..  rubric:: Web Chunk name resolution methods (102) =
+..  _`103`:
+..  rubric:: Web Chunk name resolution methods (103) =
 ..  parsed-literal::
     :class: code
 
     
-    def fullNameFor( self, name ):
+    def fullNameFor(self, name: str) -> str:
         """Resolve "..." names into the full name."""
         if name in self.named: return name
         if name[-3:] == '...':
-            best= [ n for n in self.named.keys()
-                if n.startswith( name[:-3] ) ]
+            best = [ n for n in self.named.keys()
+                if n.startswith(name[:-3]) ]
             if len(best) > 1:
-                raise Error("Ambiguous abbreviation {!r}, matches {!r}".format( name, list(sorted(best)) ) )
+                raise Error("Ambiguous abbreviation {!r}, matches {!r}".format(name, list(sorted(best))) )
             elif len(best) == 1: 
                 return best[0]
         return name
@@ -5172,7 +5245,7 @@ The ``fullNameFor()`` method resolves full name for a chunk as follows:
 
     ..  class:: small
 
-        |loz| *Web Chunk name resolution methods (102)*. Used by: Web class... (`95`_)
+        |loz| *Web Chunk name resolution methods (103)*. Used by: Web class... (`96`_)
 
 
 The ``getchunk()`` method locates a named sequence of chunks by first determining the full name
@@ -5183,28 +5256,28 @@ is unresolvable.
 
 It might be more helpful for debugging to emit this as an error in the
 weave and tangle results and keep processing.  This would allow an author to
-catch multiple errors in a single run of pyWeb.
+catch multiple errors in a single run of **py-web-tool** .
  
 
-..  _`103`:
-..  rubric:: Web Chunk name resolution methods (103) +=
+..  _`104`:
+..  rubric:: Web Chunk name resolution methods (104) +=
 ..  parsed-literal::
     :class: code
 
     
-    def getchunk( self, name ):
+    def getchunk(self, name: str) -> list[Chunk]:
         """Locate a named sequence of chunks."""
-        nm= self.fullNameFor( name )
+        nm = self.fullNameFor(name)
         if nm in self.named:
             return self.named[nm]
-        raise Error( "Cannot resolve {!r} in {!r}".format(name,self.named.keys()) )
+        raise Error("Cannot resolve {!r} in {!r}".format(name,self.named.keys()))
     
 
 ..
 
     ..  class:: small
 
-        |loz| *Web Chunk name resolution methods (103)*. Used by: Web class... (`95`_)
+        |loz| *Web Chunk name resolution methods (104)*. Used by: Web class... (`96`_)
 
 
 Web Cross-Reference Support
@@ -5239,30 +5312,30 @@ When the ``createUsedBy()`` method has accumulated the entire cross
 reference, it also assures that all chunks are used exactly once.
 
 
-..  _`104`:
-..  rubric:: Web Chunk cross reference methods (104) =
+..  _`105`:
+..  rubric:: Web Chunk cross reference methods (105) =
 ..  parsed-literal::
     :class: code
 
     
-    def createUsedBy( self ):
+    def createUsedBy(self) -> None:
         """Update every piece of a Chunk to show how the chunk is referenced.
         Each piece can then report where it's used in the web.
         """
         for aChunk in self.chunkSeq:
             #usage = (self.fullNameFor(aChunk.name), aChunk.seq)
-            for aRefName in aChunk.genReferences( self ):
-                for c in self.getchunk( aRefName ):
-                    c.referencedBy.append( aChunk )
+            for aRefName in aChunk.genReferences(self):
+                for c in self.getchunk(aRefName):
+                    c.referencedBy.append(aChunk)
                     c.refCount += 1
-        |srarr|\ Web Chunk check reference counts are all one (`105`_)
+        |srarr|\ Web Chunk check reference counts are all one (`106`_)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *Web Chunk cross reference methods (104)*. Used by: Web class... (`95`_)
+        |loz| *Web Chunk cross reference methods (105)*. Used by: Web class... (`96`_)
 
 
 We verify that the reference count for a
@@ -5270,39 +5343,39 @@ Chunk is exactly one.  We don't gracefully tolerate multiple references to
 a Chunk or unreferenced chunks.
 
 
-..  _`105`:
-..  rubric:: Web Chunk check reference counts are all one (105) =
+..  _`106`:
+..  rubric:: Web Chunk check reference counts are all one (106) =
 ..  parsed-literal::
     :class: code
 
     
     for nm in self.no\_reference():
-        self.logger.warn( "No reference to {!r}".format(nm) )
+        self.logger.warning("No reference to {!r}".format(nm))
     for nm in self.multi\_reference():
-        self.logger.warn( "Multiple references to {!r}".format(nm) )
+        self.logger.warning("Multiple references to {!r}".format(nm))
     for nm in self.no\_definition():
-        self.logger.error( "No definition for {!r}".format(nm) )
+        self.logger.error("No definition for {!r}".format(nm))
         self.errors += 1
 
 ..
 
     ..  class:: small
 
-        |loz| *Web Chunk check reference counts are all one (105)*. Used by: Web Chunk cross reference methods... (`104`_)
+        |loz| *Web Chunk check reference counts are all one (106)*. Used by: Web Chunk cross reference methods... (`105`_)
 
 
-The one-pass version
+The one-pass version:
 
 ..  parsed-literal::
 
     for nm,cl in self.named.items():
         if len(cl) > 0:
             if cl[0].refCount == 0:
-               self.logger.warn( "No reference to {!r}".format(nm) )
+               self.logger.warning("No reference to {!r}".format(nm))
             elif cl[0].refCount > 1:
-               self.logger.warn( "Multiple references to {!r}".format(nm) )
+               self.logger.warning("Multiple references to {!r}".format(nm))
         else:
-            self.logger.error( "No definition for {!r}".format(nm) )
+            self.logger.error("No definition for {!r}".format(nm))
 
 
 We use three methods to filter chunk names into 
@@ -5315,25 +5388,25 @@ is a list of chunks referenced but not defined.
 
 
 
-..  _`106`:
-..  rubric:: Web Chunk cross reference methods (106) +=
+..  _`107`:
+..  rubric:: Web Chunk cross reference methods (107) +=
 ..  parsed-literal::
     :class: code
 
     
-    def no\_reference( self ):
-        return [ nm for nm,cl in self.named.items() if len(cl)>0 and cl[0].refCount == 0 ]
-    def multi\_reference( self ):
-        return [ nm for nm,cl in self.named.items() if len(cl)>0 and cl[0].refCount > 1 ]
-    def no\_definition( self ):
-        return [ nm for nm,cl in self.named.items() if len(cl) == 0 ] 
+    def no\_reference(self) -> list[str]:
+        return [nm for nm, cl in self.named.items() if len(cl)>0 and cl[0].refCount == 0]
+    def multi\_reference(self) -> list[str]:
+        return [nm for nm, cl in self.named.items() if len(cl)>0 and cl[0].refCount > 1]
+    def no\_definition(self) -> list[str]:
+        return [nm for nm, cl in self.named.items() if len(cl) == 0] 
     
 
 ..
 
     ..  class:: small
 
-        |loz| *Web Chunk cross reference methods (106)*. Used by: Web class... (`95`_)
+        |loz| *Web Chunk cross reference methods (107)*. Used by: Web class... (`96`_)
 
 
 The ``fileXref()`` method visits all named file output chunks in ``output`` and
@@ -5345,21 +5418,21 @@ but applies it to the ``named`` mapping.
 
 
 
-..  _`107`:
-..  rubric:: Web Chunk cross reference methods (107) +=
+..  _`108`:
+..  rubric:: Web Chunk cross reference methods (108) +=
 ..  parsed-literal::
     :class: code
 
     
-    def fileXref( self ):
-        fx= {}
-        for f,cList in self.output.items():
-            fx[f]= [ c.seq for c in cList ]
+    def fileXref(self) -> dict[str, list[int]]:
+        fx = {}
+        for f, cList in self.output.items():
+            fx[f] = [c.seq for c in cList]
         return fx
-    def chunkXref( self ):
-        mx= {}
-        for n,cList in self.named.items():
-            mx[n]= [ c.seq for c in cList ]
+    def chunkXref(self) -> dict[str, list[int]]:
+        mx = {}
+        for n, cList in self.named.items():
+            mx[n] = [c.seq for c in cList]
         return mx
     
 
@@ -5367,7 +5440,7 @@ but applies it to the ``named`` mapping.
 
     ..  class:: small
 
-        |loz| *Web Chunk cross reference methods (107)*. Used by: Web class... (`95`_)
+        |loz| *Web Chunk cross reference methods (108)*. Used by: Web class... (`96`_)
 
 
 The ``userNamesXref()`` method creates a mapping for each
@@ -5377,7 +5450,7 @@ and a sequence of chunks that reference the identifier.
 
 
 For example:
-``{ 'Web': ( 87, (88,93,96,101,102,104) ), 'Chunk': ( 53, (54,55,56,60,57,58,59) ) }``, 
+``{'Web': (87, (88,93,96,101,102,104)), 'Chunk': (53, (54,55,56,60,57,58,59))}``, 
 shows that the identifier
 ``'Web'`` is defined in chunk with a sequence number of 87, and referenced
 in the sequence of chunks that follow.
@@ -5393,30 +5466,32 @@ This works in two passes:
 
 
 
-..  _`108`:
-..  rubric:: Web Chunk cross reference methods (108) +=
+..  _`109`:
+..  rubric:: Web Chunk cross reference methods (109) +=
 ..  parsed-literal::
     :class: code
 
     
-    def userNamesXref( self ):
-        ux= {}
-        self.\_gatherUserId( self.named, ux )
-        self.\_gatherUserId( self.output, ux )
-        self.\_updateUserId( self.named, ux )
-        self.\_updateUserId( self.output, ux )
+    def userNamesXref(self) -> dict[str, tuple[int, list[int]]]:
+        ux: dict[str, tuple[int, list[int]]] = {}
+        self.\_gatherUserId(self.named, ux)
+        self.\_gatherUserId(self.output, ux)
+        self.\_updateUserId(self.named, ux)
+        self.\_updateUserId(self.output, ux)
         return ux
-    def \_gatherUserId( self, chunkMap, ux ):
-        |srarr|\ collect all user identifiers from a given map into ux (`109`_)
-    def \_updateUserId( self, chunkMap, ux ):
-        |srarr|\ find user identifier usage and update ux from the given map (`110`_)
+        
+    def \_gatherUserId(self, chunkMap: dict[str, list[Chunk]], ux: dict[str, tuple[int, list[int]]]) -> None:
+        |srarr|\ collect all user identifiers from a given map into ux (`110`_)
+        
+    def \_updateUserId(self, chunkMap: dict[str, list[Chunk]], ux: dict[str, tuple[int, list[int]]]) -> None:
+        |srarr|\ find user identifier usage and update ux from the given map (`111`_)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *Web Chunk cross reference methods (108)*. Used by: Web class... (`95`_)
+        |loz| *Web Chunk cross reference methods (109)*. Used by: Web class... (`96`_)
 
 
 User identifiers are collected by visiting each of the sequence of 
@@ -5428,8 +5503,8 @@ list as a default action.
 
  
 
-..  _`109`:
-..  rubric:: collect all user identifiers from a given map into ux (109) =
+..  _`110`:
+..  rubric:: collect all user identifiers from a given map into ux (110) =
 ..  parsed-literal::
     :class: code
 
@@ -5437,13 +5512,13 @@ list as a default action.
     for n,cList in chunkMap.items():
         for c in cList:
             for id in c.getUserIDRefs():
-                ux[id]= ( c.seq, [] )
+                ux[id] = (c.seq, [])
 
 ..
 
     ..  class:: small
 
-        |loz| *collect all user identifiers from a given map into ux (109)*. Used by: Web Chunk cross reference methods... (`108`_)
+        |loz| *collect all user identifiers from a given map into ux (110)*. Used by: Web Chunk cross reference methods... (`109`_)
 
 
 User identifiers are cross-referenced by visiting 
@@ -5454,26 +5529,26 @@ this is appended to the sequence of chunks that reference the original user iden
 
 
 
-..  _`110`:
-..  rubric:: find user identifier usage and update ux from the given map (110) =
+..  _`111`:
+..  rubric:: find user identifier usage and update ux from the given map (111) =
 ..  parsed-literal::
     :class: code
 
     
     # examine source for occurrences of all names in ux.keys()
     for id in ux.keys():
-        self.logger.debug( "References to {!r}".format(id) )
-        idpat= re.compile( r'\\W{!s}\\W'.format(id) )
+        self.logger.debug("References to {!r}".format(id))
+        idpat = re.compile(r'\\W{!s}\\W'.format(id))
         for n,cList in chunkMap.items():
             for c in cList:
-                if c.seq != ux[id][0] and c.searchForRE( idpat ):
-                    ux[id][1].append( c.seq )
+                if c.seq != ux[id][0] and c.searchForRE(idpat):
+                    ux[id][1].append(c.seq)
 
 ..
 
     ..  class:: small
 
-        |loz| *find user identifier usage and update ux from the given map (110)*. Used by: Web Chunk cross reference methods... (`108`_)
+        |loz| *find user identifier usage and update ux from the given map (111)*. Used by: Web Chunk cross reference methods... (`109`_)
 
 
 Loop Detection
@@ -5526,17 +5601,17 @@ LaTeX files typically begin with '%' or '\'.
 Everything else is probably RST.
 
 
-..  _`111`:
-..  rubric:: Web determination of the language from the first chunk (111) =
+..  _`112`:
+..  rubric:: Web determination of the language from the first chunk (112) =
 ..  parsed-literal::
     :class: code
 
     
-    def language( self, preferredWeaverClass=None ):
+    def language(self, preferredWeaverClass: type["Weaver"] \| None = None) -> "Weaver":
         """Construct a weaver appropriate to the document's language"""
         if preferredWeaverClass:
             return preferredWeaverClass()
-        self.logger.debug( "Picking a weaver based on first chunk {!r}".format(self.chunkSeq[0][:4]) )
+        self.logger.debug("Picking a weaver based on first chunk {!r}".format(str(self.chunkSeq[0])[:4]))
         if self.chunkSeq[0].startswith('<'): 
             return HTML()
         if self.chunkSeq[0].startswith('%') or self.chunkSeq[0].startswith('\\\\'):  
@@ -5548,7 +5623,7 @@ Everything else is probably RST.
 
     ..  class:: small
 
-        |loz| *Web determination of the language from the first chunk (111)*. Used by: Web class... (`95`_)
+        |loz| *Web determination of the language from the first chunk (112)*. Used by: Web class... (`96`_)
 
 
 The ``tangle()`` method of the ``Web`` class performs 
@@ -5557,24 +5632,24 @@ named output file.  Note that several ``Chunks`` may share the file name, requir
 the file be composed of material from each ``Chunk``, in order.
 
 
-..  _`112`:
-..  rubric:: Web tangle the output files (112) =
+..  _`113`:
+..  rubric:: Web tangle the output files (113) =
 ..  parsed-literal::
     :class: code
 
     
-    def tangle( self, aTangler ):
+    def tangle(self, aTangler: "Tangler") -> None:
         for f, c in self.output.items():
             with aTangler.open(f):
                 for p in c:
-                    p.tangle( self, aTangler )
+                    p.tangle(self, aTangler)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *Web tangle the output files (112)*. Used by: Web class... (`95`_)
+        |loz| *Web tangle the output files (113)*. Used by: Web class... (`96`_)
 
 
 The ``weave()`` method of the ``Web`` class creates the final documentation.
@@ -5592,34 +5667,37 @@ The decision is delegated to the referenced chunk.
     Should it go in ``ReferenceCommand weave...``?
 
 
-..  _`113`:
-..  rubric:: Web weave the output document (113) =
+..  _`114`:
+..  rubric:: Web weave the output document (114) =
 ..  parsed-literal::
     :class: code
 
     
-    def weave( self, aWeaver ):
-        self.logger.debug( "Weaving file from {!r}".format(self.webFileName) )
-        basename, \_ = os.path.splitext( self.webFileName )
+    def weave(self, aWeaver: "Weaver") -> None:
+        self.logger.debug("Weaving file from {!r}".format(self.webFileName))
+        if not self.webFileName:
+            raise Error("No filename supplied for weaving.")
+        basename, \_ = os.path.splitext(self.webFileName)
         with aWeaver.open(basename):
             for c in self.chunkSeq:
-                c.weave( self, aWeaver )
-    def weaveChunk( self, name, aWeaver ):
-        self.logger.debug( "Weaving chunk {!r}".format(name) )
-        chunkList= self.getchunk(name)
+                c.weave(self, aWeaver)
+                
+    def weaveChunk(self, name: str, aWeaver: "Weaver") -> None:
+        self.logger.debug("Weaving chunk {!r}".format(name))
+        chunkList = self.getchunk(name)
         if not chunkList:
-            raise Error( "No Definition for {!r}".format(name) )
-        chunkList[0].weaveReferenceTo( self, aWeaver )
+            raise Error("No Definition for {!r}".format(name))
+        chunkList[0].weaveReferenceTo(self, aWeaver)
         for p in chunkList[1:]:
-            aWeaver.write( aWeaver.referenceSep() )
-            p.weaveShortReferenceTo( self, aWeaver )
+            aWeaver.write(aWeaver.referenceSep())
+            p.weaveShortReferenceTo(self, aWeaver)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *Web weave the output document (113)*. Used by: Web class... (`95`_)
+        |loz| *Web weave the output document (114)*. Used by: Web class... (`96`_)
 
 
 The WebReader Class
@@ -5631,7 +5709,7 @@ initial ``WebReader`` instance is created with code like the following:
 
 ..  parsed-literal::
 
-    p= WebReader()
+    p = WebReader()
     p.command = options.commandCharacter 
 
 This will define the command character; usually provided as a command-line parameter to the application.
@@ -5641,7 +5719,7 @@ instance is created with code like the following:
 
 ..  parsed-literal::
 
-    c= WebReader( parent=parentWebReader )
+    c = WebReader(parent=parentWebReader)
 
 
 
@@ -5712,8 +5790,8 @@ The class has the following attributes:
     Summaries
 
 
-..  _`114`:
-..  rubric:: WebReader class - parses the input file, building the Web structure (114) =
+..  _`115`:
+..  rubric:: WebReader class - parses the input file, building the Web structure (115) =
 ..  parsed-literal::
     :class: code
 
@@ -5721,56 +5799,62 @@ The class has the following attributes:
     class WebReader:
         """Parse an input file, creating Chunks and Commands."""
     
-        output\_option\_parser= OptionParser(
-            OptionDef( "-start", nargs=1, default=None ),
-            OptionDef( "-end", nargs=1, default="" ),
-            OptionDef( "argument", nargs='\*' ),
-            )
+        output\_option\_parser = OptionParser(
+            OptionDef("-start", nargs=1, default=None),
+            OptionDef("-end", nargs=1, default=""),
+            OptionDef("argument", nargs='\*'),
+        )
     
-        definition\_option\_parser= OptionParser(
-            OptionDef( "-indent", nargs=0 ),
-            OptionDef( "-noindent", nargs=0 ),
-            OptionDef( "argument", nargs='\*' ),
-            )
+        definition\_option\_parser = OptionParser(
+            OptionDef("-indent", nargs=0),
+            OptionDef("-noindent", nargs=0),
+            OptionDef("argument", nargs='\*'),
+        )
     
-        def \_\_init\_\_( self, parent=None ):
-            self.logger= logging.getLogger( self.\_\_class\_\_.\_\_qualname\_\_ )
+        # State of reading and parsing.
+        tokenizer: Tokenizer
+        aChunk: Chunk
+        
+        # Configuration
+        command: str
+        permitList: list[str]
+        
+        # State of the reader
+        \_source: TextIO
+        fileName: str
+        theWeb: "Web"
+    
+        def \_\_init\_\_(self, parent: Optional["WebReader"] = None) -> None:
+            self.logger = logging.getLogger(self.\_\_class\_\_.\_\_qualname\_\_)
     
             # Configuration of this reader.
-            self.parent= parent
+            self.parent = parent
             if self.parent: 
-                self.command= self.parent.command
-                self.permitList= self.parent.permitList
+                self.command = self.parent.command
+                self.permitList = self.parent.permitList
             else: # Defaults until overridden
-                self.command= '@'
-                self.permitList= []
-    
-            # Load options
-            self.\_source= None
-            self.fileName= None
-            self.theWeb= None
-                
-            # State of reading and parsing.
-            self.tokenizer= None
-            self.aChunk= None
-            
+                self.command = '@'
+                self.permitList = []
+                        
             # Summary
-            self.totalLines= 0
-            self.totalFiles= 0
-            self.errors= 0 
+            self.totalLines = 0
+            self.totalFiles = 0
+            self.errors = 0 
             
-            |srarr|\ WebReader command literals (`130`_)
-        def \_\_str\_\_( self ):
+            |srarr|\ WebReader command literals (`132`_)
+            
+        def \_\_str\_\_(self) -> str:
             return self.\_\_class\_\_.\_\_name\_\_
-        |srarr|\ WebReader location in the input stream (`128`_)
-        |srarr|\ WebReader load the web (`129`_)
-        |srarr|\ WebReader handle a command string (`115`_), |srarr|\ (`127`_)
+            
+        |srarr|\ WebReader location in the input stream (`129`_)
+        |srarr|\ WebReader load the web (`131`_)
+        |srarr|\ WebReader handle a command string (`116`_), |srarr|\ (`128`_)
 
 ..
 
     ..  class:: small
 
-        |loz| *WebReader class - parses the input file, building the Web structure (114)*. Used by: Base Class Definitions (`1`_)
+        |loz| *WebReader class - parses the input file, building the Web structure (115)*. Used by: Base Class Definitions (`1`_)
 
 
 Command recognition is done via a **Chain of Command**-like design.
@@ -5799,56 +5883,56 @@ A subclass can override ``handleCommand()`` to
     by ``load()`` is to treat the command a text, but also issue a warning.
 
 
-..  _`115`:
-..  rubric:: WebReader handle a command string (115) =
+..  _`116`:
+..  rubric:: WebReader handle a command string (116) =
 ..  parsed-literal::
     :class: code
 
     
-    def handleCommand( self, token ):
-        self.logger.debug( "Reading {!r}".format(token) )
-        |srarr|\ major commands segment the input into separate Chunks (`116`_)
-        |srarr|\ minor commands add Commands to the current Chunk (`121`_)
+    def handleCommand(self, token: str) -> bool:
+        self.logger.debug("Reading {!r}".format(token))
+        |srarr|\ major commands segment the input into separate Chunks (`117`_)
+        |srarr|\ minor commands add Commands to the current Chunk (`122`_)
         elif token[:2] in (self.cmdlcurl,self.cmdlbrak):
             # These should have been consumed as part of @o and @d parsing
-            self.logger.error( "Extra {!r} (possibly missing chunk name) near {!r}".format(token, self.location()) )
+            self.logger.error("Extra {!r} (possibly missing chunk name) near {!r}".format(token, self.location()))
             self.errors += 1
         else:
-            return None # did not recogize the command
-        return True # did recognize the command
+            return False  # did not recogize the command
+        return True  # did recognize the command
     
 
 ..
 
     ..  class:: small
 
-        |loz| *WebReader handle a command string (115)*. Used by: WebReader class... (`114`_)
+        |loz| *WebReader handle a command string (116)*. Used by: WebReader class... (`115`_)
 
 
 The following sequence of ``if``-``elif`` statements identifies
 the structural commands that partition the input into separate ``Chunks``.
 
 
-..  _`116`:
-..  rubric:: major commands segment the input into separate Chunks (116) =
+..  _`117`:
+..  rubric:: major commands segment the input into separate Chunks (117) =
 ..  parsed-literal::
     :class: code
 
     
     if token[:2] == self.cmdo:
-        |srarr|\ start an OutputChunk, adding it to the web (`117`_)
+        |srarr|\ start an OutputChunk, adding it to the web (`118`_)
     elif token[:2] == self.cmdd:
-        |srarr|\ start a NamedChunk or NamedDocumentChunk, adding it to the web (`118`_)
+        |srarr|\ start a NamedChunk or NamedDocumentChunk, adding it to the web (`119`_)
     elif token[:2] == self.cmdi:
-        |srarr|\ import another file (`119`_)
+        |srarr|\ import another file (`120`_)
     elif token[:2] in (self.cmdrcurl,self.cmdrbrak):
-        |srarr|\ finish a chunk, start a new Chunk adding it to the web (`120`_)
+        |srarr|\ finish a chunk, start a new Chunk adding it to the web (`121`_)
 
 ..
 
     ..  class:: small
 
-        |loz| *major commands segment the input into separate Chunks (116)*. Used by: WebReader handle a command... (`115`_)
+        |loz| *major commands segment the input into separate Chunks (117)*. Used by: WebReader handle a command... (`116`_)
 
 
 An output chunk has the form ``@o`` *name* ``@{`` *content* ``@}``.
@@ -5859,31 +5943,32 @@ to this chunk while waiting for the final ``@}`` token to end the chunk.
 We'll use an ``OptionParser`` to locate the optional parameters.  This will then let
 us build an appropriate instance of ``OutputChunk``.
 
-With some small additional changes, we could use ``OutputChunk( **options )``.
+With some small additional changes, we could use ``OutputChunk(**options)``.
     
 
-..  _`117`:
-..  rubric:: start an OutputChunk, adding it to the web (117) =
+..  _`118`:
+..  rubric:: start an OutputChunk, adding it to the web (118) =
 ..  parsed-literal::
     :class: code
 
     
-    args= next(self.tokenizer)
-    self.expect( (self.cmdlcurl,) )
-    options= self.output\_option\_parser.parse( args )
-    self.aChunk= OutputChunk( name=options['argument'],
-            comment\_start= options.get('start',None),
-            comment\_end= options.get('end',""),
-            )
-    self.aChunk.fileName= self.fileName 
-    self.aChunk.webAdd( self.theWeb )
+    args = next(self.tokenizer)
+    self.expect((self.cmdlcurl,))
+    options = self.output\_option\_parser.parse(args)
+    self.aChunk = OutputChunk(
+        name=' '.join(options['argument']),
+        comment\_start=''.join(options.get('start', "# ")),
+        comment\_end=''.join(options.get('end', "")),
+    )
+    self.aChunk.fileName = self.fileName 
+    self.aChunk.webAdd(self.theWeb)
     # capture an OutputChunk up to @}
 
 ..
 
     ..  class:: small
 
-        |loz| *start an OutputChunk, adding it to the web (117)*. Used by: major commands... (`116`_)
+        |loz| *start an OutputChunk, adding it to the web (118)*. Used by: major commands... (`117`_)
 
 
 A named chunk has the form ``@d`` *name* ``@{`` *content* ``@}`` for
@@ -5907,38 +5992,38 @@ If both are in the options, we can provide a warning, I guess.
     **TODO** Add a warning for conflicting options.
 
 
-..  _`118`:
-..  rubric:: start a NamedChunk or NamedDocumentChunk, adding it to the web (118) =
+..  _`119`:
+..  rubric:: start a NamedChunk or NamedDocumentChunk, adding it to the web (119) =
 ..  parsed-literal::
     :class: code
 
     
-    args= next(self.tokenizer)
-    brack= self.expect( (self.cmdlcurl,self.cmdlbrak) )
-    options= self.output\_option\_parser.parse( args )
-    name=options['argument']
+    args = next(self.tokenizer)
+    brack = self.expect((self.cmdlcurl,self.cmdlbrak))
+    options = self.output\_option\_parser.parse(args)
+    name = ' '.join(options['argument'])
     
     if brack == self.cmdlbrak:
-        self.aChunk= NamedDocumentChunk( name )
+        self.aChunk = NamedDocumentChunk(name)
     elif brack == self.cmdlcurl:
         if '-noindent' in options:
-            self.aChunk= NamedChunk\_Noindent( name )
+            self.aChunk = NamedChunk\_Noindent(name)
         else:
-            self.aChunk= NamedChunk( name )
+            self.aChunk = NamedChunk(name)
     elif brack == None:
         pass # Error noted by expect()
     else:
-        raise Error( "Design Error" )
+        raise Error("Design Error")
     
-    self.aChunk.fileName= self.fileName 
-    self.aChunk.webAdd( self.theWeb )
+    self.aChunk.fileName = self.fileName 
+    self.aChunk.webAdd(self.theWeb)
     # capture a NamedChunk up to @} or @]
 
 ..
 
     ..  class:: small
 
-        |loz| *start a NamedChunk or NamedDocumentChunk, adding it to the web (118)*. Used by: major commands... (`116`_)
+        |loz| *start a NamedChunk or NamedDocumentChunk, adding it to the web (119)*. Used by: major commands... (`117`_)
 
 
 An import command has the unusual form of ``@i`` *name*, with no trailing
@@ -5962,49 +6047,49 @@ can be set to permit failure; this allows a ``.w`` to include
 a file that does not yet exist.  
  
 The primary use case for this feature is when weaving test output.
-The first pass of **pyWeb** tangles the program source files; they are
-then run to create test output; the second pass of **pyWeb** weaves this
+The first pass of **py-web-tool**  tangles the program source files; they are
+then run to create test output; the second pass of **py-web-tool**  weaves this
 test output into the final document via the ``@i`` command.
 
 
-..  _`119`:
-..  rubric:: import another file (119) =
+..  _`120`:
+..  rubric:: import another file (120) =
 ..  parsed-literal::
     :class: code
 
     
-    incFile= next(self.tokenizer).strip()
+    incFile = next(self.tokenizer).strip()
     try:
-        self.logger.info( "Including {!r}".format(incFile) )
-        include= WebReader( parent=self )
-        include.load( self.theWeb, incFile )
+        self.logger.info("Including {!r}".format(incFile))
+        include = WebReader(parent=self)
+        include.load(self.theWeb, incFile)
         self.totalLines += include.tokenizer.lineNumber
         self.totalFiles += include.totalFiles
         if include.errors:
             self.errors += include.errors
             self.logger.error( 
-                "Errors in included file {!s}, output is incomplete.".format(
-                incFile) )
+                "Errors in included file {!s}, output is incomplete.".format(incFile)
+            )
     except Error as e:
         self.logger.error( 
-            "Problems with included file {!s}, output is incomplete.".format(
-            incFile) )
+            "Problems with included file {!s}, output is incomplete.".format(incFile)
+        )
         self.errors += 1
     except IOError as e:
         self.logger.error( 
-            "Problems with included file {!s}, output is incomplete.".format(
-            incFile) )
+            "Problems with included file {!s}, output is incomplete.".format(incFile)
+        )
         # Discretionary -- sometimes we want to continue
         if self.cmdi in self.permitList: pass
-        else: raise # TODO: Seems heavy-handed
-    self.aChunk= Chunk()
-    self.aChunk.webAdd( self.theWeb )
+        else: raise  # Seems heavy-handed, but, the file wasn't found!
+    self.aChunk = Chunk()
+    self.aChunk.webAdd(self.theWeb)
 
 ..
 
     ..  class:: small
 
-        |loz| *import another file (119)*. Used by: major commands... (`116`_)
+        |loz| *import another file (120)*. Used by: major commands... (`117`_)
 
 
 When a ``@}`` or ``@]`` are found, this finishes a named chunk.  The next
@@ -6020,20 +6105,20 @@ For the base ``Chunk`` class, this would be false, but for all other subclasses 
 
 
 
-..  _`120`:
-..  rubric:: finish a chunk, start a new Chunk adding it to the web (120) =
+..  _`121`:
+..  rubric:: finish a chunk, start a new Chunk adding it to the web (121) =
 ..  parsed-literal::
     :class: code
 
     
-    self.aChunk= Chunk()
-    self.aChunk.webAdd( self.theWeb )
+    self.aChunk = Chunk()
+    self.aChunk.webAdd(self.theWeb)
 
 ..
 
     ..  class:: small
 
-        |loz| *finish a chunk, start a new Chunk adding it to the web (120)*. Used by: major commands... (`116`_)
+        |loz| *finish a chunk, start a new Chunk adding it to the web (121)*. Used by: major commands... (`117`_)
 
 
 The following sequence of ``elif`` statements identifies
@@ -6041,32 +6126,32 @@ the minor commands that add ``Command`` instances to the current open ``Chunk``.
 
 
 
-..  _`121`:
-..  rubric:: minor commands add Commands to the current Chunk (121) =
+..  _`122`:
+..  rubric:: minor commands add Commands to the current Chunk (122) =
 ..  parsed-literal::
     :class: code
 
     
     elif token[:2] == self.cmdpipe:
-        |srarr|\ assign user identifiers to the current chunk (`122`_)
+        |srarr|\ assign user identifiers to the current chunk (`123`_)
     elif token[:2] == self.cmdf:
-        self.aChunk.append( FileXrefCommand(self.tokenizer.lineNumber) )
+        self.aChunk.append(FileXrefCommand(self.tokenizer.lineNumber))
     elif token[:2] == self.cmdm:
-        self.aChunk.append( MacroXrefCommand(self.tokenizer.lineNumber) )
+        self.aChunk.append(MacroXrefCommand(self.tokenizer.lineNumber))
     elif token[:2] == self.cmdu:
-        self.aChunk.append( UserIdXrefCommand(self.tokenizer.lineNumber) )
+        self.aChunk.append(UserIdXrefCommand(self.tokenizer.lineNumber))
     elif token[:2] == self.cmdlangl:
-        |srarr|\ add a reference command to the current chunk (`123`_)
+        |srarr|\ add a reference command to the current chunk (`124`_)
     elif token[:2] == self.cmdlexpr:
-        |srarr|\ add an expression command to the current chunk (`125`_)
+        |srarr|\ add an expression command to the current chunk (`126`_)
     elif token[:2] == self.cmdcmd:
-        |srarr|\ double at-sign replacement, append this character to previous TextCommand (`126`_)
+        |srarr|\ double at-sign replacement, append this character to previous TextCommand (`127`_)
 
 ..
 
     ..  class:: small
 
-        |loz| *minor commands add Commands to the current Chunk (121)*. Used by: WebReader handle a command... (`115`_)
+        |loz| *minor commands add Commands to the current Chunk (122)*. Used by: WebReader handle a command... (`116`_)
 
 
 User identifiers occur after a ``@|`` in a ``NamedChunk``.
@@ -6082,24 +6167,24 @@ User identifiers are name references at the end of a NamedChunk
 These are accumulated and expanded by ``@u`` reference
 
 
-..  _`122`:
-..  rubric:: assign user identifiers to the current chunk (122) =
+..  _`123`:
+..  rubric:: assign user identifiers to the current chunk (123) =
 ..  parsed-literal::
     :class: code
 
     
     try:
-        self.aChunk.setUserIDRefs( next(self.tokenizer).strip() )
+        self.aChunk.setUserIDRefs(next(self.tokenizer).strip())
     except AttributeError:
         # Out of place @\| user identifier command
-        self.logger.error( "Unexpected references near {!s}: {!s}".format(self.location(),token) )
+        self.logger.error("Unexpected references near {!s}: {!s}".format(self.location(),token))
         self.errors += 1
 
 ..
 
     ..  class:: small
 
-        |loz| *assign user identifiers to the current chunk (122)*. Used by: minor commands... (`121`_)
+        |loz| *assign user identifiers to the current chunk (123)*. Used by: minor commands... (`122`_)
 
 
 A reference command has the form ``@<``\ *name*\ ``@>``.  We accept three
@@ -6107,25 +6192,25 @@ tokens from the input, the middle token is the referenced name.
 
 
 
-..  _`123`:
-..  rubric:: add a reference command to the current chunk (123) =
+..  _`124`:
+..  rubric:: add a reference command to the current chunk (124) =
 ..  parsed-literal::
     :class: code
 
     
     # get the name, introduce into the named Chunk dictionary
-    expand= next(self.tokenizer).strip()
-    closing= self.expect( (self.cmdrangl,) )
-    self.theWeb.addDefName( expand )
-    self.aChunk.append( ReferenceCommand( expand, self.tokenizer.lineNumber ) )
-    self.aChunk.appendText( "", self.tokenizer.lineNumber ) # to collect following text
-    self.logger.debug( "Reading {!r} {!r}".format(expand, closing) )
+    expand = next(self.tokenizer).strip()
+    closing = self.expect((self.cmdrangl,))
+    self.theWeb.addDefName(expand)
+    self.aChunk.append(ReferenceCommand(expand, self.tokenizer.lineNumber))
+    self.aChunk.appendText("", self.tokenizer.lineNumber) # to collect following text
+    self.logger.debug("Reading {!r} {!r}".format(expand, closing))
 
 ..
 
     ..  class:: small
 
-        |loz| *add a reference command to the current chunk (123)*. Used by: minor commands... (`121`_)
+        |loz| *add a reference command to the current chunk (124)*. Used by: minor commands... (`122`_)
 
 
 An expression command has the form ``@(``\ *Python Expression*\ ``@)``.  
@@ -6137,7 +6222,7 @@ There are two alternative semantics for an embedded expression.
 -   **Deferred Execution**.  This requires definition of a new subclass of ``Command``, 
     ``ExpressionCommand``, and appends it into the current ``Chunk``.  At weave and
     tangle time, this expression is evaluated.  The insert might look something like this:
-    ``aChunk.append( ExpressionCommand(expression, self.tokenizer.lineNumber) )``.
+    ``aChunk.append(ExpressionCommand(expression, self.tokenizer.lineNumber))``.
 
 -   **Immediate Execution**.  This simply creates a context and evaluates
     the Python expression.  The output from the expression becomes a ``TextCommand``, and
@@ -6145,12 +6230,12 @@ There are two alternative semantics for an embedded expression.
 
 We use the **Immediate Execution** semantics.
 
-Note that we've removed the blanket ``os``.  We only provide ``os.path``.
-An ``os.getcwd()`` must be changed to ``os.path.realpath('.')``.
+Note that we've removed the blanket ``os``.  We provide ``os.path`` library.
+An ``os.getcwd()`` could be changed to ``os.path.realpath('.')``.
 
 
-..  _`124`:
-..  rubric:: Imports (124) +=
+..  _`125`:
+..  rubric:: Imports (125) +=
 ..  parsed-literal::
     :class: code
 
@@ -6164,48 +6249,51 @@ An ``os.getcwd()`` must be changed to ``os.path.realpath('.')``.
 
     ..  class:: small
 
-        |loz| *Imports (124)*. Used by: pyweb.py (`153`_)
+        |loz| *Imports (125)*. Used by: pyweb.py (`156`_)
 
 
 
-..  _`125`:
-..  rubric:: add an expression command to the current chunk (125) =
+..  _`126`:
+..  rubric:: add an expression command to the current chunk (126) =
 ..  parsed-literal::
     :class: code
 
     
     # get the Python expression, create the expression result
-    expression= next(self.tokenizer)
-    self.expect( (self.cmdrexpr,) )
+    expression = next(self.tokenizer)
+    self.expect((self.cmdrexpr,))
     try:
         # Build Context
-        safe= types.SimpleNamespace( \*\*dict( (name,obj) 
+        safe = types.SimpleNamespace(\*\*dict(
+            (name, obj) 
             for name,obj in builtins.\_\_dict\_\_.items() 
-            if name not in ('eval', 'exec', 'open', '\_\_import\_\_')))
-        globals= dict(
-            \_\_builtins\_\_= safe, 
-            os= types.SimpleNamespace(path=os.path),
-            datetime= datetime,
-            platform= platform,
-            theLocation= self.location(),
-            theWebReader= self,
-            theFile= self.theWeb.webFileName,
-            thisApplication= sys.argv[0],
-            \_\_version\_\_= \_\_version\_\_,
+            if name not in ('breakpoint', 'compile', 'eval', 'exec', 'execfile', 'globals', 'help', 'input', 'memoryview', 'open', 'print', 'super', '\_\_import\_\_')
+        ))
+        globals = dict(
+            \_\_builtins\_\_=safe, 
+            os=types.SimpleNamespace(path=os.path, getcwd=os.getcwd, name=os.name),
+            time=time,
+            datetime=datetime,
+            platform=platform,
+            theLocation=self.location(),
+            theWebReader=self,
+            theFile=self.theWeb.webFileName,
+            thisApplication=sys.argv[0],
+            \_\_version\_\_=\_\_version\_\_,
             )
         # Evaluate
-        result= str(eval(expression, globals))
+        result = str(eval(expression, globals))
     except Exception as e:
-        self.logger.error( 'Failure to process {!r}: result is {!r}'.format(expression, e) )
+        self.logger.error('Failure to process {!r}: result is {!r}'.format(expression, e))
         self.errors += 1
-        result= "@({!r}: Error {!r}@)".format(expression, e)
-    self.aChunk.appendText( result, self.tokenizer.lineNumber )
+        result = "@({!r}: Error {!r}@)".format(expression, e)
+    self.aChunk.appendText(result, self.tokenizer.lineNumber)
 
 ..
 
     ..  class:: small
 
-        |loz| *add an expression command to the current chunk (125)*. Used by: minor commands... (`121`_)
+        |loz| *add an expression command to the current chunk (126)*. Used by: minor commands... (`122`_)
 
 
 A double command sequence (``'@@'``, when the command is an ``'@'``) has the
@@ -6219,19 +6307,19 @@ And we make sure the next chunk will be appended to this so that it's
 largely seamless.
 
 
-..  _`126`:
-..  rubric:: double at-sign replacement, append this character to previous TextCommand (126) =
+..  _`127`:
+..  rubric:: double at-sign replacement, append this character to previous TextCommand (127) =
 ..  parsed-literal::
     :class: code
 
     
-    self.aChunk.appendText( self.command, self.tokenizer.lineNumber )
+    self.aChunk.appendText(self.command, self.tokenizer.lineNumber)
 
 ..
 
     ..  class:: small
 
-        |loz| *double at-sign replacement, append this character to previous TextCommand (126)*. Used by: minor commands... (`121`_)
+        |loz| *double at-sign replacement, append this character to previous TextCommand (127)*. Used by: minor commands... (`122`_)
 
 
 The ``expect()`` method examines the 
@@ -6240,25 +6328,25 @@ If this is not found, a standard type of error message is raised.
 This is used by ``handleCommand()``.
 
 
-..  _`127`:
-..  rubric:: WebReader handle a command string (127) +=
+..  _`128`:
+..  rubric:: WebReader handle a command string (128) +=
 ..  parsed-literal::
     :class: code
 
     
-    def expect( self, tokens ):
+    def expect(self, tokens: Iterable[str]) -> str \| None:
         try:
-            t= next(self.tokenizer)
+            t = next(self.tokenizer)
             while t == '\\n':
-                t= next(self.tokenizer)
+                t = next(self.tokenizer)
         except StopIteration:
-            self.logger.error( "At {!r}: end of input, {!r} not found".format(self.location(),tokens) )
+            self.logger.error("At {!r}: end of input, {!r} not found".format(self.location(),tokens))
             self.errors += 1
-            return
+            return None
         if t not in tokens:
-            self.logger.error( "At {!r}: expected {!r}, found {!r}".format(self.location(),tokens,t) )
+            self.logger.error("At {!r}: expected {!r}, found {!r}".format(self.location(),tokens,t))
             self.errors += 1
-            return
+            return None
         return t
     
 
@@ -6266,7 +6354,7 @@ This is used by ``handleCommand()``.
 
     ..  class:: small
 
-        |loz| *WebReader handle a command string (127)*. Used by: WebReader class... (`114`_)
+        |loz| *WebReader handle a command string (128)*. Used by: WebReader class... (`115`_)
 
 
 The ``location()`` provides the file name and line number.
@@ -6274,13 +6362,13 @@ This allows error messages as well as tangled or woven output
 to correctly reference the original input files.
 
 
-..  _`128`:
-..  rubric:: WebReader location in the input stream (128) =
+..  _`129`:
+..  rubric:: WebReader location in the input stream (129) =
 ..  parsed-literal::
     :class: code
 
     
-    def location( self ):
+    def location(self) -> tuple[str, int]:
         return (self.fileName, self.tokenizer.lineNumber+1)
     
 
@@ -6288,7 +6376,7 @@ to correctly reference the original input files.
 
     ..  class:: small
 
-        |loz| *WebReader location in the input stream (128)*. Used by: WebReader class... (`114`_)
+        |loz| *WebReader location in the input stream (129)*. Used by: WebReader class... (`115`_)
 
 
 The ``load()`` method reads the entire input file as a sequence
@@ -6302,52 +6390,68 @@ The ``load()`` method is used recursively to handle the ``@i`` command. The issu
 is that it's always loading a single top-level web. 
 
 
-..  _`129`:
-..  rubric:: WebReader load the web (129) =
+..  _`130`:
+..  rubric:: Imports (130) +=
+..  parsed-literal::
+    :class: code
+
+    from typing import TextIO
+
+..
+
+    ..  class:: small
+
+        |loz| *Imports (130)*. Used by: pyweb.py (`156`_)
+
+
+
+..  _`131`:
+..  rubric:: WebReader load the web (131) =
 ..  parsed-literal::
     :class: code
 
     
-    def load( self, web, filename, source=None ):
-        self.theWeb= web
-        self.fileName= filename
+    def load(self, web: "Web", filename: str, source: TextIO \| None = None) -> "WebReader":
+        self.theWeb = web
+        self.fileName = filename
     
         # Only set the a web filename once using the first file.
         # This should be a setter property of the web.
         if self.theWeb.webFileName is None:
-            self.theWeb.webFileName= self.fileName
+            self.theWeb.webFileName = self.fileName
         
         if source:
-            self.\_source= source
+            self.\_source = source
             self.parse\_source()
         else:
-            with open( self.fileName, "r" ) as self.\_source:
+            with open(self.fileName, "r") as self.\_source:
                 self.parse\_source()
-            
-    def parse\_source( self ):
-            self.tokenizer= Tokenizer( self.\_source, self.command )
-            self.totalFiles += 1
+        return self
     
-            self.aChunk= Chunk() # Initial anonymous chunk of text.
-            self.aChunk.webAdd( self.theWeb )
+    def parse\_source(self) -> None:
+        self.tokenizer = Tokenizer(self.\_source, self.command)
+        self.totalFiles += 1
     
-            for token in self.tokenizer:
-                if len(token) >= 2 and token.startswith(self.command):
-                    if self.handleCommand( token ):
-                        continue
-                    else:
-                        self.logger.warn( 'Unknown @-command in input: {!r}'.format(token) )
-                        self.aChunk.appendText( token, self.tokenizer.lineNumber )
-                elif token:
-                    # Accumulate a non-empty block of text in the current chunk.
-                    self.aChunk.appendText( token, self.tokenizer.lineNumber )
+        self.aChunk = Chunk() # Initial anonymous chunk of text.
+        self.aChunk.webAdd(self.theWeb)
+    
+        for token in self.tokenizer:
+            if len(token) >= 2 and token.startswith(self.command):
+                if self.handleCommand(token):
+                    continue
+                else:
+                    self.logger.warning('Unknown @-command in input: {!r}'.format(token))
+                    self.aChunk.appendText(token, self.tokenizer.lineNumber)
+            elif token:
+                # Accumulate a non-empty block of text in the current chunk.
+                self.aChunk.appendText(token, self.tokenizer.lineNumber)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *WebReader load the web (129)*. Used by: WebReader class... (`114`_)
+        |loz| *WebReader load the web (131)*. Used by: WebReader class... (`115`_)
 
 
 The command character can be changed to permit
@@ -6358,39 +6462,39 @@ command character.
 
 
 
-..  _`130`:
-..  rubric:: WebReader command literals (130) =
+..  _`132`:
+..  rubric:: WebReader command literals (132) =
 ..  parsed-literal::
     :class: code
 
     
     # Structural ("major") commands
-    self.cmdo= self.command+'o'
-    self.cmdd= self.command+'d'
-    self.cmdlcurl= self.command+'{'
-    self.cmdrcurl= self.command+'}'
-    self.cmdlbrak= self.command+'['
-    self.cmdrbrak= self.command+']'
-    self.cmdi= self.command+'i'
+    self.cmdo = self.command+'o'
+    self.cmdd = self.command+'d'
+    self.cmdlcurl = self.command+'{'
+    self.cmdrcurl = self.command+'}'
+    self.cmdlbrak = self.command+'['
+    self.cmdrbrak = self.command+']'
+    self.cmdi = self.command+'i'
     
     # Inline ("minor") commands
-    self.cmdlangl= self.command+'<'
-    self.cmdrangl= self.command+'>'
-    self.cmdpipe= self.command+'\|'
-    self.cmdlexpr= self.command+'('
-    self.cmdrexpr= self.command+')'
-    self.cmdcmd= self.command+self.command
+    self.cmdlangl = self.command+'<'
+    self.cmdrangl = self.command+'>'
+    self.cmdpipe = self.command+'\|'
+    self.cmdlexpr = self.command+'('
+    self.cmdrexpr = self.command+')'
+    self.cmdcmd = self.command+self.command
     
     # Content "minor" commands
-    self.cmdf= self.command+'f'
-    self.cmdm= self.command+'m'
-    self.cmdu= self.command+'u'
+    self.cmdf = self.command+'f'
+    self.cmdm = self.command+'m'
+    self.cmdu = self.command+'u'
 
 ..
 
     ..  class:: small
 
-        |loz| *WebReader command literals (130)*. Used by: WebReader class... (`114`_)
+        |loz| *WebReader command literals (132)*. Used by: WebReader class... (`115`_)
 
 
 
@@ -6432,45 +6536,46 @@ We can safely filter these via a generator expression.
 The tokenizer counts newline characters for us, so that error messages can include
 a line number. Also, we can tangle comments into the file that include line numbers.
 
-Since the tokenizer is a proper iterator, we can use ``tokens= iter(Tokenizer(source))``
+Since the tokenizer is a proper iterator, we can use ``tokens = iter(Tokenizer(source))``
 and ``next(tokens)`` to step through the sequence of tokens until we raise a ``StopIteration``
 exception.
 
 
-..  _`131`:
-..  rubric:: Imports (131) +=
+..  _`133`:
+..  rubric:: Imports (133) +=
 ..  parsed-literal::
     :class: code
 
     
     import re
+    from collections.abc import Iterator, Iterable
     
 
 ..
 
     ..  class:: small
 
-        |loz| *Imports (131)*. Used by: pyweb.py (`153`_)
+        |loz| *Imports (133)*. Used by: pyweb.py (`156`_)
 
 
 
-..  _`132`:
-..  rubric:: Tokenizer class - breaks input into tokens (132) =
+..  _`134`:
+..  rubric:: Tokenizer class - breaks input into tokens (134) =
 ..  parsed-literal::
     :class: code
 
     
-    class Tokenizer:
-        def \_\_init\_\_( self, stream, command\_char='@' ):
-            self.command= command\_char
-            self.parsePat= re.compile( r'({!s}.\|\\n)'.format(self.command) )
-            self.token\_iter= (t for t in self.parsePat.split( stream.read() ) if len(t) != 0)
-            self.lineNumber= 0
-        def \_\_next\_\_( self ):
-            token= next(self.token\_iter)
+    class Tokenizer(Iterator[str]):
+        def \_\_init\_\_(self, stream: TextIO, command\_char: str='@') -> None:
+            self.command = command\_char
+            self.parsePat = re.compile(r'({!s}.\|\\n)'.format(self.command))
+            self.token\_iter = (t for t in self.parsePat.split(stream.read()) if len(t) != 0)
+            self.lineNumber = 0
+        def \_\_next\_\_(self) -> str:
+            token = next(self.token\_iter)
             self.lineNumber += token.count('\\n')
             return token
-        def \_\_iter\_\_( self ):
+        def \_\_iter\_\_(self) -> Iterator[str]:
             return self
     
 
@@ -6478,7 +6583,7 @@ exception.
 
     ..  class:: small
 
-        |loz| *Tokenizer class - breaks input into tokens (132)*. Used by: Base Class Definitions (`1`_)
+        |loz| *Tokenizer class - breaks input into tokens (134)*. Used by: Base Class Definitions (`1`_)
 
 
 The Option Parser Class
@@ -6505,8 +6610,8 @@ To handle this, we have a separate lexical scanner and parser for these
 two commands.
 
 
-..  _`133`:
-..  rubric:: Imports (133) +=
+..  _`135`:
+..  rubric:: Imports (135) +=
 ..  parsed-literal::
     :class: code
 
@@ -6518,7 +6623,7 @@ two commands.
 
     ..  class:: small
 
-        |loz| *Imports (133)*. Used by: pyweb.py (`153`_)
+        |loz| *Imports (135)*. Used by: pyweb.py (`156`_)
 
 
 Here's how we can define an option.
@@ -6526,32 +6631,48 @@ Here's how we can define an option.
 ..  parsed-literal::
 
     OptionParser(
-        OptionDef( "-start", nargs=1, default=None ),
-        OptionDef( "-end", nargs=1, default="" ),
-        OptionDef( "-indent", nargs=0 ), # A default
-        OptionDef( "-noindent", nargs=0 ),
-        OptionDef( "argument", nargs='*' ),
+        OptionDef("-start", nargs=1, default=None),
+        OptionDef("-end", nargs=1, default=""),
+        OptionDef("-indent", nargs=0), # A default
+        OptionDef("-noindent", nargs=0),
+        OptionDef("argument", nargs='*'),
         )
         
 The idea is to parallel ``argparse.add_argument()`` syntax.
 
 
-..  _`134`:
-..  rubric:: Option Parser class - locates optional values on commands (134) =
+..  _`136`:
+..  rubric:: Option Parser class - locates optional values on commands (136) =
 ..  parsed-literal::
     :class: code
 
     
-    class OptionDef:
-        def \_\_init\_\_( self, name, \*\*kw ):
-            self.name= name
-            self.\_\_dict\_\_.update( kw )
+    class ParseError(Exception): pass
 
 ..
 
     ..  class:: small
 
-        |loz| *Option Parser class - locates optional values on commands (134)*. Used by: Base Class Definitions (`1`_)
+        |loz| *Option Parser class - locates optional values on commands (136)*. Used by: Base Class Definitions (`1`_)
+
+
+
+..  _`137`:
+..  rubric:: Option Parser class - locates optional values on commands (137) +=
+..  parsed-literal::
+    :class: code
+
+    
+    class OptionDef:
+        def \_\_init\_\_(self, name: str, \*\*kw: Any) -> None:
+            self.name = name
+            self.\_\_dict\_\_.update(kw)
+
+..
+
+    ..  class:: small
+
+        |loz| *Option Parser class - locates optional values on commands (137)*. Used by: Base Class Definitions (`1`_)
 
 
 The parser breaks the text into words using ``shelex`` rules. 
@@ -6559,33 +6680,38 @@ It then steps through the words, accumulating the options and the
 final argument value.
 
 
-..  _`135`:
-..  rubric:: Option Parser class - locates optional values on commands (135) +=
+..  _`138`:
+..  rubric:: Option Parser class - locates optional values on commands (138) +=
 ..  parsed-literal::
     :class: code
 
     
     class OptionParser:
-        def \_\_init\_\_( self, \*arg\_defs ):
-            self.args= dict( (arg.name,arg) for arg in arg\_defs )
-            self.trailers= [k for k in self.args.keys() if not k.startswith('-')]
-        def parse( self, text ):
+        def \_\_init\_\_(self, \*arg\_defs: Any) -> None:
+            self.args = dict((arg.name, arg) for arg in arg\_defs)
+            self.trailers = [k for k in self.args.keys() if not k.startswith('-')]
+            
+        def parse(self, text: str) -> dict[str, list[str]]:
             try:
-                word\_iter= iter(shlex.split(text))
+                word\_iter = iter(shlex.split(text))
             except ValueError as e:
-                raise Error( "Error parsing options in {!r}".format(text) )
-            options = dict( s for s in self.\_group( word\_iter ) )
+                raise Error("Error parsing options in {!r}".format(text))
+            options = dict(self.\_group(word\_iter))
             return options
-        def \_group( self, word\_iter ):
-            option, value, final= None, [], []
+            
+        def \_group(self, word\_iter: Iterator[str]) -> Iterator[tuple[str, list[str]]]:
+            option: str \| None
+            value: list[str]
+            final: list[str]
+            option, value, final = None, [], []
             for word in word\_iter:
                 if word == '--':
                     if option:
                         yield option, value
                     try:
-                        final= [next(word\_iter)] 
+                        final = [next(word\_iter)] 
                     except StopIteration:
-                        final= [] # Special case of '--' at the end.
+                        final = [] # Special case of '--' at the end.
                     break
                 elif word.startswith('-'):
                     if word in self.args:
@@ -6593,28 +6719,28 @@ final argument value.
                             yield option, value
                         option, value = word, []
                     else:
-                        raise ParseError( "Unknown option {0}".format(word) )
+                        raise ParseError("Unknown option {0}".format(word))
                 else:
                     if option:
                         if self.args[option].nargs == len(value):
                             yield option, value
-                            final= [word]
+                            final = [word]
                             break
                         else:                
-                            value.append( word )
+                            value.append(word)
                     else:
-                        final= [word]
+                        final = [word]
                         break
             # In principle, we step through the trailers based on nargs counts.
             for word in word\_iter:
-                final.append( word )
-            yield self.trailers[0], " ".join(final)
+                final.append(word)
+            yield self.trailers[0], final
 
 ..
 
     ..  class:: small
 
-        |loz| *Option Parser class - locates optional values on commands (135)*. Used by: Base Class Definitions (`1`_)
+        |loz| *Option Parser class - locates optional values on commands (138)*. Used by: Base Class Definitions (`1`_)
 
 
 In principle, we step through the trailers based on nargs counts.
@@ -6627,11 +6753,11 @@ Then we'd have a loop something like this. (Untested, incomplete, just hand-wavi
 
 ..  parsed-literal::
 
-    trailers= self.trailers[:] # Stateful shallow copy
+    trailers = self.trailers[:] # Stateful shallow copy
     for word in word_iter:
         if len(final) == trailers[-1].nargs: # nargs=='*' vs. nargs=int??
             yield trailers[0], " ".join(final)
-            final= 0
+            final = 0
             trailers.pop(0)
     yield trailers[0], " ".join(final)
     
@@ -6653,23 +6779,23 @@ This two pass action might be embedded in the following type of Python program.
 ..  parsed-literal::
 
     import pyweb, os, runpy, sys
-    pyweb.tangle( "source.w" )
+    pyweb.tangle("source.w")
     with open("source.log", "w") as target:
-        sys.stdout= target
-        runpy.run_path( 'source.py' )
-        sys.stdout= sys.__stdout__
-    pyweb.weave( "source.w" )
+        sys.stdout = target
+        runpy.run_path('source.py')
+        sys.stdout = sys.__stdout__
+    pyweb.weave("source.w")
 
 
-The first step runs **pyWeb**, excluding the final weaving pass.  The second
+The first step runs **py-web-tool** , excluding the final weaving pass.  The second
 step runs the tangled program, ``source.py``, and produces test results in
-some log file, ``source.log``.  The third step runs pyWeb excluding the
+some log file, ``source.log``.  The third step runs **py-web-tool**  excluding the
 tangle pass.  This produces a final document that includes the ``source.log`` 
 test results.
 
 
 To accomplish this, we provide a class hierarchy that defines the various
-actions of the pyWeb application.  This class hierarchy defines an extensible set of 
+actions of the **py-web-tool**  application.  This class hierarchy defines an extensible set of 
 fundamental actions.  This gives us the flexibility to create a simple sequence
 of actions and execute any combination of these.  It eliminates the need for a 
 forest of ``if``-statements to determine precisely what will be done.
@@ -6679,32 +6805,32 @@ application.   A partner with this command hierarchy is the Application class
 that defines the application options, inputs and results. 
 
 
-..  _`136`:
-..  rubric:: Action class hierarchy - used to describe basic actions of the application (136) =
+..  _`139`:
+..  rubric:: Action class hierarchy - used to describe basic actions of the application (139) =
 ..  parsed-literal::
     :class: code
 
     
-    |srarr|\ Action superclass has common features of all actions (`137`_)
-    |srarr|\ ActionSequence subclass that holds a sequence of other actions (`140`_)
-    |srarr|\ WeaveAction subclass initiates the weave action (`144`_)
-    |srarr|\ TangleAction subclass initiates the tangle action (`147`_)
-    |srarr|\ LoadAction subclass loads the document web (`150`_)
+    |srarr|\ Action superclass has common features of all actions (`140`_)
+    |srarr|\ ActionSequence subclass that holds a sequence of other actions (`143`_)
+    |srarr|\ WeaveAction subclass initiates the weave action (`147`_)
+    |srarr|\ TangleAction subclass initiates the tangle action (`150`_)
+    |srarr|\ LoadAction subclass loads the document web (`153`_)
 
 ..
 
     ..  class:: small
 
-        |loz| *Action class hierarchy - used to describe basic actions of the application (136)*. Used by: Base Class Definitions (`1`_)
+        |loz| *Action class hierarchy - used to describe basic actions of the application (139)*. Used by: Base Class Definitions (`1`_)
 
 
 Action Class
 ~~~~~~~~~~~~~
 
-The ``Action`` class embodies the basic operations of pyWeb.
+The ``Action`` class embodies the basic operations of **py-web-tool** .
 The intent of this hierarchy is to both provide an easily expanded method of
 adding new actions, but an easily specified list of actions for a particular
-run of **pyWeb**.
+run of **py-web-tool** .
 
 The overall process of the application is defined by an instance of ``Action``.
 This instance may be the ``WeaveAction`` instance, the ``TangleAction`` instance
@@ -6718,8 +6844,8 @@ and an instance that excludes weaving.  These correspond to the command-line opt
 
 ..  parsed-literal::
 
-    anOp= SomeAction( *parameters* )
-    anOp.options= *argparse.Namespace*
+    anOp = SomeAction(*parameters*)
+    anOp.options = *argparse.Namespace*
     anOp.web = *Current web*
     anOp()
 
@@ -6742,31 +6868,33 @@ An ``Action`` has a number of common attributes.
 
 
 
-..  _`137`:
-..  rubric:: Action superclass has common features of all actions (137) =
+..  _`140`:
+..  rubric:: Action superclass has common features of all actions (140) =
 ..  parsed-literal::
     :class: code
 
     
     class Action:
         """An action performed by pyWeb."""
-        def \_\_init\_\_( self, name ):
-            self.name= name
-            self.web= None
-            self.options= None
-            self.start= None
-            self.logger= logging.getLogger( self.\_\_class\_\_.\_\_qualname\_\_ )
-        def \_\_str\_\_( self ):
-            return "{!s} [{!s}]".format( self.name, self.web )
-        |srarr|\ Action call method actually does the real work (`138`_)
-        |srarr|\ Action final summary of what was done (`139`_)
+        options : argparse.Namespace
+        web : "Web"
+        def \_\_init\_\_(self, name: str) -> None:
+            self.name = name
+            self.start: float \| None = None
+            self.logger = logging.getLogger(self.\_\_class\_\_.\_\_qualname\_\_)
+            
+        def \_\_str\_\_(self) -> str:
+            return "{!s} [{!s}]".format(self.name, self.web)
+            
+        |srarr|\ Action call method actually does the real work (`141`_)
+        |srarr|\ Action final summary of what was done (`142`_)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *Action superclass has common features of all actions (137)*. Used by: Action class hierarchy... (`136`_)
+        |loz| *Action superclass has common features of all actions (140)*. Used by: Action class hierarchy... (`139`_)
 
 
 The ``__call__()`` method does the real work of the action.
@@ -6774,22 +6902,22 @@ For the superclass, it merely logs a message.  This is overridden
 by a subclass.
 
 
-..  _`138`:
-..  rubric:: Action call method actually does the real work (138) =
+..  _`141`:
+..  rubric:: Action call method actually does the real work (141) =
 ..  parsed-literal::
     :class: code
 
     
-    def \_\_call\_\_( self ):
-        self.logger.info( "Starting {!s}".format(self.name) )
-        self.start= time.process\_time()
+    def \_\_call\_\_(self) -> None:
+        self.logger.info("Starting {!s}".format(self.name))
+        self.start = time.process\_time()
     
 
 ..
 
     ..  class:: small
 
-        |loz| *Action call method actually does the real work (138)*. Used by: Action superclass... (`137`_)
+        |loz| *Action call method actually does the real work (141)*. Used by: Action superclass... (`140`_)
 
 
 The ``summary()`` method returns some basic processing
@@ -6797,24 +6925,25 @@ statistics for this action.
 
 
 
-..  _`139`:
-..  rubric:: Action final summary of what was done (139) =
+..  _`142`:
+..  rubric:: Action final summary of what was done (142) =
 ..  parsed-literal::
     :class: code
 
     
-    def duration( self ):
+    def duration(self) -> float:
         """Return duration of the action."""
         return (self.start and time.process\_time()-self.start) or 0
-    def summary( self ):
-        return "{!s} in {:0.2f} sec.".format( self.name, self.duration() )
+        
+    def summary(self) -> str:
+        return "{!s} in {:0.3f} sec.".format(self.name, self.duration())
     
 
 ..
 
     ..  class:: small
 
-        |loz| *Action final summary of what was done (139)*. Used by: Action superclass... (`137`_)
+        |loz| *Action final summary of what was done (142)*. Used by: Action superclass... (`140`_)
 
 
 ActionSequence Class
@@ -6834,30 +6963,32 @@ an ``append()`` method that is used to construct the sequence of actions.
 
 
 
-..  _`140`:
-..  rubric:: ActionSequence subclass that holds a sequence of other actions (140) =
+..  _`143`:
+..  rubric:: ActionSequence subclass that holds a sequence of other actions (143) =
 ..  parsed-literal::
     :class: code
 
     
-    class ActionSequence( Action ):
+    class ActionSequence(Action):
         """An action composed of a sequence of other actions."""
-        def \_\_init\_\_( self, name, opSequence=None ):
-            super().\_\_init\_\_( name )
-            if opSequence: self.opSequence= opSequence
-            else: self.opSequence= []
-        def \_\_str\_\_( self ):
-            return "; ".join( [ str(x) for x in self.opSequence ] )
-        |srarr|\ ActionSequence call method delegates the sequence of ations (`141`_)
-        |srarr|\ ActionSequence append adds a new action to the sequence (`142`_)
-        |srarr|\ ActionSequence summary summarizes each step (`143`_)
+        def \_\_init\_\_(self, name: str, opSequence: list[Action] \| None = None) -> None:
+            super().\_\_init\_\_(name)
+            if opSequence: self.opSequence = opSequence
+            else: self.opSequence = []
+            
+        def \_\_str\_\_(self) -> str:
+            return "; ".join([str(x) for x in self.opSequence])
+            
+        |srarr|\ ActionSequence call method delegates the sequence of ations (`144`_)
+        |srarr|\ ActionSequence append adds a new action to the sequence (`145`_)
+        |srarr|\ ActionSequence summary summarizes each step (`146`_)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *ActionSequence subclass that holds a sequence of other actions (140)*. Used by: Action class hierarchy... (`136`_)
+        |loz| *ActionSequence subclass that holds a sequence of other actions (143)*. Used by: Action class hierarchy... (`139`_)
 
 
 Since the macro ``__call__()`` method delegates to other Actions,
@@ -6866,16 +6997,16 @@ it is possible to short-cut argument processing by using the Python
 sub-action.
 
 
-..  _`141`:
-..  rubric:: ActionSequence call method delegates the sequence of ations (141) =
+..  _`144`:
+..  rubric:: ActionSequence call method delegates the sequence of ations (144) =
 ..  parsed-literal::
     :class: code
 
     
-    def \_\_call\_\_( self ):
+    def \_\_call\_\_(self) -> None:
         for o in self.opSequence:
-            o.web= self.web
-            o.options= self.options
+            o.web = self.web
+            o.options = self.options
             o()
     
 
@@ -6883,49 +7014,49 @@ sub-action.
 
     ..  class:: small
 
-        |loz| *ActionSequence call method delegates the sequence of ations (141)*. Used by: ActionSequence subclass... (`140`_)
+        |loz| *ActionSequence call method delegates the sequence of ations (144)*. Used by: ActionSequence subclass... (`143`_)
 
 
 Since this class is essentially a wrapper around the built-in sequence type, 
 we delegate sequence related actions directly to the underlying sequence.
 
 
-..  _`142`:
-..  rubric:: ActionSequence append adds a new action to the sequence (142) =
+..  _`145`:
+..  rubric:: ActionSequence append adds a new action to the sequence (145) =
 ..  parsed-literal::
     :class: code
 
     
-    def append( self, anAction ):
-        self.opSequence.append( anAction )
+    def append(self, anAction: Action) -> None:
+        self.opSequence.append(anAction)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *ActionSequence append adds a new action to the sequence (142)*. Used by: ActionSequence subclass... (`140`_)
+        |loz| *ActionSequence append adds a new action to the sequence (145)*. Used by: ActionSequence subclass... (`143`_)
 
 
 The ``summary()`` method returns some basic processing
 statistics for each step of this action.
 
 
-..  _`143`:
-..  rubric:: ActionSequence summary summarizes each step (143) =
+..  _`146`:
+..  rubric:: ActionSequence summary summarizes each step (146) =
 ..  parsed-literal::
     :class: code
 
     
-    def summary( self ):
-        return ", ".join( [ o.summary() for o in self.opSequence ] )
+    def summary(self) -> str:
+        return ", ".join([o.summary() for o in self.opSequence])
     
 
 ..
 
     ..  class:: small
 
-        |loz| *ActionSequence summary summarizes each step (143)*. Used by: ActionSequence subclass... (`140`_)
+        |loz| *ActionSequence summary summarizes each step (146)*. Used by: ActionSequence subclass... (`143`_)
 
 
 WeaveAction Class
@@ -6943,28 +7074,29 @@ If the options include ``theWeaver``, that ``Weaver`` instance will be used.
 Otherwise, the ``web.language()`` method function is used to guess what weaver to use.
 
 
-..  _`144`:
-..  rubric:: WeaveAction subclass initiates the weave action (144) =
+..  _`147`:
+..  rubric:: WeaveAction subclass initiates the weave action (147) =
 ..  parsed-literal::
     :class: code
 
     
-    class WeaveAction( Action ):
+    class WeaveAction(Action):
         """Weave the final document."""
-        def \_\_init\_\_( self ):
-            super().\_\_init\_\_( "Weave" )
-        def \_\_str\_\_( self ):
-            return "{!s} [{!s}, {!s}]".format( self.name, self.web, self.theWeaver )
+        def \_\_init\_\_(self) -> None:
+            super().\_\_init\_\_("Weave")
+            
+        def \_\_str\_\_(self) -> str:
+            return "{!s} [{!s}, {!s}]".format(self.name, self.web, self.options.theWeaver)
     
-        |srarr|\ WeaveAction call method to pick the language (`145`_)
-        |srarr|\ WeaveAction summary of language choice (`146`_)
+        |srarr|\ WeaveAction call method to pick the language (`148`_)
+        |srarr|\ WeaveAction summary of language choice (`149`_)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *WeaveAction subclass initiates the weave action (144)*. Used by: Action class hierarchy... (`136`_)
+        |loz| *WeaveAction subclass initiates the weave action (147)*. Used by: Action class hierarchy... (`139`_)
 
 
 The language is picked just prior to weaving.  It is either (1) the language
@@ -6975,26 +7107,25 @@ Weaving can only raise an exception when there is a reference to a chunk that
 is never defined.
 
 
-..  _`145`:
-..  rubric:: WeaveAction call method to pick the language (145) =
+..  _`148`:
+..  rubric:: WeaveAction call method to pick the language (148) =
 ..  parsed-literal::
     :class: code
 
     
-    def \_\_call\_\_( self ):
+    def \_\_call\_\_(self) -> None:
         super().\_\_call\_\_()
         if not self.options.theWeaver: 
             # Examine first few chars of first chunk of web to determine language
-            self.options.theWeaver= self.web.language() 
-            self.logger.info( "Using {0}".format(self.options.theWeaver.\_\_class\_\_.\_\_name\_\_) )
-        self.options.theWeaver.reference\_style= self.options.reference\_style
+            self.options.theWeaver = self.web.language() 
+            self.logger.info("Using {0}".format(self.options.theWeaver.\_\_class\_\_.\_\_name\_\_))
+        self.options.theWeaver.reference\_style = self.options.reference\_style
         try:
-            self.web.weave( self.options.theWeaver )
-            self.logger.info( "Finished Normally" )
+            self.web.weave(self.options.theWeaver)
+            self.logger.info("Finished Normally")
         except Error as e:
             self.logger.error(
-                "Problems weaving document from {!s} (weave file is faulty).".format(
-                self.web.webFileName) )
+                "Problems weaving document from {!s} (weave file is faulty).".format(            self.web.webFileName))
             #raise
     
 
@@ -7002,7 +7133,7 @@ is never defined.
 
     ..  class:: small
 
-        |loz| *WeaveAction call method to pick the language (145)*. Used by: WeaveAction subclass... (`144`_)
+        |loz| *WeaveAction call method to pick the language (148)*. Used by: WeaveAction subclass... (`147`_)
 
 
 The ``summary()`` method returns some basic processing
@@ -7010,24 +7141,24 @@ statistics for the weave action.
 
 
 
-..  _`146`:
-..  rubric:: WeaveAction summary of language choice (146) =
+..  _`149`:
+..  rubric:: WeaveAction summary of language choice (149) =
 ..  parsed-literal::
     :class: code
 
     
-    def summary( self ):
+    def summary(self) -> str:
         if self.options.theWeaver and self.options.theWeaver.linesWritten > 0:
-            return "{!s} {:d} lines in {:0.2f} sec.".format( self.name, 
+            return "{!s} {:d} lines in {:0.3f} sec.".format( self.name, 
             self.options.theWeaver.linesWritten, self.duration() )
-        return "did not {!s}".format( self.name, )
+        return "did not {!s}".format(self.name,)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *WeaveAction summary of language choice (146)*. Used by: WeaveAction subclass... (`144`_)
+        |loz| *WeaveAction summary of language choice (149)*. Used by: WeaveAction subclass... (`147`_)
 
 
 TangleAction Class
@@ -7044,25 +7175,26 @@ This class overrides the ``__call__()`` method of the superclass.
 The options **must** include ``theTangler``, with the ``Tangler`` instance to be used.
 
 
-..  _`147`:
-..  rubric:: TangleAction subclass initiates the tangle action (147) =
+..  _`150`:
+..  rubric:: TangleAction subclass initiates the tangle action (150) =
 ..  parsed-literal::
     :class: code
 
     
-    class TangleAction( Action ):
+    class TangleAction(Action):
         """Tangle source files."""
-        def \_\_init\_\_( self ):
-            super().\_\_init\_\_( "Tangle" )
-        |srarr|\ TangleAction call method does tangling of the output files (`148`_)
-        |srarr|\ TangleAction summary method provides total lines tangled (`149`_)
+        def \_\_init\_\_(self) -> None:
+            super().\_\_init\_\_("Tangle")
+            
+        |srarr|\ TangleAction call method does tangling of the output files (`151`_)
+        |srarr|\ TangleAction summary method provides total lines tangled (`152`_)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *TangleAction subclass initiates the tangle action (147)*. Used by: Action class hierarchy... (`136`_)
+        |loz| *TangleAction subclass initiates the tangle action (150)*. Used by: Action class hierarchy... (`139`_)
 
 
 Tangling can only raise an exception when a cross reference request (``@f``, ``@m`` or ``@u``)
@@ -7071,21 +7203,20 @@ with any of ``@d`` or ``@o``  and use ``@{`` ``@}`` brackets.
 
 
 
-..  _`148`:
-..  rubric:: TangleAction call method does tangling of the output files (148) =
+..  _`151`:
+..  rubric:: TangleAction call method does tangling of the output files (151) =
 ..  parsed-literal::
     :class: code
 
     
-    def \_\_call\_\_( self ):
+    def \_\_call\_\_(self) -> None:
         super().\_\_call\_\_()
-        self.options.theTangler.include\_line\_numbers= self.options.tangler\_line\_numbers
+        self.options.theTangler.include\_line\_numbers = self.options.tangler\_line\_numbers
         try:
-            self.web.tangle( self.options.theTangler )
+            self.web.tangle(self.options.theTangler)
         except Error as e:
             self.logger.error( 
-                "Problems tangling outputs from {!r} (tangle files are faulty).".format(
-                self.web.webFileName) )
+                "Problems tangling outputs from {!r} (tangle files are faulty).".format(            self.web.webFileName))
             #raise
     
 
@@ -7093,31 +7224,31 @@ with any of ``@d`` or ``@o``  and use ``@{`` ``@}`` brackets.
 
     ..  class:: small
 
-        |loz| *TangleAction call method does tangling of the output files (148)*. Used by: TangleAction subclass... (`147`_)
+        |loz| *TangleAction call method does tangling of the output files (151)*. Used by: TangleAction subclass... (`150`_)
 
 
 The ``summary()`` method returns some basic processing
 statistics for the tangle action.
 
 
-..  _`149`:
-..  rubric:: TangleAction summary method provides total lines tangled (149) =
+..  _`152`:
+..  rubric:: TangleAction summary method provides total lines tangled (152) =
 ..  parsed-literal::
     :class: code
 
     
-    def summary( self ):
+    def summary(self) -> str:
         if self.options.theTangler and self.options.theTangler.linesWritten > 0:
-            return "{!s} {:d} lines in {:0.2f} sec.".format( self.name, 
+            return "{!s} {:d} lines in {:0.3f} sec.".format( self.name, 
             self.options.theTangler.totalLines, self.duration() )
-        return "did not {!r}".format( self.name, )
+        return "did not {!r}".format(self.name,)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *TangleAction summary method provides total lines tangled (149)*. Used by: TangleAction subclass... (`147`_)
+        |loz| *TangleAction summary method provides total lines tangled (152)*. Used by: TangleAction subclass... (`150`_)
 
 
 
@@ -7136,27 +7267,27 @@ The options **must** include ``webReader``, with the ``WebReader`` instance to b
 
 
 
-..  _`150`:
-..  rubric:: LoadAction subclass loads the document web (150) =
+..  _`153`:
+..  rubric:: LoadAction subclass loads the document web (153) =
 ..  parsed-literal::
     :class: code
 
     
-    class LoadAction( Action ):
+    class LoadAction(Action):
         """Load the source web."""
-        def \_\_init\_\_( self ):
-            super().\_\_init\_\_( "Load" )
-        def \_\_str\_\_( self ):
-            return "Load [{!s}, {!s}]".format( self.webReader, self.web )
-        |srarr|\ LoadAction call method loads the input files (`151`_)
-        |srarr|\ LoadAction summary provides lines read (`152`_)
+        def \_\_init\_\_(self) -> None:
+            super().\_\_init\_\_("Load")
+        def \_\_str\_\_(self) -> str:
+            return "Load [{!s}, {!s}]".format(self.webReader, self.web)
+        |srarr|\ LoadAction call method loads the input files (`154`_)
+        |srarr|\ LoadAction summary provides lines read (`155`_)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *LoadAction subclass loads the document web (150)*. Used by: Action class hierarchy... (`136`_)
+        |loz| *LoadAction subclass loads the document web (153)*. Used by: Action class hierarchy... (`139`_)
 
 
 Trying to load the web involves two steps, either of which can raise 
@@ -7179,29 +7310,29 @@ exceptions due to incorrect inputs.
     chunk reference cannot be resolved to a named chunk.
 
 
-..  _`151`:
-..  rubric:: LoadAction call method loads the input files (151) =
+..  _`154`:
+..  rubric:: LoadAction call method loads the input files (154) =
 ..  parsed-literal::
     :class: code
 
     
-    def \_\_call\_\_( self ):
+    def \_\_call\_\_(self) -> None:
         super().\_\_call\_\_()
-        self.webReader= self.options.webReader
-        self.webReader.command= self.options.command
-        self.webReader.permitList= self.options.permitList 
-        self.web.webFileName= self.options.webFileName
-        error= "Problems with source file {!r}, no output produced.".format(
+        self.webReader = self.options.webReader
+        self.webReader.command = self.options.command
+        self.webReader.permitList = self.options.permitList 
+        self.web.webFileName = self.options.webFileName
+        error = "Problems with source file {!r}, no output produced.".format(
                 self.options.webFileName)
         try:
-            self.webReader.load( self.web, self.options.webFileName )
+            self.webReader.load(self.web, self.options.webFileName)
             if self.webReader.errors != 0:
-                self.logger.error( error )
-                raise Error( "Syntax Errors in the Web" )
+                self.logger.error(error)
+                raise Error("Syntax Errors in the Web")
             self.web.createUsedBy()
             if self.webReader.errors != 0:
-                self.logger.error( error )
-                raise Error( "Internal Reference Errors in the Web" )        
+                self.logger.error(error)
+                raise Error("Internal Reference Errors in the Web")        
         except Error as e:
             self.logger.error(error)
             raise # Older design.
@@ -7214,21 +7345,21 @@ exceptions due to incorrect inputs.
 
     ..  class:: small
 
-        |loz| *LoadAction call method loads the input files (151)*. Used by: LoadAction subclass... (`150`_)
+        |loz| *LoadAction call method loads the input files (154)*. Used by: LoadAction subclass... (`153`_)
 
 
 The ``summary()`` method returns some basic processing
 statistics for the load action.
 
 
-..  _`152`:
-..  rubric:: LoadAction summary provides lines read (152) =
+..  _`155`:
+..  rubric:: LoadAction summary provides lines read (155) =
 ..  parsed-literal::
     :class: code
 
     
-    def summary( self ):
-        return "{!s} {:d} lines from {:d} files in {:0.2f} sec.".format( 
+    def summary(self) -> str:
+        return "{!s} {:d} lines from {:d} files in {:0.3f} sec.".format( 
             self.name, self.webReader.totalLines, 
             self.webReader.totalFiles, self.duration() )
     
@@ -7237,7 +7368,7 @@ statistics for the load action.
 
     ..  class:: small
 
-        |loz| *LoadAction summary provides lines read (152)*. Used by: LoadAction subclass... (`150`_)
+        |loz| *LoadAction summary provides lines read (155)*. Used by: LoadAction subclass... (`153`_)
 
 
 
@@ -7247,23 +7378,23 @@ statistics for the load action.
 The **pyWeb** application file is shown below:
 
 
-..  _`153`:
-..  rubric:: pyweb.py (153) =
+..  _`156`:
+..  rubric:: pyweb.py (156) =
 ..  parsed-literal::
     :class: code
 
-    |srarr|\ Overheads (`155`_), |srarr|\ (`156`_), |srarr|\ (`157`_)
-    |srarr|\ Imports (`11`_), |srarr|\ (`47`_), |srarr|\ (`96`_), |srarr|\ (`124`_), |srarr|\ (`131`_), |srarr|\ (`133`_), |srarr|\ (`154`_), |srarr|\ (`158`_), |srarr|\ (`164`_)
+    |srarr|\ Overheads (`158`_), |srarr|\ (`159`_), |srarr|\ (`160`_)
+    |srarr|\ Imports (`11`_), |srarr|\ (`47`_), |srarr|\ (`57`_), |srarr|\ (`97`_), |srarr|\ (`125`_), |srarr|\ (`130`_), |srarr|\ (`133`_), |srarr|\ (`135`_), |srarr|\ (`157`_), |srarr|\ (`161`_), |srarr|\ (`167`_)
     |srarr|\ Base Class Definitions (`1`_)
-    |srarr|\ Application Class (`159`_), |srarr|\ (`160`_)
-    |srarr|\ Logging Setup (`165`_), |srarr|\ (`166`_)
-    |srarr|\ Interface Functions (`167`_)
+    |srarr|\ Application Class (`162`_), |srarr|\ (`163`_)
+    |srarr|\ Logging Setup (`168`_), |srarr|\ (`169`_)
+    |srarr|\ Interface Functions (`170`_)
 
 ..
 
     ..  class:: small
 
-        |loz| *pyweb.py (153)*.
+        |loz| *pyweb.py (156)*.
 
 
 The `Overheads`_ are described below, they include things like:
@@ -7309,8 +7440,8 @@ closer to where they're referenced.
 
 
 
-..  _`154`:
-..  rubric:: Imports (154) +=
+..  _`157`:
+..  rubric:: Imports (157) +=
 ..  parsed-literal::
     :class: code
 
@@ -7325,7 +7456,7 @@ closer to where they're referenced.
 
     ..  class:: small
 
-        |loz| *Imports (154)*. Used by: pyweb.py (`153`_)
+        |loz| *Imports (157)*. Used by: pyweb.py (`156`_)
 
 
 Note that ``os.path``, ``time``, ``datetime`` and ``platform```
@@ -7343,8 +7474,8 @@ file as standard input.
 
 
 
-..  _`155`:
-..  rubric:: Overheads (155) =
+..  _`158`:
+..  rubric:: Overheads (158) =
 ..  parsed-literal::
     :class: code
 
@@ -7354,7 +7485,7 @@ file as standard input.
 
     ..  class:: small
 
-        |loz| *Overheads (155)*. Used by: pyweb.py (`153`_)
+        |loz| *Overheads (158)*. Used by: pyweb.py (`156`_)
 
 
 A Python ``__doc__`` string provides a standard vehicle for documenting
@@ -7364,12 +7495,12 @@ detailed usage information.
 
 
 
-..  _`156`:
-..  rubric:: Overheads (156) +=
+..  _`159`:
+..  rubric:: Overheads (159) +=
 ..  parsed-literal::
     :class: code
 
-    """pyWeb Literate Programming - tangle and weave tool.
+    """py-web-tool Literate Programming.
     
     Yet another simple literate programming tool derived from nuweb, 
     implemented entirely in Python.  
@@ -7401,7 +7532,7 @@ detailed usage information.
 
     ..  class:: small
 
-        |loz| *Overheads (156)*. Used by: pyweb.py (`153`_)
+        |loz| *Overheads (159)*. Used by: pyweb.py (`156`_)
 
 
 The keyword cruft is a standard way of placing version control information into
@@ -7413,23 +7544,23 @@ We also sneak in a "DO NOT EDIT" warning that belongs in all generated applicati
 source files.
 
 
-..  _`157`:
-..  rubric:: Overheads (157) +=
+..  _`160`:
+..  rubric:: Overheads (160) +=
 ..  parsed-literal::
     :class: code
 
-    \_\_version\_\_ = """3.0"""
+    \_\_version\_\_ = """3.1"""
     
     ### DO NOT EDIT THIS FILE!
-    ### It was created by /Users/slott/Documents/Projects/PyWebTool-3/pyweb/pyweb.py, \_\_version\_\_='3.0'.
-    ### From source pyweb.w modified Sat Jun 16 08:10:37 2018.
-    ### In working directory '/Users/slott/Documents/Projects/PyWebTool-3/pyweb'.
+    ### It was created by pyweb-3.0.py, \_\_version\_\_='3.0'.
+    ### From source pyweb.w modified Wed Jun  8 14:04:44 2022.
+    ### In working directory '/Users/slott/Documents/Projects/py-web-tool'.
 
 ..
 
     ..  class:: small
 
-        |loz| *Overheads (157)*. Used by: pyweb.py (`153`_)
+        |loz| *Overheads (160)*. Used by: pyweb.py (`156`_)
 
 
 
@@ -7465,13 +7596,13 @@ For example:
 
     import pyweb, argparse
     
-    p= argparse.ArgumentParser()
+    p = argparse.ArgumentParser()
     *argument definition*
     config = p.parse_args()
     
-    a= pyweb.Application()
+    a = pyweb.Application()
     *Configure the Application based on options*
-    a.process( config )
+    a.process(config)
 
 
 The ``main()`` function creates an ``Application`` instance and
@@ -7483,8 +7614,8 @@ The configuration can be either a ``types.SimpleNamespace`` or an
 
 
 
-..  _`158`:
-..  rubric:: Imports (158) +=
+..  _`161`:
+..  rubric:: Imports (161) +=
 ..  parsed-literal::
     :class: code
 
@@ -7495,29 +7626,30 @@ The configuration can be either a ``types.SimpleNamespace`` or an
 
     ..  class:: small
 
-        |loz| *Imports (158)*. Used by: pyweb.py (`153`_)
+        |loz| *Imports (161)*. Used by: pyweb.py (`156`_)
 
 
 
-..  _`159`:
-..  rubric:: Application Class (159) =
+..  _`162`:
+..  rubric:: Application Class (162) =
 ..  parsed-literal::
     :class: code
 
     
     class Application:
-        def \_\_init\_\_( self ):
-            self.logger= logging.getLogger( self.\_\_class\_\_.\_\_qualname\_\_ )
-            |srarr|\ Application default options (`161`_)
-        |srarr|\ Application parse command line (`162`_)
-        |srarr|\ Application class process all files (`163`_)
+        def \_\_init\_\_(self) -> None:
+            self.logger = logging.getLogger(self.\_\_class\_\_.\_\_qualname\_\_)
+            |srarr|\ Application default options (`164`_)
+            
+        |srarr|\ Application parse command line (`165`_)
+        |srarr|\ Application class process all files (`166`_)
     
 
 ..
 
     ..  class:: small
 
-        |loz| *Application Class (159)*. Used by: pyweb.py (`153`_)
+        |loz| *Application Class (162)*. Used by: pyweb.py (`156`_)
 
 
 The first part of parsing the command line is 
@@ -7595,8 +7727,8 @@ Rather than automate this, and potentially expose elements of the class hierarch
 that aren't really meant to be used, we provide a manually-developed list. 
 
 
-..  _`160`:
-..  rubric:: Application Class (160) +=
+..  _`163`:
+..  rubric:: Application Class (163) +=
 ..  parsed-literal::
     :class: code
 
@@ -7613,45 +7745,45 @@ that aren't really meant to be used, we provide a manually-developed list.
 
     ..  class:: small
 
-        |loz| *Application Class (160)*. Used by: pyweb.py (`153`_)
+        |loz| *Application Class (163)*. Used by: pyweb.py (`156`_)
 
 
 The defaults used for application configuration. The ``expand()`` method expands
 on these simple text values to create more useful objects.
 
 
-..  _`161`:
-..  rubric:: Application default options (161) =
+..  _`164`:
+..  rubric:: Application default options (164) =
 ..  parsed-literal::
     :class: code
 
     
-    self.defaults= argparse.Namespace(
-        verbosity= logging.INFO,
-        command= '@',
-        weaver= 'rst', 
-        skip= '', # Don't skip any steps
-        permit= '', # Don't tolerate missing includes
-        reference= 's', # Simple references
-        tangler\_line\_numbers= False,
+    self.defaults = argparse.Namespace(
+        verbosity=logging.INFO,
+        command='@',
+        weaver='rst', 
+        skip='', # Don't skip any steps
+        permit='', # Don't tolerate missing includes
+        reference='s', # Simple references
+        tangler\_line\_numbers=False,
         )
-    self.expand( self.defaults )
+    self.expand(self.defaults)
     
     # Primitive Actions
-    self.loadOp= LoadAction()
-    self.weaveOp= WeaveAction()
-    self.tangleOp= TangleAction()
+    self.loadOp = LoadAction()
+    self.weaveOp = WeaveAction()
+    self.tangleOp = TangleAction()
     
     # Composite Actions
-    self.doWeave= ActionSequence( "load and weave", [self.loadOp, self.weaveOp] )
-    self.doTangle= ActionSequence( "load and tangle", [self.loadOp, self.tangleOp] )
-    self.theAction= ActionSequence( "load, tangle and weave", [self.loadOp, self.tangleOp, self.weaveOp] )
+    self.doWeave = ActionSequence("load and weave", [self.loadOp, self.weaveOp])
+    self.doTangle = ActionSequence("load and tangle", [self.loadOp, self.tangleOp])
+    self.theAction = ActionSequence("load, tangle and weave", [self.loadOp, self.tangleOp, self.weaveOp])
 
 ..
 
     ..  class:: small
 
-        |loz| *Application default options (161)*. Used by: Application Class... (`159`_)
+        |loz| *Application default options (164)*. Used by: Application Class... (`162`_)
 
 
 The algorithm for parsing the command line parameters uses the built in
@@ -7663,29 +7795,29 @@ instances.
 
 
 
-..  _`162`:
-..  rubric:: Application parse command line (162) =
+..  _`165`:
+..  rubric:: Application parse command line (165) =
 ..  parsed-literal::
     :class: code
 
     
-    def parseArgs( self ):
+    def parseArgs(self, argv: list[str]) -> argparse.Namespace:
         p = argparse.ArgumentParser()
-        p.add\_argument( "-v", "--verbose", dest="verbosity", action="store\_const", const=logging.INFO )
-        p.add\_argument( "-s", "--silent", dest="verbosity", action="store\_const", const=logging.WARN )
-        p.add\_argument( "-d", "--debug", dest="verbosity", action="store\_const", const=logging.DEBUG )
-        p.add\_argument( "-c", "--command", dest="command", action="store" )
-        p.add\_argument( "-w", "--weaver", dest="weaver", action="store" )
-        p.add\_argument( "-x", "--except", dest="skip", action="store", choices=('w','t') )
-        p.add\_argument( "-p", "--permit", dest="permit", action="store" )
-        p.add\_argument( "-r", "--reference", dest="reference", action="store", choices=('t', 's') )
-        p.add\_argument( "-n", "--linenumbers", dest="tangler\_line\_numbers", action="store\_true" )
-        p.add\_argument( "files", nargs='+' )
-        config= p.parse\_args( namespace=self.defaults )
-        self.expand( config )
+        p.add\_argument("-v", "--verbose", dest="verbosity", action="store\_const", const=logging.INFO)
+        p.add\_argument("-s", "--silent", dest="verbosity", action="store\_const", const=logging.WARN)
+        p.add\_argument("-d", "--debug", dest="verbosity", action="store\_const", const=logging.DEBUG)
+        p.add\_argument("-c", "--command", dest="command", action="store")
+        p.add\_argument("-w", "--weaver", dest="weaver", action="store")
+        p.add\_argument("-x", "--except", dest="skip", action="store", choices=('w','t'))
+        p.add\_argument("-p", "--permit", dest="permit", action="store")
+        p.add\_argument("-r", "--reference", dest="reference", action="store", choices=('t', 's'))
+        p.add\_argument("-n", "--linenumbers", dest="tangler\_line\_numbers", action="store\_true")
+        p.add\_argument("files", nargs='+')
+        config = p.parse\_args(argv, namespace=self.defaults)
+        self.expand(config)
         return config
         
-    def expand( self, config ):
+    def expand(self, config: argparse.Namespace) -> argparse.Namespace:
         """Translate the argument values from simple text to useful objects.
         Weaver. Tangler. WebReader.
         """
@@ -7694,27 +7826,27 @@ instances.
         elif config.reference == 's':
             config.reference\_style = SimpleReference()
         else:
-            raise Error( "Improper configuration" )
+            raise Error("Improper configuration")
     
         try:
-            weaver\_class= weavers[config.weaver.lower()]
+            weaver\_class = weavers[config.weaver.lower()]
         except KeyError:
             module\_name, \_, class\_name = config.weaver.partition('.')
             weaver\_module = \_\_import\_\_(module\_name)
             weaver\_class = weaver\_module.\_\_dict\_\_[class\_name]
             if not issubclass(weaver\_class, Weaver):
-                raise TypeError( "{0!r} not a subclass of Weaver".format(weaver\_class) )
-        config.theWeaver= weaver\_class()
+                raise TypeError("{0!r} not a subclass of Weaver".format(weaver\_class))
+        config.theWeaver = weaver\_class()
         
-        config.theTangler= TanglerMake()
+        config.theTangler = TanglerMake()
         
         if config.permit:
             # save permitted errors, usual case is \`\`-pi\`\` to permit \`\`@i\`\` include errors
-            config.permitList= [ '{!s}{!s}'.format( config.command, c ) for c in config.permit ]
+            config.permitList = ['{!s}{!s}'.format(config.command, c) for c in config.permit]
         else:
-            config.permitList= []
+            config.permitList = []
     
-        config.webReader= WebReader()
+        config.webReader = WebReader()
     
         return config
     
@@ -7724,7 +7856,7 @@ instances.
 
     ..  class:: small
 
-        |loz| *Application parse command line (162)*. Used by: Application Class... (`159`_)
+        |loz| *Application parse command line (165)*. Used by: Application Class... (`162`_)
 
 
 The ``process()`` function uses the current ``Application`` settings
@@ -7750,46 +7882,46 @@ The re-raising is done so that all exceptions are handled by the
 outermost main program.
 
 
-..  _`163`:
-..  rubric:: Application class process all files (163) =
+..  _`166`:
+..  rubric:: Application class process all files (166) =
 ..  parsed-literal::
     :class: code
 
     
-    def process( self, config ):
-        root= logging.getLogger()
-        root.setLevel( config.verbosity )
+    def process(self, config: argparse.Namespace) -> None:
+        root = logging.getLogger()
+        root.setLevel(config.verbosity)
         self.logger.debug( "Setting root log level to {!r}".format( 
             logging.getLevelName(root.getEffectiveLevel()) ) )
         
         if config.command:
-            self.logger.debug( "Command character {!r}".format(config.command) )
+            self.logger.debug("Command character {!r}".format(config.command))
             
         if config.skip:
             if config.skip.lower().startswith('w'): # not weaving == tangling
-                self.theAction= self.doTangle
+                self.theAction = self.doTangle
             elif config.skip.lower().startswith('t'): # not tangling == weaving
-                self.theAction= self.doWeave
+                self.theAction = self.doWeave
             else:
-                raise Exception( "Unknown -x option {!r}".format(config.skip) )
+                raise Exception("Unknown -x option {!r}".format(config.skip))
     
-        self.logger.info( "Weaver {!s}".format(config.theWeaver) )
+        self.logger.info("Weaver {!s}".format(config.theWeaver))
     
         for f in config.files:
-            w= Web() # New, empty web to load and process.
-            self.logger.info( "{!s} {!r}".format(self.theAction.name, f) )
-            config.webFileName= f
-            self.theAction.web= w
-            self.theAction.options= config
+            w = Web() # New, empty web to load and process.
+            self.logger.info("{!s} {!r}".format(self.theAction.name, f))
+            config.webFileName = f
+            self.theAction.web = w
+            self.theAction.options = config
             self.theAction()
-            self.logger.info( self.theAction.summary() )
+            self.logger.info(self.theAction.summary())
     
 
 ..
 
     ..  class:: small
 
-        |loz| *Application class process all files (163)*. Used by: Application Class... (`159`_)
+        |loz| *Application class process all files (166)*. Used by: Application Class... (`162`_)
 
 
 Logging Setup
@@ -7800,8 +7932,8 @@ function in an explicit ``with`` statement that assures that logging is
 configured and cleaned up politely.
 
 
-..  _`164`:
-..  rubric:: Imports (164) +=
+..  _`167`:
+..  rubric:: Imports (167) +=
 ..  parsed-literal::
     :class: code
 
@@ -7814,7 +7946,7 @@ configured and cleaned up politely.
 
     ..  class:: small
 
-        |loz| *Imports (164)*. Used by: pyweb.py (`153`_)
+        |loz| *Imports (167)*. Used by: pyweb.py (`156`_)
 
 
 This has two configuration approaches. If a positional argument is given,
@@ -7825,23 +7957,23 @@ A subclass might properly load a dictionary
 encoded in YAML and use that with ``logging.config.dictConfig``.
 
 
-..  _`165`:
-..  rubric:: Logging Setup (165) =
+..  _`168`:
+..  rubric:: Logging Setup (168) =
 ..  parsed-literal::
     :class: code
 
     
     class Logger:
-        def \_\_init\_\_( self, dict\_config=None, \*\*kw\_config ):
-            self.dict\_config= dict\_config
-            self.kw\_config= kw\_config
-        def \_\_enter\_\_( self ):
+        def \_\_init\_\_(self, dict\_config: dict[str, Any] \| None = None, \*\*kw\_config: Any) -> None:
+            self.dict\_config = dict\_config
+            self.kw\_config = kw\_config
+        def \_\_enter\_\_(self) -> "Logger":
             if self.dict\_config:
-                logging.config.dictConfig( self.dict\_config )
+                logging.config.dictConfig(self.dict\_config)
             else:
-                logging.basicConfig( \*\*self.kw\_config )
+                logging.basicConfig(\*\*self.kw\_config)
             return self
-        def \_\_exit\_\_( self, \*args ):
+        def \_\_exit\_\_(self, \*args: Any) -> Literal[False]:
             logging.shutdown()
             return False
 
@@ -7849,7 +7981,7 @@ encoded in YAML and use that with ``logging.config.dictConfig``.
 
     ..  class:: small
 
-        |loz| *Logging Setup (165)*. Used by: pyweb.py (`153`_)
+        |loz| *Logging Setup (168)*. Used by: pyweb.py (`156`_)
 
 
 Here's a sample logging setup. This creates a simple console handler and 
@@ -7859,44 +7991,44 @@ It defines the root logger plus two overrides for class loggers that might be
 used to gather additional information.
 
 
-..  _`166`:
-..  rubric:: Logging Setup (166) +=
+..  _`169`:
+..  rubric:: Logging Setup (169) +=
 ..  parsed-literal::
     :class: code
 
     
-    log\_config= dict(
-        version= 1,
-        disable\_existing\_loggers= False, # Allow pre-existing loggers to work.
-        handlers= {
+    log\_config = {
+        'version': 1,
+        'disable\_existing\_loggers': False, # Allow pre-existing loggers to work.
+        'handlers': {
             'console': {
                 'class': 'logging.StreamHandler',
                 'stream': 'ext://sys.stderr',
                 'formatter': 'basic',
             },
         },
-        formatters = {
+        'formatters': {
             'basic': {
                 'format': "{levelname}:{name}:{message}",
                 'style': "{",
             }
         },
         
-        root= { 'handlers': ['console'], 'level': logging.INFO, },
+        'root': {'handlers': ['console'], 'level': logging.INFO,},
         
         #For specific debugging support...
-        loggers= {
-        #    'RST': { 'level': logging.DEBUG },
-        #    'TanglerMake': { 'level': logging.DEBUG },
-        #    'WebReader': { 'level': logging.DEBUG },
+        'loggers': {
+        #    'RST': {'level': logging.DEBUG},
+        #    'TanglerMake': {'level': logging.DEBUG},
+        #    'WebReader': {'level': logging.DEBUG},
         },
-    )
+    }
 
 ..
 
     ..  class:: small
 
-        |loz| *Logging Setup (166)*. Used by: pyweb.py (`153`_)
+        |loz| *Logging Setup (169)*. Used by: pyweb.py (`156`_)
 
 
 This seems a bit verbose; a separate configuration file might be better.
@@ -7918,26 +8050,26 @@ We might also want to parse a logging configuration file, as well
 as a weaver template configuration file.
 
 
-..  _`167`:
-..  rubric:: Interface Functions (167) =
+..  _`170`:
+..  rubric:: Interface Functions (170) =
 ..  parsed-literal::
     :class: code
 
     
-    def main():
-        a= Application()
-        config= a.parseArgs()
+    def main(argv: list[str] = sys.argv[1:]) -> None:
+        a = Application()
+        config = a.parseArgs(argv)
         a.process(config)
     
     if \_\_name\_\_ == "\_\_main\_\_":
-        with Logger( log\_config ):
-            main( )
+        with Logger(log\_config):
+            main()
 
 ..
 
     ..  class:: small
 
-        |loz| *Interface Functions (167)*. Used by: pyweb.py (`153`_)
+        |loz| *Interface Functions (170)*. Used by: pyweb.py (`156`_)
 
 
 This can be extended by doing something like the following.
@@ -7953,16 +8085,15 @@ This can be extended by doing something like the following.
 ..  parsed-literal::
 
     import pyweb
-    class MyWeaver( HTML ):
+    class MyWeaver(HTML):
        *Any template changes*
      
     pyweb.weavers['myweaver']= MyWeaver()
     pyweb.main()
 
 
-This will create a variant on **pyWeb** that will handle a different
+This will create a variant on **py-web-tool** that will handle a different
 weaver via the command-line option ``-w myweaver``.
-
 
 
 ..  pyweb/test.w
@@ -8027,8 +8158,8 @@ Note the general flow of this top-level script.
 	a summary.
 
 
-..  _`168`:
-..  rubric:: tangle.py (168) =
+..  _`171`:
+..  rubric:: tangle.py (171) =
 ..  parsed-literal::
     :class: code
 
@@ -8038,34 +8169,34 @@ Note the general flow of this top-level script.
     import logging
     import argparse
     		
-    with pyweb.Logger( pyweb.log\_config ):
-    	logger= logging.getLogger(\_\_file\_\_)
+    with pyweb.Logger(pyweb.log\_config):
+    	logger = logging.getLogger(\_\_file\_\_)
     
     	options = argparse.Namespace(
-    		webFileName= "pyweb.w",
-    		verbosity= logging.INFO,
-    		command= '@',
-    		permitList= ['@i'],
-    		tangler\_line\_numbers= False,
-    		reference\_style = pyweb.SimpleReference(),
-    		theTangler= pyweb.TanglerMake(),
-    		webReader= pyweb.WebReader(),
+    		webFileName="pyweb.w",
+    		verbosity=logging.INFO,
+    		command='@',
+    		permitList=['@i'],
+    		tangler\_line\_numbers=False,
+    		reference\_style=pyweb.SimpleReference(),
+    		theTangler=pyweb.TanglerMake(),
+    		webReader=pyweb.WebReader(),
     		)
     
-    	w= pyweb.Web() 
+    	w = pyweb.Web() 
     	
     	for action in LoadAction(), TangleAction():
-    		action.web= w
-    		action.options= options
+    		action.web = w
+    		action.options = options
     		action()
-    		logger.info( action.summary() )
+    		logger.info(action.summary())
     
 
 ..
 
     ..  class:: small
 
-        |loz| *tangle.py (168)*.
+        |loz| *tangle.py (171)*.
 
 
 ``weave.py`` Script
@@ -8078,25 +8209,25 @@ to define a customized set of templates for a different markup language.
 A customized weaver generally has three parts.
 
 
-..  _`169`:
-..  rubric:: weave.py (169) =
+..  _`172`:
+..  rubric:: weave.py (172) =
 ..  parsed-literal::
     :class: code
 
-    |srarr|\ weave.py overheads for correct operation of a script (`170`_)
-    |srarr|\ weave.py custom weaver definition to customize the Weaver being used (`171`_)
-    |srarr|\ weaver.py processing: load and weave the document (`172`_)
+    |srarr|\ weave.py overheads for correct operation of a script (`173`_)
+    |srarr|\ weave.py custom weaver definition to customize the Weaver being used (`174`_)
+    |srarr|\ weaver.py processing: load and weave the document (`175`_)
 
 ..
 
     ..  class:: small
 
-        |loz| *weave.py (169)*.
+        |loz| *weave.py (172)*.
 
 
 
-..  _`170`:
-..  rubric:: weave.py overheads for correct operation of a script (170) =
+..  _`173`:
+..  rubric:: weave.py overheads for correct operation of a script (173) =
 ..  parsed-literal::
     :class: code
 
@@ -8111,37 +8242,37 @@ A customized weaver generally has three parts.
 
     ..  class:: small
 
-        |loz| *weave.py overheads for correct operation of a script (170)*. Used by: weave.py (`169`_)
+        |loz| *weave.py overheads for correct operation of a script (173)*. Used by: weave.py (`172`_)
 
 
 
-..  _`171`:
-..  rubric:: weave.py custom weaver definition to customize the Weaver being used (171) =
+..  _`174`:
+..  rubric:: weave.py custom weaver definition to customize the Weaver being used (174) =
 ..  parsed-literal::
     :class: code
 
     
-    class MyHTML( pyweb.HTML ):
+    class MyHTML(pyweb.HTML):
         """HTML formatting templates."""
-        extension= ".html"
+        extension = ".html"
         
-        cb\_template= string.Template("""<a name="pyweb${seq}"></a>
+        cb\_template = string.Template("""<a name="pyweb${seq}"></a>
         <!--line number ${lineNumber}-->
         <p><em>${fullName}</em> (${seq})&nbsp;${concat}</p>
         <pre><code>\\n""")
     
-        ce\_template= string.Template("""
+        ce\_template = string.Template("""
         </code></pre>
         <p>&loz; <em>${fullName}</em> (${seq}).
         ${references}
         </p>\\n""")
             
-        fb\_template= string.Template("""<a name="pyweb${seq}"></a>
+        fb\_template = string.Template("""<a name="pyweb${seq}"></a>
         <!--line number ${lineNumber}-->
         <p>\`\`${fullName}\`\` (${seq})&nbsp;${concat}</p>
         <pre><code>\\n""") # Prevent indent
             
-        fe\_template= string.Template( """</code></pre>
+        fe\_template = string.Template( """</code></pre>
         <p>&loz; \`\`${fullName}\`\` (${seq}).
         ${references}
         </p>\\n""")
@@ -8150,72 +8281,72 @@ A customized weaver generally has three parts.
         '<a href="#pyweb${seq}"><em>${fullName}</em>&nbsp;(${seq})</a>'
         )
         
-        ref\_template = string.Template( '  Used by ${refList}.'  )
+        ref\_template = string.Template('  Used by ${refList}.' )
                 
         refto\_name\_template = string.Template(
         '<a href="#pyweb${seq}">&rarr;<em>${fullName}</em>&nbsp;(${seq})</a>'
         )
-        refto\_seq\_template = string.Template( '<a href="#pyweb${seq}">(${seq})</a>' )
+        refto\_seq\_template = string.Template('<a href="#pyweb${seq}">(${seq})</a>')
      
-        xref\_head\_template = string.Template( "<dl>\\n" )
-        xref\_foot\_template = string.Template( "</dl>\\n" )
-        xref\_item\_template = string.Template( "<dt>${fullName}</dt><dd>${refList}</dd>\\n" )
+        xref\_head\_template = string.Template("<dl>\\n")
+        xref\_foot\_template = string.Template("</dl>\\n")
+        xref\_item\_template = string.Template("<dt>${fullName}</dt><dd>${refList}</dd>\\n")
         
-        name\_def\_template = string.Template( '<a href="#pyweb${seq}"><b>&bull;${seq}</b></a>' )
-        name\_ref\_template = string.Template( '<a href="#pyweb${seq}">${seq}</a>' )
+        name\_def\_template = string.Template('<a href="#pyweb${seq}"><b>&bull;${seq}</b></a>')
+        name\_ref\_template = string.Template('<a href="#pyweb${seq}">${seq}</a>')
 
 ..
 
     ..  class:: small
 
-        |loz| *weave.py custom weaver definition to customize the Weaver being used (171)*. Used by: weave.py (`169`_)
+        |loz| *weave.py custom weaver definition to customize the Weaver being used (174)*. Used by: weave.py (`172`_)
 
 
 
-..  _`172`:
-..  rubric:: weaver.py processing: load and weave the document (172) =
+..  _`175`:
+..  rubric:: weaver.py processing: load and weave the document (175) =
 ..  parsed-literal::
     :class: code
 
     
-    with pyweb.Logger( pyweb.log\_config ):
-    	logger= logging.getLogger(\_\_file\_\_)
+    with pyweb.Logger(pyweb.log\_config):
+    	logger = logging.getLogger(\_\_file\_\_)
     
     	options = argparse.Namespace(
-    		webFileName= "pyweb.w",
-    		verbosity= logging.INFO,
-    		command= '@',
-    		theWeaver= MyHTML(),
-    		permitList= [],
-    		tangler\_line\_numbers= False,
-    		reference\_style = pyweb.SimpleReference(),
-    		theTangler= pyweb.TanglerMake(),
-    		webReader= pyweb.WebReader(),
+    		webFileName="pyweb.w",
+    		verbosity=logging.INFO,
+    		command='@',
+    		theWeaver=MyHTML(),
+    		permitList=[],
+    		tangler\_line\_numbers=False,
+    		reference\_style=pyweb.SimpleReference(),
+    		theTangler=pyweb.TanglerMake(),
+    		webReader=pyweb.WebReader(),
     		)
     
-    	w= pyweb.Web() 
+    	w = pyweb.Web() 
     
     	for action in LoadAction(), WeaveAction():
-    		action.web= w
-    		action.options= options
+    		action.web = w
+    		action.options = options
     		action()
-    		logger.info( action.summary() )
+    		logger.info(action.summary())
 
 ..
 
     ..  class:: small
 
-        |loz| *weaver.py processing: load and weave the document (172)*. Used by: weave.py (`169`_)
+        |loz| *weaver.py processing: load and weave the document (175)*. Used by: weave.py (`172`_)
 
 
-The ``setup.py`` and ``MANIFEST.in`` files
---------------------------------------------
+The ``setup.py``, ``requirements-dev.txt`` and ``MANIFEST.in`` files
+---------------------------------------------------------------------
 
 In order to support a pleasant installation, the ``setup.py`` file is helpful.
 
 
-..  _`173`:
-..  rubric:: setup.py (173) =
+..  _`176`:
+..  rubric:: setup.py (176) =
 ..  parsed-literal::
     :class: code
 
@@ -8224,9 +8355,9 @@ In order to support a pleasant installation, the ``setup.py`` file is helpful.
     
     from distutils.core import setup
     
-    setup(name='pyweb',
-          version='3.0',
-          description='pyWeb 3.0: Yet Another Literate Programming Tool',
+    setup(name='py-web-tool',
+          version='3.1',
+          description='pyWeb 3.1: Yet Another Literate Programming Tool',
           author='S. Lott',
           author\_email='s\_lott@yahoo.com',
           url='http://slott-softwarearchitect.blogspot.com/',
@@ -8243,7 +8374,7 @@ In order to support a pleasant installation, the ``setup.py`` file is helpful.
 
     ..  class:: small
 
-        |loz| *setup.py (173)*.
+        |loz| *setup.py (176)*.
 
 
 In order build a source distribution kit the ``python3 setup.py sdist`` requires a
@@ -8252,8 +8383,8 @@ that specifies additional rules.
 We use a simple inclusion to augment the default manifest rules.
 
 
-..  _`174`:
-..  rubric:: MANIFEST.in (174) =
+..  _`177`:
+..  rubric:: MANIFEST.in (177) =
 ..  parsed-literal::
     :class: code
 
@@ -8265,7 +8396,27 @@ We use a simple inclusion to augment the default manifest rules.
 
     ..  class:: small
 
-        |loz| *MANIFEST.in (174)*.
+        |loz| *MANIFEST.in (177)*.
+
+
+In order to install dependencies, the following file is also used.
+
+
+..  _`178`:
+..  rubric:: requirements-dev.txt (178) =
+..  parsed-literal::
+    :class: code
+
+    
+    docutils==0.18.1
+    tox==3.25.0
+    mypy==0.910
+
+..
+
+    ..  class:: small
+
+        |loz| *requirements-dev.txt (178)*.
 
 
 The ``README`` file
@@ -8274,12 +8425,12 @@ The ``README`` file
 Here's the README file.
 
 
-..  _`175`:
-..  rubric:: README (175) =
+..  _`179`:
+..  rubric:: README (179) =
 ..  parsed-literal::
     :class: code
 
-    pyWeb 3.0: In Python, Yet Another Literate Programming Tool
+    pyWeb 3.1: In Python, Yet Another Literate Programming Tool
     
     Literate programming is an attempt to reconcile the opposing needs
     of clear presentation to people with the technical issues of 
@@ -8295,7 +8446,7 @@ Here's the README file.
     Is uses a simple set of markup tags to define chunks of code and 
     documentation.
     
-    The \`\`pyweb.w\`\` file is the source for the various pyweb module and script files.
+    The \`\`pyweb.w\`\` file is the source for the various \`\`pyweb\`\` module and script files.
     The various source code files are created by applying a
     tangle operation to the \`\`.w\`\` file.  The final documentation is created by
     applying a weave operation to the \`\`.w\`\` file.
@@ -8303,16 +8454,24 @@ Here's the README file.
     Installation
     -------------
     
+    This requires Python 3.10.
+    
+    First, downnload the distribution kit from PyPI.
+    
     ::
     
         python3 setup.py install
     
-    This will install the pyweb module.
+    This will install the \`\`pyweb\`\` module, and the \`\`weave\`\` and \`\`tangle\`\` applications.
     
-    Document production
-    --------------------
+    Produce Documentation
+    ---------------------
     
-    The supplied documentation uses RST markup and requires docutils.
+    The supplied documentation uses RST markup; it requires docutils.
+    
+    ::
+    
+        python3 -m pip install docutils
     
     ::
     
@@ -8322,16 +8481,16 @@ Here's the README file.
     Authoring
     ---------
     
-    The pyweb document describes the simple markup used to define code chunks
+    The \`\`pyweb.html\`\` document describes the markup used to define code chunks
     and assemble those code chunks into a coherent document as well as working code.
     
     If you're a JEdit user, the \`\`jedit\`\` directory can be used
-    to configure syntax highlighting that includes PyWeb and RST.
+    to configure syntax highlighting that includes \*\*py-web-tool\*\* and RST.
     
     Operation
     ---------
     
-    You can then run pyweb with
+    After installation and authoring, you can then run \*\*py-web-tool\*\* with
     
     ::
     
@@ -8369,7 +8528,7 @@ Here's the README file.
 
     ..  class:: small
 
-        |loz| *README (175)*.
+        |loz| *README (179)*.
 
 
 The HTML Support Files
@@ -8382,15 +8541,15 @@ The default CSS file (stylesheet-path) may need to be customized for your
 installation of docutils.
 
 
-..  _`176`:
-..  rubric:: docutils.conf (176) =
+..  _`180`:
+..  rubric:: docutils.conf (180) =
 ..  parsed-literal::
     :class: code
 
     # docutils.conf
     
     [html4css1 writer]
-    stylesheet-path: /Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/docutils/writers/html4css1/html4css1.css,
+    stylesheet-path: /Users/slott/miniconda3/envs/pywebtool/lib/python3.10/site-packages/docutils/writers/html4css1/html4css1.css,
         page-layout.css
     syntax-highlight: long
 
@@ -8398,15 +8557,15 @@ installation of docutils.
 
     ..  class:: small
 
-        |loz| *docutils.conf (176)*.
+        |loz| *docutils.conf (180)*.
 
 
 ``page-layout.css``  This tweaks one CSS to be sure that
 the resulting HTML pages are easier to read. 
 
 
-..  _`177`:
-..  rubric:: page-layout.css (177) =
+..  _`181`:
+..  rubric:: page-layout.css (181) =
 ..  parsed-literal::
     :class: code
 
@@ -8432,15 +8591,15 @@ the resulting HTML pages are easier to read.
 
     ..  class:: small
 
-        |loz| *page-layout.css (177)*.
+        |loz| *page-layout.css (181)*.
 
 
 Yes, this creates a (nearly) empty file for use by GitHub. There's a small
 bug in ``NamedChunk.tangle()`` that prevents handling zero-length text.
 
 
-..  _`178`:
-..  rubric:: .nojekyll (178) =
+..  _`182`:
+..  rubric:: .nojekyll (182) =
 ..  parsed-literal::
     :class: code
 
@@ -8450,14 +8609,14 @@ bug in ``NamedChunk.tangle()`` that prevents handling zero-length text.
 
     ..  class:: small
 
-        |loz| *.nojekyll (178)*.
+        |loz| *.nojekyll (182)*.
 
 
-Finally, an ``index.html`` to redirect GitHub to the ``pyweb.html`` file.
+Here's an ``index.html`` to redirect GitHub to the ``pyweb.html`` file.
 
 
-..  _`179`:
-..  rubric:: index.html (179) =
+..  _`183`:
+..  rubric:: index.html (183) =
 ..  parsed-literal::
     :class: code
 
@@ -8474,7 +8633,89 @@ Finally, an ``index.html`` to redirect GitHub to the ``pyweb.html`` file.
 
     ..  class:: small
 
-        |loz| *index.html (179)*.
+        |loz| *index.html (183)*.
+
+
+
+Tox and Makefile
+----------------
+
+It's simpler to have a ``Makefile`` to automate testing, particularly when making changes
+to **py-web-tool**. 
+
+Note that there are tabs in this file. We bootstrap the next version from the 3.0 version.
+
+
+..  _`184`:
+..  rubric:: Makefile (184) =
+..  parsed-literal::
+    :class: code
+
+    # Makefile for py-web-tool.
+    # Requires a pyweb-3.0.py (untouched) to bootstrap the current version.
+    
+    SOURCE = pyweb.w intro.w overview.w impl.w tests.w additional.w todo.w done.w \\
+    	test/pyweb\_test.w test/intro.w test/unit.w test/func.w test/combined.w
+    
+    .PHONY : test build
+    
+    # Note the bootstrapping new version from version 3.0 as baseline.
+    
+    test : $(SOURCE)
+    	python3 pyweb-3.0.py -xw pyweb.w 
+    	cd test && python3 ../pyweb.py pyweb\_test.w
+    	cd test && PYTHONPATH=.. python3 test.py
+    	cd test && rst2html.py pyweb\_test.rst pyweb\_test.html
+    	mypy --strict pyweb.py
+    
+    build : pyweb.py pyweb.html
+         
+    pyweb.py pyweb.html : $(SOURCE)
+    	python3 pyweb-3.0.py pyweb.w 
+    
+
+..
+
+    ..  class:: small
+
+        |loz| *Makefile (184)*.
+
+
+**TODO:** Finish ``tox.ini`` or ``pyproject.toml``.
+
+
+..  _`185`:
+..  rubric:: pyproject.toml (185) =
+..  parsed-literal::
+    :class: code
+
+    
+    [build-system]
+    requires = ["setuptools >= 61.2.0", "wheel >= 0.37.1"]
+    build-backend = "setuptools.build\_meta"
+    
+    [tool.tox]
+    legacy\_tox\_ini = """
+    [tox]
+    envlist = py310
+    
+    [testenv]
+    deps = 
+        pytest >= 3.0.0, <4
+    commands\_pre = 
+        python3 pyweb-3.0.py pyweb.w
+        python3 pyweb.py -o test test/pyweb\_test.w 
+    commands = 
+        python3 test/test.py
+        mypy --strict pyweb.py
+    """
+
+..
+
+    ..  class:: small
+
+        |loz| *pyproject.toml (185)*.
+
 
 
 .. pyweb/jedit.w 
@@ -8487,8 +8728,8 @@ JEdit so that it properly highlights your PyWeb commands.
 
 We'll define the overall properties plus two sets of rules.
 
-..  _`180`:
-..  rubric:: jedit/pyweb.xml (180) =
+..  _`186`:
+..  rubric:: jedit/pyweb.xml (186) =
 ..  parsed-literal::
     :class: code
 
@@ -8496,22 +8737,22 @@ We'll define the overall properties plus two sets of rules.
     <!DOCTYPE MODE SYSTEM "xmode.dtd">
     
     <MODE>
-        |srarr|\ props for JEdit mode (`181`_)
-        |srarr|\ rules for JEdit PyWeb and RST (`182`_)
-        |srarr|\ rules for JEdit PyWeb XML-Like Constructs (`183`_)
+        |srarr|\ props for JEdit mode (`187`_)
+        |srarr|\ rules for JEdit PyWeb and RST (`188`_)
+        |srarr|\ rules for JEdit PyWeb XML-Like Constructs (`189`_)
     </MODE>
 
 ..
 
     ..  class:: small
 
-        |loz| *jedit/pyweb.xml (180)*.
+        |loz| *jedit/pyweb.xml (186)*.
 
 
 Here are some properties to define RST constructs to JEdit
 
-..  _`181`:
-..  rubric:: props for JEdit mode (181) =
+..  _`187`:
+..  rubric:: props for JEdit mode (187) =
 ..  parsed-literal::
     :class: code
 
@@ -8530,14 +8771,14 @@ Here are some properties to define RST constructs to JEdit
 
     ..  class:: small
 
-        |loz| *props for JEdit mode (181)*. Used by: jedit/pyweb.xml (`180`_)
+        |loz| *props for JEdit mode (187)*. Used by: jedit/pyweb.xml (`186`_)
 
 
 Here are some rules to define PyWeb and RST constructs to JEdit.
 
 
-..  _`182`:
-..  rubric:: rules for JEdit PyWeb and RST (182) =
+..  _`188`:
+..  rubric:: rules for JEdit PyWeb and RST (188) =
 ..  parsed-literal::
     :class: code
 
@@ -8678,15 +8919,15 @@ Here are some rules to define PyWeb and RST constructs to JEdit.
 
     ..  class:: small
 
-        |loz| *rules for JEdit PyWeb and RST (182)*. Used by: jedit/pyweb.xml (`180`_)
+        |loz| *rules for JEdit PyWeb and RST (188)*. Used by: jedit/pyweb.xml (`186`_)
 
 
 Here are some additional rules to define PyWeb constructs to JEdit
 that look like XML.
 
 
-..  _`183`:
-..  rubric:: rules for JEdit PyWeb XML-Like Constructs (183) =
+..  _`189`:
+..  rubric:: rules for JEdit PyWeb XML-Like Constructs (189) =
 ..  parsed-literal::
     :class: code
 
@@ -8702,7 +8943,7 @@ that look like XML.
 
     ..  class:: small
 
-        |loz| *rules for JEdit PyWeb XML-Like Constructs (183)*. Used by: jedit/pyweb.xml (`180`_)
+        |loz| *rules for JEdit PyWeb XML-Like Constructs (189)*. Used by: jedit/pyweb.xml (`186`_)
 
 
 Additionally, you'll want to update the JEdit catalog.
@@ -8723,21 +8964,35 @@ Additionally, you'll want to update the JEdit catalog.
 
 ..    pyweb/todo.w 
 
+Python 3.10 Migration
+=====================
+
+
+1. [x] Add type hints.
+
+#. [ ] Replace all ``.format()`` with f-strings.
+
+#. [ ] Replace filename strings (and ``os.path``) with ``pathlib.Path``.
+
+#. [ ] ``pyproject.toml``. This requires -o dir to write output to a directory of choice; which requires Pathlib
+ 
+#. [ ] Introduce ``match`` statements for some of the ``elif`` blocks
+
+#. [ ] Replace mock class with ``unittest.mock.Mock`` objects.
+
+ 
 To Do
 =======
     
-1.  Fix name definition order. There's no good reason why a full name should
-    be first and elided names defined later.
+1.  Silence the logging during testing.
 
-2.  Silence the logging during testing.
-
-#.  Add a JSON-based configuration file to configure templates.
+#.  Add a JSON-based (or TOML) configuration file to configure templates.
 
     -   See the ``weave.py`` example. 
         This removes any need for a weaver command-line option; its defined within the source.
         Also, setting the command character can be done in this configuration, too.
 
-    -   An alternative is to get markup templates from a "header" section in the ``.w`` file.  
+    -   An alternative is to get markup templates from some kind of "header" section in the ``.w`` file.  
 
         To support reuse over multiple projects, a header could be included with ``@i``.
         The downside is that we have a lot of variable = value syntax that makes it
@@ -8746,11 +9001,14 @@ To Do
 
 #.  JSON-based logging configuration file would be helpful. 
     Should be separate from template configuration.
-    
-#.  We might want to decompose the ``impl.w`` file: it's huge.
 
+#.  We might want to decompose the ``impl.w`` file: it's huge.
+    
 #.  We might want to interleave code and test into a document that presents both
     side-by-side. They get routed to different output files.
+
+#.  Fix name definition order. There's no **good** reason why a full name should
+    be first and elided names defined later.
 
 #.  Add a ``@h`` "header goes here" command to allow weaving any **pyWeb** required addons to 
     a LaTeX header, HTML header or RST header.
@@ -8795,6 +9053,16 @@ The advantage of adding these two projects might be some simplification.
 
 Change Log
 ===========
+
+Changes for 3.1
+
+-   Change to Python 3.10.
+
+-   Add type hints, match statements, f-strings, pathlib.
+
+-   Remove the Jedit configuration file as an output.
+
+-   Add a makefile and tox.ini
 
 Changes for 3.0
 
@@ -8934,27 +9202,33 @@ Files
 
 
 :.nojekyll:
-    |srarr|\ (`178`_)
+    |srarr|\ (`182`_)
 :MANIFEST.in:
-    |srarr|\ (`174`_)
-:README:
-    |srarr|\ (`175`_)
-:docutils.conf:
-    |srarr|\ (`176`_)
-:index.html:
-    |srarr|\ (`179`_)
-:jedit/pyweb.xml:
-    |srarr|\ (`180`_)
-:page-layout.css:
     |srarr|\ (`177`_)
+:Makefile:
+    |srarr|\ (`184`_)
+:README:
+    |srarr|\ (`179`_)
+:docutils.conf:
+    |srarr|\ (`180`_)
+:index.html:
+    |srarr|\ (`183`_)
+:jedit/pyweb.xml:
+    |srarr|\ (`186`_)
+:page-layout.css:
+    |srarr|\ (`181`_)
+:pyproject.toml:
+    |srarr|\ (`185`_)
 :pyweb.py:
-    |srarr|\ (`153`_)
+    |srarr|\ (`156`_)
+:requirements-dev.txt:
+    |srarr|\ (`178`_)
 :setup.py:
-    |srarr|\ (`173`_)
+    |srarr|\ (`176`_)
 :tangle.py:
-    |srarr|\ (`168`_)
+    |srarr|\ (`171`_)
 :weave.py:
-    |srarr|\ (`169`_)
+    |srarr|\ (`172`_)
 
 
 
@@ -8963,29 +9237,29 @@ Macros
 
 
 :Action call method actually does the real work:
-    |srarr|\ (`138`_)
-:Action class hierarchy - used to describe basic actions of the application:
-    |srarr|\ (`136`_)
-:Action final summary of what was done:
-    |srarr|\ (`139`_)
-:Action superclass has common features of all actions:
-    |srarr|\ (`137`_)
-:ActionSequence append adds a new action to the sequence:
-    |srarr|\ (`142`_)
-:ActionSequence call method delegates the sequence of ations:
     |srarr|\ (`141`_)
-:ActionSequence subclass that holds a sequence of other actions:
+:Action class hierarchy - used to describe basic actions of the application:
+    |srarr|\ (`139`_)
+:Action final summary of what was done:
+    |srarr|\ (`142`_)
+:Action superclass has common features of all actions:
     |srarr|\ (`140`_)
-:ActionSequence summary summarizes each step:
+:ActionSequence append adds a new action to the sequence:
+    |srarr|\ (`145`_)
+:ActionSequence call method delegates the sequence of ations:
+    |srarr|\ (`144`_)
+:ActionSequence subclass that holds a sequence of other actions:
     |srarr|\ (`143`_)
+:ActionSequence summary summarizes each step:
+    |srarr|\ (`146`_)
 :Application Class:
-    |srarr|\ (`159`_) |srarr|\ (`160`_)
+    |srarr|\ (`162`_) |srarr|\ (`163`_)
 :Application class process all files:
-    |srarr|\ (`163`_)
+    |srarr|\ (`166`_)
 :Application default options:
-    |srarr|\ (`161`_)
+    |srarr|\ (`164`_)
 :Application parse command line:
-    |srarr|\ (`162`_)
+    |srarr|\ (`165`_)
 :Base Class Definitions:
     |srarr|\ (`1`_)
 :Chunk add to the web:
@@ -8999,29 +9273,29 @@ Macros
 :Chunk class hierarchy - used to describe input chunks:
     |srarr|\ (`51`_)
 :Chunk examination: starts with, matches pattern:
-    |srarr|\ (`57`_)
-:Chunk generate references from this Chunk:
     |srarr|\ (`58`_)
-:Chunk indent adjustments:
-    |srarr|\ (`62`_)
-:Chunk references to this Chunk:
+:Chunk generate references from this Chunk:
     |srarr|\ (`59`_)
+:Chunk indent adjustments:
+    |srarr|\ (`63`_)
+:Chunk references to this Chunk:
+    |srarr|\ (`60`_)
 :Chunk superclass make Content definition:
     |srarr|\ (`56`_)
 :Chunk tangle this Chunk into a code file:
-    |srarr|\ (`61`_)
+    |srarr|\ (`62`_)
 :Chunk weave this Chunk into the documentation:
-    |srarr|\ (`60`_)
+    |srarr|\ (`61`_)
 :CodeCommand class to contain a program source code block:
-    |srarr|\ (`81`_)
+    |srarr|\ (`82`_)
 :Command analysis features: starts-with and Regular Expression search:
-    |srarr|\ (`78`_)
-:Command class hierarchy - used to describe individual commands:
-    |srarr|\ (`76`_)
-:Command superclass:
-    |srarr|\ (`77`_)
-:Command tangle and weave functions:
     |srarr|\ (`79`_)
+:Command class hierarchy - used to describe individual commands:
+    |srarr|\ (`77`_)
+:Command superclass:
+    |srarr|\ (`78`_)
+:Command tangle and weave functions:
+    |srarr|\ (`80`_)
 :Emitter class hierarchy - used to control output files:
     |srarr|\ (`2`_)
 :Emitter core open, close and write:
@@ -9037,9 +9311,9 @@ Macros
 :Emitter write a block of code:
     |srarr|\ (`7`_) |srarr|\ (`8`_) |srarr|\ (`9`_)
 :Error class - defines the errors raised:
-    |srarr|\ (`94`_)
+    |srarr|\ (`95`_)
 :FileXrefCommand class for an output file cross-reference:
-    |srarr|\ (`83`_)
+    |srarr|\ (`84`_)
 :HTML code chunk begin:
     |srarr|\ (`33`_)
 :HTML code chunk end:
@@ -9063,9 +9337,9 @@ Macros
 :HTML write user id cross reference line:
     |srarr|\ (`41`_)
 :Imports:
-    |srarr|\ (`11`_) |srarr|\ (`47`_) |srarr|\ (`96`_) |srarr|\ (`124`_) |srarr|\ (`131`_) |srarr|\ (`133`_) |srarr|\ (`154`_) |srarr|\ (`158`_) |srarr|\ (`164`_)
+    |srarr|\ (`11`_) |srarr|\ (`47`_) |srarr|\ (`57`_) |srarr|\ (`97`_) |srarr|\ (`125`_) |srarr|\ (`130`_) |srarr|\ (`133`_) |srarr|\ (`135`_) |srarr|\ (`157`_) |srarr|\ (`161`_) |srarr|\ (`167`_)
 :Interface Functions:
-    |srarr|\ (`167`_)
+    |srarr|\ (`170`_)
 :LaTeX code chunk begin:
     |srarr|\ (`24`_)
 :LaTeX code chunk end:
@@ -9083,63 +9357,63 @@ Macros
 :LaTeX write a line of code:
     |srarr|\ (`29`_)
 :LoadAction call method loads the input files:
-    |srarr|\ (`151`_)
+    |srarr|\ (`154`_)
 :LoadAction subclass loads the document web:
-    |srarr|\ (`150`_)
+    |srarr|\ (`153`_)
 :LoadAction summary provides lines read:
-    |srarr|\ (`152`_)
+    |srarr|\ (`155`_)
 :Logging Setup:
-    |srarr|\ (`165`_) |srarr|\ (`166`_)
+    |srarr|\ (`168`_) |srarr|\ (`169`_)
 :MacroXrefCommand class for a named chunk cross-reference:
-    |srarr|\ (`84`_)
+    |srarr|\ (`85`_)
 :NamedChunk add to the web:
-    |srarr|\ (`65`_)
-:NamedChunk class:
-    |srarr|\ (`63`_) |srarr|\ (`68`_)
-:NamedChunk tangle into the source file:
-    |srarr|\ (`67`_)
-:NamedChunk user identifiers set and get:
-    |srarr|\ (`64`_)
-:NamedChunk weave into the documentation:
     |srarr|\ (`66`_)
+:NamedChunk class:
+    |srarr|\ (`64`_) |srarr|\ (`69`_)
+:NamedChunk tangle into the source file:
+    |srarr|\ (`68`_)
+:NamedChunk user identifiers set and get:
+    |srarr|\ (`65`_)
+:NamedChunk weave into the documentation:
+    |srarr|\ (`67`_)
 :NamedDocumentChunk class:
-    |srarr|\ (`73`_)
-:NamedDocumentChunk tangle:
-    |srarr|\ (`75`_)
-:NamedDocumentChunk weave:
     |srarr|\ (`74`_)
+:NamedDocumentChunk tangle:
+    |srarr|\ (`76`_)
+:NamedDocumentChunk weave:
+    |srarr|\ (`75`_)
 :Option Parser class - locates optional values on commands:
-    |srarr|\ (`134`_) |srarr|\ (`135`_)
+    |srarr|\ (`136`_) |srarr|\ (`137`_) |srarr|\ (`138`_)
 :OutputChunk add to the web:
-    |srarr|\ (`70`_)
-:OutputChunk class:
-    |srarr|\ (`69`_)
-:OutputChunk tangle:
-    |srarr|\ (`72`_)
-:OutputChunk weave:
     |srarr|\ (`71`_)
+:OutputChunk class:
+    |srarr|\ (`70`_)
+:OutputChunk tangle:
+    |srarr|\ (`73`_)
+:OutputChunk weave:
+    |srarr|\ (`72`_)
 :Overheads:
-    |srarr|\ (`155`_) |srarr|\ (`156`_) |srarr|\ (`157`_)
+    |srarr|\ (`158`_) |srarr|\ (`159`_) |srarr|\ (`160`_)
 :RST subclass of Weaver:
     |srarr|\ (`22`_)
 :Reference class hierarchy - strategies for references to a chunk:
-    |srarr|\ (`91`_) |srarr|\ (`92`_) |srarr|\ (`93`_)
+    |srarr|\ (`92`_) |srarr|\ (`93`_) |srarr|\ (`94`_)
 :ReferenceCommand class for chunk references:
-    |srarr|\ (`86`_)
-:ReferenceCommand refers to a chunk:
-    |srarr|\ (`88`_)
-:ReferenceCommand resolve a referenced chunk name:
     |srarr|\ (`87`_)
-:ReferenceCommand tangle a referenced chunk:
-    |srarr|\ (`90`_)
-:ReferenceCommand weave a reference to a chunk:
+:ReferenceCommand refers to a chunk:
     |srarr|\ (`89`_)
+:ReferenceCommand resolve a referenced chunk name:
+    |srarr|\ (`88`_)
+:ReferenceCommand tangle a referenced chunk:
+    |srarr|\ (`91`_)
+:ReferenceCommand weave a reference to a chunk:
+    |srarr|\ (`90`_)
 :TangleAction call method does tangling of the output files:
-    |srarr|\ (`148`_)
+    |srarr|\ (`151`_)
 :TangleAction subclass initiates the tangle action:
-    |srarr|\ (`147`_)
+    |srarr|\ (`150`_)
 :TangleAction summary method provides total lines tangled:
-    |srarr|\ (`149`_)
+    |srarr|\ (`152`_)
 :Tangler code chunk begin:
     |srarr|\ (`45`_)
 :Tangler code chunk end:
@@ -9155,17 +9429,17 @@ Macros
 :TanglerMake subclass which is make-sensitive:
     |srarr|\ (`48`_)
 :TextCommand class to contain a document text block:
-    |srarr|\ (`80`_)
+    |srarr|\ (`81`_)
 :Tokenizer class - breaks input into tokens:
-    |srarr|\ (`132`_)
+    |srarr|\ (`134`_)
 :UserIdXrefCommand class for a user identifier cross-reference:
-    |srarr|\ (`85`_)
+    |srarr|\ (`86`_)
 :WeaveAction call method to pick the language:
-    |srarr|\ (`145`_)
+    |srarr|\ (`148`_)
 :WeaveAction subclass initiates the weave action:
-    |srarr|\ (`144`_)
+    |srarr|\ (`147`_)
 :WeaveAction summary of language choice:
-    |srarr|\ (`146`_)
+    |srarr|\ (`149`_)
 :Weaver code chunk begin-end:
     |srarr|\ (`17`_)
 :Weaver cross reference output methods:
@@ -9185,77 +9459,77 @@ Macros
 :Weaver subclass of Emitter to create documentation:
     |srarr|\ (`12`_)
 :Web Chunk check reference counts are all one:
-    |srarr|\ (`105`_)
+    |srarr|\ (`106`_)
 :Web Chunk cross reference methods:
-    |srarr|\ (`104`_) |srarr|\ (`106`_) |srarr|\ (`107`_) |srarr|\ (`108`_)
+    |srarr|\ (`105`_) |srarr|\ (`107`_) |srarr|\ (`108`_) |srarr|\ (`109`_)
 :Web Chunk name resolution methods:
-    |srarr|\ (`102`_) |srarr|\ (`103`_)
+    |srarr|\ (`103`_) |srarr|\ (`104`_)
 :Web add a named macro chunk:
-    |srarr|\ (`100`_)
-:Web add an anonymous chunk:
-    |srarr|\ (`99`_)
-:Web add an output file definition chunk:
     |srarr|\ (`101`_)
+:Web add an anonymous chunk:
+    |srarr|\ (`100`_)
+:Web add an output file definition chunk:
+    |srarr|\ (`102`_)
 :Web add full chunk names, ignoring abbreviated names:
-    |srarr|\ (`98`_)
+    |srarr|\ (`99`_)
 :Web class - describes the overall "web" of chunks:
-    |srarr|\ (`95`_)
+    |srarr|\ (`96`_)
 :Web construction methods used by Chunks and WebReader:
-    |srarr|\ (`97`_)
+    |srarr|\ (`98`_)
 :Web determination of the language from the first chunk:
-    |srarr|\ (`111`_)
-:Web tangle the output files:
     |srarr|\ (`112`_)
-:Web weave the output document:
+:Web tangle the output files:
     |srarr|\ (`113`_)
-:WebReader class - parses the input file, building the Web structure:
+:Web weave the output document:
     |srarr|\ (`114`_)
+:WebReader class - parses the input file, building the Web structure:
+    |srarr|\ (`115`_)
 :WebReader command literals:
-    |srarr|\ (`130`_)
+    |srarr|\ (`132`_)
 :WebReader handle a command string:
-    |srarr|\ (`115`_) |srarr|\ (`127`_)
+    |srarr|\ (`116`_) |srarr|\ (`128`_)
 :WebReader load the web:
-    |srarr|\ (`129`_)
+    |srarr|\ (`131`_)
 :WebReader location in the input stream:
-    |srarr|\ (`128`_)
+    |srarr|\ (`129`_)
 :XrefCommand superclass for all cross-reference commands:
-    |srarr|\ (`82`_)
+    |srarr|\ (`83`_)
 :add a reference command to the current chunk:
-    |srarr|\ (`123`_)
+    |srarr|\ (`124`_)
 :add an expression command to the current chunk:
-    |srarr|\ (`125`_)
-:assign user identifiers to the current chunk:
-    |srarr|\ (`122`_)
-:collect all user identifiers from a given map into ux:
-    |srarr|\ (`109`_)
-:double at-sign replacement, append this character to previous TextCommand:
     |srarr|\ (`126`_)
-:find user identifier usage and update ux from the given map:
+:assign user identifiers to the current chunk:
+    |srarr|\ (`123`_)
+:collect all user identifiers from a given map into ux:
     |srarr|\ (`110`_)
+:double at-sign replacement, append this character to previous TextCommand:
+    |srarr|\ (`127`_)
+:find user identifier usage and update ux from the given map:
+    |srarr|\ (`111`_)
 :finish a chunk, start a new Chunk adding it to the web:
-    |srarr|\ (`120`_)
-:import another file:
-    |srarr|\ (`119`_)
-:major commands segment the input into separate Chunks:
-    |srarr|\ (`116`_)
-:minor commands add Commands to the current Chunk:
     |srarr|\ (`121`_)
-:props for JEdit mode:
-    |srarr|\ (`181`_)
-:rules for JEdit PyWeb XML-Like Constructs:
-    |srarr|\ (`183`_)
-:rules for JEdit PyWeb and RST:
-    |srarr|\ (`182`_)
-:start a NamedChunk or NamedDocumentChunk, adding it to the web:
-    |srarr|\ (`118`_)
-:start an OutputChunk, adding it to the web:
+:import another file:
+    |srarr|\ (`120`_)
+:major commands segment the input into separate Chunks:
     |srarr|\ (`117`_)
+:minor commands add Commands to the current Chunk:
+    |srarr|\ (`122`_)
+:props for JEdit mode:
+    |srarr|\ (`187`_)
+:rules for JEdit PyWeb XML-Like Constructs:
+    |srarr|\ (`189`_)
+:rules for JEdit PyWeb and RST:
+    |srarr|\ (`188`_)
+:start a NamedChunk or NamedDocumentChunk, adding it to the web:
+    |srarr|\ (`119`_)
+:start an OutputChunk, adding it to the web:
+    |srarr|\ (`118`_)
 :weave.py custom weaver definition to customize the Weaver being used:
-    |srarr|\ (`171`_)
+    |srarr|\ (`174`_)
 :weave.py overheads for correct operation of a script:
-    |srarr|\ (`170`_)
+    |srarr|\ (`173`_)
 :weaver.py processing: load and weave the document:
-    |srarr|\ (`172`_)
+    |srarr|\ (`175`_)
 
 
 
@@ -9264,239 +9538,239 @@ User Identifiers
 
 
 :Action:
-    [`137`_] `140`_ `144`_ `147`_ `150`_
+    [`140`_] `143`_ `145`_ `147`_ `150`_ `153`_
 :ActionSequence:
-    [`140`_] `161`_
+    [`143`_] `164`_
 :Application:
-    [`159`_] `167`_
+    [`162`_] `170`_
 :Chunk:
-    [`52`_] `58`_ `63`_ `90`_ `95`_ `104`_ `119`_ `120`_ `123`_ `129`_
+    `15`_ `16`_ `17`_ `18`_ `45`_ `46`_ [`52`_] `58`_ `59`_ `64`_ `78`_ `87`_ `91`_ `92`_ `93`_ `94`_ `96`_ `100`_ `101`_ `102`_ `104`_ `105`_ `109`_ `115`_ `120`_ `121`_ `124`_ `131`_
 :CodeCommand:
-    `63`_ [`81`_]
+    `64`_ [`82`_]
 :Command:
-    `53`_ [`77`_] `80`_ `82`_ `86`_ `163`_
+    `52`_ `53`_ `56`_ `64`_ `74`_ [`78`_] `81`_ `83`_ `87`_ `166`_
 :Emitter:
-    [`3`_] `12`_ `43`_
+    [`3`_] `4`_ `12`_ `43`_
 :Error:
-    `58`_ `61`_ `67`_ `75`_ `82`_ `90`_ [`94`_] `100`_ `102`_ `103`_ `113`_ `118`_ `119`_ `125`_ `135`_ `145`_ `148`_ `151`_ `162`_
+    `59`_ `62`_ `68`_ `76`_ `83`_ `91`_ [`95`_] `101`_ `103`_ `104`_ `114`_ `119`_ `120`_ `126`_ `138`_ `148`_ `151`_ `154`_ `165`_
 :FileXrefCommand:
-    [`83`_] `121`_
+    [`84`_] `122`_
 :HTML:
-    `31`_ [`32`_] `111`_ `160`_ `171`_
+    `31`_ [`32`_] `112`_ `163`_ `174`_
 :LaTeX:
-    [`23`_] `111`_ `160`_
+    [`23`_] `112`_ `163`_
 :LoadAction:
-    [`150`_] `161`_ `168`_ `172`_
+    [`153`_] `164`_ `171`_ `175`_
 :MacroXrefCommand:
-    [`84`_] `121`_
+    [`85`_] `122`_
 :NamedChunk:
-    [`63`_] `68`_ `69`_ `73`_ `118`_
+    `58`_ [`64`_] `69`_ `70`_ `74`_ `119`_
 :NamedDocumentChunk:
-    [`73`_] `118`_
+    [`74`_] `119`_
 :OutputChunk:
-    [`69`_] `117`_
+    [`70`_] `118`_
 :ReferenceCommand:
-    [`86`_] `123`_
+    [`87`_] `124`_
 :TangleAction:
-    [`147`_] `161`_ `168`_
+    [`150`_] `164`_ `171`_
 :Tangler:
-    `3`_ [`43`_] `48`_ `162`_
+    `3`_ [`43`_] `48`_ `62`_ `63`_ `68`_ `69`_ `73`_ `76`_ `80`_ `81`_ `82`_ `83`_ `91`_ `113`_ `165`_
 :TanglerMake:
-    [`48`_] `162`_ `166`_ `168`_ `172`_
+    [`48`_] `165`_ `169`_ `171`_ `175`_
 :TextCommand:
-    `54`_ `56`_ `67`_ `73`_ [`80`_] `81`_
+    `54`_ `56`_ `68`_ `74`_ [`81`_] `82`_
 :Tokenizer:
-    `129`_ [`132`_]
+    `115`_ `131`_ [`134`_]
 :UserIdXrefCommand:
-    [`85`_] `121`_
+    [`86`_] `122`_
 :WeaveAction:
-    [`144`_] `161`_ `172`_
+    [`147`_] `164`_ `175`_
 :Weaver:
-    [`12`_] `22`_ `23`_ `31`_ `162`_ `163`_
+    [`12`_] `22`_ `23`_ `31`_ `60`_ `61`_ `67`_ `72`_ `75`_ `80`_ `81`_ `82`_ `83`_ `84`_ `85`_ `86`_ `90`_ `112`_ `114`_ `165`_ `166`_
 :Web:
-    `45`_ `55`_ `65`_ `70`_ [`95`_] `151`_ `163`_ `168`_ `172`_ `175`_
+    `45`_ `52`_ `55`_ `59`_ `61`_ `62`_ `63`_ `66`_ `67`_ `68`_ `69`_ `71`_ `72`_ `73`_ `75`_ `76`_ `80`_ `81`_ `82`_ `83`_ `84`_ `85`_ `86`_ `88`_ `89`_ `90`_ `91`_ [`96`_] `115`_ `131`_ `140`_ `154`_ `166`_ `171`_ `175`_ `179`_
 :WebReader:
-    [`114`_] `119`_ `162`_ `166`_ `168`_ `172`_
+    [`115`_] `120`_ `131`_ `165`_ `169`_ `171`_ `175`_
 :XrefCommand:
-    [`82`_] `83`_ `84`_ `85`_
+    [`83`_] `84`_ `85`_ `86`_
 :__version__:
-    `125`_ [`157`_]
+    `126`_ [`160`_]
 :_gatherUserId:
-    [`108`_]
+    [`109`_]
 :_updateUserId:
-    [`108`_]
+    [`109`_]
 :add:
-    `55`_ [`99`_]
+    `55`_ [`100`_]
 :addDefName:
-    [`98`_] `100`_ `123`_
+    [`99`_] `101`_ `124`_
 :addIndent:
-    `10`_ [`13`_] `62`_ `66`_
+    `10`_ [`13`_] `63`_ `67`_
 :addNamed:
-    `65`_ [`100`_]
+    `66`_ [`101`_]
 :addOutput:
-    `70`_ [`101`_]
+    `71`_ [`102`_]
 :append:
-    `10`_ `13`_ `53`_ `54`_ `93`_ `99`_ `100`_ `101`_ `104`_ `110`_ `121`_ `123`_ `135`_ [`142`_]
+    `10`_ `13`_ `53`_ `54`_ `94`_ `100`_ `101`_ `102`_ `105`_ `111`_ `122`_ `124`_ `138`_ [`145`_]
 :appendText:
-    [`54`_] `123`_ `125`_ `126`_ `129`_
+    [`54`_] `124`_ `126`_ `127`_ `131`_
 :argparse:
-    [`158`_] `161`_ `162`_ `168`_ `170`_ `172`_
+    `140`_ [`161`_] `164`_ `165`_ `166`_ `171`_ `173`_ `175`_
 :builtins:
-    [`124`_] `125`_
+    [`125`_] `126`_
 :chunkXref:
-    `84`_ [`107`_]
+    `85`_ [`108`_]
 :close:
     [`4`_] `13`_ `44`_ `50`_
 :clrIndent:
-    [`10`_] `62`_ `66`_ `68`_
+    [`10`_] `63`_ `67`_ `69`_
 :codeBegin:
-    `17`_ [`45`_] `66`_ `67`_
+    `17`_ [`45`_] `67`_ `68`_
 :codeBlock:
-    [`7`_] `66`_ `81`_
+    [`7`_] `67`_ `82`_
 :codeEnd:
-    `17`_ [`46`_] `66`_ `67`_
+    `17`_ [`46`_] `67`_ `68`_
 :codeFinish:
     `4`_ `9`_ [`13`_]
 :createUsedBy:
-    [`104`_] `151`_
+    [`105`_] `154`_
 :datetime:
-    `125`_ [`154`_]
+    `126`_ [`157`_]
 :doClose:
     `4`_ `6`_ `13`_ `44`_ [`50`_]
 :doOpen:
     `4`_ `5`_ `13`_ `44`_ [`49`_]
 :docBegin:
-    [`15`_] `60`_
+    [`15`_] `61`_
 :docEnd:
-    [`15`_] `60`_
+    [`15`_] `61`_
 :duration:
-    [`139`_] `146`_ `149`_ `152`_
+    [`142`_] `149`_ `152`_ `155`_
 :expand:
-    `74`_ `123`_ `161`_ [`162`_]
+    `75`_ `124`_ `164`_ [`165`_]
 :expect:
-    `117`_ `118`_ `123`_ `125`_ [`127`_]
+    `118`_ `119`_ `124`_ `126`_ [`128`_]
 :fileBegin:
-    `18`_ [`35`_] `71`_
+    `18`_ [`35`_] `72`_
 :fileEnd:
-    `18`_ [`36`_] `71`_
+    `18`_ [`36`_] `72`_
 :fileXref:
-    `83`_ [`107`_]
+    `84`_ [`108`_]
 :filecmp:
     [`47`_] `50`_
 :formatXref:
-    [`82`_] `83`_ `84`_
+    [`83`_] `84`_ `85`_
 :fullNameFor:
-    `66`_ `71`_ `87`_ `98`_ [`102`_] `103`_ `104`_
+    `67`_ `72`_ `88`_ `99`_ [`103`_] `104`_ `105`_
 :genReferences:
-    [`58`_] `104`_
+    [`59`_] `105`_
 :getUserIDRefs:
-    `57`_ [`64`_] `109`_
+    `58`_ [`65`_] `110`_
 :getchunk:
-    `87`_ [`103`_] `104`_ `113`_
+    `88`_ [`104`_] `105`_ `114`_
 :handleCommand:
-    [`115`_] `129`_
+    [`116`_] `131`_
 :language:
-    [`111`_] `145`_ `156`_ `175`_
+    [`112`_] `148`_ `159`_ `179`_
 :lineNumber:
-    `17`_ `18`_ `33`_ `35`_ `45`_ `54`_ `56`_ [`57`_] `63`_ `67`_ `73`_ `77`_ `80`_ `82`_ `86`_ `119`_ `121`_ `123`_ `125`_ `126`_ `128`_ `129`_ `132`_ `171`_
+    `17`_ `18`_ `33`_ `35`_ `45`_ `54`_ `56`_ [`58`_] `64`_ `68`_ `74`_ `78`_ `81`_ `83`_ `87`_ `120`_ `122`_ `124`_ `126`_ `127`_ `129`_ `131`_ `134`_ `174`_
 :load:
-    `119`_ [`129`_] `151`_ `161`_ `163`_
+    `120`_ [`131`_] `154`_ `164`_ `166`_
 :location:
-    `115`_ `122`_ `125`_ `127`_ [`128`_]
+    `116`_ `123`_ `126`_ `128`_ [`129`_]
 :logging:
-    `3`_ `77`_ `91`_ `95`_ `114`_ `137`_ `159`_ `161`_ `162`_ `163`_ [`164`_] `165`_ `166`_ `168`_ `170`_ `172`_
+    `3`_ `52`_ `78`_ `92`_ `96`_ `115`_ `140`_ `162`_ `164`_ `165`_ `166`_ [`167`_] `168`_ `169`_ `171`_ `173`_ `175`_
 :logging.config:
-    [`164`_] `165`_
+    [`167`_] `168`_
 :main:
-    [`167`_]
+    [`170`_]
 :makeContent:
-    `54`_ [`56`_] `63`_ `73`_
+    `54`_ [`56`_] `64`_ `74`_
 :multi_reference:
-    `105`_ [`106`_]
+    `106`_ [`107`_]
 :no_definition:
-    `105`_ [`106`_]
+    `106`_ [`107`_]
 :no_reference:
-    `105`_ [`106`_]
+    `106`_ [`107`_]
 :open:
-    [`4`_] `13`_ `44`_ `112`_ `113`_ `125`_ `129`_
+    [`4`_] `13`_ `44`_ `113`_ `114`_ `126`_ `131`_
 :os:
-    `44`_ `49`_ `50`_ `113`_ `125`_ [`154`_]
+    `44`_ `49`_ `50`_ `114`_ `126`_ [`157`_]
 :parse:
-    `117`_ `118`_ [`129`_] `135`_
+    `118`_ `119`_ [`131`_] `138`_
 :parseArgs:
-    [`162`_] `167`_
+    [`165`_] `170`_
 :perform:
-    [`151`_]
+    [`154`_]
 :platform:
-    [`124`_] `125`_
+    [`125`_] `126`_
 :process:
-    `125`_ [`163`_] `167`_
+    `126`_ [`166`_] `170`_
 :quote:
-    [`8`_] `81`_
+    [`8`_] `82`_
 :quoted_chars:
     `8`_ `14`_ `29`_ [`38`_]
 :re:
-    `110`_ [`131`_] `132`_ `175`_
+    `111`_ [`133`_] `134`_ `179`_
 :readdIndent:
     `3`_ [`10`_] `13`_
 :ref:
-    `28`_ `58`_ [`79`_] `88`_ `99`_ `100`_ `101`_
+    `28`_ `59`_ [`80`_] `89`_ `100`_ `101`_ `102`_
 :referenceSep:
-    [`19`_] `113`_
+    [`19`_] `114`_
 :referenceTo:
-    `19`_ `20`_ [`39`_] `66`_
+    `19`_ `20`_ [`39`_] `67`_
 :references:
-    `16`_ `17`_ `18`_ `19`_ `25`_ `32`_ `34`_ `36`_ [`42`_] `52`_ `58`_ `105`_ `122`_ `156`_ `161`_ `171`_
+    `16`_ `17`_ `18`_ `19`_ `25`_ `32`_ `34`_ `36`_ [`42`_] `52`_ `59`_ `60`_ `106`_ `123`_ `159`_ `164`_ `174`_
 :resolve:
-    `67`_ [`87`_] `88`_ `89`_ `90`_ `103`_
+    `68`_ [`88`_] `89`_ `90`_ `91`_ `104`_
 :searchForRE:
-    `57`_ [`78`_] `80`_ `110`_
+    `58`_ [`79`_] `81`_ `111`_
 :setUserIDRefs:
-    [`64`_] `122`_
+    `58`_ [`65`_] `123`_
 :shlex:
-    [`133`_] `135`_
+    [`135`_] `138`_
 :startswith:
-    `57`_ [`78`_] `80`_ `102`_ `111`_ `129`_ `135`_ `163`_
+    `58`_ [`79`_] `81`_ `103`_ `112`_ `131`_ `138`_ `166`_
 :string:
-    [`11`_] `16`_ `17`_ `18`_ `19`_ `20`_ `21`_ `24`_ `25`_ `28`_ `30`_ `33`_ `34`_ `35`_ `36`_ `37`_ `39`_ `40`_ `41`_ `42`_ `170`_ `171`_
+    [`11`_] `16`_ `17`_ `18`_ `19`_ `20`_ `21`_ `24`_ `25`_ `28`_ `30`_ `33`_ `34`_ `35`_ `36`_ `37`_ `39`_ `40`_ `41`_ `42`_ `173`_ `174`_
 :summary:
-    `139`_ `143`_ `146`_ `149`_ [`152`_] `163`_ `168`_ `172`_
+    `142`_ `146`_ `149`_ `152`_ [`155`_] `166`_ `171`_ `175`_
 :sys:
-    [`124`_] `125`_ `166`_
+    [`125`_] `126`_ `169`_ `170`_
 :tangle:
-    `45`_ `61`_ `67`_ `69`_ `72`_ `73`_ `75`_ `79`_ `80`_ `81`_ `82`_ `90`_ [`112`_] `148`_ `156`_ `161`_ `168`_ `175`_
+    `45`_ `62`_ `68`_ `70`_ `73`_ `74`_ `76`_ `80`_ `81`_ `82`_ `83`_ `91`_ [`113`_] `151`_ `164`_ `171`_ `179`_
 :tempfile:
     [`47`_] `49`_
 :time:
-    `138`_ `139`_ [`154`_]
+    `126`_ `141`_ `142`_ [`157`_]
 :types:
-    `12`_ `125`_ [`154`_]
+    `12`_ `126`_ [`157`_]
 :usedBy:
-    [`88`_]
+    [`89`_]
 :userNamesXref:
-    `85`_ [`108`_]
+    `86`_ [`109`_]
 :weakref:
-    [`96`_] `99`_ `100`_ `101`_
+    `52`_ [`97`_] `100`_ `101`_ `102`_
 :weave:
-    `60`_ `66`_ `71`_ `74`_ `79`_ `80`_ `81`_ `83`_ `84`_ `85`_ `89`_ [`113`_] `145`_ `156`_ `161`_ `170`_ `175`_
+    `61`_ `67`_ `72`_ `75`_ `80`_ `81`_ `82`_ `84`_ `85`_ `86`_ `90`_ [`114`_] `148`_ `164`_ `173`_ `179`_
 :weaveChunk:
-    `89`_ [`113`_]
+    `90`_ [`114`_]
 :weaveReferenceTo:
-    `60`_ `66`_ [`74`_] `113`_
+    `61`_ `67`_ [`75`_] `114`_
 :weaveShortReferenceTo:
-    `60`_ `66`_ [`74`_] `113`_
+    `61`_ `67`_ [`75`_] `114`_
 :webAdd:
-    `55`_ `65`_ [`70`_] `117`_ `118`_ `119`_ `120`_ `129`_
+    `55`_ `66`_ [`71`_] `118`_ `119`_ `120`_ `121`_ `131`_
 :write:
-    [`4`_] `7`_ `9`_ `17`_ `18`_ `20`_ `21`_ `45`_ `80`_ `113`_
+    [`4`_] `7`_ `9`_ `17`_ `18`_ `20`_ `21`_ `45`_ `81`_ `114`_
 :xrefDefLine:
-    `21`_ [`41`_] `85`_
+    `21`_ [`41`_] `86`_
 :xrefFoot:
-    `20`_ [`40`_] `82`_ `85`_
+    `20`_ [`40`_] `83`_ `86`_
 :xrefHead:
-    `20`_ [`40`_] `82`_ `85`_
+    `20`_ [`40`_] `83`_ `86`_
 :xrefLine:
-    `20`_ [`40`_] `82`_
+    `20`_ [`40`_] `83`_
 
 
 
@@ -9505,11 +9779,10 @@ User Identifiers
 
 ..	class:: small
 
-	Created by /Users/slott/Documents/Projects/PyWebTool-3/pyweb/pyweb.py at Sat Jun 16 08:11:27 2018.
+	Created by pyweb-3.0.py at Fri Jun 10 08:31:18 2022.
 
-    Source pyweb.w modified Sat Jun 16 08:10:37 2018.
+    Source pyweb.w modified Wed Jun  8 14:04:44 2022.
 
 	pyweb.__version__ '3.0'.
 
-	Working directory '/Users/slott/Documents/Projects/PyWebTool-3/pyweb'.
-
+	Working directory '/Users/slott/Documents/Projects/py-web-tool'.

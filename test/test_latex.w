@@ -72,7 +72,7 @@ better:
 
 @d Construct the message with Substitution
 @{
-msg = "Hello, %s!" % os_name
+msg = f"Hello, {os_name}!" 
 @}
 
 We'll use the first of these methods in \texttt{test.py}, and the
@@ -86,7 +86,7 @@ they have:
 
 @d Print the message 
 @{
-print msg
+print(msg)
 @}
 
 \end{document}

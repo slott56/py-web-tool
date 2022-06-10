@@ -1,5 +1,5 @@
 ##############################
-pyWeb Literate Programming 3.0
+pyWeb Literate Programming 3.1
 ##############################
 
 =================================================
@@ -59,4 +59,3 @@ User Identifiers
 	pyweb.__version__ '@(__version__@)'.
 
 	Working directory '@(os.path.realpath('.')@)'.
-

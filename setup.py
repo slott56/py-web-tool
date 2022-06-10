@@ -3,9 +3,9 @@
 
 from distutils.core import setup
 
-setup(name='pyweb',
-      version='3.0',
-      description='pyWeb 3.0: Yet Another Literate Programming Tool',
+setup(name='py-web-tool',
+      version='3.1',
+      description='pyWeb 3.1: Yet Another Literate Programming Tool',
       author='S. Lott',
       author_email='s_lott@yahoo.com',
       url='http://slott-softwarearchitect.blogspot.com/',

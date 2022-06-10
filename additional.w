@@ -39,27 +39,27 @@ import pyweb
 import logging
 import argparse
 		
-with pyweb.Logger( pyweb.log_config ):
-	logger= logging.getLogger(__file__)
+with pyweb.Logger(pyweb.log_config):
+	logger = logging.getLogger(__file__)
 
 	options = argparse.Namespace(
-		webFileName= "pyweb.w",
-		verbosity= logging.INFO,
-		command= '@@',
-		permitList= ['@@i'],
-		tangler_line_numbers= False,
-		reference_style = pyweb.SimpleReference(),
-		theTangler= pyweb.TanglerMake(),
-		webReader= pyweb.WebReader(),
+		webFileName="pyweb.w",
+		verbosity=logging.INFO,
+		command='@@',
+		permitList=['@@i'],
+		tangler_line_numbers=False,
+		reference_style=pyweb.SimpleReference(),
+		theTangler=pyweb.TanglerMake(),
+		webReader=pyweb.WebReader(),
 		)
 
-	w= pyweb.Web() 
+	w = pyweb.Web() 
 	
 	for action in LoadAction(), TangleAction():
-		action.web= w
-		action.options= options
+		action.web = w
+		action.options = options
 		action()
-		logger.info( action.summary() )
+		logger.info(action.summary())
 
 @}
 
@@ -89,27 +89,27 @@ import string
 
 @d weave.py custom weaver definition...
 @{
-class MyHTML( pyweb.HTML ):
+class MyHTML(pyweb.HTML):
     """HTML formatting templates."""
-    extension= ".html"
+    extension = ".html"
     
-    cb_template= string.Template("""<a name="pyweb${seq}"></a>
+    cb_template = string.Template("""<a name="pyweb${seq}"></a>
     <!--line number ${lineNumber}-->
     <p><em>${fullName}</em> (${seq})&nbsp;${concat}</p>
     <pre><code>\n""")
 
-    ce_template= string.Template("""
+    ce_template = string.Template("""
     </code></pre>
     <p>&loz; <em>${fullName}</em> (${seq}).
     ${references}
     </p>\n""")
         
-    fb_template= string.Template("""<a name="pyweb${seq}"></a>
+    fb_template = string.Template("""<a name="pyweb${seq}"></a>
     <!--line number ${lineNumber}-->
     <p>``${fullName}`` (${seq})&nbsp;${concat}</p>
     <pre><code>\n""") # Prevent indent
         
-    fe_template= string.Template( """</code></pre>
+    fe_template = string.Template( """</code></pre>
     <p>&loz; ``${fullName}`` (${seq}).
     ${references}
     </p>\n""")
@@ -118,49 +118,49 @@ class MyHTML( pyweb.HTML ):
     '<a href="#pyweb${seq}"><em>${fullName}</em>&nbsp;(${seq})</a>'
     )
     
-    ref_template = string.Template( '  Used by ${refList}.'  )
+    ref_template = string.Template('  Used by ${refList}.' )
             
     refto_name_template = string.Template(
     '<a href="#pyweb${seq}">&rarr;<em>${fullName}</em>&nbsp;(${seq})</a>'
     )
-    refto_seq_template = string.Template( '<a href="#pyweb${seq}">(${seq})</a>' )
+    refto_seq_template = string.Template('<a href="#pyweb${seq}">(${seq})</a>')
  
-    xref_head_template = string.Template( "<dl>\n" )
-    xref_foot_template = string.Template( "</dl>\n" )
-    xref_item_template = string.Template( "<dt>${fullName}</dt><dd>${refList}</dd>\n" )
+    xref_head_template = string.Template("<dl>\n")
+    xref_foot_template = string.Template("</dl>\n")
+    xref_item_template = string.Template("<dt>${fullName}</dt><dd>${refList}</dd>\n")
     
-    name_def_template = string.Template( '<a href="#pyweb${seq}"><b>&bull;${seq}</b></a>' )
-    name_ref_template = string.Template( '<a href="#pyweb${seq}">${seq}</a>' )
+    name_def_template = string.Template('<a href="#pyweb${seq}"><b>&bull;${seq}</b></a>')
+    name_ref_template = string.Template('<a href="#pyweb${seq}">${seq}</a>')
 @}
 
 @d weaver.py processing...
 @{
-with pyweb.Logger( pyweb.log_config ):
-	logger= logging.getLogger(__file__)
+with pyweb.Logger(pyweb.log_config):
+	logger = logging.getLogger(__file__)
 
 	options = argparse.Namespace(
-		webFileName= "pyweb.w",
-		verbosity= logging.INFO,
-		command= '@@',
-		theWeaver= MyHTML(),
-		permitList= [],
-		tangler_line_numbers= False,
-		reference_style = pyweb.SimpleReference(),
-		theTangler= pyweb.TanglerMake(),
-		webReader= pyweb.WebReader(),
+		webFileName="pyweb.w",
+		verbosity=logging.INFO,
+		command='@@',
+		theWeaver=MyHTML(),
+		permitList=[],
+		tangler_line_numbers=False,
+		reference_style=pyweb.SimpleReference(),
+		theTangler=pyweb.TanglerMake(),
+		webReader=pyweb.WebReader(),
 		)
 
-	w= pyweb.Web() 
+	w = pyweb.Web() 
 
 	for action in LoadAction(), WeaveAction():
-		action.web= w
-		action.options= options
+		action.web = w
+		action.options = options
 		action()
-		logger.info( action.summary() )
+		logger.info(action.summary())
 @}
 
-The ``setup.py`` and ``MANIFEST.in`` files
---------------------------------------------
+The ``setup.py``, ``requirements-dev.txt`` and ``MANIFEST.in`` files
+---------------------------------------------------------------------
 
 In order to support a pleasant installation, the ``setup.py`` file is helpful.
 
@@ -170,9 +170,9 @@ In order to support a pleasant installation, the ``setup.py`` file is helpful.
 
 from distutils.core import setup
 
-setup(name='pyweb',
-      version='3.0',
-      description='pyWeb 3.0: Yet Another Literate Programming Tool',
+setup(name='py-web-tool',
+      version='3.1',
+      description='pyWeb 3.1: Yet Another Literate Programming Tool',
       author='S. Lott',
       author_email='s_lott@@yahoo.com',
       url='http://slott-softwarearchitect.blogspot.com/',
@@ -197,13 +197,23 @@ include test/*.w test/*.css test/*.html test/*.conf test/*.py
 include jedit/*.xml
 @}
 
+In order to install dependencies, the following file is also used.
+
+@o requirements-dev.txt
+@{
+docutils==0.18.1
+tox==3.25.0
+mypy==0.910
+pytest == 7.1.2
+@}
+
 The ``README`` file
 ---------------------
 
 Here's the README file.
 
 @o README
-@{pyWeb 3.0: In Python, Yet Another Literate Programming Tool
+@{pyWeb 3.1: In Python, Yet Another Literate Programming Tool
 
 Literate programming is an attempt to reconcile the opposing needs
 of clear presentation to people with the technical issues of 
@@ -219,7 +229,7 @@ It is independent of any particular document markup or source language.
 Is uses a simple set of markup tags to define chunks of code and 
 documentation.
 
-The ``pyweb.w`` file is the source for the various pyweb module and script files.
+The ``pyweb.w`` file is the source for the various ``pyweb`` module and script files.
 The various source code files are created by applying a
 tangle operation to the ``.w`` file.  The final documentation is created by
 applying a weave operation to the ``.w`` file.
@@ -227,16 +237,24 @@ applying a weave operation to the ``.w`` file.
 Installation
 -------------
 
+This requires Python 3.10.
+
+First, downnload the distribution kit from PyPI.
+
 ::
 
     python3 setup.py install
 
-This will install the pyweb module.
+This will install the ``pyweb`` module, and the ``weave`` and ``tangle`` applications.
 
-Document production
---------------------
+Produce Documentation
+---------------------
 
-The supplied documentation uses RST markup and requires docutils.
+The supplied documentation uses RST markup; it requires docutils.
+
+::
+
+    python3 -m pip install docutils
 
 ::
 
@@ -246,16 +264,16 @@ The supplied documentation uses RST markup and requires docutils.
 Authoring
 ---------
 
-The pyweb document describes the simple markup used to define code chunks
+The ``pyweb.html`` document describes the markup used to define code chunks
 and assemble those code chunks into a coherent document as well as working code.
 
 If you're a JEdit user, the ``jedit`` directory can be used
-to configure syntax highlighting that includes PyWeb and RST.
+to configure syntax highlighting that includes **py-web-tool** and RST.
 
 Operation
 ---------
 
-You can then run pyweb with
+After installation and authoring, you can then run **py-web-tool** with
 
 ::
 
@@ -286,6 +304,7 @@ execute all tests.
 	python3 -m pyweb pyweb_test.w
 	PYTHONPATH=.. python3 test.py
 	rst2html.py pyweb_test.rst pyweb_test.html
+    mypy --strict pyweb.py
 
 
 @}
@@ -303,7 +322,7 @@ installation of docutils.
 @{# docutils.conf
 
 [html4css1 writer]
-stylesheet-path: /Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/docutils/writers/html4css1/html4css1.css,
+stylesheet-path: /Users/slott/miniconda3/envs/pywebtool/lib/python3.10/site-packages/docutils/writers/html4css1/html4css1.css,
     page-layout.css
 syntax-highlight: long
 @}
@@ -338,7 +357,7 @@ bug in ``NamedChunk.tangle()`` that prevents handling zero-length text.
 @{
 @}
 
-Finally, an ``index.html`` to redirect GitHub to the ``pyweb.html`` file.
+Here's an ``index.html`` to redirect GitHub to the ``pyweb.html`` file.
 
 @o index.html
 @{<?xml version="1.0" encoding="UTF-8"?>
@@ -349,4 +368,64 @@ Finally, an ``index.html`` to redirect GitHub to the ``pyweb.html`` file.
 </head>
 <body>Sorry, you should have been redirected <a href="pyweb.html">pyweb.html</a>.</body>
 </html>
+@}
+
+
+Tox and Makefile
+----------------
+
+It's simpler to have a ``Makefile`` to automate testing, particularly when making changes
+to **py-web-tool**. 
+
+Note that there are tabs in this file. We bootstrap the next version from the 3.0 version.
+
+@o Makefile
+@{# Makefile for py-web-tool.
+# Requires a pyweb-3.0.py (untouched) to bootstrap the current version.
+
+SOURCE = pyweb.w intro.w overview.w impl.w tests.w additional.w todo.w done.w \
+	test/pyweb_test.w test/intro.w test/unit.w test/func.w test/combined.w
+
+.PHONY : test build
+
+# Note the bootstrapping new version from version 3.0 as baseline.
+
+test : $(SOURCE)
+	python3 pyweb-3.0.py -xw pyweb.w 
+	cd test && python3 ../pyweb.py pyweb_test.w
+	cd test && PYTHONPATH=.. python3 test.py
+	cd test && rst2html.py pyweb_test.rst pyweb_test.html
+	mypy --strict pyweb.py
+
+build : pyweb.py pyweb.html
+     
+pyweb.py pyweb.html : $(SOURCE)
+	python3 pyweb-3.0.py pyweb.w 
+
+@}
+
+**TODO:** Finish ``tox.ini`` or ``pyproject.toml``.
+
+@o pyproject.toml
+@{
+[build-system]
+requires = ["setuptools >= 61.2.0", "wheel >= 0.37.1", "pytest == 7.1.2", "mypy == 0.910"]
+build-backend = "setuptools.build_meta"
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py310
+
+[testenv]
+deps = 
+    pytest == 7.1.2
+    mypy == 0.910
+commands_pre = 
+    python3 pyweb-3.0.py pyweb.w
+    python3 pyweb.py -o test test/pyweb_test.w 
+commands = 
+    python3 test/test.py
+    mypy --strict pyweb.py
+"""
 @}

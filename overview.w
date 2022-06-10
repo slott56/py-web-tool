@@ -30,7 +30,8 @@ includes the sequence of Chunks as well as an index for the named chunks.
 Note that a named chunk may be created through a number of ``@@d`` commands.
 This means that
 each named chunk may be a sequence of Chunks with a common name.
-
+They are concatenated in order to permit decomposing a single concept into sequentially described pieces.
+ 
 Because a Chunk is composed of a sequence Commands, the weave and tangle actions can be 
 delegated to each Chunk, and in turn, delegated to each Command that
 composes a Chunk.
@@ -85,7 +86,7 @@ Weaving
 The weaving operation depends on the target document markup language.
 There are several approaches to this problem.  
 
--	We can use a markup language unique to **pyWeb**, 
+-	We can use a markup language unique to **py-web-tool**, 
 	and weave using markup in the desired target language.
 	
 -	We can use a standard markup language and use converters to transform
@@ -98,11 +99,11 @@ with common templates. We hate to repeat these templates; that's the
 job of a literate programming tool. Also, certain code characters must
 be properly escaped.
 
-Since **pyWeb** must transform the code into a specific markup language,
+Since **py-web-tool** must transform the code into a specific markup language,
 we opt using a **Strategy** pattern to encapsulate markup language details.
 Each alternative markup strategy is then a subclass of **Weaver**.  This 
 simplifies adding additional markup languages without inventing a 
-markup language unique to **pyWeb**.
+markup language unique to **py-web-tool**.
 The author uses their preferred markup, and their preferred
 toolset to convert to other output languages.
 
@@ -118,7 +119,7 @@ provide a correct indentation.  This required a command-line parameter
 to turn off indentation for languages like Fortran, where identation
 is not used.  
 
-In **pyWeb**, there are two options. The default behavior is that the
+In **py-web-tool**, there are two options. The default behavior is that the
 indent of a ``@@<`` command is used to set the indent of the 
 material is expanded in place of this reference.  If all ``@@<`` commands are presented at the
 left margin, no indentation will be done.  This is helpful simplification,
@@ -131,9 +132,8 @@ Application
 ------------
 
 The overall application has two layers to it. There are actions (Load, Tangle, Weave)
-as well as a top-level application that parses the command line, creates
+as well as a top-level main function that parses the command line, creates
 and configures the actions, and then closes up shop when all done.
 
-The idea is that the Weaver Action should fit with SCons Builder.
-We can see ``Weave( "someFile.w" )`` as sensible.  Tangling is tougher
-because the ``@@o`` commands define the file dependencies there.  
+The idea is that the Weaver Action should be visible to tools like `PyInvoke <https://docs.pyinvoke.org/en/stable/index.html>`_.
+We want ``Weave("someFile.w")`` to be a sensible task.  

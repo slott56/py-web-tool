@@ -3,6 +3,18 @@
 Change Log
 ===========
 
+Changes for 3.1
+
+-   Change to Python 3.10.
+
+-   Add type hints, f-strings, pathlib.
+
+-   Replace some complex elif blocks with match statements
+
+-   Remove the Jedit configuration file as an output.
+
+-   Add a ``Makefile``, ``pyproject.toml``, ``requirements.txt`` and ``requirements-dev.txt``.
+
 Changes for 3.0
 
 -   Move to GitHub

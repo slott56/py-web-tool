@@ -1,20 +1,36 @@
 ..    pyweb/todo.w 
 
+Python 3.10 Migration
+=====================
+
+
+1. [x] Add type hints.
+
+#. [x] Replace all ``.format()`` with f-strings.
+
+#. [ ] Replace filename strings (and ``os.path``) with ``pathlib.Path``.
+
+#. [ ] Introduce ``match`` statements for some of the ``elif`` blocks
+
+#. [ ] Introduce pytest instead of building a test runner.
+
+#. [ ] ``pyproject.toml``. This requires -o dir to write output to a directory of choice; which requires Pathlib
+ 
+#. [ ] Replace various mock classes with ``unittest.mock.Mock`` objects.
+
+ 
 To Do
 =======
     
-1.  Fix name definition order. There's no good reason why a full name should
-    be first and elided names defined later.
+1.  Silence the logging during testing.
 
-2.  Silence the logging during testing.
-
-#.  Add a JSON-based configuration file to configure templates.
+#.  Add a JSON-based (or TOML) configuration file to configure templates.
 
     -   See the ``weave.py`` example. 
         This removes any need for a weaver command-line option; its defined within the source.
         Also, setting the command character can be done in this configuration, too.
 
-    -   An alternative is to get markup templates from a "header" section in the ``.w`` file.  
+    -   An alternative is to get markup templates from some kind of "header" section in the ``.w`` file.  
 
         To support reuse over multiple projects, a header could be included with ``@@i``.
         The downside is that we have a lot of variable = value syntax that makes it
@@ -23,11 +39,14 @@ To Do
 
 #.  JSON-based logging configuration file would be helpful. 
     Should be separate from template configuration.
-    
-#.  We might want to decompose the ``impl.w`` file: it's huge.
 
+#.  We might want to decompose the ``impl.w`` file: it's huge.
+    
 #.  We might want to interleave code and test into a document that presents both
     side-by-side. They get routed to different output files.
+
+#.  Fix name definition order. There's no **good** reason why a full name should
+    be first and elided names defined later.
 
 #.  Add a ``@@h`` "header goes here" command to allow weaving any **pyWeb** required addons to 
     a LaTeX header, HTML header or RST header.

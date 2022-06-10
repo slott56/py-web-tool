@@ -1,3 +1,14 @@
 
 dev.sh
-.idea/*
+.idea
+pyweb-3.0.py
+__pycache__
+test/__pycache__/*.pyc
+test/.svn/*
+py_web_tool.egg-info/*
+*.pyc
+*.aux
+*.out
+*.toc
+v2_test
+.tox

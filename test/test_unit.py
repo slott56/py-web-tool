@@ -1,821 +1,948 @@
-from __future__ import print_function
 """Unit tests."""
-import pyweb
-import unittest
+import argparse
+import io
 import logging
-import StringIO
-import string
 import os
-import time
 import re
+import string
+import time
+from typing import Any, TextIO
+import unittest
+import warnings
+
+import pyweb
 
 
 
-class MockChunk( object ):
-    def __init__( self, name, seq, lineNumber ):
-        self.name= name
-        self.fullName= name
-        self.seq= seq
-        self.lineNumber= lineNumber
-        self.initial= True
-        self.commands= []
-        self.referencedBy= []
+class MockChunk:
+    def __init__(self, name: str, seq: int, lineNumber: int) -> None:
+        self.name = name
+        self.fullName = name
+        self.seq = seq
+        self.lineNumber = lineNumber
+        self.initial = True
+        self.commands = []
+        self.referencedBy = []
+    def __repr__(self) -> str:
+        return f"({self.name!r}, {self.seq!r})"
+    def references(self, aWeaver: pyweb.Weaver) -> list[str]:
+        return [(c.name, c.seq) for c in self.referencedBy]
+    def reference_indent(self, aWeb: "Web", aTangler: "Tangler", amount: int) -> None:
+        aTangler.addIndent(amount)
+    def reference_dedent(self, aWeb: "Web", aTangler: "Tangler") -> None:
+        aTangler.clrIndent()
+    def tangle(self, aWeb: "Web", aTangler: "Tangler") -> None:
+        aTangler.write(self.name)
 
  
-class EmitterExtension( pyweb.Emitter ):
-    def doOpen( self, fileName ):
-        self.file= StringIO.StringIO()
-    def doClose( self ):
-        self.file.flush()
-    def doWrite( self, text ):
-        self.file.write( text )
+class EmitterExtension(pyweb.Emitter):
+    def doOpen(self, fileName: str) -> None:
+        self.theFile = io.StringIO()
+    def doClose(self) -> None:
+        self.theFile.flush()
         
-class TestEmitter( unittest.TestCase ):
-    def setUp( self ):
-        self.emitter= EmitterExtension()
-    def test_emitter_should_open_close_write( self ):
-        self.emitter.open( "test.tmp" )
-        self.emitter.write( "Something" )
+class TestEmitter(unittest.TestCase):
+    def setUp(self) -> None:
+        self.emitter = EmitterExtension()
+    def test_emitter_should_open_close_write(self) -> None:
+        self.emitter.open("test.tmp")
+        self.emitter.write("Something")
         self.emitter.close()
-        self.assertEquals( "Something", self.emitter.file.getvalue() )
-    def test_emitter_should_codeBlock( self ):
-        self.emitter.open( "test.tmp" )
-        self.emitter.codeBlock( "Some Code" )
+        self.assertEqual("Something", self.emitter.theFile.getvalue())
+    def test_emitter_should_codeBlock(self) -> None:
+        self.emitter.open("test.tmp")
+        self.emitter.codeBlock("Some")
+        self.emitter.codeBlock(" Code")
         self.emitter.close()
-        self.assertEquals( "Some Code\n", self.emitter.file.getvalue() )
-    def test_emitter_should_indent( self ):
-        self.emitter.open( "test.tmp" )
-        self.emitter.codeBlock( "Begin\n" )
-        self.emitter.setIndent( 4 )
-        self.emitter.codeBlock( "More Code\n" )
+        self.assertEqual("Some Code\n", self.emitter.theFile.getvalue())
+    def test_emitter_should_indent(self) -> None:
+        self.emitter.open("test.tmp")
+        self.emitter.codeBlock("Begin\n")
+        self.emitter.addIndent(4)
+        self.emitter.codeBlock("More Code\n")
         self.emitter.clrIndent()
-        self.emitter.codeBlock( "End" )
+        self.emitter.codeBlock("End")
         self.emitter.close()
-        self.assertEquals( "Begin\n    More Code\nEnd\n", self.emitter.file.getvalue() )
+        self.assertEqual("Begin\n    More Code\nEnd\n", self.emitter.theFile.getvalue())
+    def test_emitter_should_noindent(self) -> None:
+        self.emitter.open("test.tmp")
+        self.emitter.codeBlock("Begin\n")
+        self.emitter.setIndent(0)
+        self.emitter.codeBlock("More Code\n")
+        self.emitter.clrIndent()
+        self.emitter.codeBlock("End")
+        self.emitter.close()
+        self.assertEqual("Begin\nMore Code\nEnd\n", self.emitter.theFile.getvalue())
 
 
-class TestWeaver( unittest.TestCase ):
-    def setUp( self ):
-        self.weaver= pyweb.Weaver()
-        self.filename= "testweaver.w" 
-        self.aFileChunk= MockChunk( "File", 123, 456 )
-        self.aFileChunk.references_list= [ ]
-        self.aChunk= MockChunk( "Chunk", 314, 278 )
-        self.aChunk.references_list= [ ("Container", 123) ]
-    def tearDown( self ):
+class TestWeaver(unittest.TestCase):
+    def setUp(self) -> None:
+        self.weaver = pyweb.Weaver()
+        self.weaver.reference_style = pyweb.SimpleReference() 
+        self.filename = "testweaver" 
+        self.aFileChunk = MockChunk("File", 123, 456)
+        self.aFileChunk.referencedBy = [ ]
+        self.aChunk = MockChunk("Chunk", 314, 278)
+        self.aChunk.referencedBy = [ self.aFileChunk ]
+    def tearDown(self) -> None:
         import os
         try:
-            os.remove( "testweaver.rst" )
+            pass #os.remove("testweaver.rst")
         except OSError:
             pass
         
-    def test_weaver_functions( self ):
-        result= self.weaver.quote( "|char| `code` *em* _em_" )
-        self.assertEquals( "\|char\| \`code\` \*em\* \_em\_", result )
-        result= self.weaver.references( self.aChunk )
-        self.assertEquals( "\nUsed by: Container (`123`_)\n", result )
-        result= self.weaver.referenceTo( "Chunk", 314 )
-        self.assertEquals( "|srarr| Chunk (`314`_)", result )
+    def test_weaver_functions_generic(self) -> None:
+        result = self.weaver.quote("|char| `code` *em* _em_")
+        self.assertEqual(r"\|char\| \`code\` \*em\* \_em\_", result)
+        result = self.weaver.references(self.aChunk)
+        self.assertEqual("File (`123`_)", result)
+        result = self.weaver.referenceTo("Chunk", 314)
+        self.assertEqual(r"|srarr|\ Chunk (`314`_)", result)
   
-    def test_weaver_should_codeBegin( self ):
-        self.weaver.open( self.filename )
-        self.weaver.codeBegin( self.aChunk )
-        self.weaver.codeBlock( self.weaver.quote( "*The* `Code`\n" ) )
-        self.weaver.codeEnd( self.aChunk )
+    def test_weaver_should_codeBegin(self) -> None:
+        self.weaver.open(self.filename)
+        self.weaver.addIndent()
+        self.weaver.codeBegin(self.aChunk)
+        self.weaver.codeBlock(self.weaver.quote("*The* `Code`\n"))
+        self.weaver.clrIndent()
+        self.weaver.codeEnd(self.aChunk)
         self.weaver.close()
-        with open( "testweaver.rst", "r" ) as result:
-            txt= result.read()
-        self.assertEquals( "\n..  _`314`:\n..  rubric:: Chunk (314)\n..  parsed-literal::\n\n    \\*The\\* \\`Code\\`\n\n\nUsed by: Container (`123`_)\n\n\n", txt )
+        with open("testweaver.rst", "r") as result:
+            txt = result.read()
+        self.assertEqual("\n..  _`314`:\n..  rubric:: Chunk (314) =\n..  parsed-literal::\n    :class: code\n\n    \\*The\\* \\`Code\\`\n\n..\n\n    ..  class:: small\n\n        |loz| *Chunk (314)*. Used by: File (`123`_)\n", txt)
   
-    def test_weaver_should_fileBegin( self ):
-        self.weaver.open( self.filename )
-        self.weaver.fileBegin( self.aFileChunk )
-        self.weaver.codeBlock( self.weaver.quote( "*The* `Code`\n" ) )
-        self.weaver.fileEnd( self.aFileChunk )
+    def test_weaver_should_fileBegin(self) -> None:
+        self.weaver.open(self.filename)
+        self.weaver.fileBegin(self.aFileChunk)
+        self.weaver.codeBlock(self.weaver.quote("*The* `Code`\n"))
+        self.weaver.fileEnd(self.aFileChunk)
         self.weaver.close()
-        with open( "testweaver.rst", "r" ) as result:
-            txt= result.read()
-        self.assertEquals( "\n..  _`123`:\n..  rubric:: File (123)\n..  parsed-literal::\n\n    \\*The\\* \\`Code\\`\n\n\n\n", txt )
+        with open("testweaver.rst", "r") as result:
+            txt = result.read()
+        self.assertEqual("\n..  _`123`:\n..  rubric:: File (123) =\n..  parsed-literal::\n    :class: code\n\n    \\*The\\* \\`Code\\`\n\n..\n\n    ..  class:: small\n\n        |loz| *File (123)*.\n", txt)
 
-    def test_weaver_should_xref( self ):
-        self.weaver.open( self.filename )
+    def test_weaver_should_xref(self) -> None:
+        self.weaver.open(self.filename)
         self.weaver.xrefHead( )
-        self.weaver.xrefLine( "Chunk", [ ("Container", 123) ] )
+        self.weaver.xrefLine("Chunk", [ ("Container", 123) ])
         self.weaver.xrefFoot( )
-        self.weaver.fileEnd( self.aFileChunk )
+        #self.weaver.fileEnd(self.aFileChunk) # Why?
         self.weaver.close()
-        with open( "testweaver.rst", "r" ) as result:
-            txt= result.read()
-        self.assertEquals( "\n:Chunk:\n    |srarr| (`('Container', 123)`_)\n\n\n\n", txt )
+        with open("testweaver.rst", "r") as result:
+            txt = result.read()
+        self.assertEqual("\n:Chunk:\n    |srarr|\\ (`('Container', 123)`_)\n\n", txt)
 
-    def test_weaver_should_xref_def( self ):
-        self.weaver.open( self.filename )
+    def test_weaver_should_xref_def(self) -> None:
+        self.weaver.open(self.filename)
         self.weaver.xrefHead( )
-        self.weaver.xrefDefLine( "Chunk", 314, [ ("Container", 123), ("Chunk", 314) ] )
+        # Seems to have changed to a simple list of lines??
+        self.weaver.xrefDefLine("Chunk", 314, [ 123, 567 ])
         self.weaver.xrefFoot( )
-        self.weaver.fileEnd( self.aFileChunk )
+        #self.weaver.fileEnd(self.aFileChunk) # Why?
         self.weaver.close()
-        with open( "testweaver.rst", "r" ) as result:
-            txt= result.read()
-        self.assertEquals( "\n:Chunk:\n    [`314`_] `('Chunk', 314)`_ `('Container', 123)`_\n\n\n\n", txt )
+        with open("testweaver.rst", "r") as result:
+            txt = result.read()
+        self.assertEqual("\n:Chunk:\n    `123`_ [`314`_] `567`_\n\n", txt)
 
  
-class TestLaTeX( unittest.TestCase ):
-    def setUp( self ):
-        self.weaver= pyweb.LaTeX()
-        self.filename= "testweaver.w" 
-        self.aFileChunk= MockChunk( "File", 123, 456 )
-        self.aFileChunk.references_list= [ ]
-        self.aChunk= MockChunk( "Chunk", 314, 278 )
-        self.aChunk.references_list= [ ("Container", 123) ]
-    def tearDown( self ):
+class TestLaTeX(unittest.TestCase):
+    def setUp(self) -> None:
+        self.weaver = pyweb.LaTeX()
+        self.weaver.reference_style = pyweb.SimpleReference() 
+        self.filename = "testweaver" 
+        self.aFileChunk = MockChunk("File", 123, 456)
+        self.aFileChunk.referencedBy = [ ]
+        self.aChunk = MockChunk("Chunk", 314, 278)
+        self.aChunk.referencedBy = [ self.aFileChunk, ]
+    def tearDown(self) -> None:
         import os
         try:
-            os.remove( "testweaver.tex" )
+            os.remove("testweaver.tex")
         except OSError:
             pass
             
-    def test_weaver_functions( self ):
-        result= self.weaver.quote( "\\end{Verbatim}" )
-        self.assertEquals( "\\end\\,{Verbatim}", result )
-        result= self.weaver.references( self.aChunk )
-        self.assertEquals( "\n    \\footnotesize\n    Used by:\n    \\begin{list}{}{}\n    \n    \\item Code example Container (123) (Sect. \\ref{pyweb123}, p. \\pageref{pyweb123})\n\n    \\end{list}\n    \\normalsize\n", result )
-        result= self.weaver.referenceTo( "Chunk", 314 )
-        self.assertEquals( "$\\triangleright$ Code Example Chunk (314)", result )
+    def test_weaver_functions_latex(self) -> None:
+        result = self.weaver.quote("\\end{Verbatim}")
+        self.assertEqual("\\end\\,{Verbatim}", result)
+        result = self.weaver.references(self.aChunk)
+        self.assertEqual("\n    \\footnotesize\n    Used by:\n    \\begin{list}{}{}\n    \n    \\item Code example File (123) (Sect. \\ref{pyweb123}, p. \\pageref{pyweb123})\n\n    \\end{list}\n    \\normalsize\n", result)
+        result = self.weaver.referenceTo("Chunk", 314)
+        self.assertEqual("$\\triangleright$ Code Example Chunk (314)", result)
 
  
-class TestHTML( unittest.TestCase ):
-    def setUp( self ):
-        self.weaver= pyweb.HTML()
-        self.filename= "testweaver.w" 
-        self.aFileChunk= MockChunk( "File", 123, 456 )
-        self.aFileChunk.references_list= [ ]
-        self.aChunk= MockChunk( "Chunk", 314, 278 )
-        self.aChunk.references_list= [ ("Container", 123) ]
-    def tearDown( self ):
+class TestHTML(unittest.TestCase):
+    def setUp(self) -> None:
+        self.weaver = pyweb.HTML( )
+        self.weaver.reference_style = pyweb.SimpleReference() 
+        self.filename = "testweaver" 
+        self.aFileChunk = MockChunk("File", 123, 456)
+        self.aFileChunk.referencedBy = []
+        self.aChunk = MockChunk("Chunk", 314, 278)
+        self.aChunk.referencedBy = [ self.aFileChunk, ]
+    def tearDown(self) -> None:
         import os
         try:
-            os.remove( "testweaver.html" )
+            os.remove("testweaver.html")
         except OSError:
             pass
             
-    def test_weaver_functions( self ):
-        result= self.weaver.quote( "a < b && c > d" )
-        self.assertEquals( "a &lt; b &amp;&amp; c &gt; d", result )
-        result= self.weaver.references( self.aChunk )
-        self.assertEquals( '  Used by <a href="#pyweb123"><em>Container</em>&nbsp;(123)</a>.', result )
-        result= self.weaver.referenceTo( "Chunk", 314 )
-        self.assertEquals( '<a href="#pyweb314">&rarr;<em>Chunk</em> (314)</a>', result )
+    def test_weaver_functions_html(self) -> None:
+        result = self.weaver.quote("a < b && c > d")
+        self.assertEqual("a &lt; b &amp;&amp; c &gt; d", result)
+        result = self.weaver.references(self.aChunk)
+        self.assertEqual('  Used by <a href="#pyweb123"><em>File</em>&nbsp;(123)</a>.', result)
+        result = self.weaver.referenceTo("Chunk", 314)
+        self.assertEqual('<a href="#pyweb314">&rarr;<em>Chunk</em> (314)</a>', result)
 
 
+# TODO: Finish this
  
- 
-class TestTangler( unittest.TestCase ):
-    def setUp( self ):
-        self.tangler= pyweb.Tangler()
-        self.filename= "testtangler.w" 
-        self.aFileChunk= MockChunk( "File", 123, 456 )
-        self.aFileChunk.references_list= [ ]
-        self.aChunk= MockChunk( "Chunk", 314, 278 )
-        self.aChunk.references_list= [ ("Container", 123) ]
-    def tearDown( self ):
+class TestTangler(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tangler = pyweb.Tangler()
+        self.filename = "testtangler.code" 
+        self.aFileChunk = MockChunk("File", 123, 456)
+        #self.aFileChunk.references_list = [ ]
+        self.aChunk = MockChunk("Chunk", 314, 278)
+        #self.aChunk.references_list = [ ("Container", 123) ]
+    def tearDown(self) -> None:
         import os
         try:
-            os.remove( "testtangler.w" )
+            os.remove("testtangler.code")
         except OSError:
             pass
         
-    def test_tangler_functions( self ):
-        result= self.tangler.quote( string.printable )
-        self.assertEquals( string.printable, result )
-    def test_tangler_should_codeBegin( self ):
-        self.tangler.open( self.filename )
-        self.tangler.codeBegin( self.aChunk )
-        self.tangler.codeBlock( self.tangler.quote( "*The* `Code`\n" ) )
-        self.tangler.codeEnd( self.aChunk )
+    def test_tangler_functions(self) -> None:
+        result = self.tangler.quote(string.printable)
+        self.assertEqual(string.printable, result)
+        
+    def test_tangler_should_codeBegin(self) -> None:
+        self.tangler.open(self.filename)
+        self.tangler.codeBegin(self.aChunk)
+        self.tangler.codeBlock(self.tangler.quote("*The* `Code`\n"))
+        self.tangler.codeEnd(self.aChunk)
         self.tangler.close()
-        with open( "testtangler.w", "r" ) as result:
-            txt= result.read()
-        self.assertEquals( "*The* `Code`\n", txt )
+        with open("testtangler.code", "r") as result:
+            txt = result.read()
+        self.assertEqual("*The* `Code`\n", txt)
 
 
-class TestTanglerMake( unittest.TestCase ):
-    def setUp( self ):
-        self.tangler= pyweb.TanglerMake()
-        self.filename= "testtangler.w" 
-        self.aChunk= MockChunk( "Chunk", 314, 278 )
-        self.aChunk.references_list= [ ("Container", 123) ]
-        self.tangler.open( self.filename )
-        self.tangler.codeBegin( self.aChunk )
-        self.tangler.codeBlock( self.tangler.quote( "*The* `Code`\n" ) )
-        self.tangler.codeEnd( self.aChunk )
+class TestTanglerMake(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tangler = pyweb.TanglerMake()
+        self.filename = "testtangler.code" 
+        self.aChunk = MockChunk("Chunk", 314, 278)
+        #self.aChunk.references_list = [ ("Container", 123) ]
+        self.tangler.open(self.filename)
+        self.tangler.codeBegin(self.aChunk)
+        self.tangler.codeBlock(self.tangler.quote("*The* `Code`\n"))
+        self.tangler.codeEnd(self.aChunk)
         self.tangler.close()
-        self.original= os.path.getmtime( self.filename )
-        time.sleep( 1.0 ) # Attempt to assure timestamps are different
-    def tearDown( self ):
+        self.time_original = os.path.getmtime(self.filename)
+        self.original = os.lstat(self.filename)
+        #time.sleep(0.75)  # Alternative to assure timestamps must be different
+        
+    def tearDown(self) -> None:
         import os
         try:
-            os.remove( "testtangler.w" )
+            os.remove("testtangler.code")
         except OSError:
             pass
         
-    def test_same_should_leave( self ):
-        self.tangler.open( self.filename )
-        self.tangler.codeBegin( self.aChunk )
-        self.tangler.codeBlock( self.tangler.quote( "*The* `Code`\n" ) )
-        self.tangler.codeEnd( self.aChunk )
+    def test_same_should_leave(self) -> None:
+        self.tangler.open(self.filename)
+        self.tangler.codeBegin(self.aChunk)
+        self.tangler.codeBlock(self.tangler.quote("*The* `Code`\n"))
+        self.tangler.codeEnd(self.aChunk)
         self.tangler.close()
-        self.assertEquals( self.original, os.path.getmtime( self.filename ) )
+        self.assertTrue(os.path.samestat(self.original, os.lstat(self.filename)))
+        #self.assertEqual(self.time_original, os.path.getmtime(self.filename))
         
-    def test_different_should_update( self ):
-        self.tangler.open( self.filename )
-        self.tangler.codeBegin( self.aChunk )
-        self.tangler.codeBlock( self.tangler.quote( "*Completely Different* `Code`\n" ) )
-        self.tangler.codeEnd( self.aChunk )
+    def test_different_should_update(self) -> None:
+        self.tangler.open(self.filename)
+        self.tangler.codeBegin(self.aChunk)
+        self.tangler.codeBlock(self.tangler.quote("*Completely Different* `Code`\n"))
+        self.tangler.codeEnd(self.aChunk)
         self.tangler.close()
-        self.assertNotEquals( self.original, os.path.getmtime( self.filename ) )
+        self.assertFalse(os.path.samestat(self.original, os.lstat(self.filename)))
+        #self.assertNotEqual(self.time_original, os.path.getmtime(self.filename))
 
 
 
 
-class MockCommand( object ):
-    def __init__( self ):
-        self.lineNumber= 314
-    def startswith( self, text ):
+class MockCommand:
+    def __init__(self) -> None:
+        self.lineNumber = 314
+    def startswith(self, text: str) -> bool:
         return False
 
-class MockWeb( object ):
-    def __init__( self ):
-        self.chunks= []
-        self.wove= None
-        self.tangled= None
-    def add( self, aChunk ):
-        self.chunks.append( aChunk )
-    def addNamed( self, aChunk ):
-        self.chunks.append( aChunk )
-    def addOutput( self, aChunk ):
-        self.chunks.append( aChunk )
-    def fullNameFor( self, name ):
+class MockWeb:
+    def __init__(self) -> None:
+        self.chunks = []
+        self.wove = None
+        self.tangled = None
+    def add(self, aChunk: pyweb.Chunk) -> None:
+        self.chunks.append(aChunk)
+    def addNamed(self, aChunk: pyweb.Chunk) -> None:
+        self.chunks.append(aChunk)
+    def addOutput(self, aChunk: pyweb.Chunk) -> None:
+        self.chunks.append(aChunk)
+    def fullNameFor(self, name: str) -> str:
         return name
-    def fileXref( self ):
-        return { 'file':[1,2,3] }
-    def chunkXref( self ):
-        return { 'chunk':[4,5,6] }
-    def userNamesXref( self ):
-        return { 'name':(7,[8,9,10]) }
-    def getchunk( self, name ):
-        return [ MockChunk( name, 1, 314 ) ]
-    def createUsedBy( self ):
+    def fileXref(self) -> dict[str, list[int]]:
+        return {'file': [1,2,3]}
+    def chunkXref(self) -> dict[str, list[int]]:
+        return {'chunk': [4,5,6]}
+    def userNamesXref(self) -> dict[str, list[int]]:
+        return {'name': (7, [8,9,10])}
+    def getchunk(self, name: str) -> list[pyweb.Chunk]:
+        return [MockChunk(name, 1, 314)]
+    def createUsedBy(self) -> None: 
         pass
-    def weaveChunk( self, name, weaver ):
-        weaver.write( name )
-    def tangleChunk( self, name, tangler ):
-        tangler.write( name )
-    def weave( self, weaver ):
-        self.wove= weaver
-    def tangle( self, tangler ):
-        self.tangled= tangler
+    def weaveChunk(self, name, weaver) -> None:
+        weaver.write(name)
+    def weave(self, weaver) -> None:
+        self.wove = weaver
+    def tangle(self, tangler) -> None:
+        self.tangled = tangler
 
-class MockWeaver( object ):
-    def __init__( self ):
-        self.begin_chunk= []
-        self.end_chunk= []
-        self.written= []
-        self.code_indent= None
-    def quote( self, text ):
-        return text.replace( "&", "&amp;" ) # token quoting
-    def docBegin( self, aChunk ):
-        self.begin_chunk.append( aChunk )
-    def write( self, text ):
-        self.written.append( text )
-    def docEnd( self, aChunk ):
-        self.end_chunk.append( aChunk )
-    def codeBegin( self, aChunk ):
-        self.begin_chunk.append( aChunk )
-    def codeBlock( self, text ):
-        self.written.append( text )
-    def codeEnd( self, aChunk ):
-        self.end_chunk.append( aChunk )
-    def fileBegin( self, aChunk ):
-        self.begin_chunk.append( aChunk )
-    def fileEnd( self, aChunk ):
-        self.end_chunk.append( aChunk )
-    def setIndent( self, fixed=None, command=None ):
+class MockWeaver:
+    def __init__(self) -> None:
+        self.begin_chunk = []
+        self.end_chunk = []
+        self.written = []
+        self.code_indent = None
+    def quote(self, text: str) -> str:
+        return text.replace("&", "&amp;") # token quoting
+    def docBegin(self, aChunk: pyweb.Chunk) -> None:
+        self.begin_chunk.append(aChunk)
+    def write(self, text: str) -> None:
+        self.written.append(text)
+    def docEnd(self, aChunk: pyweb.Chunk) -> None:
+        self.end_chunk.append(aChunk)
+    def codeBegin(self, aChunk: pyweb.Chunk) -> None:
+        self.begin_chunk.append(aChunk)
+    def codeBlock(self, text: str) -> None:
+        self.written.append(text)
+    def codeEnd(self, aChunk: pyweb.Chunk) -> None:
+        self.end_chunk.append(aChunk)
+    def fileBegin(self, aChunk: pyweb.Chunk) -> None:
+        self.begin_chunk.append(aChunk)
+    def fileEnd(self, aChunk: pyweb.Chunk) -> None:
+        self.end_chunk.append(aChunk)
+    def addIndent(self, increment=0):
         pass
-    def clrIndent( self ):
+    def setIndent(self, fixed: int | None=None, command: str | None=None) -> None:
+        self.indent = fixed
+    def addIndent(self, increment: int = 0) -> None:
+        self.indent = increment
+    def clrIndent(self) -> None:
         pass
-    def xrefHead( self ):
+    def xrefHead(self) -> None:
         pass
-    def xrefLine( self, name, refList ):
-        self.written.append( "%s %s" % ( name, refList ) )
-    def xrefDefLine( self, name, defn, refList ):
-        self.written.append( "%s %s %s" % ( name, defn, refList ) )
-    def xrefFoot( self ):
+    def xrefLine(self, name: str, refList: list[int]) -> None:
+        self.written.append(f"{name} {refList}")
+    def xrefDefLine(self, name: str, defn: int, refList: list[int]) -> None:
+        self.written.append(f"{name} {defn} {refList}")
+    def xrefFoot(self) -> None:
         pass
-    def open( self, aFile ):
+    def referenceTo(self, name: str, seq: int) -> None:
         pass
-    def close( self ):
+    def open(self, aFile: str) -> "MockWeaver":
+        return self
+    def close(self) -> None:
         pass
-    def referenceTo( self, name, seq ):
+    def __enter__(self) -> "MockWeaver":
+        return self
+    def __exit__(self, *args: Any) -> bool:
+        return False
+
+class MockTangler(MockWeaver):
+    def __init__(self) -> None:
+        super().__init__()
+        self.context = [0]
+    def addIndent(self, amount: int) -> None:
         pass
 
-class MockTangler( MockWeaver ):
-    def __init__( self ):
-        super( MockTangler, self ).__init__()
-        self.context= [0]
-
-class TestChunk( unittest.TestCase ):
-    def setUp( self ):
-        self.theChunk= pyweb.Chunk()
+class TestChunk(unittest.TestCase):
+    def setUp(self) -> None:
+        self.theChunk = pyweb.Chunk()
         
-    def test_append_command_should_work( self ):
-        cmd1= MockCommand()
-        self.theChunk.append( cmd1 )
-        self.assertEquals( 1, len(self.theChunk.commands ) )
-        cmd2= MockCommand()
-        self.theChunk.append( cmd2 )
-        self.assertEquals( 2, len(self.theChunk.commands ) )
+    def test_append_command_should_work(self) -> None:
+        cmd1 = MockCommand()
+        self.theChunk.append(cmd1)
+        self.assertEqual(1, len(self.theChunk.commands) )
+        cmd2 = MockCommand()
+        self.theChunk.append(cmd2)
+        self.assertEqual(2, len(self.theChunk.commands) )
         
-    def test_append_initial_and_more_text_should_work( self ):
-        self.theChunk.appendText( "hi mom" )
-        self.assertEquals( 1, len(self.theChunk.commands ) )
-        self.theChunk.appendText( "&more text" )
-        self.assertEquals( 1, len(self.theChunk.commands ) )
-        self.assertEquals( "hi mom&more text", self.theChunk.commands[0].text )
+    def test_append_initial_and_more_text_should_work(self) -> None:
+        self.theChunk.appendText("hi mom")
+        self.assertEqual(1, len(self.theChunk.commands) )
+        self.theChunk.appendText("&more text")
+        self.assertEqual(1, len(self.theChunk.commands) )
+        self.assertEqual("hi mom&more text", self.theChunk.commands[0].text)
         
-    def test_append_following_text_should_work( self ):
-        cmd1= MockCommand()
-        self.theChunk.append( cmd1 )
-        self.theChunk.appendText( "hi mom" )
-        self.assertEquals( 2, len(self.theChunk.commands ) )
+    def test_append_following_text_should_work(self) -> None:
+        cmd1 = MockCommand()
+        self.theChunk.append(cmd1)
+        self.theChunk.appendText("hi mom")
+        self.assertEqual(2, len(self.theChunk.commands) )
         
-    def test_append_to_web_should_work( self ):
-        web= MockWeb()
-        self.theChunk.webAdd( web )
-        self.assertEquals( 1, len(web.chunks) )
+    def test_append_to_web_should_work(self) -> None:
+        web = MockWeb()
+        self.theChunk.webAdd(web)
+        self.assertEqual(1, len(web.chunks))
 
         
-    def test_leading_command_should_not_find( self ):
-        self.assertFalse( self.theChunk.startswith( "hi mom" ) )
-        cmd1= MockCommand()
-        self.theChunk.append( cmd1 )
-        self.assertFalse( self.theChunk.startswith( "hi mom" ) )
-        self.theChunk.appendText( "hi mom" )
-        self.assertEquals( 2, len(self.theChunk.commands ) )
-        self.assertFalse( self.theChunk.startswith( "hi mom" ) )
+    def test_leading_command_should_not_find(self) -> None:
+        self.assertFalse(self.theChunk.startswith("hi mom"))
+        cmd1 = MockCommand()
+        self.theChunk.append(cmd1)
+        self.assertFalse(self.theChunk.startswith("hi mom"))
+        self.theChunk.appendText("hi mom")
+        self.assertEqual(2, len(self.theChunk.commands) )
+        self.assertFalse(self.theChunk.startswith("hi mom"))
         
-    def test_leading_text_should_not_find( self ):
-        self.assertFalse( self.theChunk.startswith( "hi mom" ) )
-        self.theChunk.appendText( "hi mom" )
-        self.assertTrue( self.theChunk.startswith( "hi mom" ) )
-        cmd1= MockCommand()
-        self.theChunk.append( cmd1 )
-        self.assertTrue( self.theChunk.startswith( "hi mom" ) )
-        self.assertEquals( 2, len(self.theChunk.commands ) )
+    def test_leading_text_should_not_find(self) -> None:
+        self.assertFalse(self.theChunk.startswith("hi mom"))
+        self.theChunk.appendText("hi mom")
+        self.assertTrue(self.theChunk.startswith("hi mom"))
+        cmd1 = MockCommand()
+        self.theChunk.append(cmd1)
+        self.assertTrue(self.theChunk.startswith("hi mom"))
+        self.assertEqual(2, len(self.theChunk.commands) )
     
-    def test_regexp_exists_should_find( self ):
-        self.theChunk.appendText( "this chunk has many words" )
-        pat= re.compile( r"\Wchunk\W" )
-        found= self.theChunk.searchForRE(pat)
-        self.assertTrue( found is self.theChunk )
-    def test_regexp_missing_should_not_find( self ):
-        self.theChunk.appendText( "this chunk has many words" )
-        pat= re.compile( "\Warpigs\W" )
-        found= self.theChunk.searchForRE(pat)
-        self.assertTrue( found is None )
+    def test_regexp_exists_should_find(self) -> None:
+        self.theChunk.appendText("this chunk has many words")
+        pat = re.compile(r"\Wchunk\W")
+        found = self.theChunk.searchForRE(pat)
+        self.assertTrue(found is self.theChunk)
+    def test_regexp_missing_should_not_find(self):
+        self.theChunk.appendText("this chunk has many words")
+        pat = re.compile(r"\Warpigs\W")
+        found = self.theChunk.searchForRE(pat)
+        self.assertTrue(found is None)
         
-    def test_lineNumber_should_work( self ):
-        self.assertTrue( self.theChunk.lineNumber is None )
-        cmd1= MockCommand()
-        self.theChunk.append( cmd1 )
-        self.assertEqual( 314, self.theChunk.lineNumber )
+    def test_lineNumber_should_work(self) -> None:
+        self.assertTrue(self.theChunk.lineNumber is None)
+        cmd1 = MockCommand()
+        self.theChunk.append(cmd1)
+        self.assertEqual(314, self.theChunk.lineNumber)
 
         
-    def test_weave_should_work( self ):
+    def test_weave_should_work(self) -> None:
         wvr = MockWeaver()
         web = MockWeb()
-        self.theChunk.appendText( "this chunk has very & many words" )
-        self.theChunk.weave( web, wvr )
-        self.assertEquals( 1, len(wvr.begin_chunk) )
-        self.assertTrue( wvr.begin_chunk[0] is self.theChunk )
-        self.assertEquals( 1, len(wvr.end_chunk) )
-        self.assertTrue( wvr.end_chunk[0] is self.theChunk )
-        self.assertEquals(  "this chunk has very & many words", "".join( wvr.written ) )
+        self.theChunk.appendText("this chunk has very & many words")
+        self.theChunk.weave(web, wvr)
+        self.assertEqual(1, len(wvr.begin_chunk))
+        self.assertTrue(wvr.begin_chunk[0] is self.theChunk)
+        self.assertEqual(1, len(wvr.end_chunk))
+        self.assertTrue(wvr.end_chunk[0] is self.theChunk)
+        self.assertEqual("this chunk has very & many words", "".join( wvr.written))
         
-    def test_tangle_should_fail( self ):
+    def test_tangle_should_fail(self) -> None:
         tnglr = MockTangler()
         web = MockWeb()
-        self.theChunk.appendText( "this chunk has very & many words" )
+        self.theChunk.appendText("this chunk has very & many words")
         try:
-            self.theChunk.tangle( web, tnglr )
+            self.theChunk.tangle(web, tnglr)
             self.fail()
-        except pyweb.Error, e:
-            self.assertEquals( "Cannot tangle an anonymous chunk", e.args[0] )
+        except pyweb.Error as e:
+            self.assertEqual("Cannot tangle an anonymous chunk", e.args[0])
 
 
  
-class TestNamedChunk( unittest.TestCase ):
-    def setUp( self ):
-        self.theChunk= pyweb.NamedChunk( "Some Name..." )
-        cmd= self.theChunk.makeContent( "the words & text of this Chunk" )
-        self.theChunk.append( cmd )
-        self.theChunk.setUserIDRefs( "index terms" )
+class TestNamedChunk(unittest.TestCase):
+    def setUp(self) -> None:
+        self.theChunk = pyweb.NamedChunk("Some Name...")
+        cmd = self.theChunk.makeContent("the words & text of this Chunk")
+        self.theChunk.append(cmd)
+        self.theChunk.setUserIDRefs("index terms")
         
-    def test_should_find_xref_words( self ):
-        self.assertEquals( 2, len(self.theChunk.getUserIDRefs()) )
-        self.assertEquals( "index", self.theChunk.getUserIDRefs()[0] )
-        self.assertEquals( "terms", self.theChunk.getUserIDRefs()[1] )
+    def test_should_find_xref_words(self) -> None:
+        self.assertEqual(2, len(self.theChunk.getUserIDRefs()))
+        self.assertEqual("index", self.theChunk.getUserIDRefs()[0])
+        self.assertEqual("terms", self.theChunk.getUserIDRefs()[1])
         
-    def test_append_to_web_should_work( self ):
-        web= MockWeb()
-        self.theChunk.webAdd( web )
-        self.assertEquals( 1, len(web.chunks) )
+    def test_append_to_web_should_work(self) -> None:
+        web = MockWeb()
+        self.theChunk.webAdd(web)
+        self.assertEqual(1, len(web.chunks))
         
-    def test_weave_should_work( self ):
+    def test_weave_should_work(self) -> None:
         wvr = MockWeaver()
         web = MockWeb()
-        self.theChunk.weave( web, wvr )
-        self.assertEquals( 1, len(wvr.begin_chunk) )
-        self.assertTrue( wvr.begin_chunk[0] is self.theChunk )
-        self.assertEquals( 1, len(wvr.end_chunk) )
-        self.assertTrue( wvr.end_chunk[0] is self.theChunk )
-        self.assertEquals(  "the words &amp; text of this Chunk", "".join( wvr.written ) )
+        self.theChunk.weave(web, wvr)
+        self.assertEqual(1, len(wvr.begin_chunk))
+        self.assertTrue(wvr.begin_chunk[0] is self.theChunk)
+        self.assertEqual(1, len(wvr.end_chunk))
+        self.assertTrue(wvr.end_chunk[0] is self.theChunk)
+        self.assertEqual("the words &amp; text of this Chunk", "".join( wvr.written))
 
-    def test_tangle_should_work( self ):
+    def test_tangle_should_work(self) -> None:
         tnglr = MockTangler()
         web = MockWeb()
-        self.theChunk.tangle( web, tnglr )
-        self.assertEquals( 1, len(tnglr.begin_chunk) )
-        self.assertTrue( tnglr.begin_chunk[0] is self.theChunk )
-        self.assertEquals( 1, len(tnglr.end_chunk) )
-        self.assertTrue( tnglr.end_chunk[0] is self.theChunk )
-        self.assertEquals(  "the words & text of this Chunk", "".join( tnglr.written ) )
+        self.theChunk.tangle(web, tnglr)
+        self.assertEqual(1, len(tnglr.begin_chunk))
+        self.assertTrue(tnglr.begin_chunk[0] is self.theChunk)
+        self.assertEqual(1, len(tnglr.end_chunk))
+        self.assertTrue(tnglr.end_chunk[0] is self.theChunk)
+        self.assertEqual("the words & text of this Chunk", "".join( tnglr.written))
 
 
-class TestOutputChunk( unittest.TestCase ):
-    def setUp( self ):
-        self.theChunk= pyweb.OutputChunk( "filename", "#", "" )
-        cmd= self.theChunk.makeContent( "the words & text of this Chunk" )
-        self.theChunk.append( cmd )
-        self.theChunk.setUserIDRefs( "index terms" )
+class TestNamedChunk_Noindent(unittest.TestCase):
+    def setUp(self) -> None:
+        self.theChunk = pyweb.NamedChunk_Noindent("Some Name...")
+        cmd = self.theChunk.makeContent("the words & text of this Chunk")
+        self.theChunk.append(cmd)
+        self.theChunk.setUserIDRefs("index terms")
+    def test_tangle_should_work(self) -> None:
+        tnglr = MockTangler()
+        web = MockWeb()
+        self.theChunk.tangle(web, tnglr)
+        self.assertEqual(1, len(tnglr.begin_chunk))
+        self.assertTrue(tnglr.begin_chunk[0] is self.theChunk)
+        self.assertEqual(1, len(tnglr.end_chunk))
+        self.assertTrue(tnglr.end_chunk[0] is self.theChunk)
+        self.assertEqual("the words & text of this Chunk", "".join( tnglr.written))
+
+
+class TestOutputChunk(unittest.TestCase):
+    def setUp(self) -> None:
+        self.theChunk = pyweb.OutputChunk("filename", "#", "")
+        cmd = self.theChunk.makeContent("the words & text of this Chunk")
+        self.theChunk.append(cmd)
+        self.theChunk.setUserIDRefs("index terms")
         
-    def test_append_to_web_should_work( self ):
-        web= MockWeb()
-        self.theChunk.webAdd( web )
-        self.assertEquals( 1, len(web.chunks) )
+    def test_append_to_web_should_work(self) -> None:
+        web = MockWeb()
+        self.theChunk.webAdd(web)
+        self.assertEqual(1, len(web.chunks))
         
-    def test_weave_should_work( self ):
+    def test_weave_should_work(self) -> None:
         wvr = MockWeaver()
         web = MockWeb()
-        self.theChunk.weave( web, wvr )
-        self.assertEquals( 1, len(wvr.begin_chunk) )
-        self.assertTrue( wvr.begin_chunk[0] is self.theChunk )
-        self.assertEquals( 1, len(wvr.end_chunk) )
-        self.assertTrue( wvr.end_chunk[0] is self.theChunk )
-        self.assertEquals(  "the words &amp; text of this Chunk", "".join( wvr.written ) )
+        self.theChunk.weave(web, wvr)
+        self.assertEqual(1, len(wvr.begin_chunk))
+        self.assertTrue(wvr.begin_chunk[0] is self.theChunk)
+        self.assertEqual(1, len(wvr.end_chunk))
+        self.assertTrue(wvr.end_chunk[0] is self.theChunk)
+        self.assertEqual("the words &amp; text of this Chunk", "".join( wvr.written))
 
-    def test_tangle_should_work( self ):
+    def test_tangle_should_work(self) -> None:
         tnglr = MockTangler()
         web = MockWeb()
-        self.theChunk.tangle( web, tnglr )
-        self.assertEquals( 1, len(tnglr.begin_chunk) )
-        self.assertTrue( tnglr.begin_chunk[0] is self.theChunk )
-        self.assertEquals( 1, len(tnglr.end_chunk) )
-        self.assertTrue( tnglr.end_chunk[0] is self.theChunk )
-        self.assertEquals(  "the words & text of this Chunk", "".join( tnglr.written ) )
+        self.theChunk.tangle(web, tnglr)
+        self.assertEqual(1, len(tnglr.begin_chunk))
+        self.assertTrue(tnglr.begin_chunk[0] is self.theChunk)
+        self.assertEqual(1, len(tnglr.end_chunk))
+        self.assertTrue(tnglr.end_chunk[0] is self.theChunk)
+        self.assertEqual("the words & text of this Chunk", "".join( tnglr.written))
+
+# TODO Test This 
 
  
-
+# No Tests
  
- 
- 
-class TestTextCommand( unittest.TestCase ):
-    def setUp( self ):
-        self.cmd= pyweb.TextCommand( "Some text & words in the document\n    ", 314 )
-        self.cmd2= pyweb.TextCommand( "No Indent\n", 314 )
-    def test_methods_should_work( self ):
-        self.assertTrue( self.cmd.startswith("Some") )
-        self.assertFalse( self.cmd.startswith("text") )
-        pat1= re.compile( r"\Wthe\W" )
-        self.assertTrue( self.cmd.searchForRE(pat1) is not None )
-        pat2= re.compile( r"\Wnothing\W" )
-        self.assertTrue( self.cmd.searchForRE(pat2) is None )
-        self.assertEquals( 4, self.cmd.indent() )
-        self.assertEquals( 0, self.cmd2.indent() )
-    def test_weave_should_work( self ):
+class TestTextCommand(unittest.TestCase):
+    def setUp(self) -> None:
+        self.cmd = pyweb.TextCommand("Some text & words in the document\n    ", 314)
+        self.cmd2 = pyweb.TextCommand("No Indent\n", 314)
+    def test_methods_should_work(self) -> None:
+        self.assertTrue(self.cmd.startswith("Some"))
+        self.assertFalse(self.cmd.startswith("text"))
+        pat1 = re.compile(r"\Wthe\W")
+        self.assertTrue(self.cmd.searchForRE(pat1) is not None)
+        pat2 = re.compile(r"\Wnothing\W")
+        self.assertTrue(self.cmd.searchForRE(pat2) is None)
+        self.assertEqual(4, self.cmd.indent())
+        self.assertEqual(0, self.cmd2.indent())
+    def test_weave_should_work(self) -> None:
         wvr = MockWeaver()
         web = MockWeb()
-        self.cmd.weave( web, wvr )
-        self.assertEquals(  "Some text & words in the document\n    ", "".join( wvr.written ) )
-    def test_tangle_should_work( self ):
+        self.cmd.weave(web, wvr)
+        self.assertEqual("Some text & words in the document\n    ", "".join( wvr.written))
+    def test_tangle_should_work(self) -> None:
         tnglr = MockTangler()
         web = MockWeb()
-        self.cmd.tangle( web, tnglr )
-        self.assertEquals(  "Some text & words in the document\n    ", "".join( tnglr.written ) )
+        self.cmd.tangle(web, tnglr)
+        self.assertEqual("Some text & words in the document\n    ", "".join( tnglr.written))
 
 
-class TestCodeCommand( unittest.TestCase ):
-    def setUp( self ):
-        self.cmd= pyweb.CodeCommand( "Some text & words in the document\n    ", 314 )
-    def test_weave_should_work( self ):
+class TestCodeCommand(unittest.TestCase):
+    def setUp(self) -> None:
+        self.cmd = pyweb.CodeCommand("Some text & words in the document\n    ", 314)
+    def test_weave_should_work(self) -> None:
         wvr = MockWeaver()
         web = MockWeb()
-        self.cmd.weave( web, wvr )
-        self.assertEquals(  "Some text &amp; words in the document\n    ", "".join( wvr.written ) )
-    def test_tangle_should_work( self ):
+        self.cmd.weave(web, wvr)
+        self.assertEqual("Some text &amp; words in the document\n    ", "".join( wvr.written))
+    def test_tangle_should_work(self) -> None:
         tnglr = MockTangler()
         web = MockWeb()
-        self.cmd.tangle( web, tnglr )
-        self.assertEquals(  "Some text & words in the document\n    ", "".join( tnglr.written ) )
+        self.cmd.tangle(web, tnglr)
+        self.assertEqual("Some text & words in the document\n    ", "".join( tnglr.written))
 
+# No Tests 
  
- 
-class TestFileXRefCommand( unittest.TestCase ):
-    def setUp( self ):
-        self.cmd= pyweb.FileXrefCommand( 314 )
-    def test_weave_should_work( self ):
+class TestFileXRefCommand(unittest.TestCase):
+    def setUp(self) -> None:
+        self.cmd = pyweb.FileXrefCommand(314)
+    def test_weave_should_work(self) -> None:
         wvr = MockWeaver()
         web = MockWeb()
-        self.cmd.weave( web, wvr )
-        self.assertEquals(  "file [1, 2, 3]", "".join( wvr.written ) )
-    def test_tangle_should_fail( self ):
+        self.cmd.weave(web, wvr)
+        self.assertEqual("file [1, 2, 3]", "".join( wvr.written))
+    def test_tangle_should_fail(self) -> None:
         tnglr = MockTangler()
         web = MockWeb()
         try:
-            self.cmd.tangle( web, tnglr )
+            self.cmd.tangle(web, tnglr)
+            self.fail()
+        except pyweb.Error:
+            pass
+
+
+class TestMacroXRefCommand(unittest.TestCase):
+    def setUp(self) -> None:
+        self.cmd = pyweb.MacroXrefCommand(314)
+    def test_weave_should_work(self) -> None:
+        wvr = MockWeaver()
+        web = MockWeb()
+        self.cmd.weave(web, wvr)
+        self.assertEqual("chunk [4, 5, 6]", "".join( wvr.written))
+    def test_tangle_should_fail(self) -> None:
+        tnglr = MockTangler()
+        web = MockWeb()
+        try:
+            self.cmd.tangle(web, tnglr)
             self.fail()
         except pyweb.Error:
             pass
 
 
-class TestMacroXRefCommand( unittest.TestCase ):
-    def setUp( self ):
-        self.cmd= pyweb.MacroXrefCommand( 314 )
-    def test_weave_should_work( self ):
+class TestUserIdXrefCommand(unittest.TestCase):
+    def setUp(self) -> None:
+        self.cmd = pyweb.UserIdXrefCommand(314)
+    def test_weave_should_work(self) -> None:
         wvr = MockWeaver()
         web = MockWeb()
-        self.cmd.weave( web, wvr )
-        self.assertEquals(  "chunk [4, 5, 6]", "".join( wvr.written ) )
-    def test_tangle_should_fail( self ):
+        self.cmd.weave(web, wvr)
+        self.assertEqual("name 7 [8, 9, 10]", "".join( wvr.written))
+    def test_tangle_should_fail(self) -> None:
         tnglr = MockTangler()
         web = MockWeb()
         try:
-            self.cmd.tangle( web, tnglr )
-            self.fail()
-        except pyweb.Error:
-            pass
-
-
-class TestUserIdXrefCommand( unittest.TestCase ):
-    def setUp( self ):
-        self.cmd= pyweb.UserIdXrefCommand( 314 )
-    def test_weave_should_work( self ):
-        wvr = MockWeaver()
-        web = MockWeb()
-        self.cmd.weave( web, wvr )
-        self.assertEquals(  "name 7 [8, 9, 10]", "".join( wvr.written ) )
-    def test_tangle_should_fail( self ):
-        tnglr = MockTangler()
-        web = MockWeb()
-        try:
-            self.cmd.tangle( web, tnglr )
+            self.cmd.tangle(web, tnglr)
             self.fail()
         except pyweb.Error:
             pass
 
  
-class TestReferenceCommand( unittest.TestCase ):
-    def setUp( self ):
-        self.chunk= MockChunk( "Owning Chunk", 123, 456 )
-        self.cmd= pyweb.ReferenceCommand( "Some Name", 314 )
-        self.cmd.chunk= self.chunk
-        self.chunk.commands.append( self.cmd )
-        self.chunk.previous_command= pyweb.TextCommand( "", self.chunk.commands[0].lineNumber )
-    def test_weave_should_work( self ):
+class TestReferenceCommand(unittest.TestCase):
+    def setUp(self) -> None:
+        self.chunk = MockChunk("Owning Chunk", 123, 456)
+        self.cmd = pyweb.ReferenceCommand("Some Name", 314)
+        self.cmd.chunk = self.chunk
+        self.chunk.commands.append(self.cmd)
+        self.chunk.previous_command = pyweb.TextCommand("", self.chunk.commands[0].lineNumber)
+    def test_weave_should_work(self) -> None:
         wvr = MockWeaver()
         web = MockWeb()
-        self.cmd.weave( web, wvr )
-        self.assertEquals(  "Some Name", "".join( wvr.written ) )
-    def test_tangle_should_work( self ):
+        self.cmd.weave(web, wvr)
+        self.assertEqual("Some Name", "".join( wvr.written))
+    def test_tangle_should_work(self) -> None:
         tnglr = MockTangler()
         web = MockWeb()
-        self.cmd.tangle( web, tnglr )
-        self.assertEquals(  "Some Name", "".join( tnglr.written ) )
+        web.add(self.chunk)
+        self.cmd.tangle(web, tnglr)
+        self.assertEqual("Some Name", "".join( tnglr.written))
 
 
  
-class TestReference( unittest.TestCase ):
-    def setUp( self ):
-        self.web= MockWeb()
-        self.main= MockChunk( "Main", 1, 11 )
-        self.parent= MockChunk( "Parent", 2, 22 )
-        self.parent.referencedBy= [ self.main ]
-        self.chunk= MockChunk( "Sub", 3, 33 )
-        self.chunk.referencedBy= [ self.parent ]
-    def test_simple_should_find_one( self ):
-        self.reference= pyweb.SimpleReference( self.web )
-        theList= self.reference.chunkReferencedBy( self.chunk )
-        self.assertEquals( 1, len(theList) )
-        self.assertEquals( ('Parent',2), theList[0] )
-    def test_transitive_should_find_all( self ):
-        self.reference= pyweb.TransitiveReference( self.web )
-        theList= self.reference.chunkReferencedBy( self.chunk )
-        self.assertEquals( 2, len(theList) )
-        self.assertEquals( ('Parent',2), theList[0] )
-        self.assertEquals( ('Main',1), theList[1] )
+class TestReference(unittest.TestCase):
+    def setUp(self) -> None:
+        self.web = MockWeb()
+        self.main = MockChunk("Main", 1, 11)
+        self.parent = MockChunk("Parent", 2, 22)
+        self.parent.referencedBy = [ self.main ]
+        self.chunk = MockChunk("Sub", 3, 33)
+        self.chunk.referencedBy = [ self.parent ]
+    def test_simple_should_find_one(self) -> None:
+        self.reference = pyweb.SimpleReference()
+        theList = self.reference.chunkReferencedBy(self.chunk)
+        self.assertEqual(1, len(theList))
+        self.assertEqual(self.parent, theList[0])
+    def test_transitive_should_find_all(self) -> None:
+        self.reference = pyweb.TransitiveReference()
+        theList = self.reference.chunkReferencedBy(self.chunk)
+        self.assertEqual(2, len(theList))
+        self.assertEqual(self.parent, theList[0])
+        self.assertEqual(self.main, theList[1])
 
  
-class TestWebConstruction( unittest.TestCase ):
-    def setUp( self ):
-        self.web= pyweb.Web( "Test" )
+class TestWebConstruction(unittest.TestCase):
+    def setUp(self) -> None:
+        self.web = pyweb.Web()
         
-    def test_names_definition_should_resolve( self ):
-        name1= self.web.addDefName( "A Chunk..." )
-        self.assertTrue( name1 is None )
-        self.assertEquals( 0, len(self.web.named) )
-        name2= self.web.addDefName( "A Chunk Of Code" )
-        self.assertEquals( "A Chunk Of Code", name2 )
-        self.assertEquals( 1, len(self.web.named) )
-        name3= self.web.addDefName( "A Chunk..." )
-        self.assertEquals( "A Chunk Of Code", name3 )
-        self.assertEquals( 1, len(self.web.named) )
+    def test_names_definition_should_resolve(self) -> None:
+        name1 = self.web.addDefName("A Chunk...")
+        self.assertTrue(name1 is None)
+        self.assertEqual(0, len(self.web.named))
+        name2 = self.web.addDefName("A Chunk Of Code")
+        self.assertEqual("A Chunk Of Code", name2)
+        self.assertEqual(1, len(self.web.named))
+        name3 = self.web.addDefName("A Chunk...")
+        self.assertEqual("A Chunk Of Code", name3)
+        self.assertEqual(1, len(self.web.named))
         
-    def test_chunks_should_add_and_index( self ):
-        chunk= pyweb.Chunk()
-        chunk.appendText( "some text" )
-        chunk.webAdd( self.web )
-        self.assertEquals( 1, len(self.web.chunkSeq) )
-        self.assertEquals( 0, len(self.web.named) )
-        self.assertEquals( 0, len(self.web.output) )
-        named= pyweb.NamedChunk( "A Chunk" )
-        named.appendText( "some code" )
-        named.webAdd( self.web )
-        self.assertEquals( 2, len(self.web.chunkSeq) )
-        self.assertEquals( 1, len(self.web.named) )
-        self.assertEquals( 0, len(self.web.output) )
-        out= pyweb.OutputChunk( "A File" )
-        out.appendText( "some code" )
-        out.webAdd( self.web )
-        self.assertEquals( 3, len(self.web.chunkSeq) )
-        self.assertEquals( 1, len(self.web.named) )
-        self.assertEquals( 1, len(self.web.output) )
+    def test_chunks_should_add_and_index(self) -> None:
+        chunk = pyweb.Chunk()
+        chunk.appendText("some text")
+        chunk.webAdd(self.web)
+        self.assertEqual(1, len(self.web.chunkSeq))
+        self.assertEqual(0, len(self.web.named))
+        self.assertEqual(0, len(self.web.output))
+        named = pyweb.NamedChunk("A Chunk")
+        named.appendText("some code")
+        named.webAdd(self.web)
+        self.assertEqual(2, len(self.web.chunkSeq))
+        self.assertEqual(1, len(self.web.named))
+        self.assertEqual(0, len(self.web.output))
+        out = pyweb.OutputChunk("A File")
+        out.appendText("some code")
+        out.webAdd(self.web)
+        self.assertEqual(3, len(self.web.chunkSeq))
+        self.assertEqual(1, len(self.web.named))
+        self.assertEqual(1, len(self.web.output))
 
     
-class TestWebProcessing( unittest.TestCase ):
-    def setUp( self ):
-        self.web= pyweb.Web( "Test" )
-        self.chunk= pyweb.Chunk()
-        self.chunk.appendText( "some text" )
-        self.chunk.webAdd( self.web )
-        self.out= pyweb.OutputChunk( "A File" )
-        self.out.appendText( "some code" )
-        nm= self.web.addDefName( "A Chunk" )
-        self.out.append( pyweb.ReferenceCommand( nm ) )
-        self.out.webAdd( self.web )
-        self.named= pyweb.NamedChunk( "A Chunk..." )
-        self.named.appendText( "some user2a code" )
-        self.named.setUserIDRefs( "user1" )
-        nm= self.web.addDefName( "Another Chunk" )
-        self.named.append( pyweb.ReferenceCommand( nm ) )
-        self.named.webAdd( self.web )
-        self.named2= pyweb.NamedChunk( "Another Chunk..." )
-        self.named2.appendText(  "some user1 code"  )
-        self.named2.setUserIDRefs( "user2a user2b" )
-        self.named2.webAdd( self.web )
+class TestWebProcessing(unittest.TestCase):
+    def setUp(self) -> None:
+        self.web = pyweb.Web()
+        self.web.webFileName = "TestWebProcessing.w"
+        self.chunk = pyweb.Chunk()
+        self.chunk.appendText("some text")
+        self.chunk.webAdd(self.web)
+        self.out = pyweb.OutputChunk("A File")
+        self.out.appendText("some code")
+        nm = self.web.addDefName("A Chunk")
+        self.out.append(pyweb.ReferenceCommand(nm))
+        self.out.webAdd(self.web)
+        self.named = pyweb.NamedChunk("A Chunk...")
+        self.named.appendText("some user2a code")
+        self.named.setUserIDRefs("user1")
+        nm = self.web.addDefName("Another Chunk")
+        self.named.append(pyweb.ReferenceCommand(nm))
+        self.named.webAdd(self.web)
+        self.named2 = pyweb.NamedChunk("Another Chunk...")
+        self.named2.appendText("some user1 code")
+        self.named2.setUserIDRefs("user2a user2b")
+        self.named2.webAdd(self.web)
          
-    def test_name_queries_should_resolve( self ):
-        self.assertEquals( "A Chunk", self.web.fullNameFor( "A C..." ) )    
-        self.assertEquals( "A Chunk", self.web.fullNameFor( "A Chunk" ) )    
-        self.assertNotEquals( "A Chunk", self.web.fullNameFor( "A File" ) )
-        self.assertTrue( self.named is self.web.getchunk( "A C..." )[0] )
-        self.assertTrue( self.named is self.web.getchunk( "A Chunk" )[0] )
+    def test_name_queries_should_resolve(self) -> None:
+        self.assertEqual("A Chunk", self.web.fullNameFor("A C..."))    
+        self.assertEqual("A Chunk", self.web.fullNameFor("A Chunk"))    
+        self.assertNotEqual("A Chunk", self.web.fullNameFor("A File"))
+        self.assertTrue(self.named is self.web.getchunk("A C...")[0])
+        self.assertTrue(self.named is self.web.getchunk("A Chunk")[0])
         try:
-            self.assertTrue( None is not self.web.getchunk( "A File" ) )
+            self.assertTrue(None is not self.web.getchunk("A File"))
             self.fail()
-        except pyweb.Error, e:
-            self.assertTrue( e.args[0].startswith("Cannot resolve 'A File'") )  
+        except pyweb.Error as e:
+            self.assertTrue(e.args[0].startswith("Cannot resolve 'A File'"))  
 
          
-    def test_valid_web_should_createUsedBy( self ):
+    def test_valid_web_should_createUsedBy(self) -> None:
         self.web.createUsedBy()
         # If it raises an exception, the web structure is damaged
-    def test_valid_web_should_createFileXref( self ):
-        file_xref= self.web.fileXref()
-        self.assertEquals( 1, len(file_xref) )
-        self.assertTrue( "A File" in file_xref ) 
-        self.assertTrue( 1, len(file_xref["A File"]) )
-    def test_valid_web_should_createChunkXref( self ):
-        chunk_xref= self.web.chunkXref()
-        self.assertEquals( 2, len(chunk_xref) )
-        self.assertTrue( "A Chunk" in chunk_xref )
-        self.assertEquals( 1, len(chunk_xref["A Chunk"]) )
-        self.assertTrue( "Another Chunk" in chunk_xref )
-        self.assertEquals( 1, len(chunk_xref["Another Chunk"]) )
-        self.assertFalse( "Not A Real Chunk" in chunk_xref )
-    def test_valid_web_should_create_userNamesXref( self ):
-        user_xref= self.web.userNamesXref() 
-        self.assertEquals( 3, len(user_xref) )
-        self.assertTrue( "user1" in user_xref )
-        defn, reflist= user_xref["user1"]
-        self.assertEquals( 1, len(reflist), "did not find user1" )
-        self.assertTrue( "user2a" in user_xref )
-        defn, reflist= user_xref["user2a"]
-        self.assertEquals( 1, len(reflist), "did not find user2a" )
-        self.assertTrue( "user2b" in user_xref )
-        defn, reflist= user_xref["user2b"]
-        self.assertEquals( 0, len(reflist) )
-        self.assertFalse( "Not A User Symbol" in user_xref )
+    def test_valid_web_should_createFileXref(self) -> None:
+        file_xref = self.web.fileXref()
+        self.assertEqual(1, len(file_xref))
+        self.assertTrue("A File" in file_xref) 
+        self.assertTrue(1, len(file_xref["A File"]))
+    def test_valid_web_should_createChunkXref(self) -> None:
+        chunk_xref = self.web.chunkXref()
+        self.assertEqual(2, len(chunk_xref))
+        self.assertTrue("A Chunk" in chunk_xref)
+        self.assertEqual(1, len(chunk_xref["A Chunk"]))
+        self.assertTrue("Another Chunk" in chunk_xref)
+        self.assertEqual(1, len(chunk_xref["Another Chunk"]))
+        self.assertFalse("Not A Real Chunk" in chunk_xref)
+    def test_valid_web_should_create_userNamesXref(self) -> None:
+        user_xref = self.web.userNamesXref() 
+        self.assertEqual(3, len(user_xref))
+        self.assertTrue("user1" in user_xref)
+        defn, reflist = user_xref["user1"]
+        self.assertEqual(1, len(reflist), "did not find user1")
+        self.assertTrue("user2a" in user_xref)
+        defn, reflist = user_xref["user2a"]
+        self.assertEqual(1, len(reflist), "did not find user2a")
+        self.assertTrue("user2b" in user_xref)
+        defn, reflist = user_xref["user2b"]
+        self.assertEqual(0, len(reflist))
+        self.assertFalse("Not A User Symbol" in user_xref)
 
          
-    def test_valid_web_should_tangle( self ):
-        tangler= MockTangler()
-        self.web.tangle( tangler )
-        self.assertEquals( 3, len(tangler.written) )
-        self.assertEquals( ['some code', 'some user2a code', 'some user1 code'], tangler.written )
+    def test_valid_web_should_tangle(self) -> None:
+        tangler = MockTangler()
+        self.web.tangle(tangler)
+        self.assertEqual(3, len(tangler.written))
+        self.assertEqual(['some code', 'some user2a code', 'some user1 code'], tangler.written)
 
          
-    def test_valid_web_should_weave( self ):
-        weaver= MockWeaver()
-        self.web.weave( weaver )
-        self.assertEquals( 6, len(weaver.written) )
-        expected= ['some text', 'some code', None, 'some user2a code', None, 'some user1 code']
-        self.assertEquals( expected, weaver.written )
+    def test_valid_web_should_weave(self) -> None:
+        weaver = MockWeaver()
+        self.web.weave(weaver)
+        self.assertEqual(6, len(weaver.written))
+        expected = ['some text', 'some code', None, 'some user2a code', None, 'some user1 code']
+        self.assertEqual(expected, weaver.written)
 
+
+
+# Tested via functional tests
+
+class TestTokenizer(unittest.TestCase):
+    def test_should_split_tokens(self) -> None:
+        input = io.StringIO("@@ word @{ @[ @< @>\n@] @} @i @| @m @f @u\n")
+        self.tokenizer = pyweb.Tokenizer(input)
+        tokens = list(self.tokenizer)
+        self.assertEqual(24, len(tokens))
+        self.assertEqual( ['@@', ' word ', '@{', ' ', '@[', ' ', '@<', ' ', 
+        '@>', '\n', '@]', ' ', '@}', ' ', '@i', ' ', '@|', ' ', '@m', ' ', 
+        '@f', ' ', '@u', '\n'], tokens )
+        self.assertEqual(2, self.tokenizer.lineNumber)
+
+class TestOptionParser_OutputChunk(unittest.TestCase):
+    def setUp(self) -> None:
+        self.option_parser = pyweb.OptionParser(        
+            pyweb.OptionDef("-start", nargs=1, default=None),
+            pyweb.OptionDef("-end", nargs=1, default=""),
+            pyweb.OptionDef("argument", nargs='*'),
+        )
+    def test_with_options_should_parse(self) -> None:
+        text1 = " -start /* -end */ something.css "
+        options1 = self.option_parser.parse(text1)
+        self.assertEqual({'-end': ['*/'], '-start': ['/*'], 'argument': ['something.css']}, options1)
+    def test_without_options_should_parse(self) -> None:
+        text2 = " something.py "
+        options2 = self.option_parser.parse(text2)
+        self.assertEqual({'argument': ['something.py']}, options2)
+        
+class TestOptionParser_NamedChunk(unittest.TestCase):
+    def setUp(self) -> None:
+        self.option_parser = pyweb.OptionParser(        pyweb.OptionDef( "-indent", nargs=0),
+        pyweb.OptionDef("-noindent", nargs=0),
+        pyweb.OptionDef("argument", nargs='*'),
+        )
+    def test_with_options_should_parse(self) -> None:
+        text1 = " -indent the name of test1 chunk... "
+        options1 = self.option_parser.parse(text1)
+        self.assertEqual({'-indent': [], 'argument': ['the', 'name', 'of', 'test1', 'chunk...']}, options1)
+    def test_without_options_should_parse(self) -> None:
+        text2 = " the name of test2 chunk... "
+        options2 = self.option_parser.parse(text2)
+        self.assertEqual({'argument': ['the', 'name', 'of', 'test2', 'chunk...']}, options2)
 
  
- 
 
-class MockAction( object ):
-    def __init__( self ):
-        self.count= 0
-    def __call__( self ):
+class MockAction:
+    def __init__(self) -> None:
+        self.count = 0
+    def __call__(self) -> None:
         self.count += 1
         
-class MockWebReader( object ):
-    def __init__( self ):
-        self.count= 0
-        self.theWeb= None
-    def web( self, aWeb ):
-        self.theWeb= aWeb
+class MockWebReader:
+    def __init__(self) -> None:
+        self.count = 0
+        self.theWeb = None
+        self.errors = 0
+    def web(self, aWeb: "Web") -> None:
+        """Deprecated"""
+        warnings.warn("deprecated", DeprecationWarning)
+        self.theWeb = aWeb
         return self
-    def load( self ):
+    def source(self, filename: str, file: TextIO) -> str:
+        """Deprecated"""
+        warnings.warn("deprecated", DeprecationWarning)
+        self.webFileName = filename
+    def load(self, aWeb: pyweb.Web, filename: str, source: TextIO | None = None) -> None:
+        self.theWeb = aWeb
+        self.webFileName = filename
         self.count += 1
     
-class TestActionSequence( unittest.TestCase ):
-    def setUp( self ):
-        self.web= MockWeb()
-        self.a1= MockAction()
-        self.a2= MockAction()
-        self.action= pyweb.ActionSequence( "TwoSteps", [self.a1, self.a2] )
-        self.action.web= self.web
-    def test_should_execute_both( self ):
+class TestActionSequence(unittest.TestCase):
+    def setUp(self) -> None:
+        self.web = MockWeb()
+        self.a1 = MockAction()
+        self.a2 = MockAction()
+        self.action = pyweb.ActionSequence("TwoSteps", [self.a1, self.a2])
+        self.action.web = self.web
+        self.action.options = argparse.Namespace()
+    def test_should_execute_both(self) -> None:
         self.action()
         for c in self.action.opSequence:
-            self.assertEquals( 1, c.count )
-            self.assertTrue( self.web is c.web )
+            self.assertEqual(1, c.count)
+            self.assertTrue(self.web is c.web)
 
  
-class TestLoadAction( unittest.TestCase ):
-    def setUp( self ):
-        self.web= MockWeb()
-        self.action= pyweb.LoadAction(  )
-        self.webReader= MockWebReader()
-        self.webReader.theWeb= self.web
-        self.action.webReader= self.webReader
-        self.action.web= self.web
-    def test_should_execute_tangling( self ):
+class TestLoadAction(unittest.TestCase):
+    def setUp(self) -> None:
+        self.web = MockWeb()
+        self.action = pyweb.LoadAction()
+        self.webReader = MockWebReader()
+        self.action.web = self.web
+        self.action.options = argparse.Namespace( 
+            webReader = self.webReader, 
+            webFileName="TestLoadAction.w",
+            command="@",
+            permitList = [], )
+        with open("TestLoadAction.w","w") as web:
+            pass
+    def tearDown(self) -> None:
+        try:
+            os.remove("TestLoadAction.w")
+        except IOError:
+            pass
+    def test_should_execute_loading(self) -> None:
         self.action()
-        self.assertEquals( 1, self.webReader.count )
+        self.assertEqual(1, self.webReader.count)
 
  
-class TestTangleAction( unittest.TestCase ):
-    def setUp( self ):
-        self.web= MockWeb()
-        self.action= pyweb.TangleAction(  )
-        self.tangler= MockTangler()
-        self.action.theTangler= self.tangler
-        self.action.web= self.web
-    def test_should_execute_tangling( self ):
+class TestTangleAction(unittest.TestCase):
+    def setUp(self) -> None:
+        self.web = MockWeb()
+        self.action = pyweb.TangleAction()
+        self.tangler = MockTangler()
+        self.action.web = self.web
+        self.action.options = argparse.Namespace( 
+            theTangler = self.tangler,
+            tangler_line_numbers = False, )
+    def test_should_execute_tangling(self) -> None:
         self.action()
-        self.assertTrue( self.web.tangled is self.tangler )
+        self.assertTrue(self.web.tangled is self.tangler)
 
  
-class TestWeaveAction( unittest.TestCase ):
-    def setUp( self ):
-        self.web= MockWeb()
-        self.action= pyweb.WeaveAction(  )
-        self.weaver= MockWeaver()
-        self.action.theWeaver= self.weaver
-        self.action.web= self.web
-    def test_should_execute_weaving( self ):
+class TestWeaveAction(unittest.TestCase):
+    def setUp(self) -> None:
+        self.web = MockWeb()
+        self.action = pyweb.WeaveAction()
+        self.weaver = MockWeaver()
+        self.action.web = self.web
+        self.action.options = argparse.Namespace( 
+            theWeaver=self.weaver,
+            reference_style=pyweb.SimpleReference() )
+    def test_should_execute_weaving(self) -> None:
         self.action()
-        self.assertTrue( self.web.wove is self.weaver )
+        self.assertTrue(self.web.wove is self.weaver)
 
 
- 
+# TODO Test Application class 
 
 if __name__ == "__main__":
     import sys
-    logging.basicConfig( stream=sys.stdout, level= logging.WARN )
+    logging.basicConfig(stream=sys.stdout, level=logging.WARN)
     unittest.main()
 
