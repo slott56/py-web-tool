@@ -29,14 +29,14 @@ We need to be able to load a web from one or more source files.
 Parsing test cases have a common setup shown in this superclass.
 
 By using some class-level variables ``text``,
-``file_name``, we can simply provide a file-like
+``file_path``, we can simply provide a file-like
 input object to the ``WebReader`` instance.
 
 @d Load Test superclass...
 @{
 class ParseTestcase(unittest.TestCase):
     text = ""
-    file_name = ""
+    file_path: Path
     def setUp(self) -> None:
         self.source = io.StringIO(self.text)
         self.web = pyweb.Web()
@@ -50,6 +50,7 @@ find an expected next token.
 @d Load Test overheads...
 @{
 import logging.handlers
+from pathlib import Path
 @}
 
 @d Load Test error handling...
@@ -58,7 +59,7 @@ import logging.handlers
 
 class Test_ParseErrors(ParseTestcase):
     text = test1_w
-    file_name = "test1.w"
+    file_path = Path("test1.w")
     def setUp(self) -> None:
         super().setUp()
         self.logger = logging.getLogger("WebReader")
@@ -67,7 +68,7 @@ class Test_ParseErrors(ParseTestcase):
         self.logger.addHandler(self.buffer)
         self.logger.setLevel(logging.WARN)
     def test_error_should_count_1(self) -> None:
-        self.rdr.load(self.web, self.file_name, self.source)
+        self.rdr.load(self.web, self.file_path, self.source)
         self.assertEqual(3, self.rdr.errors)
         messages = [r.message for r in self.buffer.buffer]
         self.assertEqual( 
@@ -111,18 +112,17 @@ create a temporary file.  It's hard to mock the include processing.
 
 class Test_IncludeParseErrors(ParseTestcase):
     text = test8_w
-    file_name = "test8.w"
+    file_path = Path("test8.w")
     def setUp(self) -> None:
-        with open('test8_inc.tmp','w') as temp:
-            temp.write(test8_inc_w)
         super().setUp()
+        Path('test8_inc.tmp').write_text(test8_inc_w)
         self.logger = logging.getLogger("WebReader")
         self.buffer = logging.handlers.BufferingHandler(12)
         self.buffer.setLevel(logging.WARN)
         self.logger.addHandler(self.buffer)
         self.logger.setLevel(logging.WARN)
     def test_error_should_count_2(self) -> None:
-        self.rdr.load(self.web, self.file_name, self.source)
+        self.rdr.load(self.web, self.file_path, self.source)
         self.assertEqual(1, self.rdr.errors)
         messages = [r.message for r in self.buffer.buffer]
         self.assertEqual( 
@@ -133,7 +133,7 @@ class Test_IncludeParseErrors(ParseTestcase):
     def tearDown(self) -> None:
         self.logger.setLevel(logging.CRITICAL)
         self.logger.removeHandler(self.buffer)
-        os.remove('test8_inc.tmp')
+        Path('test8_inc.tmp').unlink()
         super().tearDown()
 @}
 
@@ -160,12 +160,15 @@ And now for an error - incorrect syntax in an included file!
 @d Load Test overheads...
 @{
 """Loader and parsing tests."""
-import pyweb
-import unittest
+import io
 import logging
 import os
-import io
+from pathlib import Path
+import string
 import types
+import unittest
+
+import pyweb
 @}
 
 A main program that configures logging and then runs the test.
@@ -205,8 +208,8 @@ exceptions raised.
 @{
 class TangleTestcase(unittest.TestCase):
     text = ""
-    file_name = ""
     error = ""
+    file_path: Path
     def setUp(self) -> None:
         self.source = io.StringIO(self.text)
         self.web = pyweb.Web()
@@ -214,18 +217,17 @@ class TangleTestcase(unittest.TestCase):
         self.tangler = pyweb.Tangler()
     def tangle_and_check_exception(self, exception_text: str) -> None:
         try:
-            self.rdr.load(self.web, self.file_name, self.source)
+            self.rdr.load(self.web, self.file_path, self.source)
             self.web.tangle(self.tangler)
             self.web.createUsedBy()
             self.fail("Should not tangle")
         except pyweb.Error as e:
             self.assertEqual(exception_text, e.args[0])
     def tearDown(self) -> None:
-        name, _ = os.path.splitext(self.file_name)
         try:
-            os.remove(name + ".tmp")
-        except OSError:
-            pass
+            self.file_path.with_suffix(".tmp").unlink()
+        except FileNotFoundError:
+            pass  # If the test fails, nothing to remove...
 @}
 
 @d Tangle Test semantic error 2... 
@@ -234,7 +236,7 @@ class TangleTestcase(unittest.TestCase):
 
 class Test_SemanticError_2(TangleTestcase):
     text = test2_w
-    file_name = "test2.w"
+    file_path = Path("test2.w")
     def test_should_raise_undefined(self) -> None:
         self.tangle_and_check_exception("Attempt to tangle an undefined Chunk, part2.")
 @}
@@ -256,7 +258,7 @@ Okay, now for some errors: no part2!
 
 class Test_SemanticError_3(TangleTestcase):
     text = test3_w
-    file_name = "test3.w"
+    file_path = Path("test3.w")
     def test_should_raise_bad_xref(self) -> None:
         self.tangle_and_check_exception("Illegal tangling of a cross reference command.")
 @}
@@ -280,7 +282,7 @@ Okay, now for some errors: attempt to tangle a cross-reference!
 
 class Test_SemanticError_4(TangleTestcase):
     text = test4_w
-    file_name = "test4.w"
+    file_path = Path("test4.w")
     def test_should_raise_noFullName(self) -> None:
         self.tangle_and_check_exception("No full name for 'part1...'")
 @}
@@ -303,7 +305,7 @@ Okay, now for some errors: attempt to weave but no full name for part1....
 
 class Test_SemanticError_5(TangleTestcase):
     text = test5_w
-    file_name = "test5.w"
+    file_path = Path("test5.w")
     def test_should_raise_ambiguous(self) -> None:
         self.tangle_and_check_exception("Ambiguous abbreviation 'part1...', matches ['part1a', 'part1b']")
 @}
@@ -328,9 +330,9 @@ Okay, now for some errors: part1... is ambiguous
 
 class Test_SemanticError_6(TangleTestcase):
     text = test6_w
-    file_name = "test6.w"
+    file_path = Path("test6.w")
     def test_should_warn(self) -> None:
-        self.rdr.load(self.web, self.file_name, self.source)
+        self.rdr.load(self.web, self.file_path, self.source)
         self.web.tangle(self.tangler)
         self.web.createUsedBy()
         self.assertEqual(1, len(self.web.no_reference()))
@@ -358,19 +360,18 @@ Okay, now for some warnings:
 
 class Test_IncludeError_7(TangleTestcase):
     text = test7_w
-    file_name = "test7.w"
+    file_path = Path("test7.w")
     def setUp(self) -> None:
-        with open('test7_inc.tmp','w') as temp:
-            temp.write(test7_inc_w)
+        Path('test7_inc.tmp').write_text(test7_inc_w)
         super().setUp()
     def test_should_include(self) -> None:
-        self.rdr.load(self.web, self.file_name, self.source)
+        self.rdr.load(self.web, self.file_path, self.source)
         self.web.tangle(self.tangler)
         self.web.createUsedBy()
         self.assertEqual(5, len(self.web.chunkSeq))
         self.assertEqual(test7_inc_w, self.web.chunkSeq[3].commands[0].text)
     def tearDown(self) -> None:
-        os.remove('test7_inc.tmp')
+        Path('test7_inc.tmp').unlink()
         super().tearDown()
 @}
 
@@ -390,11 +391,13 @@ test7_inc_w = """The test7a.tmp chunk for test7.w
 @d Tangle Test overheads...
 @{
 """Tangler tests exercise various semantic features."""
-import pyweb
-import unittest
+import io
 import logging
 import os
-import io
+from pathlib import Path
+import unittest
+
+import pyweb
 @}
 
 @d Tangle Test main program...
@@ -424,26 +427,25 @@ Weaving test cases have a common setup shown in this superclass.
 @d Weave Test superclass... @{
 class WeaveTestcase(unittest.TestCase):
     text = ""
-    file_name = ""
     error = ""
+    file_path: Path
     def setUp(self) -> None:
         self.source = io.StringIO(self.text)
         self.web = pyweb.Web()
         self.rdr = pyweb.WebReader()
     def tangle_and_check_exception(self, exception_text: str) -> None:
         try:
-            self.rdr.load(self.web, self.file_name, self.source)
+            self.rdr.load(self.web, self.file_path, self.source)
             self.web.tangle(self.tangler)
             self.web.createUsedBy()
             self.fail("Should not tangle")
         except pyweb.Error as e:
             self.assertEqual(exception_text, e.args[0])
     def tearDown(self) -> None:
-        name, _ = os.path.splitext(self.file_name)
         try:
-            os.remove(name + ".html")
-        except OSError:
-            pass
+            self.file_path.with_suffix(".html").unlink()
+        except FileNotFoundError:
+            pass  # if the test failed, nothing to remove
 @}
 
 @d Weave Test references... @{
@@ -452,17 +454,16 @@ class WeaveTestcase(unittest.TestCase):
 
 class Test_RefDefWeave(WeaveTestcase):
     text = test0_w
-    file_name = "test0.w"
+    file_path = Path("test0.w")
     def test_load_should_createChunks(self) -> None:
-        self.rdr.load(self.web, self.file_name, self.source)
+        self.rdr.load(self.web, self.file_path, self.source)
         self.assertEqual(3, len(self.web.chunkSeq))
     def test_weave_should_createFile(self) -> None:
-        self.rdr.load(self.web, self.file_name, self.source)
+        self.rdr.load(self.web, self.file_path, self.source)
         doc = pyweb.HTML()
         doc.reference_style = pyweb.SimpleReference() 
         self.web.weave(doc)
-        with open("test0.html","r") as source:
-            actual = source.read()
+        actual = self.file_path.with_suffix(".html").read_text()
         self.maxDiff = None
         self.assertEqual(test0_expected, actual)
 
@@ -534,20 +535,19 @@ to properly provide a consistent output from ``time.asctime()``.
 
 class TestEvaluations(WeaveTestcase):
     text = test9_w
-    file_name = "test9.w"
+    file_path = Path("test9.w")
     def test_should_evaluate(self) -> None:
-        self.rdr.load(self.web, self.file_name, self.source)
+        self.rdr.load(self.web, self.file_path, self.source)
         doc = pyweb.HTML( )
         doc.reference_style = pyweb.SimpleReference() 
         self.web.weave(doc)
-        with open("test9.html","r") as source:
-            actual = source.readlines()
+        actual = self.file_path.with_suffix(".html").read_text().splitlines()
         #print(actual)
-        self.assertEqual("An anonymous chunk.\n", actual[0])
+        self.assertEqual("An anonymous chunk.", actual[0])
         self.assertTrue(actual[1].startswith("Time ="))
-        self.assertEqual("File = ('test9.w', 3)\n", actual[2])
-        self.assertEqual('Version = 3.1\n', actual[3])
-        self.assertEqual(f'CWD = {os.getcwd()}\n', actual[4])
+        self.assertEqual("File = ('test9.w', 3)", actual[2])
+        self.assertEqual('Version = 3.1', actual[3])
+        self.assertEqual(f'CWD = {os.getcwd()}', actual[4])
 @}
 
 @d Sample Document 9...
@@ -563,12 +563,14 @@ CWD = @@(os.path.realpath('.')@@)
 @d Weave Test overheads...
 @{
 """Weaver tests exercise various weaving features."""
-import pyweb
-import unittest
+import io
 import logging
 import os
+from pathlib import Path
 import string
-import io
+import unittest
+
+import pyweb
 @}
 
 @d Weave Test main program...

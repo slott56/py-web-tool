@@ -1,4 +1,4 @@
-..  pyweb/intro.w
+..  py-web-tool/intro.w
 
 Introduction
 ============
@@ -781,7 +781,7 @@ A global context is created with the following variables defined.
 
 
 Running **py-web-tool** to Tangle and Weave
---------------------------------------
+-------------------------------------------
 
 Assuming that you have marked ``pyweb.py`` as executable,
 you do the following.

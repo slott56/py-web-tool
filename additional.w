@@ -1,4 +1,4 @@
-..	pyweb/additional.w
+..  py-web-tool/additional.w
 
 Additional Files
 ================
@@ -172,16 +172,16 @@ from distutils.core import setup
 
 setup(name='py-web-tool',
       version='3.1',
-      description='pyWeb 3.1: Yet Another Literate Programming Tool',
+      description='py-web-tool 3.1: Yet Another Literate Programming Tool',
       author='S. Lott',
-      author_email='s_lott@@yahoo.com',
+      author_email='slott56@@gmail.com',
       url='http://slott-softwarearchitect.blogspot.com/',
       py_modules=['pyweb'],
       classifiers=[
-      'Intended Audience :: Developers',
-      'Topic :: Documentation',
-      'Topic :: Software Development :: Documentation', 
-      'Topic :: Text Processing :: Markup',
+          'Intended Audience :: Developers',
+          'Topic :: Documentation',
+          'Topic :: Software Development :: Documentation', 
+          'Topic :: Text Processing :: Markup',
       ]
    )
 @}
@@ -204,7 +204,7 @@ In order to install dependencies, the following file is also used.
 docutils==0.18.1
 tox==3.25.0
 mypy==0.910
-pytest == 7.1.2
+pytest==7.1.2
 @}
 
 The ``README`` file
@@ -384,24 +384,28 @@ Note that there are tabs in this file. We bootstrap the next version from the 3.
 # Requires a pyweb-3.0.py (untouched) to bootstrap the current version.
 
 SOURCE = pyweb.w intro.w overview.w impl.w tests.w additional.w todo.w done.w \
-	test/pyweb_test.w test/intro.w test/unit.w test/func.w test/combined.w
+	test/pyweb_test.w test/intro.w test/unit.w test/func.w test/runner.w
 
 .PHONY : test build
 
 # Note the bootstrapping new version from version 3.0 as baseline.
+# Handy to keep this *outside* the project's Git repository.
+PYWEB_BOOTSTRAP=/Users/slott/Documents/Projects/PyWebTool-3/pyweb/pyweb.py
 
 test : $(SOURCE)
-	python3 pyweb-3.0.py -xw pyweb.w 
+	python3 $(PYWEB_BOOTSTRAP) -xw pyweb.w 
 	cd test && python3 ../pyweb.py pyweb_test.w
-	cd test && PYTHONPATH=.. python3 test.py
+	PYTHONPATH=${PWD} pytest
 	cd test && rst2html.py pyweb_test.rst pyweb_test.html
-	mypy --strict pyweb.py
+	mypy --strict --show-error-codes pyweb.py
 
 build : pyweb.py pyweb.html
      
-pyweb.py pyweb.html : $(SOURCE)
-	python3 pyweb-3.0.py pyweb.w 
+pyweb.py pyweb.rst : $(SOURCE)
+	python3 $(PYWEB_BOOTSTRAP) pyweb.w 
 
+pyweb.html : pyweb.rst
+	rst2html.py $< $@
 @}
 
 **TODO:** Finish ``tox.ini`` or ``pyproject.toml``.
@@ -421,8 +425,10 @@ envlist = py310
 deps = 
     pytest == 7.1.2
     mypy == 0.910
+setenv = 
+    PYWEB_BOOTSTRAP = /Users/slott/Documents/Projects/PyWebTool-3/pyweb/pyweb.py
 commands_pre = 
-    python3 pyweb-3.0.py pyweb.w
+    python3 {env:PYWEB_BOOTSTRAP} pyweb.w
     python3 pyweb.py -o test test/pyweb_test.w 
 commands = 
     python3 test/test.py

@@ -1,35 +1,36 @@
 
 """Weaver tests exercise various weaving features."""
-import pyweb
-import unittest
+import io
 import logging
 import os
+from pathlib import Path
 import string
-import io
+import unittest
+
+import pyweb
 
 
 class WeaveTestcase(unittest.TestCase):
     text = ""
-    file_name = ""
     error = ""
+    file_path: Path
     def setUp(self) -> None:
         self.source = io.StringIO(self.text)
         self.web = pyweb.Web()
         self.rdr = pyweb.WebReader()
     def tangle_and_check_exception(self, exception_text: str) -> None:
         try:
-            self.rdr.load(self.web, self.file_name, self.source)
+            self.rdr.load(self.web, self.file_path, self.source)
             self.web.tangle(self.tangler)
             self.web.createUsedBy()
             self.fail("Should not tangle")
         except pyweb.Error as e:
             self.assertEqual(exception_text, e.args[0])
     def tearDown(self) -> None:
-        name, _ = os.path.splitext(self.file_name)
         try:
-            os.remove(name + ".html")
-        except OSError:
-            pass
+            self.file_path.with_suffix(".html").unlink()
+        except FileNotFoundError:
+            pass  # if the test failed, nothing to remove
 
 
  
@@ -90,17 +91,16 @@ for i in range(24):
 
 class Test_RefDefWeave(WeaveTestcase):
     text = test0_w
-    file_name = "test0.w"
+    file_path = Path("test0.w")
     def test_load_should_createChunks(self) -> None:
-        self.rdr.load(self.web, self.file_name, self.source)
+        self.rdr.load(self.web, self.file_path, self.source)
         self.assertEqual(3, len(self.web.chunkSeq))
     def test_weave_should_createFile(self) -> None:
-        self.rdr.load(self.web, self.file_name, self.source)
+        self.rdr.load(self.web, self.file_path, self.source)
         doc = pyweb.HTML()
         doc.reference_style = pyweb.SimpleReference() 
         self.web.weave(doc)
-        with open("test0.html","r") as source:
-            actual = source.read()
+        actual = self.file_path.with_suffix(".html").read_text()
         self.maxDiff = None
         self.assertEqual(test0_expected, actual)
 
@@ -117,20 +117,19 @@ CWD = @(os.path.realpath('.')@)
 
 class TestEvaluations(WeaveTestcase):
     text = test9_w
-    file_name = "test9.w"
+    file_path = Path("test9.w")
     def test_should_evaluate(self) -> None:
-        self.rdr.load(self.web, self.file_name, self.source)
+        self.rdr.load(self.web, self.file_path, self.source)
         doc = pyweb.HTML( )
         doc.reference_style = pyweb.SimpleReference() 
         self.web.weave(doc)
-        with open("test9.html","r") as source:
-            actual = source.readlines()
+        actual = self.file_path.with_suffix(".html").read_text().splitlines()
         #print(actual)
-        self.assertEqual("An anonymous chunk.\n", actual[0])
+        self.assertEqual("An anonymous chunk.", actual[0])
         self.assertTrue(actual[1].startswith("Time ="))
-        self.assertEqual("File = ('test9.w', 3)\n", actual[2])
-        self.assertEqual('Version = 3.1\n', actual[3])
-        self.assertEqual(f'CWD = {os.getcwd()}\n', actual[4])
+        self.assertEqual("File = ('test9.w', 3)", actual[2])
+        self.assertEqual('Version = 3.1', actual[3])
+        self.assertEqual(f'CWD = {os.getcwd()}', actual[4])
 
 
 if __name__ == "__main__":

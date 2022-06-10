@@ -2,4 +2,4 @@
 docutils==0.18.1
 tox==3.25.0
 mypy==0.910
-pytest == 7.1.2
+pytest==7.1.2

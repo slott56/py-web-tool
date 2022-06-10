@@ -1,16 +1,18 @@
 
 """Tangler tests exercise various semantic features."""
-import pyweb
-import unittest
+import io
 import logging
 import os
-import io
+from pathlib import Path
+import unittest
+
+import pyweb
 
 
 class TangleTestcase(unittest.TestCase):
     text = ""
-    file_name = ""
     error = ""
+    file_path: Path
     def setUp(self) -> None:
         self.source = io.StringIO(self.text)
         self.web = pyweb.Web()
@@ -18,18 +20,17 @@ class TangleTestcase(unittest.TestCase):
         self.tangler = pyweb.Tangler()
     def tangle_and_check_exception(self, exception_text: str) -> None:
         try:
-            self.rdr.load(self.web, self.file_name, self.source)
+            self.rdr.load(self.web, self.file_path, self.source)
             self.web.tangle(self.tangler)
             self.web.createUsedBy()
             self.fail("Should not tangle")
         except pyweb.Error as e:
             self.assertEqual(exception_text, e.args[0])
     def tearDown(self) -> None:
-        name, _ = os.path.splitext(self.file_name)
         try:
-            os.remove(name + ".tmp")
-        except OSError:
-            pass
+            self.file_path.with_suffix(".tmp").unlink()
+        except FileNotFoundError:
+            pass  # If the test fails, nothing to remove...
 
 
 
@@ -45,7 +46,7 @@ Okay, now for some errors: no part2!
 
 class Test_SemanticError_2(TangleTestcase):
     text = test2_w
-    file_name = "test2.w"
+    file_path = Path("test2.w")
     def test_should_raise_undefined(self) -> None:
         self.tangle_and_check_exception("Attempt to tangle an undefined Chunk, part2.")
 
@@ -64,7 +65,7 @@ Okay, now for some errors: attempt to tangle a cross-reference!
 
 class Test_SemanticError_3(TangleTestcase):
     text = test3_w
-    file_name = "test3.w"
+    file_path = Path("test3.w")
     def test_should_raise_bad_xref(self) -> None:
         self.tangle_and_check_exception("Illegal tangling of a cross reference command.")
 
@@ -83,7 +84,7 @@ Okay, now for some errors: attempt to weave but no full name for part1....
 
 class Test_SemanticError_4(TangleTestcase):
     text = test4_w
-    file_name = "test4.w"
+    file_path = Path("test4.w")
     def test_should_raise_noFullName(self) -> None:
         self.tangle_and_check_exception("No full name for 'part1...'")
 
@@ -104,7 +105,7 @@ Okay, now for some errors: part1... is ambiguous
 
 class Test_SemanticError_5(TangleTestcase):
     text = test5_w
-    file_name = "test5.w"
+    file_path = Path("test5.w")
     def test_should_raise_ambiguous(self) -> None:
         self.tangle_and_check_exception("Ambiguous abbreviation 'part1...', matches ['part1a', 'part1b']")
 
@@ -125,9 +126,9 @@ Okay, now for some warnings:
 
 class Test_SemanticError_6(TangleTestcase):
     text = test6_w
-    file_name = "test6.w"
+    file_path = Path("test6.w")
     def test_should_warn(self) -> None:
-        self.rdr.load(self.web, self.file_name, self.source)
+        self.rdr.load(self.web, self.file_path, self.source)
         self.web.tangle(self.tangler)
         self.web.createUsedBy()
         self.assertEqual(1, len(self.web.no_reference()))
@@ -150,19 +151,18 @@ test7_inc_w = """The test7a.tmp chunk for test7.w
 
 class Test_IncludeError_7(TangleTestcase):
     text = test7_w
-    file_name = "test7.w"
+    file_path = Path("test7.w")
     def setUp(self) -> None:
-        with open('test7_inc.tmp','w') as temp:
-            temp.write(test7_inc_w)
+        Path('test7_inc.tmp').write_text(test7_inc_w)
         super().setUp()
     def test_should_include(self) -> None:
-        self.rdr.load(self.web, self.file_name, self.source)
+        self.rdr.load(self.web, self.file_path, self.source)
         self.web.tangle(self.tangler)
         self.web.createUsedBy()
         self.assertEqual(5, len(self.web.chunkSeq))
         self.assertEqual(test7_inc_w, self.web.chunkSeq[3].commands[0].text)
     def tearDown(self) -> None:
-        os.remove('test7_inc.tmp')
+        Path('test7_inc.tmp').unlink()
         super().tearDown()
 
 

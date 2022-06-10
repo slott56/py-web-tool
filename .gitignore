@@ -12,3 +12,4 @@ py_web_tool.egg-info/*
 *.toc
 v2_test
 .tox
+pyweb-3.0.py

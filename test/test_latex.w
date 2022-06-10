@@ -24,7 +24,7 @@ This document contains the makings of two files; the first,
 \texttt{test.py}, uses simple string concatenation to build its output
 message:
 
-@o test.py
+@o latex_test_1.py
 @{
 @< Import the os module @>
 @< Get the OS description @>
@@ -34,7 +34,7 @@ message:
 
 The second uses string substitution:
 
-@o test2.py
+@o latex_test_2.py
 @{
 @< Import the os module @>
 @< Get the OS description @>
@@ -75,8 +75,8 @@ better:
 msg = f"Hello, {os_name}!" 
 @}
 
-We'll use the first of these methods in \texttt{test.py}, and the
-other in \texttt{test2.py}.
+We'll use the first of these methods in \texttt{latex_test.py}, and the
+other in \texttt{latex_test_2.py}.
 
 \subsection{Printing the message}
 

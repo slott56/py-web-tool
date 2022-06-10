@@ -19,7 +19,7 @@ Yet Another Literate Programming Tool
 
 @i func.w
 
-@i combined.w
+@i runner.w
 
 Additional Files
 =================

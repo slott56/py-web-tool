@@ -30,7 +30,7 @@ This document contains the makings of two files; the first,
 ``test.py``, uses simple string concatenation to build its output
 message:
 
-@o test.py
+@o rst_test_1.py
 @{
 @< Import the os module @>
 @< Get the OS description @>
@@ -40,7 +40,7 @@ message:
 
 The second uses string substitution:
 
-@o test2.py
+@o rst_test_2.py
 @{
 @< Import the os module @>
 @< Get the OS description @>
@@ -83,8 +83,8 @@ better:
 msg = f"Hello, {os_name}!" 
 @}
 
-We'll use the first of these methods in ``test.py``, and the
-other in ``test2.py``.
+We'll use the first of these methods in ``rst_test_1.py``, and the
+other in ``rst_test_2.py``.
 
 Printing the message
 ----------------------

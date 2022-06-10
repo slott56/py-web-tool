@@ -1,11 +1,13 @@
-Combined Test Script
+Combined Test Runner
 =====================
 
-.. test/combined.w
+.. test/runner.w
 
-The combined test script runs all tests in all test modules.
+This is a small runner that executes all tests in all test modules.
+Instead of test discovery as done by **pytest** and others,
+this defines a test suite "the hard way" with an explicit list of modules.
 
-@o test.py 
+@o runner.py 
 @{@<Combined Test overheads, imports, etc.@>
 @<Combined Test suite which imports all other test modules@>
 @<Combined Test command line options@>
@@ -53,7 +55,7 @@ def get_options(argv: list[str] = sys.argv[1:]) -> argparse.Namespace:
         verbosity=logging.CRITICAL,
         logger=""
     )
-    config = parser.parse_args(namespace=defaults)
+    config = parser.parse_args(argv, namespace=defaults)
     return config
 @}
 
@@ -88,6 +90,7 @@ if __name__ == "__main__":
         l = logging.getLogger(logger_name)
         l.setLevel(options.verbosity)
         logger.info(f"Setting {l}")
+        
     tr = unittest.TextTestRunner()
     result = tr.run(suite())
     logging.shutdown()

@@ -26,7 +26,7 @@ def get_options(argv: list[str] = sys.argv[1:]) -> argparse.Namespace:
         verbosity=logging.CRITICAL,
         logger=""
     )
-    config = parser.parse_args(namespace=defaults)
+    config = parser.parse_args(argv, namespace=defaults)
     return config
 
 
@@ -38,6 +38,7 @@ if __name__ == "__main__":
         l = logging.getLogger(logger_name)
         l.setLevel(options.verbosity)
         logger.info(f"Setting {l}")
+        
     tr = unittest.TextTestRunner()
     result = tr.run(suite())
     logging.shutdown()

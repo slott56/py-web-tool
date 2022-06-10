@@ -1,4 +1,4 @@
-..  pyweb/test.w
+..  py-web-tool/test.w
 
 Unit Tests
 ===========

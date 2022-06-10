@@ -12,8 +12,10 @@ envlist = py310
 deps = 
     pytest == 7.1.2
     mypy == 0.910
+setenv = 
+    PYWEB_BOOTSTRAP = /Users/slott/Documents/Projects/PyWebTool-3/pyweb/pyweb.py
 commands_pre = 
-    python3 pyweb-3.0.py pyweb.w
+    python3 {env:PYWEB_BOOTSTRAP} pyweb.w
     python3 pyweb.py -o test test/pyweb_test.w 
 commands = 
     python3 test/test.py

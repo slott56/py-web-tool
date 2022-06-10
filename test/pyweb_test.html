@@ -417,7 +417,7 @@ Processed by unicode2rstsubs.py, part of Docutils:
 <li><a class="reference internal" href="#tests-for-weaving" id="toc-entry-15">Tests for Weaving</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#combined-test-script" id="toc-entry-16">Combined Test Script</a></li>
+<li><a class="reference internal" href="#combined-test-runner" id="toc-entry-16">Combined Test Runner</a></li>
 <li><a class="reference internal" href="#additional-files" id="toc-entry-17">Additional Files</a></li>
 <li><a class="reference internal" href="#indices" id="toc-entry-18">Indices</a><ul>
 <li><a class="reference internal" href="#files" id="toc-entry-19">Files</a></li>
@@ -672,15 +672,14 @@ class TestWeaver(unittest.TestCase):
     def setUp(self) -&gt; None:
         self.weaver = pyweb.Weaver()
         self.weaver.reference_style = pyweb.SimpleReference()
-        self.filename = &quot;testweaver&quot;
+        self.filepath = Path(&quot;testweaver&quot;)
         self.aFileChunk = MockChunk(&quot;File&quot;, 123, 456)
         self.aFileChunk.referencedBy = [ ]
         self.aChunk = MockChunk(&quot;Chunk&quot;, 314, 278)
-        self.aChunk.referencedBy = [ self.aFileChunk ]
+        self.aChunk.referencedBy = [self.aFileChunk]
     def tearDown(self) -&gt; None:
-        import os
         try:
-            pass #os.remove(&quot;testweaver.rst&quot;)
+            self.filepath.unlink()
         except OSError:
             pass
 
@@ -693,48 +692,44 @@ class TestWeaver(unittest.TestCase):
         self.assertEqual(r&quot;|srarr|\ Chunk (`314`_)&quot;, result)
 
     def test_weaver_should_codeBegin(self) -&gt; None:
-        self.weaver.open(self.filename)
+        self.weaver.open(self.filepath)
         self.weaver.addIndent()
         self.weaver.codeBegin(self.aChunk)
         self.weaver.codeBlock(self.weaver.quote(&quot;*The* `Code`\n&quot;))
         self.weaver.clrIndent()
         self.weaver.codeEnd(self.aChunk)
         self.weaver.close()
-        with open(&quot;testweaver.rst&quot;, &quot;r&quot;) as result:
-            txt = result.read()
+        txt = self.filepath.with_suffix(&quot;.rst&quot;).read_text()
         self.assertEqual(&quot;\n..  _`314`:\n..  rubric:: Chunk (314) =\n..  parsed-literal::\n    :class: code\n\n    \\*The\\* \\`Code\\`\n\n..\n\n    ..  class:: small\n\n        |loz| *Chunk (314)*. Used by: File (`123`_)\n&quot;, txt)
 
     def test_weaver_should_fileBegin(self) -&gt; None:
-        self.weaver.open(self.filename)
+        self.weaver.open(self.filepath)
         self.weaver.fileBegin(self.aFileChunk)
         self.weaver.codeBlock(self.weaver.quote(&quot;*The* `Code`\n&quot;))
         self.weaver.fileEnd(self.aFileChunk)
         self.weaver.close()
-        with open(&quot;testweaver.rst&quot;, &quot;r&quot;) as result:
-            txt = result.read()
+        txt = self.filepath.with_suffix(&quot;.rst&quot;).read_text()
         self.assertEqual(&quot;\n..  _`123`:\n..  rubric:: File (123) =\n..  parsed-literal::\n    :class: code\n\n    \\*The\\* \\`Code\\`\n\n..\n\n    ..  class:: small\n\n        |loz| *File (123)*.\n&quot;, txt)
 
     def test_weaver_should_xref(self) -&gt; None:
-        self.weaver.open(self.filename)
+        self.weaver.open(self.filepath)
         self.weaver.xrefHead( )
         self.weaver.xrefLine(&quot;Chunk&quot;, [ (&quot;Container&quot;, 123) ])
         self.weaver.xrefFoot( )
         #self.weaver.fileEnd(self.aFileChunk) # Why?
         self.weaver.close()
-        with open(&quot;testweaver.rst&quot;, &quot;r&quot;) as result:
-            txt = result.read()
+        txt = self.filepath.with_suffix(&quot;.rst&quot;).read_text()
         self.assertEqual(&quot;\n:Chunk:\n    |srarr|\\ (`('Container', 123)`_)\n\n&quot;, txt)
 
     def test_weaver_should_xref_def(self) -&gt; None:
-        self.weaver.open(self.filename)
+        self.weaver.open(self.filepath)
         self.weaver.xrefHead( )
         # Seems to have changed to a simple list of lines??
         self.weaver.xrefDefLine(&quot;Chunk&quot;, 314, [ 123, 567 ])
         self.weaver.xrefFoot( )
         #self.weaver.fileEnd(self.aFileChunk) # Why?
         self.weaver.close()
-        with open(&quot;testweaver.rst&quot;, &quot;r&quot;) as result:
-            txt = result.read()
+        txt = self.filepath.with_suffix(&quot;.rst&quot;).read_text()
         self.assertEqual(&quot;\n:Chunk:\n    `123`_ [`314`_] `567`_\n\n&quot;, txt)
 </pre>
 <!--  -->
@@ -752,15 +747,14 @@ class TestLaTeX(unittest.TestCase):
     def setUp(self) -&gt; None:
         self.weaver = pyweb.LaTeX()
         self.weaver.reference_style = pyweb.SimpleReference()
-        self.filename = &quot;testweaver&quot;
+        self.filepath = Path(&quot;testweaver&quot;)
         self.aFileChunk = MockChunk(&quot;File&quot;, 123, 456)
         self.aFileChunk.referencedBy = [ ]
         self.aChunk = MockChunk(&quot;Chunk&quot;, 314, 278)
-        self.aChunk.referencedBy = [ self.aFileChunk, ]
+        self.aChunk.referencedBy = [self.aFileChunk,]
     def tearDown(self) -&gt; None:
-        import os
         try:
-            os.remove(&quot;testweaver.tex&quot;)
+            self.filepath.with_suffix(&quot;.tex&quot;).unlink()
         except OSError:
             pass
 
@@ -783,17 +777,17 @@ class TestHTML(unittest.TestCase):
     def setUp(self) -&gt; None:
         self.weaver = pyweb.HTML( )
         self.weaver.reference_style = pyweb.SimpleReference()
-        self.filename = &quot;testweaver&quot;
+        self.filepath = Path(&quot;testweaver&quot;)
         self.aFileChunk = MockChunk(&quot;File&quot;, 123, 456)
         self.aFileChunk.referencedBy = []
         self.aChunk = MockChunk(&quot;Chunk&quot;, 314, 278)
-        self.aChunk.referencedBy = [ self.aFileChunk, ]
+        self.aChunk.referencedBy = [self.aFileChunk,]
     def tearDown(self) -&gt; None:
-        import os
         try:
-            os.remove(&quot;testweaver.html&quot;)
+            self.filepath.with_suffix(&quot;.html&quot;).unlink()
         except OSError:
             pass
+
 
     def test_weaver_functions_html(self) -&gt; None:
         result = self.weaver.quote(&quot;a &lt; b &amp;&amp; c &gt; d&quot;)
@@ -825,16 +819,15 @@ compiler and language.</p>
 class TestTangler(unittest.TestCase):
     def setUp(self) -&gt; None:
         self.tangler = pyweb.Tangler()
-        self.filename = &quot;testtangler.code&quot;
+        self.filepath = Path(&quot;testtangler.code&quot;)
         self.aFileChunk = MockChunk(&quot;File&quot;, 123, 456)
         #self.aFileChunk.references_list = [ ]
         self.aChunk = MockChunk(&quot;Chunk&quot;, 314, 278)
         #self.aChunk.references_list = [ (&quot;Container&quot;, 123) ]
     def tearDown(self) -&gt; None:
-        import os
         try:
-            os.remove(&quot;testtangler.code&quot;)
-        except OSError:
+            self.filepath.unlink()
+        except FileNotFoundError:
             pass
 
     def test_tangler_functions(self) -&gt; None:
@@ -842,13 +835,12 @@ class TestTangler(unittest.TestCase):
         self.assertEqual(string.printable, result)
 
     def test_tangler_should_codeBegin(self) -&gt; None:
-        self.tangler.open(self.filename)
+        self.tangler.open(self.filepath)
         self.tangler.codeBegin(self.aChunk)
         self.tangler.codeBlock(self.tangler.quote(&quot;*The* `Code`\n&quot;))
         self.tangler.codeEnd(self.aChunk)
         self.tangler.close()
-        with open(&quot;testtangler.code&quot;, &quot;r&quot;) as result:
-            txt = result.read()
+        txt = self.filepath.read_text()
         self.assertEqual(&quot;*The* `Code`\n&quot;, txt)
 </pre>
 <!--  -->
@@ -869,42 +861,41 @@ need to wait for a full second to elapse or we need to mock the various
 class TestTanglerMake(unittest.TestCase):
     def setUp(self) -&gt; None:
         self.tangler = pyweb.TanglerMake()
-        self.filename = &quot;testtangler.code&quot;
+        self.filepath = Path(&quot;testtangler.code&quot;)
         self.aChunk = MockChunk(&quot;Chunk&quot;, 314, 278)
         #self.aChunk.references_list = [ (&quot;Container&quot;, 123) ]
-        self.tangler.open(self.filename)
+        self.tangler.open(self.filepath)
         self.tangler.codeBegin(self.aChunk)
         self.tangler.codeBlock(self.tangler.quote(&quot;*The* `Code`\n&quot;))
         self.tangler.codeEnd(self.aChunk)
         self.tangler.close()
-        self.time_original = os.path.getmtime(self.filename)
-        self.original = os.lstat(self.filename)
+        self.time_original = self.filepath.stat().st_mtime
+        self.original = self.filepath.stat()
         #time.sleep(0.75)  # Alternative to assure timestamps must be different
 
     def tearDown(self) -&gt; None:
-        import os
         try:
-            os.remove(&quot;testtangler.code&quot;)
+            self.filepath.unlink()
         except OSError:
             pass
 
     def test_same_should_leave(self) -&gt; None:
-        self.tangler.open(self.filename)
+        self.tangler.open(self.filepath)
         self.tangler.codeBegin(self.aChunk)
         self.tangler.codeBlock(self.tangler.quote(&quot;*The* `Code`\n&quot;))
         self.tangler.codeEnd(self.aChunk)
         self.tangler.close()
-        self.assertTrue(os.path.samestat(self.original, os.lstat(self.filename)))
-        #self.assertEqual(self.time_original, os.path.getmtime(self.filename))
+        self.assertTrue(os.path.samestat(self.original, self.filepath.stat()))
+        #self.assertEqual(self.time_original, self.filepath.stat().st_mtime)
 
     def test_different_should_update(self) -&gt; None:
-        self.tangler.open(self.filename)
+        self.tangler.open(self.filepath)
         self.tangler.codeBegin(self.aChunk)
         self.tangler.codeBlock(self.tangler.quote(&quot;*Completely Different* `Code`\n&quot;))
         self.tangler.codeEnd(self.aChunk)
         self.tangler.close()
-        self.assertFalse(os.path.samestat(self.original, os.lstat(self.filename)))
-        #self.assertNotEqual(self.time_original, os.path.getmtime(self.filename))
+        self.assertFalse(os.path.samestat(self.original, self.filepath.stat()))
+        #self.assertNotEqual(self.time_original, self.filepath.stat().st_mtime)
 </pre>
 <!--  -->
 <blockquote>
@@ -1523,7 +1514,7 @@ class TestWebConstruction(unittest.TestCase):
 class TestWebProcessing(unittest.TestCase):
     def setUp(self) -&gt; None:
         self.web = pyweb.Web()
-        self.web.webFileName = &quot;TestWebProcessing.w&quot;
+        self.web.web_path = Path(&quot;TestWebProcessing.w&quot;)
         self.chunk = pyweb.Chunk()
         self.chunk.appendText(&quot;some text&quot;)
         self.chunk.webAdd(self.web)
@@ -1847,14 +1838,13 @@ class TestLoadAction(unittest.TestCase):
         self.action.web = self.web
         self.action.options = argparse.Namespace(
             webReader = self.webReader,
-            webFileName=&quot;TestLoadAction.w&quot;,
+            source_path=Path(&quot;TestLoadAction.w&quot;),
             command=&quot;&#64;&quot;,
             permitList = [], )
-        with open(&quot;TestLoadAction.w&quot;,&quot;w&quot;) as web:
-            pass
+        Path(&quot;TestLoadAction.w&quot;).write_text(&quot;&quot;)
     def tearDown(self) -&gt; None:
         try:
-            os.remove(&quot;TestLoadAction.w&quot;)
+            Path(&quot;TestLoadAction.w&quot;).unlink()
         except IOError:
             pass
     def test_should_execute_loading(self) -&gt; None:
@@ -1889,6 +1879,7 @@ import argparse
 import io
 import logging
 import os
+from pathlib import Path
 import re
 import string
 import time
@@ -1943,13 +1934,13 @@ if __name__ == &quot;__main__&quot;:
 </blockquote>
 <p>Parsing test cases have a common setup shown in this superclass.</p>
 <p>By using some class-level variables <tt class="docutils literal">text</tt>,
-<tt class="docutils literal">file_name</tt>, we can simply provide a file-like
+<tt class="docutils literal">file_path</tt>, we can simply provide a file-like
 input object to the <tt class="docutils literal">WebReader</tt> instance.</p>
 <p class="rubric" id="target-51">Load Test superclass to refactor common setup (51) =</p>
 <pre class="code literal-block">
 class ParseTestcase(unittest.TestCase):
     text = &quot;&quot;
-    file_name = &quot;&quot;
+    file_path: Path
     def setUp(self) -&gt; None:
         self.source = io.StringIO(self.text)
         self.web = pyweb.Web()
@@ -1965,6 +1956,7 @@ find an expected next token.</p>
 <p class="rubric" id="target-52">Load Test overheads: imports, etc. (52) =</p>
 <pre class="code literal-block">
 import logging.handlers
+from pathlib import Path
 </pre>
 <!--  -->
 <blockquote>
@@ -1976,7 +1968,7 @@ import logging.handlers
 
 class Test_ParseErrors(ParseTestcase):
     text = test1_w
-    file_name = &quot;test1.w&quot;
+    file_path = Path(&quot;test1.w&quot;)
     def setUp(self) -&gt; None:
         super().setUp()
         self.logger = logging.getLogger(&quot;WebReader&quot;)
@@ -1985,7 +1977,7 @@ class Test_ParseErrors(ParseTestcase):
         self.logger.addHandler(self.buffer)
         self.logger.setLevel(logging.WARN)
     def test_error_should_count_1(self) -&gt; None:
-        self.rdr.load(self.web, self.file_name, self.source)
+        self.rdr.load(self.web, self.file_path, self.source)
         self.assertEqual(3, self.rdr.errors)
         messages = [r.message for r in self.buffer.buffer]
         self.assertEqual(
@@ -2032,18 +2024,17 @@ create a temporary file.  It's hard to mock the include processing.</p>
 
 class Test_IncludeParseErrors(ParseTestcase):
     text = test8_w
-    file_name = &quot;test8.w&quot;
+    file_path = Path(&quot;test8.w&quot;)
     def setUp(self) -&gt; None:
-        with open('test8_inc.tmp','w') as temp:
-            temp.write(test8_inc_w)
         super().setUp()
+        Path('test8_inc.tmp').write_text(test8_inc_w)
         self.logger = logging.getLogger(&quot;WebReader&quot;)
         self.buffer = logging.handlers.BufferingHandler(12)
         self.buffer.setLevel(logging.WARN)
         self.logger.addHandler(self.buffer)
         self.logger.setLevel(logging.WARN)
     def test_error_should_count_2(self) -&gt; None:
-        self.rdr.load(self.web, self.file_name, self.source)
+        self.rdr.load(self.web, self.file_path, self.source)
         self.assertEqual(1, self.rdr.errors)
         messages = [r.message for r in self.buffer.buffer]
         self.assertEqual(
@@ -2054,7 +2045,7 @@ class Test_IncludeParseErrors(ParseTestcase):
     def tearDown(self) -&gt; None:
         self.logger.setLevel(logging.CRITICAL)
         self.logger.removeHandler(self.buffer)
-        os.remove('test8_inc.tmp')
+        Path('test8_inc.tmp').unlink()
         super().tearDown()
 </pre>
 <!--  -->
@@ -2085,12 +2076,15 @@ And now for an error - incorrect syntax in an included file!
 <p class="rubric" id="target-57">Load Test overheads: imports, etc. (57) +=</p>
 <pre class="code literal-block">
 &quot;&quot;&quot;Loader and parsing tests.&quot;&quot;&quot;
-import pyweb
-import unittest
+import io
 import logging
 import os
-import io
+from pathlib import Path
+import string
 import types
+import unittest
+
+import pyweb
 </pre>
 <!--  -->
 <blockquote>
@@ -2136,8 +2130,8 @@ exceptions raised.</p>
 <pre class="code literal-block">
 class TangleTestcase(unittest.TestCase):
     text = &quot;&quot;
-    file_name = &quot;&quot;
     error = &quot;&quot;
+    file_path: Path
     def setUp(self) -&gt; None:
         self.source = io.StringIO(self.text)
         self.web = pyweb.Web()
@@ -2145,18 +2139,17 @@ class TangleTestcase(unittest.TestCase):
         self.tangler = pyweb.Tangler()
     def tangle_and_check_exception(self, exception_text: str) -&gt; None:
         try:
-            self.rdr.load(self.web, self.file_name, self.source)
+            self.rdr.load(self.web, self.file_path, self.source)
             self.web.tangle(self.tangler)
             self.web.createUsedBy()
             self.fail(&quot;Should not tangle&quot;)
         except pyweb.Error as e:
             self.assertEqual(exception_text, e.args[0])
     def tearDown(self) -&gt; None:
-        name, _ = os.path.splitext(self.file_name)
         try:
-            os.remove(name + &quot;.tmp&quot;)
-        except OSError:
-            pass
+            self.file_path.with_suffix(&quot;.tmp&quot;).unlink()
+        except FileNotFoundError:
+            pass  # If the test fails, nothing to remove...
 </pre>
 <!--  -->
 <blockquote>
@@ -2168,7 +2161,7 @@ class TangleTestcase(unittest.TestCase):
 
 class Test_SemanticError_2(TangleTestcase):
     text = test2_w
-    file_name = &quot;test2.w&quot;
+    file_path = Path(&quot;test2.w&quot;)
     def test_should_raise_undefined(self) -&gt; None:
         self.tangle_and_check_exception(&quot;Attempt to tangle an undefined Chunk, part2.&quot;)
 </pre>
@@ -2197,7 +2190,7 @@ Okay, now for some errors: no part2!
 
 class Test_SemanticError_3(TangleTestcase):
     text = test3_w
-    file_name = &quot;test3.w&quot;
+    file_path = Path(&quot;test3.w&quot;)
     def test_should_raise_bad_xref(self) -&gt; None:
         self.tangle_and_check_exception(&quot;Illegal tangling of a cross reference command.&quot;)
 </pre>
@@ -2227,7 +2220,7 @@ Okay, now for some errors: attempt to tangle a cross-reference!
 
 class Test_SemanticError_4(TangleTestcase):
     text = test4_w
-    file_name = &quot;test4.w&quot;
+    file_path = Path(&quot;test4.w&quot;)
     def test_should_raise_noFullName(self) -&gt; None:
         self.tangle_and_check_exception(&quot;No full name for 'part1...'&quot;)
 </pre>
@@ -2257,7 +2250,7 @@ Okay, now for some errors: attempt to weave but no full name for part1....
 
 class Test_SemanticError_5(TangleTestcase):
     text = test5_w
-    file_name = &quot;test5.w&quot;
+    file_path = Path(&quot;test5.w&quot;)
     def test_should_raise_ambiguous(self) -&gt; None:
         self.tangle_and_check_exception(&quot;Ambiguous abbreviation 'part1...', matches ['part1a', 'part1b']&quot;)
 </pre>
@@ -2289,9 +2282,9 @@ Okay, now for some errors: part1... is ambiguous
 
 class Test_SemanticError_6(TangleTestcase):
     text = test6_w
-    file_name = &quot;test6.w&quot;
+    file_path = Path(&quot;test6.w&quot;)
     def test_should_warn(self) -&gt; None:
-        self.rdr.load(self.web, self.file_name, self.source)
+        self.rdr.load(self.web, self.file_path, self.source)
         self.web.tangle(self.tangler)
         self.web.createUsedBy()
         self.assertEqual(1, len(self.web.no_reference()))
@@ -2326,19 +2319,18 @@ Okay, now for some warnings:
 
 class Test_IncludeError_7(TangleTestcase):
     text = test7_w
-    file_name = &quot;test7.w&quot;
+    file_path = Path(&quot;test7.w&quot;)
     def setUp(self) -&gt; None:
-        with open('test7_inc.tmp','w') as temp:
-            temp.write(test7_inc_w)
+        Path('test7_inc.tmp').write_text(test7_inc_w)
         super().setUp()
     def test_should_include(self) -&gt; None:
-        self.rdr.load(self.web, self.file_name, self.source)
+        self.rdr.load(self.web, self.file_path, self.source)
         self.web.tangle(self.tangler)
         self.web.createUsedBy()
         self.assertEqual(5, len(self.web.chunkSeq))
         self.assertEqual(test7_inc_w, self.web.chunkSeq[3].commands[0].text)
     def tearDown(self) -&gt; None:
-        os.remove('test7_inc.tmp')
+        Path('test7_inc.tmp').unlink()
         super().tearDown()
 </pre>
 <!--  -->
@@ -2365,11 +2357,13 @@ test7_inc_w = &quot;&quot;&quot;The test7a.tmp chunk for test7.w
 <p class="rubric" id="target-73">Tangle Test overheads: imports, etc. (73) =</p>
 <pre class="code literal-block">
 &quot;&quot;&quot;Tangler tests exercise various semantic features.&quot;&quot;&quot;
-import pyweb
-import unittest
+import io
 import logging
 import os
-import io
+from pathlib import Path
+import unittest
+
+import pyweb
 </pre>
 <!--  -->
 <blockquote>
@@ -2407,26 +2401,25 @@ if __name__ == &quot;__main__&quot;:
 <pre class="code literal-block">
 class WeaveTestcase(unittest.TestCase):
     text = &quot;&quot;
-    file_name = &quot;&quot;
     error = &quot;&quot;
+    file_path: Path
     def setUp(self) -&gt; None:
         self.source = io.StringIO(self.text)
         self.web = pyweb.Web()
         self.rdr = pyweb.WebReader()
     def tangle_and_check_exception(self, exception_text: str) -&gt; None:
         try:
-            self.rdr.load(self.web, self.file_name, self.source)
+            self.rdr.load(self.web, self.file_path, self.source)
             self.web.tangle(self.tangler)
             self.web.createUsedBy()
             self.fail(&quot;Should not tangle&quot;)
         except pyweb.Error as e:
             self.assertEqual(exception_text, e.args[0])
     def tearDown(self) -&gt; None:
-        name, _ = os.path.splitext(self.file_name)
         try:
-            os.remove(name + &quot;.html&quot;)
-        except OSError:
-            pass
+            self.file_path.with_suffix(&quot;.html&quot;).unlink()
+        except FileNotFoundError:
+            pass  # if the test failed, nothing to remove
 </pre>
 <!--  -->
 <blockquote>
@@ -2439,17 +2432,16 @@ class WeaveTestcase(unittest.TestCase):
 
 class Test_RefDefWeave(WeaveTestcase):
     text = test0_w
-    file_name = &quot;test0.w&quot;
+    file_path = Path(&quot;test0.w&quot;)
     def test_load_should_createChunks(self) -&gt; None:
-        self.rdr.load(self.web, self.file_name, self.source)
+        self.rdr.load(self.web, self.file_path, self.source)
         self.assertEqual(3, len(self.web.chunkSeq))
     def test_weave_should_createFile(self) -&gt; None:
-        self.rdr.load(self.web, self.file_name, self.source)
+        self.rdr.load(self.web, self.file_path, self.source)
         doc = pyweb.HTML()
         doc.reference_style = pyweb.SimpleReference()
         self.web.weave(doc)
-        with open(&quot;test0.html&quot;,&quot;r&quot;) as source:
-            actual = source.read()
+        actual = self.file_path.with_suffix(&quot;.html&quot;).read_text()
         self.maxDiff = None
         self.assertEqual(test0_expected, actual)
 </pre>
@@ -2530,20 +2522,19 @@ to properly provide a consistent output from <tt class="docutils literal">time.a
 
 class TestEvaluations(WeaveTestcase):
     text = test9_w
-    file_name = &quot;test9.w&quot;
+    file_path = Path(&quot;test9.w&quot;)
     def test_should_evaluate(self) -&gt; None:
-        self.rdr.load(self.web, self.file_name, self.source)
+        self.rdr.load(self.web, self.file_path, self.source)
         doc = pyweb.HTML( )
         doc.reference_style = pyweb.SimpleReference()
         self.web.weave(doc)
-        with open(&quot;test9.html&quot;,&quot;r&quot;) as source:
-            actual = source.readlines()
+        actual = self.file_path.with_suffix(&quot;.html&quot;).read_text().splitlines()
         #print(actual)
-        self.assertEqual(&quot;An anonymous chunk.\n&quot;, actual[0])
+        self.assertEqual(&quot;An anonymous chunk.&quot;, actual[0])
         self.assertTrue(actual[1].startswith(&quot;Time =&quot;))
-        self.assertEqual(&quot;File = ('test9.w', 3)\n&quot;, actual[2])
-        self.assertEqual('Version = 3.1\n', actual[3])
-        self.assertEqual(f'CWD = {os.getcwd()}\n', actual[4])
+        self.assertEqual(&quot;File = ('test9.w', 3)&quot;, actual[2])
+        self.assertEqual('Version = 3.1', actual[3])
+        self.assertEqual(f'CWD = {os.getcwd()}', actual[4])
 </pre>
 <!--  -->
 <blockquote>
@@ -2565,12 +2556,14 @@ CWD = &#64;(os.path.realpath('.')&#64;)
 <p class="rubric" id="target-82">Weave Test overheads: imports, etc. (82) =</p>
 <pre class="code literal-block">
 &quot;&quot;&quot;Weaver tests exercise various weaving features.&quot;&quot;&quot;
-import pyweb
-import unittest
+import io
 import logging
 import os
+from pathlib import Path
 import string
-import io
+import unittest
+
+import pyweb
 </pre>
 <!--  -->
 <blockquote>
@@ -2589,11 +2582,13 @@ if __name__ == &quot;__main__&quot;:
 </blockquote>
 </div>
 </div>
-<div class="section" id="combined-test-script">
-<h1><a class="toc-backref" href="#toc-entry-16">Combined Test Script</a></h1>
-<!-- test/combined.w -->
-<p>The combined test script runs all tests in all test modules.</p>
-<p class="rubric" id="target-84">test.py (84) =</p>
+<div class="section" id="combined-test-runner">
+<h1><a class="toc-backref" href="#toc-entry-16">Combined Test Runner</a></h1>
+<!-- test/runner.w -->
+<p>This is a small runner that executes all tests in all test modules.
+Instead of test discovery as done by <strong>pytest</strong> and others,
+this defines a test suite &quot;the hard way&quot; with an explicit list of modules.</p>
+<p class="rubric" id="target-84">runner.py (84) =</p>
 <pre class="code literal-block">
 →Combined Test overheads, imports, etc. (<a class="reference internal" href="#target-85">85</a>)
 →Combined Test suite which imports all other test modules (<a class="reference internal" href="#target-86">86</a>)
@@ -2602,7 +2597,7 @@ if __name__ == &quot;__main__&quot;:
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>test.py (84)</em>.</p>
+<p class="small">◊ <em>runner.py (84)</em>.</p>
 </blockquote>
 <p>The overheads import unittest and logging, because those are essential
 infrastructure.  Additionally, each of the test modules is also imported.</p>
@@ -2620,7 +2615,7 @@ import sys
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Combined Test overheads, imports, etc. (85)</em>. Used by: test.py (<a class="reference internal" href="#target-84">84</a>)</p>
+<p class="small">◊ <em>Combined Test overheads, imports, etc. (85)</em>. Used by: runner.py (<a class="reference internal" href="#target-84">84</a>)</p>
 </blockquote>
 <p>The test suite is built from each of the individual test modules.</p>
 <p class="rubric" id="target-86">Combined Test suite which imports all other test modules (86) =</p>
@@ -2633,7 +2628,7 @@ def suite():
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Combined Test suite which imports all other test modules (86)</em>. Used by: test.py (<a class="reference internal" href="#target-84">84</a>)</p>
+<p class="small">◊ <em>Combined Test suite which imports all other test modules (86)</em>. Used by: runner.py (<a class="reference internal" href="#target-84">84</a>)</p>
 </blockquote>
 <p>In order to debug failing tests, we accept some command-line
 parameters to the combined testing script.</p>
@@ -2648,12 +2643,12 @@ def get_options(argv: list[str] = sys.argv[1:]) -&gt; argparse.Namespace:
         verbosity=logging.CRITICAL,
         logger=&quot;&quot;
     )
-    config = parser.parse_args(namespace=defaults)
+    config = parser.parse_args(argv, namespace=defaults)
     return config
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Combined Test command line options (87)</em>. Used by: test.py (<a class="reference internal" href="#target-84">84</a>)</p>
+<p class="small">◊ <em>Combined Test command line options (87)</em>. Used by: runner.py (<a class="reference internal" href="#target-84">84</a>)</p>
 </blockquote>
 <p>This means we can use <tt class="docutils literal"><span class="pre">-dlWebReader</span></tt> to debug the Web Reader.
 We can use <tt class="docutils literal"><span class="pre">-d</span> <span class="pre">-lWebReader,TanglerMake</span></tt> to debug both
@@ -2682,6 +2677,7 @@ if __name__ == &quot;__main__&quot;:
         l = logging.getLogger(logger_name)
         l.setLevel(options.verbosity)
         logger.info(f&quot;Setting {l}&quot;)
+
     tr = unittest.TextTestRunner()
     result = tr.run(suite())
     logging.shutdown()
@@ -2689,7 +2685,7 @@ if __name__ == &quot;__main__&quot;:
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Combined Test main script (88)</em>. Used by: test.py (<a class="reference internal" href="#target-84">84</a>)</p>
+<p class="small">◊ <em>Combined Test main script (88)</em>. Used by: runner.py (<a class="reference internal" href="#target-84">84</a>)</p>
 </blockquote>
 </div>
 <div class="section" id="additional-files">
@@ -2753,7 +2749,7 @@ div.document { width: 7in; }
 <tr class="field"><th class="field-name" colspan="2">page-layout.css:</th></tr>
 <tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-90">90</a>)</td>
 </tr>
-<tr class="field"><th class="field-name">test.py:</th><td class="field-body">→(<a class="reference internal" href="#target-84">84</a>)</td>
+<tr class="field"><th class="field-name">runner.py:</th><td class="field-body">→(<a class="reference internal" href="#target-84">84</a>)</td>
 </tr>
 <tr class="field"><th class="field-name">test_loader.py:</th><td class="field-body">→(<a class="reference internal" href="#target-50">50</a>)</td>
 </tr>
@@ -3015,8 +3011,8 @@ div.document { width: 7in; }
 <p>(None)</p>
 <hr class="docutils" />
 <blockquote class="small">
-Created by ../pyweb.py at Fri Jun 10 10:32:05 2022.</blockquote>
-<p class="small">Source pyweb_test.w modified Thu Jun  9 12:12:11 2022.</p>
+Created by ../pyweb.py at Fri Jun 10 17:08:42 2022.</blockquote>
+<p class="small">Source pyweb_test.w modified Fri Jun 10 17:07:24 2022.</p>
 <blockquote class="small">
 <p>pyweb.__version__ '3.1'.</p>
 <p>Working directory '/Users/slott/Documents/Projects/py-web-tool/test'.</p>

@@ -3,6 +3,7 @@ import argparse
 import io
 import logging
 import os
+from pathlib import Path
 import re
 import string
 import time
@@ -79,15 +80,14 @@ class TestWeaver(unittest.TestCase):
     def setUp(self) -> None:
         self.weaver = pyweb.Weaver()
         self.weaver.reference_style = pyweb.SimpleReference() 
-        self.filename = "testweaver" 
+        self.filepath = Path("testweaver") 
         self.aFileChunk = MockChunk("File", 123, 456)
         self.aFileChunk.referencedBy = [ ]
         self.aChunk = MockChunk("Chunk", 314, 278)
-        self.aChunk.referencedBy = [ self.aFileChunk ]
+        self.aChunk.referencedBy = [self.aFileChunk]
     def tearDown(self) -> None:
-        import os
         try:
-            pass #os.remove("testweaver.rst")
+            self.filepath.unlink()
         except OSError:
             pass
         
@@ -100,48 +100,44 @@ class TestWeaver(unittest.TestCase):
         self.assertEqual(r"|srarr|\ Chunk (`314`_)", result)
   
     def test_weaver_should_codeBegin(self) -> None:
-        self.weaver.open(self.filename)
+        self.weaver.open(self.filepath)
         self.weaver.addIndent()
         self.weaver.codeBegin(self.aChunk)
         self.weaver.codeBlock(self.weaver.quote("*The* `Code`\n"))
         self.weaver.clrIndent()
         self.weaver.codeEnd(self.aChunk)
         self.weaver.close()
-        with open("testweaver.rst", "r") as result:
-            txt = result.read()
+        txt = self.filepath.with_suffix(".rst").read_text()
         self.assertEqual("\n..  _`314`:\n..  rubric:: Chunk (314) =\n..  parsed-literal::\n    :class: code\n\n    \\*The\\* \\`Code\\`\n\n..\n\n    ..  class:: small\n\n        |loz| *Chunk (314)*. Used by: File (`123`_)\n", txt)
   
     def test_weaver_should_fileBegin(self) -> None:
-        self.weaver.open(self.filename)
+        self.weaver.open(self.filepath)
         self.weaver.fileBegin(self.aFileChunk)
         self.weaver.codeBlock(self.weaver.quote("*The* `Code`\n"))
         self.weaver.fileEnd(self.aFileChunk)
         self.weaver.close()
-        with open("testweaver.rst", "r") as result:
-            txt = result.read()
+        txt = self.filepath.with_suffix(".rst").read_text()
         self.assertEqual("\n..  _`123`:\n..  rubric:: File (123) =\n..  parsed-literal::\n    :class: code\n\n    \\*The\\* \\`Code\\`\n\n..\n\n    ..  class:: small\n\n        |loz| *File (123)*.\n", txt)
 
     def test_weaver_should_xref(self) -> None:
-        self.weaver.open(self.filename)
+        self.weaver.open(self.filepath)
         self.weaver.xrefHead( )
         self.weaver.xrefLine("Chunk", [ ("Container", 123) ])
         self.weaver.xrefFoot( )
         #self.weaver.fileEnd(self.aFileChunk) # Why?
         self.weaver.close()
-        with open("testweaver.rst", "r") as result:
-            txt = result.read()
+        txt = self.filepath.with_suffix(".rst").read_text()
         self.assertEqual("\n:Chunk:\n    |srarr|\\ (`('Container', 123)`_)\n\n", txt)
 
     def test_weaver_should_xref_def(self) -> None:
-        self.weaver.open(self.filename)
+        self.weaver.open(self.filepath)
         self.weaver.xrefHead( )
         # Seems to have changed to a simple list of lines??
         self.weaver.xrefDefLine("Chunk", 314, [ 123, 567 ])
         self.weaver.xrefFoot( )
         #self.weaver.fileEnd(self.aFileChunk) # Why?
         self.weaver.close()
-        with open("testweaver.rst", "r") as result:
-            txt = result.read()
+        txt = self.filepath.with_suffix(".rst").read_text()
         self.assertEqual("\n:Chunk:\n    `123`_ [`314`_] `567`_\n\n", txt)
 
  
@@ -149,15 +145,14 @@ class TestLaTeX(unittest.TestCase):
     def setUp(self) -> None:
         self.weaver = pyweb.LaTeX()
         self.weaver.reference_style = pyweb.SimpleReference() 
-        self.filename = "testweaver" 
+        self.filepath = Path("testweaver") 
         self.aFileChunk = MockChunk("File", 123, 456)
         self.aFileChunk.referencedBy = [ ]
         self.aChunk = MockChunk("Chunk", 314, 278)
-        self.aChunk.referencedBy = [ self.aFileChunk, ]
+        self.aChunk.referencedBy = [self.aFileChunk,]
     def tearDown(self) -> None:
-        import os
         try:
-            os.remove("testweaver.tex")
+            self.filepath.with_suffix(".tex").unlink()
         except OSError:
             pass
             
@@ -174,17 +169,17 @@ class TestHTML(unittest.TestCase):
     def setUp(self) -> None:
         self.weaver = pyweb.HTML( )
         self.weaver.reference_style = pyweb.SimpleReference() 
-        self.filename = "testweaver" 
+        self.filepath = Path("testweaver") 
         self.aFileChunk = MockChunk("File", 123, 456)
         self.aFileChunk.referencedBy = []
         self.aChunk = MockChunk("Chunk", 314, 278)
-        self.aChunk.referencedBy = [ self.aFileChunk, ]
+        self.aChunk.referencedBy = [self.aFileChunk,]
     def tearDown(self) -> None:
-        import os
         try:
-            os.remove("testweaver.html")
+            self.filepath.with_suffix(".html").unlink()
         except OSError:
             pass
+
             
     def test_weaver_functions_html(self) -> None:
         result = self.weaver.quote("a < b && c > d")
@@ -200,16 +195,15 @@ class TestHTML(unittest.TestCase):
 class TestTangler(unittest.TestCase):
     def setUp(self) -> None:
         self.tangler = pyweb.Tangler()
-        self.filename = "testtangler.code" 
+        self.filepath = Path("testtangler.code") 
         self.aFileChunk = MockChunk("File", 123, 456)
         #self.aFileChunk.references_list = [ ]
         self.aChunk = MockChunk("Chunk", 314, 278)
         #self.aChunk.references_list = [ ("Container", 123) ]
     def tearDown(self) -> None:
-        import os
         try:
-            os.remove("testtangler.code")
-        except OSError:
+            self.filepath.unlink()
+        except FileNotFoundError:
             pass
         
     def test_tangler_functions(self) -> None:
@@ -217,55 +211,53 @@ class TestTangler(unittest.TestCase):
         self.assertEqual(string.printable, result)
         
     def test_tangler_should_codeBegin(self) -> None:
-        self.tangler.open(self.filename)
+        self.tangler.open(self.filepath)
         self.tangler.codeBegin(self.aChunk)
         self.tangler.codeBlock(self.tangler.quote("*The* `Code`\n"))
         self.tangler.codeEnd(self.aChunk)
         self.tangler.close()
-        with open("testtangler.code", "r") as result:
-            txt = result.read()
+        txt = self.filepath.read_text()
         self.assertEqual("*The* `Code`\n", txt)
 
 
 class TestTanglerMake(unittest.TestCase):
     def setUp(self) -> None:
         self.tangler = pyweb.TanglerMake()
-        self.filename = "testtangler.code" 
+        self.filepath = Path("testtangler.code") 
         self.aChunk = MockChunk("Chunk", 314, 278)
         #self.aChunk.references_list = [ ("Container", 123) ]
-        self.tangler.open(self.filename)
+        self.tangler.open(self.filepath)
         self.tangler.codeBegin(self.aChunk)
         self.tangler.codeBlock(self.tangler.quote("*The* `Code`\n"))
         self.tangler.codeEnd(self.aChunk)
         self.tangler.close()
-        self.time_original = os.path.getmtime(self.filename)
-        self.original = os.lstat(self.filename)
+        self.time_original = self.filepath.stat().st_mtime
+        self.original = self.filepath.stat()
         #time.sleep(0.75)  # Alternative to assure timestamps must be different
         
     def tearDown(self) -> None:
-        import os
         try:
-            os.remove("testtangler.code")
+            self.filepath.unlink()
         except OSError:
             pass
         
     def test_same_should_leave(self) -> None:
-        self.tangler.open(self.filename)
+        self.tangler.open(self.filepath)
         self.tangler.codeBegin(self.aChunk)
         self.tangler.codeBlock(self.tangler.quote("*The* `Code`\n"))
         self.tangler.codeEnd(self.aChunk)
         self.tangler.close()
-        self.assertTrue(os.path.samestat(self.original, os.lstat(self.filename)))
-        #self.assertEqual(self.time_original, os.path.getmtime(self.filename))
+        self.assertTrue(os.path.samestat(self.original, self.filepath.stat()))
+        #self.assertEqual(self.time_original, self.filepath.stat().st_mtime)
         
     def test_different_should_update(self) -> None:
-        self.tangler.open(self.filename)
+        self.tangler.open(self.filepath)
         self.tangler.codeBegin(self.aChunk)
         self.tangler.codeBlock(self.tangler.quote("*Completely Different* `Code`\n"))
         self.tangler.codeEnd(self.aChunk)
         self.tangler.close()
-        self.assertFalse(os.path.samestat(self.original, os.lstat(self.filename)))
-        #self.assertNotEqual(self.time_original, os.path.getmtime(self.filename))
+        self.assertFalse(os.path.samestat(self.original, self.filepath.stat()))
+        #self.assertNotEqual(self.time_original, self.filepath.stat().st_mtime)
 
 
 
@@ -722,7 +714,7 @@ class TestWebConstruction(unittest.TestCase):
 class TestWebProcessing(unittest.TestCase):
     def setUp(self) -> None:
         self.web = pyweb.Web()
-        self.web.webFileName = "TestWebProcessing.w"
+        self.web.web_path = Path("TestWebProcessing.w")
         self.chunk = pyweb.Chunk()
         self.chunk.appendText("some text")
         self.chunk.webAdd(self.web)
@@ -896,14 +888,13 @@ class TestLoadAction(unittest.TestCase):
         self.action.web = self.web
         self.action.options = argparse.Namespace( 
             webReader = self.webReader, 
-            webFileName="TestLoadAction.w",
+            source_path=Path("TestLoadAction.w"),
             command="@",
             permitList = [], )
-        with open("TestLoadAction.w","w") as web:
-            pass
+        Path("TestLoadAction.w").write_text("")
     def tearDown(self) -> None:
         try:
-            os.remove("TestLoadAction.w")
+            Path("TestLoadAction.w").unlink()
         except IOError:
             pass
     def test_should_execute_loading(self) -> None:

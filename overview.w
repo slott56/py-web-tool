@@ -1,4 +1,4 @@
-.. pyweb/overview.w 
+.. py-web-tool/overview.w 
 
 Architecture and Design Overview
 ================================

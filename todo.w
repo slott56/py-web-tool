@@ -1,4 +1,4 @@
-..    pyweb/todo.w 
+..    py-web-tool/todo.w 
 
 Python 3.10 Migration
 =====================
@@ -8,21 +8,28 @@ Python 3.10 Migration
 
 #. [x] Replace all ``.format()`` with f-strings.
 
-#. [ ] Replace filename strings (and ``os.path``) with ``pathlib.Path``.
+#. [x] Replace filename strings (and ``os.path``) with ``pathlib.Path``.
 
-#. [ ] Introduce ``match`` statements for some of the ``elif`` blocks
+#. [x] Add ``abc`` to formalize Abstract Base Classes.
 
-#. [ ] Introduce pytest instead of building a test runner.
+#. [x] Use ``match`` statements for some of the ``elif`` blocks.
 
-#. [ ] ``pyproject.toml``. This requires -o dir to write output to a directory of choice; which requires Pathlib
+#. [x] Introduce pytest instead of building a test runner from ``runner.w``.
+
+#. [ ] ``pyproject.toml``. This requires ```-o dir`` option to write output to a directory of choice; which requires ``pathlib``.
  
-#. [ ] Replace various mock classes with ``unittest.mock.Mock`` objects.
+#. [ ] Rename the module from ``pyweb`` to ``pylpweb`` to avoid namespace squatting issues.
+       Rename the project from ``py-web-tool`` to ``py-lpweb-tool``.
+
+#. [ ] Replace various mock classes with ``unittest.mock.Mock`` objects and appropriate extended testing.
 
  
 To Do
 =======
     
-1.  Silence the logging during testing.
+1.  Silence the ERROR-level logging during testing.
+
+2.  Silence the error when creating an empty file i.e. ``.nojekyll``
 
 #.  Add a JSON-based (or TOML) configuration file to configure templates.
 

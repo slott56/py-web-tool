@@ -1,4 +1,4 @@
-.. pyweb/jedit.w 
+.. py-web-tool/jedit.w 
 
 JEdit Configuration
 ====================
