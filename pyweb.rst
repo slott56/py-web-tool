@@ -12,7 +12,7 @@ Yet Another Literate Programming Tool
 ..	contents::
 
 
-..  pyweb/intro.w
+..  py-web-tool/intro.w
 
 Introduction
 ============
@@ -891,7 +891,7 @@ for two large development efforts, I finally understood the feature set I really
 Jason Fruit and others contributed to the previous version.
 
 
-.. pyweb/overview.w 
+.. py-web-tool/overview.w 
 
 Architecture and Design Overview
 ================================
@@ -1032,7 +1032,7 @@ The idea is that the Weaver Action should be visible to tools like `PyInvoke <ht
 We want ``Weave("someFile.w")`` to be a sensible task.  
 
 
-.. pyweb/impl.w
+.. py-web-tool/impl.w
 
 Implementation
 ==============
@@ -1348,7 +1348,8 @@ The ``codeBlock()`` method to indent each line written.
     class Emitter:
         """Emit an output file; handling indentation context."""
         code\_indent = 0 # Used by a Tangler
-        filePath : Path
+        filePath : Path  # Path within the base directory (on the name is used)
+        output : Path  # Base directory to write
         
         theFile: TextIO
         def \_\_init\_\_(self) -> None:
@@ -1402,9 +1403,12 @@ characters to the file.
     
     def open(self, aPath: Path) -> "Emitter":
         """Open a file."""
-        self.filePath = aPath
+        if not hasattr(self, 'output'):
+            self.output = Path.cwd()
+        self.filePath = self.output / aPath.name
+        self.logger.debug(f"Writing to {self.output} / {aPath.name} == {self.filePath}")
         self.linesWritten = 0
-        self.doOpen(aPath)
+        self.doOpen()
         return self
         
     |srarr|\ Emitter doOpen, to be overridden by subclasses (`6`_)
@@ -1449,7 +1453,7 @@ perform the unique operation for the subclass.
     :class: code
 
     
-    def doOpen(self, aFile: Path) -> None:
+    def doOpen(self) -> None:
         self.logger.debug("Creating %r", self.filePath)
     
 
@@ -1819,9 +1823,10 @@ we're not always starting a fresh line with ``weaveReferenceTo()``.
     :class: code
 
     
-    def doOpen(self, basename: Path) -> None:
-        self.filePath = basename.with\_suffix(self.extension)
-        self.logger.info("Weaving %r", self.filePath)
+    def doOpen(self) -> None:
+        """Create the final woven document."""
+        self.filePath = self.filePath.with\_suffix(self.extension)
+        self.logger.info("Weaving '%s'", self.filePath)
         self.theFile = self.filePath.open("w")
         self.readdIndent(self.code\_indent)
         
@@ -2059,7 +2064,7 @@ a simple ``" "`` because it looks better.
 
     
     refto\_name\_template = string.Template(r"\|srarr\|\\ ${fullName} (\`${seq}\`\_)")
-    refto\_seq\_template = string.Template("\|srarr\|\\ (\`${seq}\`\_)")
+    refto\_seq\_template = string.Template(r"\|srarr\|\\ (\`${seq}\`\_)")
     refto\_seq\_separator = ", "
     
     def referenceTo(self, aName: str \| None, seq: int) -> str:
@@ -2405,8 +2410,8 @@ block.  Our one compromise is a thin space if the phrase
 
     
     quoted\_chars: list[tuple[str, str]] = [
-        ("\\\\end{Verbatim}", "\\\\end\\,{Verbatim}"),  # Allow \\end{Verbatim} in a Verbatim context
-        ("\\\\{", "\\\\\\,{"), # Prevent unexpected commands in Verbatim
+        ("\\\\end{Verbatim}", "\\\\end\\\\,{Verbatim}"),  # Allow \\end{Verbatim} in a Verbatim context
+        ("\\\\{", "\\\\\\\\,{"), # Prevent unexpected commands in Verbatim
         ("$", "\\\\$"), # Prevent unexpected math in Verbatim
     ]
     
@@ -2850,11 +2855,12 @@ actual file created by open.
     def checkPath(self) -> None:
         self.filePath.parent.mkdir(parents=True, exist\_ok=True)
     
-    def doOpen(self, aFile: Path) -> None:
-        self.filePath = aFile
+    def doOpen(self) -> None:
+        """Tangle out of the output files."""
         self.checkPath()
         self.theFile = self.filePath.open("w")
-        self.logger.info("Tangling %r", aFile)
+        self.logger.info("Tangling '%s'", self.filePath)
+        
     def doClose(self) -> None:
         self.theFile.close()
         self.logger.info("Wrote %d lines to %r", self.linesWritten, self.filePath)
@@ -2997,10 +3003,10 @@ a "touch" if the new file is the same as the original.
     :class: code
 
     
-    def doOpen(self, aFile: Path) -> None:
+    def doOpen(self) -> None:
         fd, self.tempname = tempfile.mkstemp(dir=os.curdir)
         self.theFile = os.fdopen(fd, "w")
-        self.logger.info("Tangling %r", aFile)
+        self.logger.info("Tangling  '%s'", self.filePath)
     
 
 ..
@@ -3033,7 +3039,7 @@ and time) if nothing has changed.
         except OSError as e:
             same = False  # Doesn't exist. (Could check for errno.ENOENT)
         if same:
-            self.logger.info("No change to %r", self.filePath)
+            self.logger.info("Unchanged '%s'", self.filePath)
             os.remove(self.tempname)
         else:
             # Windows requires the original file name be removed first.
@@ -3044,7 +3050,7 @@ and time) if nothing has changed.
             self.checkPath()
             self.filePath.hardlink\_to(self.tempname)  # type: ignore [attr-defined]
             os.remove(self.tempname)
-            self.logger.info("Wrote %e lines to %s", self.linesWritten, self.filePath)
+            self.logger.info("Wrote %d lines to %s", self.linesWritten, self.filePath)
     
 
 ..
@@ -5732,7 +5738,7 @@ The decision is delegated to the referenced chunk.
 
     
     def weave(self, aWeaver: "Weaver") -> None:
-        self.logger.debug("Weaving file from %r", self.web\_path)
+        self.logger.debug("Weaving file from '%s'", self.web\_path)
         if not self.web\_path:
             raise Error("No filename supplied for weaving.")
         with aWeaver.open(self.web\_path):
@@ -5867,19 +5873,18 @@ The class has the following attributes:
             OptionDef("-noindent", nargs=0),
             OptionDef("argument", nargs='\*'),
         )
-    
-        # State of reading and parsing.
-        tokenizer: Tokenizer
-        aChunk: Chunk
         
         # Configuration
         command: str
         permitList: list[str]
+        base\_path : Path
         
         # State of the reader
         \_source: TextIO
         filePath: Path
         theWeb: "Web"
+        tokenizer: Tokenizer
+        aChunk: Chunk
     
         def \_\_init\_\_(self, parent: Optional["WebReader"] = None) -> None:
             self.logger = logging.getLogger(self.\_\_class\_\_.\_\_qualname\_\_)
@@ -5904,7 +5909,9 @@ The class has the following attributes:
             return self.\_\_class\_\_.\_\_name\_\_
             
         |srarr|\ WebReader location in the input stream (`128`_)
+        
         |srarr|\ WebReader load the web (`130`_)
+        
         |srarr|\ WebReader handle a command string (`117`_), |srarr|\ (`127`_)
 
 ..
@@ -5988,22 +5995,6 @@ A subclass can override ``handleCommand()`` to
         |loz| *WebReader handle a command string (117)*. Used by: WebReader class... (`116`_)
 
 
-The following sequence of ``if``-``elif`` statements identifies
-the structural commands that partition the input into separate ``Chunks``.
-
-::
-
-    @d OLD major commands...
-    @{
-    if token[:2] == self.cmdo:
-        @<start an OutputChunk, adding it to the web@>
-    elif token[:2] == self.cmdd:
-        @<start a NamedChunk or NamedDocumentChunk, adding it to the web@>
-    elif token[:2] == self.cmdi:
-        @<include another file@>
-    elif token[:2] in (self.cmdrcurl,self.cmdrbrak):
-        @<finish a chunk, start a new Chunk adding it to the web@>
-    @}
 
 An output chunk has the form ``@o`` *name* ``@{`` *content* ``@}``.
 We use the first two tokens to name the ``OutputChunk``.  We simply expect
@@ -6130,8 +6121,10 @@ test output into the final document via the ``@i`` command.
     
     incPath = Path(next(self.tokenizer).strip())
     try:
-        self.logger.info("Including %r", incPath)
         include = WebReader(parent=self)
+        if not incPath.is\_absolute():
+            incPath = self.base\_path / incPath
+        self.logger.info("Including '%s'", incPath)
         include.load(self.theWeb, incPath)
         self.totalLines += include.tokenizer.lineNumber
         self.totalFiles += include.totalFiles
@@ -6187,27 +6180,6 @@ For the base ``Chunk`` class, this would be false, but for all other subclasses 
 
 The following sequence of ``elif`` statements identifies
 the minor commands that add ``Command`` instances to the current open ``Chunk``. 
-
-::
-
-    @d OLD minor commands...
-    @{
-    elif token[:2] == self.cmdpipe:
-        @<assign user identifiers to the current chunk@>
-    elif token[:2] == self.cmdf:
-        self.aChunk.append(FileXrefCommand(self.tokenizer.lineNumber))
-    elif token[:2] == self.cmdm:
-        self.aChunk.append(MacroXrefCommand(self.tokenizer.lineNumber))
-    elif token[:2] == self.cmdu:
-        self.aChunk.append(UserIdXrefCommand(self.tokenizer.lineNumber))
-    elif token[:2] == self.cmdlangl:
-        @<add a reference command to the current chunk@>
-    elif token[:2] == self.cmdlexpr:
-        @<add an expression command to the current chunk@>
-    elif token[:2] == self.cmdcmd:
-        @<double at-sign replacement, append this character to previous TextCommand@>
-    @}
-
 
 User identifiers occur after a ``@|`` in a ``NamedChunk``.
 
@@ -6319,10 +6291,15 @@ An ``os.getcwd()`` could be changed to ``os.path.realpath('.')``.
     self.expect((self.cmdrexpr,))
     try:
         # Build Context
+        # \*\*TODO:\*\* Parts of this are static.
+        dangerous = {
+            'breakpoint', 'compile', 'eval', 'exec', 'execfile', 'globals', 'help', 'input', 
+            'memoryview', 'open', 'print', 'super', '\_\_import\_\_'
+        }
         safe = types.SimpleNamespace(\*\*dict(
             (name, obj) 
             for name,obj in builtins.\_\_dict\_\_.items() 
-            if name not in ('breakpoint', 'compile', 'eval', 'exec', 'execfile', 'globals', 'help', 'input', 'memoryview', 'open', 'print', 'super', '\_\_import\_\_')
+            if name not in dangerous
         ))
         globals = dict(
             \_\_builtins\_\_=safe, 
@@ -6469,8 +6446,9 @@ is that it's always loading a single top-level web.
     def load(self, web: "Web", filepath: Path, source: TextIO \| None = None) -> "WebReader":
         self.theWeb = web
         self.filePath = filepath
+        self.base\_path = self.filePath.parent
     
-        # Only set the a web filename once using the first file.
+        # Only set the a web's filename once using the first file.
         # \*\*TODO:\*\* this should be a setter property of the web.
         if self.theWeb.web\_path is None:
             self.theWeb.web\_path = self.filePath
@@ -6838,12 +6816,12 @@ This two pass action might be embedded in the following type of Python program.
 
 ..  parsed-literal::
 
-    import pyweb, os, runpy, sys
+    import pyweb, os, runpy, sys, pathlib, contextlib
+    log = pathlib.Path("source.log")
     pyweb.tangle("source.w")
-    with open("source.log", "w") as target:
-        sys.stdout = target
-        runpy.run_path('source.py')
-        sys.stdout = sys.__stdout__
+    with log.open("w") as target:
+        with contextlib.redirect_stdout(target):
+            runpy.run_path('source.py')
     pyweb.weave("source.w")
 
 
@@ -6852,7 +6830,6 @@ step runs the tangled program, ``source.py``, and produces test results in
 some log file, ``source.log``.  The third step runs **py-web-tool**  excluding the
 tangle pass.  This produces a final document that includes the ``source.log`` 
 test results.
-
 
 To accomplish this, we provide a class hierarchy that defines the various
 actions of the **py-web-tool**  application.  This class hierarchy defines an extensible set of 
@@ -6947,6 +6924,7 @@ An ``Action`` has a number of common attributes.
             return f"{self.name!s} [{self.web!s}]"
             
         |srarr|\ Action call method actually does the real work (`140`_)
+        
         |srarr|\ Action final summary of what was done (`141`_)
     
 
@@ -7039,7 +7017,9 @@ an ``append()`` method that is used to construct the sequence of actions.
             return "; ".join([str(x) for x in self.opSequence])
             
         |srarr|\ ActionSequence call method delegates the sequence of ations (`143`_)
+        
         |srarr|\ ActionSequence append adds a new action to the sequence (`144`_)
+        
         |srarr|\ ActionSequence summary summarizes each step (`145`_)
     
 
@@ -7149,6 +7129,7 @@ Otherwise, the ``web.language()`` method function is used to guess what weaver t
             return f"{self.name!s} [{self.web!s}, {self.options.theWeaver!s}]"
     
         |srarr|\ WeaveAction call method to pick the language (`147`_)
+        
         |srarr|\ WeaveAction summary of language choice (`148`_)
     
 
@@ -7180,6 +7161,7 @@ is never defined.
             self.options.theWeaver = self.web.language() 
             self.logger.info("Using %s", self.options.theWeaver.\_\_class\_\_.\_\_name\_\_)
         self.options.theWeaver.reference\_style = self.options.reference\_style
+        self.options.theWeaver.output = self.options.output
         try:
             self.web.weave(self.options.theWeaver)
             self.logger.info("Finished Normally")
@@ -7247,6 +7229,7 @@ The options **must** include ``theTangler``, with the ``Tangler`` instance to be
             super().\_\_init\_\_("Tangle")
             
         |srarr|\ TangleAction call method does tangling of the output files (`150`_)
+        
         |srarr|\ TangleAction summary method provides total lines tangled (`151`_)
     
 
@@ -7272,6 +7255,7 @@ with any of ``@d`` or ``@o``  and use ``@{`` ``@}`` brackets.
     def \_\_call\_\_(self) -> None:
         super().\_\_call\_\_()
         self.options.theTangler.include\_line\_numbers = self.options.tangler\_line\_numbers
+        self.options.theTangler.output = self.options.output
         try:
             self.web.tangle(self.options.theTangler)
         except Error as e:
@@ -7339,7 +7323,9 @@ The options **must** include ``webReader``, with the ``WebReader`` instance to b
             super().\_\_init\_\_("Load")
         def \_\_str\_\_(self) -> str:
             return f"Load [{self.webReader!s}, {self.web!s}]"
+            
         |srarr|\ LoadAction call method loads the input files (`153`_)
+        
         |srarr|\ LoadAction summary provides lines read (`154`_)
     
 
@@ -7561,30 +7547,10 @@ detailed usage information.
 
     """py-web-tool Literate Programming.
     
-    Yet another simple literate programming tool derived from nuweb, 
-    implemented entirely in Python.  
-    This produces any markup for any programming language.
-    
-    Usage:
-        pyweb.py [-dvs] [-c x] [-w format] file.w
-    
-    Options:
-        -v           verbose output (the default)
-        -s           silent output
-        -d           debugging output
-        -c x         change the command character from '@' to x
-        -w format    Use the given weaver for the final document.
-                     Choices are rst, html, latex and htmlshort.
-                     Additionally, a \`module.class\` name can be used.
-        -xw          Exclude weaving
-        -xt          Exclude tangling
-        -pi          Permit include-command errors
-        -rt          Transitive references
-        -rs          Simple references (default)
-        -n           Include line number comments in the tangled source; requires
-                     comment start and stop on the @o commands.
-            
-        file.w       The input file, with @o, @d, @i, @[, @{, @\|, @<, @f, @m, @u commands.
+    Yet another simple literate programming tool derived from \*\*nuweb\*\*, 
+    implemented entirely in Python.
+    With a suitable configuration, this weaves documents with any markup language,
+    and tangles source files for any programming language.
     """
 
 ..
@@ -7611,7 +7577,7 @@ source files.
     \_\_version\_\_ = """3.1"""
     
     ### DO NOT EDIT THIS FILE!
-    ### It was created by /Users/slott/Documents/Projects/PyWebTool-3/pyweb/pyweb.py, \_\_version\_\_='3.0'.
+    ### It was created by bootstrap/pyweb.py, \_\_version\_\_='3.0'.
     ### From source pyweb.w modified Fri Jun 10 10:48:04 2022.
     ### In working directory '/Users/slott/Documents/Projects/py-web-tool'.
 
@@ -7825,8 +7791,9 @@ on these simple text values to create more useful objects.
         permit='',  # Don't tolerate missing includes
         reference='s',  # Simple references
         tangler\_line\_numbers=False,
+        output=Path.cwd(),
         )
-    self.expand(self.defaults)
+    # self.expand(self.defaults)
     
     # Primitive Actions
     self.loadOp = LoadAction()
@@ -7871,6 +7838,7 @@ instances.
         p.add\_argument("-p", "--permit", dest="permit", action="store")
         p.add\_argument("-r", "--reference", dest="reference", action="store", choices=('t', 's'))
         p.add\_argument("-n", "--linenumbers", dest="tangler\_line\_numbers", action="store\_true")
+        p.add\_argument("-o", "--output", dest="output", action="store", type=Path)
         p.add\_argument("files", nargs='+', type=Path)
         config = p.parse\_args(argv, namespace=self.defaults)
         self.expand(config)
@@ -7888,6 +7856,7 @@ instances.
             case \_:
                 raise Error("Improper configuration")
     
+        # Weaver
         try:
             weaver\_class = weavers[config.weaver.lower()]
         except KeyError:
@@ -7898,6 +7867,7 @@ instances.
                 raise TypeError(f"{weaver\_class!r} not a subclass of Weaver")
         config.theWeaver = weaver\_class()
         
+        # Tangler
         config.theTangler = TanglerMake()
         
         if config.permit:
@@ -8157,7 +8127,7 @@ This will create a variant on **py-web-tool** that will handle a different
 weaver via the command-line option ``-w myweaver``.
 
 
-..  pyweb/test.w
+..  py-web-tool/test.w
 
 Unit Tests
 ===========
@@ -8184,7 +8154,7 @@ Note that the last line really does set an environment variable and run
 a program on a single line.
 
 
-..	pyweb/additional.w
+..  py-web-tool/additional.w
 
 Additional Files
 ================
@@ -8418,16 +8388,16 @@ In order to support a pleasant installation, the ``setup.py`` file is helpful.
     
     setup(name='py-web-tool',
           version='3.1',
-          description='pyWeb 3.1: Yet Another Literate Programming Tool',
+          description='py-web-tool 3.1: Yet Another Literate Programming Tool',
           author='S. Lott',
-          author\_email='s\_lott@yahoo.com',
+          author\_email='slott56@gmail.com',
           url='http://slott-softwarearchitect.blogspot.com/',
           py\_modules=['pyweb'],
           classifiers=[
-          'Intended Audience :: Developers',
-          'Topic :: Documentation',
-          'Topic :: Software Development :: Documentation', 
-          'Topic :: Text Processing :: Markup',
+              'Intended Audience :: Developers',
+              'Topic :: Documentation',
+              'Topic :: Software Development :: Documentation', 
+              'Topic :: Text Processing :: Markup',
           ]
        )
 
@@ -8717,27 +8687,31 @@ Note that there are tabs in this file. We bootstrap the next version from the 3.
     # Makefile for py-web-tool.
     # Requires a pyweb-3.0.py (untouched) to bootstrap the current version.
     
-    SOURCE = pyweb.w intro.w overview.w impl.w tests.w additional.w todo.w done.w \\
-    	test/pyweb\_test.w test/intro.w test/unit.w test/func.w test/combined.w
+    SOURCE\_PYLPWEB = pyweb.w intro.w overview.w impl.w tests.w additional.w todo.w done.w
+    TEST\_PYLPWEB = test/pyweb\_test.w test/intro.w test/unit.w test/func.w test/runner.w	
     
-    .PHONY : test build
+    .PHONY : test doc weave build
     
     # Note the bootstrapping new version from version 3.0 as baseline.
     # Handy to keep this \*outside\* the project's Git repository.
-    PYWEB\_BOOTSTRAP=/Users/slott/Documents/Projects/PyWebTool-3/pyweb/pyweb.py
+    PYLPWEB\_BOOTSTRAP=bootstrap/pyweb.py
     
-    test : $(SOURCE)
-    	python3 $(PYWEB\_BOOTSTRAP) -xw pyweb.w 
-    	cd test && python3 ../pyweb.py pyweb\_test.w
+    test : $(SOURCE\_PYLPWEB) $(TEST\_PYLPWEB)
+    	python3 $(PYLPWEB\_BOOTSTRAP) -xw pyweb.w 
+    	python3 pyweb.py test/pyweb\_test.w -o test
     	PYTHONPATH=${PWD} pytest
-    	cd test && rst2html.py pyweb\_test.rst pyweb\_test.html
-    	mypy --strict --show-error-codes pyweb.py
+    	rst2html.py test/pyweb\_test.rst test/pyweb\_test.html
+    	mypy --strict --show-error-codes pyweb.py tangle.py weave.py
     
-    build : pyweb.py pyweb.html
-         
-    pyweb.py pyweb.rst : $(SOURCE)
-    	python3 $(PYWEB\_BOOTSTRAP) pyweb.w 
+    weave : pyweb.py tangle.py weave.py
     
+    doc : pyweb.html
+    
+    build : pyweb.py tangle.py weave.py pyweb.html
+    
+    pyweb.py pyweb.rst : $(SOURCE\_PYLPWEB)
+    	python3 $(PYLPWEB\_BOOTSTRAP) pyweb.w 
+             
     pyweb.html : pyweb.rst
     	rst2html.py $< $@
 
@@ -8771,13 +8745,14 @@ Note that there are tabs in this file. We bootstrap the next version from the 3.
         pytest == 7.1.2
         mypy == 0.910
     setenv = 
-        PYWEB\_BOOTSTRAP = /Users/slott/Documents/Projects/PyWebTool-3/pyweb/pyweb.py
+        PYLPWEB\_BOOTSTRAP = bootstrap/pyweb.py
+        PYTHONPATH = {toxinidir}
     commands\_pre = 
-        python3 {env:PYWEB\_BOOTSTRAP} pyweb.w
+        python3 {env:PYLPWEB\_BOOTSTRAP} pyweb.w
         python3 pyweb.py -o test test/pyweb\_test.w 
     commands = 
-        python3 test/test.py
-        mypy --strict pyweb.py
+        pytest
+    	mypy --strict --show-error-codes pyweb.py tangle.py weave.py
     """
 
 ..
@@ -8788,7 +8763,7 @@ Note that there are tabs in this file. We bootstrap the next version from the 3.
 
 
 
-.. pyweb/jedit.w 
+.. py-web-tool/jedit.w 
 
 JEdit Configuration
 ====================
@@ -9032,7 +9007,7 @@ Additionally, you'll want to update the JEdit catalog.
 ..	End
 
 
-..    pyweb/todo.w 
+..    py-web-tool/todo.w 
 
 Python 3.10 Migration
 =====================
@@ -9048,11 +9023,22 @@ Python 3.10 Migration
 
 #. [x] Use ``match`` statements for some of the ``elif`` blocks.
 
-#. [ ] Introduce pytest instead of building a test runner.
+#. [x] Introduce pytest instead of building a test runner from ``runner.w``.
 
-#. [ ] ``pyproject.toml``. This requires ```-o dir`` option to write output to a directory of choice; which requires ``pathlib``.
+#. [x] Add ``-o dir`` option to write output to a directory of choice. Requires ``pathlib``.
+
+#. [x] Finish ``pyproject.toml``. Requires ``-o dir`` option.
+
+#. [x] Add ``bootstrap`` directory.
+
+#. [ ] Test cases for ``weave.py`` and ``tangle.py``
  
+#. [ ] Rename the module from ``pyweb`` to ``pylpweb`` to avoid namespace squatting issues.
+       Rename the project from ``py-web-tool`` to ``py-lpweb-tool``.
+
 #. [ ] Replace various mock classes with ``unittest.mock.Mock`` objects and appropriate extended testing.
+
+#. [ ] Separate ``tests``, ``examples``, and ``src`` from each other. 
 
  
 To Do
@@ -9125,7 +9111,7 @@ The disadvantage is a (very low, but still present) barrier to adoption.
 The advantage of adding these two projects might be some simplification.
 
 
-..    pyweb/done.w 
+..    py-web-tool/done.w 
 
 Change Log
 ===========
@@ -9134,13 +9120,15 @@ Changes for 3.1
 
 -   Change to Python 3.10.
 
--   Add type hints, f-strings, pathlib, abc.ABC
+-   Add type hints, f-strings, pathlib, abc.ABC.
 
--   Replace some complex elif blocks with match statements
+-   Replace some complex ``elif`` blocks with ``match`` statements.
 
--   Remove the Jedit configuration file as an output.
+-   Use pytest as a test runner.
 
 -   Add a ``Makefile``, ``pyproject.toml``, ``requirements.txt`` and ``requirements-dev.txt``.
+
+-   Add ``-o dir`` option to write output to a directory of choice, simplifying **tox** setup.
 
 Changes for 3.0
 
@@ -9644,7 +9632,7 @@ User Identifiers
 :OutputChunk:
     [`71`_] `118`_
 :Path:
-    [`3`_] `4`_ `5`_ `6`_ `14`_ `45`_ `50`_ `53`_ `97`_ `114`_ `116`_ `120`_ `130`_ `164`_
+    [`3`_] `4`_ `5`_ `53`_ `97`_ `114`_ `116`_ `120`_ `130`_ `163`_ `164`_
 :ReferenceCommand:
     [`88`_] `123`_
 :TangleAction:
@@ -9800,7 +9788,7 @@ User Identifiers
 :referenceTo:
     `20`_ `21`_ [`40`_] `68`_
 :references:
-    `17`_ `18`_ `19`_ `20`_ `26`_ `33`_ `35`_ `37`_ [`43`_] `53`_ `60`_ `61`_ `107`_ `122`_ `158`_ `163`_ `173`_
+    `17`_ `18`_ `19`_ `20`_ `26`_ `33`_ `35`_ `37`_ [`43`_] `53`_ `60`_ `61`_ `107`_ `122`_ `163`_ `173`_
 :resolve:
     `69`_ [`89`_] `90`_ `91`_ `92`_ `105`_
 :searchForRE:
@@ -9820,7 +9808,7 @@ User Identifiers
 :sys:
     [`124`_] `125`_ `168`_ `169`_
 :tangle:
-    `46`_ `63`_ `69`_ `71`_ `74`_ `75`_ `77`_ `81`_ `82`_ `83`_ `84`_ `92`_ [`114`_] `150`_ `163`_ `170`_ `178`_
+    `46`_ `63`_ `69`_ `71`_ `74`_ `75`_ `77`_ `81`_ `82`_ `83`_ `84`_ `92`_ [`114`_] `150`_ `163`_ `170`_ `178`_ `183`_ `184`_
 :tempfile:
     [`48`_] `50`_
 :time:
@@ -9834,7 +9822,7 @@ User Identifiers
 :weakref:
     `53`_ [`98`_] `101`_ `102`_ `103`_
 :weave:
-    `62`_ `68`_ `73`_ `76`_ `81`_ `82`_ `83`_ `85`_ `86`_ `87`_ `91`_ [`115`_] `147`_ `163`_ `172`_ `178`_
+    `62`_ `68`_ `73`_ `76`_ `81`_ `82`_ `83`_ `85`_ `86`_ `87`_ `91`_ [`115`_] `147`_ `163`_ `172`_ `178`_ `183`_ `184`_
 :weaveChunk:
     `91`_ [`115`_]
 :weaveReferenceTo:
@@ -9844,7 +9832,7 @@ User Identifiers
 :webAdd:
     `56`_ `67`_ [`72`_] `118`_ `119`_ `120`_ `121`_ `130`_
 :write:
-    [`5`_] `8`_ `10`_ `18`_ `19`_ `21`_ `22`_ `46`_ `82`_ `115`_
+    `4`_ [`5`_] `8`_ `10`_ `18`_ `19`_ `21`_ `22`_ `46`_ `82`_ `115`_
 :xrefDefLine:
     `22`_ [`42`_] `87`_
 :xrefFoot:
@@ -9861,7 +9849,7 @@ User Identifiers
 
 ..	class:: small
 
-	Created by /Users/slott/Documents/Projects/PyWebTool-3/pyweb/pyweb.py at Fri Jun 10 16:54:51 2022.
+	Created by bootstrap/pyweb.py at Sat Jun 11 08:20:45 2022.
 
     Source pyweb.w modified Fri Jun 10 10:48:04 2022.
 

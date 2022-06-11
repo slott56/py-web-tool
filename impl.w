@@ -276,8 +276,8 @@ import abc
 class Emitter:
     """Emit an output file; handling indentation context."""
     code_indent = 0 # Used by a Tangler
-    filePath : Path  # File within the base directory
-    output : Path  # Base directory
+    filePath : Path  # Path within the base directory (on the name is used)
+    output : Path  # Base directory to write
     
     theFile: TextIO
     def __init__(self) -> None:
@@ -323,6 +323,7 @@ def open(self, aPath: Path) -> "Emitter":
     if not hasattr(self, 'output'):
         self.output = Path.cwd()
     self.filePath = self.output / aPath.name
+    self.logger.debug(f"Writing to {self.output} / {aPath.name} == {self.filePath}")
     self.linesWritten = 0
     self.doOpen()
     return self
@@ -641,7 +642,7 @@ we're not always starting a fresh line with ``weaveReferenceTo()``.
 def doOpen(self) -> None:
     """Create the final woven document."""
     self.filePath = self.filePath.with_suffix(self.extension)
-    self.logger.info("Weaving %r", self.filePath)
+    self.logger.info("Weaving '%s'", self.filePath)
     self.theFile = self.filePath.open("w")
     self.readdIndent(self.code_indent)
     
@@ -813,7 +814,7 @@ a simple ``" "`` because it looks better.
 @d Weaver reference command...
 @{
 refto_name_template = string.Template(r"|srarr|\ ${fullName} (`${seq}`_)")
-refto_seq_template = string.Template("|srarr|\ (`${seq}`_)")
+refto_seq_template = string.Template(r"|srarr|\ (`${seq}`_)")
 refto_seq_separator = ", "
 
 def referenceTo(self, aName: str | None, seq: int) -> str:
@@ -1049,8 +1050,8 @@ block.  Our one compromise is a thin space if the phrase
 @d LaTeX write a line...
 @{
 quoted_chars: list[tuple[str, str]] = [
-    ("\\end{Verbatim}", "\\end\,{Verbatim}"),  # Allow \end{Verbatim} in a Verbatim context
-    ("\\{", "\\\,{"), # Prevent unexpected commands in Verbatim
+    ("\\end{Verbatim}", "\\end\\,{Verbatim}"),  # Allow \end{Verbatim} in a Verbatim context
+    ("\\{", "\\\\,{"), # Prevent unexpected commands in Verbatim
     ("$", "\\$"), # Prevent unexpected math in Verbatim
 ]
 @| quoted_chars
@@ -1333,7 +1334,7 @@ def doOpen(self) -> None:
     """Tangle out of the output files."""
     self.checkPath()
     self.theFile = self.filePath.open("w")
-    self.logger.info("Tangling %r", self.filePath)
+    self.logger.info("Tangling '%s'", self.filePath)
     
 def doClose(self) -> None:
     self.theFile.close()
@@ -1425,7 +1426,7 @@ a "touch" if the new file is the same as the original.
 def doOpen(self) -> None:
     fd, self.tempname = tempfile.mkstemp(dir=os.curdir)
     self.theFile = os.fdopen(fd, "w")
-    self.logger.info("Tangling %r", self.filePath)
+    self.logger.info("Tangling  '%s'", self.filePath)
 @| doOpen
 @}
 
@@ -1447,7 +1448,7 @@ def doClose(self) -> None:
     except OSError as e:
         same = False  # Doesn't exist. (Could check for errno.ENOENT)
     if same:
-        self.logger.info("No change to %r", self.filePath)
+        self.logger.info("Unchanged '%s'", self.filePath)
         os.remove(self.tempname)
     else:
         # Windows requires the original file name be removed first.
@@ -1458,7 +1459,7 @@ def doClose(self) -> None:
         self.checkPath()
         self.filePath.hardlink_to(self.tempname)  # type: ignore [attr-defined]
         os.remove(self.tempname)
-        self.logger.info("Wrote %e lines to %s", self.linesWritten, self.filePath)
+        self.logger.info("Wrote %d lines to %s", self.linesWritten, self.filePath)
 @| doClose
 @}
 
@@ -3442,7 +3443,7 @@ The decision is delegated to the referenced chunk.
 @d Web weave...
 @{
 def weave(self, aWeaver: "Weaver") -> None:
-    self.logger.debug("Weaving file from %r", self.web_path)
+    self.logger.debug("Weaving file from '%s'", self.web_path)
     if not self.web_path:
         raise Error("No filename supplied for weaving.")
     with aWeaver.open(self.web_path):
@@ -3566,19 +3567,18 @@ class WebReader:
         OptionDef("-noindent", nargs=0),
         OptionDef("argument", nargs='*'),
     )
-
-    # State of reading and parsing.
-    tokenizer: Tokenizer
-    aChunk: Chunk
     
     # Configuration
     command: str
     permitList: list[str]
+    base_path : Path
     
     # State of the reader
     _source: TextIO
     filePath: Path
     theWeb: "Web"
+    tokenizer: Tokenizer
+    aChunk: Chunk
 
     def __init__(self, parent: Optional["WebReader"] = None) -> None:
         self.logger = logging.getLogger(self.__class__.__qualname__)
@@ -3603,7 +3603,9 @@ class WebReader:
         return self.__class__.__name__
         
     @<WebReader location in the input stream@>
+    
     @<WebReader load the web@>
+    
     @<WebReader handle a command string@>
 @| WebReader @}
 
@@ -3769,8 +3771,10 @@ test output into the final document via the ``@@i`` command.
 @{
 incPath = Path(next(self.tokenizer).strip())
 try:
-    self.logger.info("Including %r", incPath)
     include = WebReader(parent=self)
+    if not incPath.is_absolute():
+        incPath = self.base_path / incPath
+    self.logger.info("Including '%s'", incPath)
     include.load(self.theWeb, incPath)
     self.totalLines += include.tokenizer.lineNumber
     self.totalFiles += include.totalFiles
@@ -3882,10 +3886,15 @@ expression = next(self.tokenizer)
 self.expect((self.cmdrexpr,))
 try:
     # Build Context
+    # **TODO:** Parts of this are static.
+    dangerous = {
+        'breakpoint', 'compile', 'eval', 'exec', 'execfile', 'globals', 'help', 'input', 
+        'memoryview', 'open', 'print', 'super', '__import__'
+    }
     safe = types.SimpleNamespace(**dict(
         (name, obj) 
         for name,obj in builtins.__dict__.items() 
-        if name not in ('breakpoint', 'compile', 'eval', 'exec', 'execfile', 'globals', 'help', 'input', 'memoryview', 'open', 'print', 'super', '__import__')
+        if name not in dangerous
     ))
     globals = dict(
         __builtins__=safe, 
@@ -3897,7 +3906,8 @@ try:
         theWebReader=self,
         theFile=self.theWeb.web_path,
         thisApplication=sys.argv[0],
-        __version__=__version__,
+        __version__=__version__,  # Legacy compatibility. Deprecated.
+        version=__version__,
         )
     # Evaluate
     result = str(eval(expression, globals))
@@ -3977,8 +3987,9 @@ is that it's always loading a single top-level web.
 def load(self, web: "Web", filepath: Path, source: TextIO | None = None) -> "WebReader":
     self.theWeb = web
     self.filePath = filepath
+    self.base_path = self.filePath.parent
 
-    # Only set the a web filename once using the first file.
+    # Only set the a web's filename once using the first file.
     # **TODO:** this should be a setter property of the web.
     if self.theWeb.web_path is None:
         self.theWeb.web_path = self.filePath
@@ -4978,11 +4989,12 @@ def parseArgs(self, argv: list[str]) -> argparse.Namespace:
     p.add_argument("-d", "--debug", dest="verbosity", action="store_const", const=logging.DEBUG)
     p.add_argument("-c", "--command", dest="command", action="store")
     p.add_argument("-w", "--weaver", dest="weaver", action="store")
-    p.add_argument("-x", "--except", dest="skip", action="store", choices=('w','t'))
+    p.add_argument("-x", "--except", dest="skip", action="store", choices=('w', 't'))
     p.add_argument("-p", "--permit", dest="permit", action="store")
     p.add_argument("-r", "--reference", dest="reference", action="store", choices=('t', 's'))
     p.add_argument("-n", "--linenumbers", dest="tangler_line_numbers", action="store_true")
-    p.add_argument("-o", "--output", dest="output_directory", action="store", type=Path)
+    p.add_argument("-o", "--output", dest="output", action="store", type=Path)
+    p.add_argument("-V", "--Version", action='version', version=f"py-web-tool pyweb.py {__version__}")
     p.add_argument("files", nargs='+', type=Path)
     config = p.parse_args(argv, namespace=self.defaults)
     self.expand(config)

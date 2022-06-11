@@ -17,6 +17,8 @@ Changes for 3.1
 
 -   Add ``-o dir`` option to write output to a directory of choice, simplifying **tox** setup.
 
+-   Add ``bootstrap`` directory with a snapshot of a previous working release to simplify development.
+
 Changes for 3.0
 
 -   Move to GitHub

@@ -383,27 +383,31 @@ Note that there are tabs in this file. We bootstrap the next version from the 3.
 @{# Makefile for py-web-tool.
 # Requires a pyweb-3.0.py (untouched) to bootstrap the current version.
 
-SOURCE = pyweb.w intro.w overview.w impl.w tests.w additional.w todo.w done.w \
-	test/pyweb_test.w test/intro.w test/unit.w test/func.w test/runner.w
+SOURCE_PYLPWEB = pyweb.w intro.w overview.w impl.w tests.w additional.w todo.w done.w
+TEST_PYLPWEB = test/pyweb_test.w test/intro.w test/unit.w test/func.w test/runner.w	
 
-.PHONY : test build
+.PHONY : test doc weave build
 
 # Note the bootstrapping new version from version 3.0 as baseline.
 # Handy to keep this *outside* the project's Git repository.
-PYWEB_BOOTSTRAP=/Users/slott/Documents/Projects/PyWebTool-3/pyweb/pyweb.py
+PYLPWEB_BOOTSTRAP=bootstrap/pyweb.py
 
-test : $(SOURCE)
-	python3 $(PYWEB_BOOTSTRAP) -xw pyweb.w 
-	cd test && python3 ../pyweb.py pyweb_test.w
+test : $(SOURCE_PYLPWEB) $(TEST_PYLPWEB)
+	python3 $(PYLPWEB_BOOTSTRAP) -xw pyweb.w 
+	python3 pyweb.py test/pyweb_test.w -o test
 	PYTHONPATH=${PWD} pytest
-	cd test && rst2html.py pyweb_test.rst pyweb_test.html
-	mypy --strict --show-error-codes pyweb.py
+	rst2html.py test/pyweb_test.rst test/pyweb_test.html
+	mypy --strict --show-error-codes pyweb.py tangle.py weave.py
 
-build : pyweb.py pyweb.html
-     
-pyweb.py pyweb.rst : $(SOURCE)
-	python3 $(PYWEB_BOOTSTRAP) pyweb.w 
+weave : pyweb.py tangle.py weave.py
 
+doc : pyweb.html
+
+build : pyweb.py tangle.py weave.py pyweb.html
+
+pyweb.py pyweb.rst : $(SOURCE_PYLPWEB)
+	python3 $(PYLPWEB_BOOTSTRAP) pyweb.w 
+         
 pyweb.html : pyweb.rst
 	rst2html.py $< $@
 @}
@@ -426,12 +430,13 @@ deps =
     pytest == 7.1.2
     mypy == 0.910
 setenv = 
-    PYWEB_BOOTSTRAP = /Users/slott/Documents/Projects/PyWebTool-3/pyweb/pyweb.py
+    PYLPWEB_BOOTSTRAP = bootstrap/pyweb.py
+    PYTHONPATH = {toxinidir}
 commands_pre = 
-    python3 {env:PYWEB_BOOTSTRAP} pyweb.w
+    python3 {env:PYLPWEB_BOOTSTRAP} pyweb.w
     python3 pyweb.py -o test test/pyweb_test.w 
 commands = 
-    python3 test/test.py
-    mypy --strict pyweb.py
+    pytest
+	mypy --strict --show-error-codes pyweb.py tangle.py weave.py
 """
 @}
