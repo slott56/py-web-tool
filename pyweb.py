@@ -1,30 +1,10 @@
 #!/usr/bin/env python
 """py-web-tool Literate Programming.
 
-Yet another simple literate programming tool derived from nuweb, 
-implemented entirely in Python.  
-This produces any markup for any programming language.
-
-Usage:
-    pyweb.py [-dvs] [-c x] [-w format] file.w
-
-Options:
-    -v           verbose output (the default)
-    -s           silent output
-    -d           debugging output
-    -c x         change the command character from '@' to x
-    -w format    Use the given weaver for the final document.
-                 Choices are rst, html, latex and htmlshort.
-                 Additionally, a `module.class` name can be used.
-    -xw          Exclude weaving
-    -xt          Exclude tangling
-    -pi          Permit include-command errors
-    -rt          Transitive references
-    -rs          Simple references (default)
-    -n           Include line number comments in the tangled source; requires
-                 comment start and stop on the @o commands.
-        
-    file.w       The input file, with @o, @d, @i, @[, @{, @|, @<, @f, @m, @u commands.
+Yet another simple literate programming tool derived from **nuweb**, 
+implemented entirely in Python.
+With a suitable configuration, this weaves documents with any markup language,
+and tangles source files for any programming language.
 """
 __version__ = """3.1"""
 
@@ -1109,7 +1089,8 @@ class WebReader:
 class Emitter:
     """Emit an output file; handling indentation context."""
     code_indent = 0 # Used by a Tangler
-    filePath : Path
+    filePath : Path  # File within the base directory
+    output : Path  # Base directory
     
     theFile: TextIO
     def __init__(self) -> None:
@@ -1131,13 +1112,15 @@ class Emitter:
         
     def open(self, aPath: Path) -> "Emitter":
         """Open a file."""
-        self.filePath = aPath
+        if not hasattr(self, 'output'):
+            self.output = Path.cwd()
+        self.filePath = self.output / aPath.name
         self.linesWritten = 0
-        self.doOpen(aPath)
+        self.doOpen()
         return self
         
     
-    def doOpen(self, aFile: Path) -> None:
+    def doOpen(self) -> None:
         self.logger.debug("Creating %r", self.filePath)
     
     
@@ -1267,8 +1250,9 @@ class Weaver(Emitter):
         super().__init__()
     
         
-    def doOpen(self, basename: Path) -> None:
-        self.filePath = basename.with_suffix(self.extension)
+    def doOpen(self) -> None:
+        """Create the final woven document."""
+        self.filePath = self.filePath.with_suffix(self.extension)
         self.logger.info("Weaving %r", self.filePath)
         self.theFile = self.filePath.open("w")
         self.readdIndent(self.code_indent)
@@ -1590,11 +1574,12 @@ class Tangler(Emitter):
     def checkPath(self) -> None:
         self.filePath.parent.mkdir(parents=True, exist_ok=True)
     
-    def doOpen(self, aFile: Path) -> None:
-        self.filePath = aFile
+    def doOpen(self) -> None:
+        """Tangle out of the output files."""
         self.checkPath()
         self.theFile = self.filePath.open("w")
-        self.logger.info("Tangling %r", aFile)
+        self.logger.info("Tangling %r", self.filePath)
+        
     def doClose(self) -> None:
         self.theFile.close()
         self.logger.info("Wrote %d lines to %r", self.linesWritten, self.filePath)
@@ -1626,10 +1611,10 @@ class TanglerMake(Tangler):
         super().__init__(*args)
 
         
-    def doOpen(self, aFile: Path) -> None:
+    def doOpen(self) -> None:
         fd, self.tempname = tempfile.mkstemp(dir=os.curdir)
         self.theFile = os.fdopen(fd, "w")
-        self.logger.info("Tangling %r", aFile)
+        self.logger.info("Tangling %r", self.filePath)
     
 
 
@@ -1710,6 +1695,7 @@ class Action:
         self.start = time.process_time()
     
 
+    
         
     def duration(self) -> float:
         """Return duration of the action."""
@@ -1741,11 +1727,13 @@ class ActionSequence(Action):
             o()
     
 
+    
         
     def append(self, anAction: Action) -> None:
         self.opSequence.append(anAction)
     
 
+    
         
     def summary(self) -> str:
         return ", ".join([o.summary() for o in self.opSequence])
@@ -1770,6 +1758,7 @@ class WeaveAction(Action):
             self.options.theWeaver = self.web.language() 
             self.logger.info("Using %s", self.options.theWeaver.__class__.__name__)
         self.options.theWeaver.reference_style = self.options.reference_style
+        self.options.theWeaver.output = self.options.output
         try:
             self.web.weave(self.options.theWeaver)
             self.logger.info("Finished Normally")
@@ -1778,6 +1767,7 @@ class WeaveAction(Action):
             #raise
     
 
+    
         
     def summary(self) -> str:
         if self.options.theWeaver and self.options.theWeaver.linesWritten > 0:
@@ -1799,6 +1789,7 @@ class TangleAction(Action):
     def __call__(self) -> None:
         super().__call__()
         self.options.theTangler.include_line_numbers = self.options.tangler_line_numbers
+        self.options.theTangler.output = self.options.output
         try:
             self.web.tangle(self.options.theTangler)
         except Error as e:
@@ -1806,6 +1797,7 @@ class TangleAction(Action):
             #raise
     
 
+    
         
     def summary(self) -> str:
         if self.options.theTangler and self.options.theTangler.linesWritten > 0:
@@ -1824,6 +1816,7 @@ class LoadAction(Action):
         super().__init__("Load")
     def __str__(self) -> str:
         return f"Load [{self.webReader!s}, {self.web!s}]"
+        
         
     def __call__(self) -> None:
         super().__call__()
@@ -1849,6 +1842,7 @@ class LoadAction(Action):
             raise
     
 
+    
         
     def summary(self) -> str:
         return (
@@ -1873,8 +1867,9 @@ class Application:
             permit='',  # Don't tolerate missing includes
             reference='s',  # Simple references
             tangler_line_numbers=False,
+            output=Path.cwd(),
             )
-        self.expand(self.defaults)
+        # self.expand(self.defaults)
         
         # Primitive Actions
         self.loadOp = LoadAction()
@@ -1899,6 +1894,7 @@ class Application:
         p.add_argument("-p", "--permit", dest="permit", action="store")
         p.add_argument("-r", "--reference", dest="reference", action="store", choices=('t', 's'))
         p.add_argument("-n", "--linenumbers", dest="tangler_line_numbers", action="store_true")
+        p.add_argument("-o", "--output", dest="output_directory", action="store", type=Path)
         p.add_argument("files", nargs='+', type=Path)
         config = p.parse_args(argv, namespace=self.defaults)
         self.expand(config)
@@ -1916,6 +1912,7 @@ class Application:
             case _:
                 raise Error("Improper configuration")
     
+        # Weaver
         try:
             weaver_class = weavers[config.weaver.lower()]
         except KeyError:
@@ -1926,6 +1923,7 @@ class Application:
                 raise TypeError(f"{weaver_class!r} not a subclass of Weaver")
         config.theWeaver = weaver_class()
         
+        # Tangler
         config.theTangler = TanglerMake()
         
         if config.permit:

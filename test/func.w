@@ -433,14 +433,7 @@ class WeaveTestcase(unittest.TestCase):
         self.source = io.StringIO(self.text)
         self.web = pyweb.Web()
         self.rdr = pyweb.WebReader()
-    def tangle_and_check_exception(self, exception_text: str) -> None:
-        try:
-            self.rdr.load(self.web, self.file_path, self.source)
-            self.web.tangle(self.tangler)
-            self.web.createUsedBy()
-            self.fail("Should not tangle")
-        except pyweb.Error as e:
-            self.assertEqual(exception_text, e.args[0])
+        
     def tearDown(self) -> None:
         try:
             self.file_path.with_suffix(".html").unlink()

@@ -16,12 +16,18 @@ Python 3.10 Migration
 
 #. [x] Introduce pytest instead of building a test runner from ``runner.w``.
 
-#. [ ] ``pyproject.toml``. This requires ```-o dir`` option to write output to a directory of choice; which requires ``pathlib``.
+#. [x] Add ``-o dir`` option to write output to a directory of choice. Requires ``pathlib``.
+
+#. [ ] Finish ``pyproject.toml``. Requires ``-o dir`` option.
+
+#. [ ] Test cases for ``weave.py`` and ``tangle.py``
  
 #. [ ] Rename the module from ``pyweb`` to ``pylpweb`` to avoid namespace squatting issues.
        Rename the project from ``py-web-tool`` to ``py-lpweb-tool``.
 
 #. [ ] Replace various mock classes with ``unittest.mock.Mock`` objects and appropriate extended testing.
+
+#. [ ] Separate ``tests``, ``examples``, and ``src`` from each other. Add ``bootstrap`` directory.
 
  
 To Do

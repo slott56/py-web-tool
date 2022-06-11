@@ -7,15 +7,15 @@ Changes for 3.1
 
 -   Change to Python 3.10.
 
--   Add type hints, f-strings, pathlib, abc.ABC
+-   Add type hints, f-strings, pathlib, abc.ABC.
 
--   Replace some complex elif blocks with match statements
+-   Replace some complex ``elif`` blocks with ``match`` statements.
 
 -   Use pytest as a test runner.
 
 -   Add a ``Makefile``, ``pyproject.toml``, ``requirements.txt`` and ``requirements-dev.txt``.
 
-
+-   Add ``-o dir`` option to write output to a directory of choice, simplifying **tox** setup.
 
 Changes for 3.0
 

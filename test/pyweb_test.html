@@ -596,7 +596,7 @@ emitter is Tangler-like.</p>
 <p class="rubric" id="target-3">Unit Test of Emitter Superclass (3) =</p>
 <pre class="code literal-block">
 class EmitterExtension(pyweb.Emitter):
-    def doOpen(self, fileName: str) -&gt; None:
+    def doOpen(self) -&gt; None:
         self.theFile = io.StringIO()
     def doClose(self) -&gt; None:
         self.theFile.flush()
@@ -605,18 +605,18 @@ class TestEmitter(unittest.TestCase):
     def setUp(self) -&gt; None:
         self.emitter = EmitterExtension()
     def test_emitter_should_open_close_write(self) -&gt; None:
-        self.emitter.open(&quot;test.tmp&quot;)
+        self.emitter.open(Path(&quot;test.tmp&quot;))
         self.emitter.write(&quot;Something&quot;)
         self.emitter.close()
         self.assertEqual(&quot;Something&quot;, self.emitter.theFile.getvalue())
     def test_emitter_should_codeBlock(self) -&gt; None:
-        self.emitter.open(&quot;test.tmp&quot;)
+        self.emitter.open(Path(&quot;test.tmp&quot;))
         self.emitter.codeBlock(&quot;Some&quot;)
         self.emitter.codeBlock(&quot; Code&quot;)
         self.emitter.close()
         self.assertEqual(&quot;Some Code\n&quot;, self.emitter.theFile.getvalue())
     def test_emitter_should_indent(self) -&gt; None:
-        self.emitter.open(&quot;test.tmp&quot;)
+        self.emitter.open(Path(&quot;test.tmp&quot;))
         self.emitter.codeBlock(&quot;Begin\n&quot;)
         self.emitter.addIndent(4)
         self.emitter.codeBlock(&quot;More Code\n&quot;)
@@ -625,7 +625,7 @@ class TestEmitter(unittest.TestCase):
         self.emitter.close()
         self.assertEqual(&quot;Begin\n    More Code\nEnd\n&quot;, self.emitter.theFile.getvalue())
     def test_emitter_should_noindent(self) -&gt; None:
-        self.emitter.open(&quot;test.tmp&quot;)
+        self.emitter.open(Path(&quot;test.tmp&quot;))
         self.emitter.codeBlock(&quot;Begin\n&quot;)
         self.emitter.setIndent(0)
         self.emitter.codeBlock(&quot;More Code\n&quot;)
@@ -679,7 +679,7 @@ class TestWeaver(unittest.TestCase):
         self.aChunk.referencedBy = [self.aFileChunk]
     def tearDown(self) -&gt; None:
         try:
-            self.filepath.unlink()
+            self.filepath.with_suffix('.rst').unlink()
         except OSError:
             pass
 
@@ -1800,7 +1800,9 @@ class TestWeaveAction(unittest.TestCase):
         self.action.web = self.web
         self.action.options = argparse.Namespace(
             theWeaver=self.weaver,
-            reference_style=pyweb.SimpleReference() )
+            reference_style=pyweb.SimpleReference(),
+            output=Path.cwd(),
+        )
     def test_should_execute_weaving(self) -&gt; None:
         self.action()
         self.assertTrue(self.web.wove is self.weaver)
@@ -1819,7 +1821,9 @@ class TestTangleAction(unittest.TestCase):
         self.action.web = self.web
         self.action.options = argparse.Namespace(
             theTangler = self.tangler,
-            tangler_line_numbers = False, )
+            tangler_line_numbers = False,
+            output=Path.cwd()
+        )
     def test_should_execute_tangling(self) -&gt; None:
         self.action()
         self.assertTrue(self.web.tangled is self.tangler)
@@ -1840,7 +1844,9 @@ class TestLoadAction(unittest.TestCase):
             webReader = self.webReader,
             source_path=Path(&quot;TestLoadAction.w&quot;),
             command=&quot;&#64;&quot;,
-            permitList = [], )
+            permitList = [],
+            output=Path.cwd(),
+        )
         Path(&quot;TestLoadAction.w&quot;).write_text(&quot;&quot;)
     def tearDown(self) -&gt; None:
         try:
@@ -2407,14 +2413,7 @@ class WeaveTestcase(unittest.TestCase):
         self.source = io.StringIO(self.text)
         self.web = pyweb.Web()
         self.rdr = pyweb.WebReader()
-    def tangle_and_check_exception(self, exception_text: str) -&gt; None:
-        try:
-            self.rdr.load(self.web, self.file_path, self.source)
-            self.web.tangle(self.tangler)
-            self.web.createUsedBy()
-            self.fail(&quot;Should not tangle&quot;)
-        except pyweb.Error as e:
-            self.assertEqual(exception_text, e.args[0])
+
     def tearDown(self) -&gt; None:
         try:
             self.file_path.with_suffix(&quot;.html&quot;).unlink()
@@ -3011,7 +3010,7 @@ div.document { width: 7in; }
 <p>(None)</p>
 <hr class="docutils" />
 <blockquote class="small">
-Created by ../pyweb.py at Fri Jun 10 17:08:42 2022.</blockquote>
+Created by ../pyweb.py at Sat Jun 11 07:35:24 2022.</blockquote>
 <p class="small">Source pyweb_test.w modified Fri Jun 10 17:07:24 2022.</p>
 <blockquote class="small">
 <p>pyweb.__version__ '3.1'.</p>

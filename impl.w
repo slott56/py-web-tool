@@ -276,7 +276,8 @@ import abc
 class Emitter:
     """Emit an output file; handling indentation context."""
     code_indent = 0 # Used by a Tangler
-    filePath : Path
+    filePath : Path  # File within the base directory
+    output : Path  # Base directory
     
     theFile: TextIO
     def __init__(self) -> None:
@@ -319,9 +320,11 @@ characters to the file.
 @{
 def open(self, aPath: Path) -> "Emitter":
     """Open a file."""
-    self.filePath = aPath
+    if not hasattr(self, 'output'):
+        self.output = Path.cwd()
+    self.filePath = self.output / aPath.name
     self.linesWritten = 0
-    self.doOpen(aPath)
+    self.doOpen()
     return self
     
 @<Emitter doOpen, to be overridden by subclasses@>
@@ -354,7 +357,7 @@ methods are overridden by the various subclasses to
 perform the unique operation for the subclass.
 
 @d Emitter doOpen... @{
-def doOpen(self, aFile: Path) -> None:
+def doOpen(self) -> None:
     self.logger.debug("Creating %r", self.filePath)
 @| doOpen
 @}
@@ -635,8 +638,9 @@ we're not always starting a fresh line with ``weaveReferenceTo()``.
 
 @d Weaver doOpen...
 @{
-def doOpen(self, basename: Path) -> None:
-    self.filePath = basename.with_suffix(self.extension)
+def doOpen(self) -> None:
+    """Create the final woven document."""
+    self.filePath = self.filePath.with_suffix(self.extension)
     self.logger.info("Weaving %r", self.filePath)
     self.theFile = self.filePath.open("w")
     self.readdIndent(self.code_indent)
@@ -1325,11 +1329,12 @@ actual file created by open.
 def checkPath(self) -> None:
     self.filePath.parent.mkdir(parents=True, exist_ok=True)
 
-def doOpen(self, aFile: Path) -> None:
-    self.filePath = aFile
+def doOpen(self) -> None:
+    """Tangle out of the output files."""
     self.checkPath()
     self.theFile = self.filePath.open("w")
-    self.logger.info("Tangling %r", aFile)
+    self.logger.info("Tangling %r", self.filePath)
+    
 def doClose(self) -> None:
     self.theFile.close()
     self.logger.info("Wrote %d lines to %r", self.linesWritten, self.filePath)
@@ -1417,10 +1422,10 @@ a "touch" if the new file is the same as the original.
 
 @d TanglerMake doOpen...
 @{
-def doOpen(self, aFile: Path) -> None:
+def doOpen(self) -> None:
     fd, self.tempname = tempfile.mkstemp(dir=os.curdir)
     self.theFile = os.fdopen(fd, "w")
-    self.logger.info("Tangling %r", aFile)
+    self.logger.info("Tangling %r", self.filePath)
 @| doOpen
 @}
 
@@ -3665,22 +3670,6 @@ def handleCommand(self, token: str) -> bool:
 @| handleCommand
 @}
 
-The following sequence of ``if``-``elif`` statements identifies
-the structural commands that partition the input into separate ``Chunks``.
-
-::
-
-    @@d OLD major commands...
-    @@{
-    if token[:2] == self.cmdo:
-        @@<start an OutputChunk, adding it to the web@@>
-    elif token[:2] == self.cmdd:
-        @@<start a NamedChunk or NamedDocumentChunk, adding it to the web@@>
-    elif token[:2] == self.cmdi:
-        @@<include another file@@>
-    elif token[:2] in (self.cmdrcurl,self.cmdrbrak):
-        @@<finish a chunk, start a new Chunk adding it to the web@@>
-    @@}
 
 An output chunk has the form ``@@o`` *name* ``@@{`` *content* ``@@}``.
 We use the first two tokens to name the ``OutputChunk``.  We simply expect
@@ -3820,27 +3809,6 @@ self.aChunk.webAdd(self.theWeb)
 
 The following sequence of ``elif`` statements identifies
 the minor commands that add ``Command`` instances to the current open ``Chunk``. 
-
-::
-
-    @@d OLD minor commands...
-    @@{
-    elif token[:2] == self.cmdpipe:
-        @@<assign user identifiers to the current chunk@@>
-    elif token[:2] == self.cmdf:
-        self.aChunk.append(FileXrefCommand(self.tokenizer.lineNumber))
-    elif token[:2] == self.cmdm:
-        self.aChunk.append(MacroXrefCommand(self.tokenizer.lineNumber))
-    elif token[:2] == self.cmdu:
-        self.aChunk.append(UserIdXrefCommand(self.tokenizer.lineNumber))
-    elif token[:2] == self.cmdlangl:
-        @@<add a reference command to the current chunk@@>
-    elif token[:2] == self.cmdlexpr:
-        @@<add an expression command to the current chunk@@>
-    elif token[:2] == self.cmdcmd:
-        @@<double at-sign replacement, append this character to previous TextCommand@@>
-    @@}
-
 
 User identifiers occur after a ``@@|`` in a ``NamedChunk``.
 
@@ -4310,7 +4278,6 @@ some log file, ``source.log``.  The third step runs **py-web-tool**  excluding t
 tangle pass.  This produces a final document that includes the ``source.log`` 
 test results.
 
-
 To accomplish this, we provide a class hierarchy that defines the various
 actions of the **py-web-tool**  application.  This class hierarchy defines an extensible set of 
 fundamental actions.  This gives us the flexibility to create a simple sequence
@@ -4532,6 +4499,7 @@ def __call__(self) -> None:
         self.options.theWeaver = self.web.language() 
         self.logger.info("Using %s", self.options.theWeaver.__class__.__name__)
     self.options.theWeaver.reference_style = self.options.reference_style
+    self.options.theWeaver.output = self.options.output
     try:
         self.web.weave(self.options.theWeaver)
         self.logger.info("Finished Normally")
@@ -4589,6 +4557,7 @@ with any of ``@@d`` or ``@@o``  and use ``@@{`` ``@@}`` brackets.
 def __call__(self) -> None:
     super().__call__()
     self.options.theTangler.include_line_numbers = self.options.tangler_line_numbers
+    self.options.theTangler.output = self.options.output
     try:
         self.web.tangle(self.options.theTangler)
     except Error as e:
@@ -4977,8 +4946,9 @@ self.defaults = argparse.Namespace(
     permit='',  # Don't tolerate missing includes
     reference='s',  # Simple references
     tangler_line_numbers=False,
+    output=Path.cwd(),
     )
-self.expand(self.defaults)
+# self.expand(self.defaults)
 
 # Primitive Actions
 self.loadOp = LoadAction()
@@ -5012,6 +4982,7 @@ def parseArgs(self, argv: list[str]) -> argparse.Namespace:
     p.add_argument("-p", "--permit", dest="permit", action="store")
     p.add_argument("-r", "--reference", dest="reference", action="store", choices=('t', 's'))
     p.add_argument("-n", "--linenumbers", dest="tangler_line_numbers", action="store_true")
+    p.add_argument("-o", "--output", dest="output_directory", action="store", type=Path)
     p.add_argument("files", nargs='+', type=Path)
     config = p.parse_args(argv, namespace=self.defaults)
     self.expand(config)
@@ -5029,6 +5000,7 @@ def expand(self, config: argparse.Namespace) -> argparse.Namespace:
         case _:
             raise Error("Improper configuration")
 
+    # Weaver
     try:
         weaver_class = weavers[config.weaver.lower()]
     except KeyError:
@@ -5039,6 +5011,7 @@ def expand(self, config: argparse.Namespace) -> argparse.Namespace:
             raise TypeError(f"{weaver_class!r} not a subclass of Weaver")
     config.theWeaver = weaver_class()
     
+    # Tangler
     config.theTangler = TanglerMake()
     
     if config.permit:

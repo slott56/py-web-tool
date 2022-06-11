@@ -133,7 +133,7 @@ emitter is Tangler-like.
 
 @d Unit Test of Emitter Superclass... @{ 
 class EmitterExtension(pyweb.Emitter):
-    def doOpen(self, fileName: str) -> None:
+    def doOpen(self) -> None:
         self.theFile = io.StringIO()
     def doClose(self) -> None:
         self.theFile.flush()
@@ -142,18 +142,18 @@ class TestEmitter(unittest.TestCase):
     def setUp(self) -> None:
         self.emitter = EmitterExtension()
     def test_emitter_should_open_close_write(self) -> None:
-        self.emitter.open("test.tmp")
+        self.emitter.open(Path("test.tmp"))
         self.emitter.write("Something")
         self.emitter.close()
         self.assertEqual("Something", self.emitter.theFile.getvalue())
     def test_emitter_should_codeBlock(self) -> None:
-        self.emitter.open("test.tmp")
+        self.emitter.open(Path("test.tmp"))
         self.emitter.codeBlock("Some")
         self.emitter.codeBlock(" Code")
         self.emitter.close()
         self.assertEqual("Some Code\n", self.emitter.theFile.getvalue())
     def test_emitter_should_indent(self) -> None:
-        self.emitter.open("test.tmp")
+        self.emitter.open(Path("test.tmp"))
         self.emitter.codeBlock("Begin\n")
         self.emitter.addIndent(4)
         self.emitter.codeBlock("More Code\n")
@@ -162,7 +162,7 @@ class TestEmitter(unittest.TestCase):
         self.emitter.close()
         self.assertEqual("Begin\n    More Code\nEnd\n", self.emitter.theFile.getvalue())
     def test_emitter_should_noindent(self) -> None:
-        self.emitter.open("test.tmp")
+        self.emitter.open(Path("test.tmp"))
         self.emitter.codeBlock("Begin\n")
         self.emitter.setIndent(0)
         self.emitter.codeBlock("More Code\n")
@@ -211,7 +211,7 @@ class TestWeaver(unittest.TestCase):
         self.aChunk.referencedBy = [self.aFileChunk]
     def tearDown(self) -> None:
         try:
-            self.filepath.unlink()
+            self.filepath.with_suffix('.rst').unlink()
         except OSError:
             pass
         
@@ -1223,7 +1223,9 @@ class TestWeaveAction(unittest.TestCase):
         self.action.web = self.web
         self.action.options = argparse.Namespace( 
             theWeaver=self.weaver,
-            reference_style=pyweb.SimpleReference() )
+            reference_style=pyweb.SimpleReference(),
+            output=Path.cwd(),
+        )
     def test_should_execute_weaving(self) -> None:
         self.action()
         self.assertTrue(self.web.wove is self.weaver)
@@ -1238,7 +1240,9 @@ class TestTangleAction(unittest.TestCase):
         self.action.web = self.web
         self.action.options = argparse.Namespace( 
             theTangler = self.tangler,
-            tangler_line_numbers = False, )
+            tangler_line_numbers = False, 
+            output=Path.cwd()
+        )
     def test_should_execute_tangling(self) -> None:
         self.action()
         self.assertTrue(self.web.tangled is self.tangler)
@@ -1255,7 +1259,9 @@ class TestLoadAction(unittest.TestCase):
             webReader = self.webReader, 
             source_path=Path("TestLoadAction.w"),
             command="@@",
-            permitList = [], )
+            permitList = [], 
+            output=Path.cwd(),
+        )
         Path("TestLoadAction.w").write_text("")
     def tearDown(self) -> None:
         try:
