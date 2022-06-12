@@ -20,9 +20,13 @@ We need to be able to load a web from one or more source files.
 
 @o test_loader.py 
 @{@<Load Test overheads: imports, etc.@>
+
 @<Load Test superclass to refactor common setup@>
+
 @<Load Test error handling with a few common syntax errors@>
+
 @<Load Test include processing with syntax errors@>
+
 @<Load Test main program@>
 @}
 
@@ -35,8 +39,9 @@ input object to the ``WebReader`` instance.
 @d Load Test superclass...
 @{
 class ParseTestcase(unittest.TestCase):
-    text = ""
-    file_path: Path
+    text: ClassVar[str]
+    file_path: ClassVar[Path]
+    
     def setUp(self) -> None:
         self.source = io.StringIO(self.text)
         self.web = pyweb.Web()
@@ -51,6 +56,7 @@ find an expected next token.
 @{
 import logging.handlers
 from pathlib import Path
+from typing import ClassVar
 @}
 
 @d Load Test error handling...
@@ -60,28 +66,17 @@ from pathlib import Path
 class Test_ParseErrors(ParseTestcase):
     text = test1_w
     file_path = Path("test1.w")
-    def setUp(self) -> None:
-        super().setUp()
-        self.logger = logging.getLogger("WebReader")
-        self.buffer = logging.handlers.BufferingHandler(12)
-        self.buffer.setLevel(logging.WARN)
-        self.logger.addHandler(self.buffer)
-        self.logger.setLevel(logging.WARN)
     def test_error_should_count_1(self) -> None:
-        self.rdr.load(self.web, self.file_path, self.source)
+        with self.assertLogs('WebReader', level='WARN') as log_capture:
+            self.rdr.load(self.web, self.file_path, self.source)
         self.assertEqual(3, self.rdr.errors)
-        messages = [r.message for r in self.buffer.buffer]
-        self.assertEqual( 
-            ["At ('test1.w', 8): expected ('@@{',), found '@@o'", 
-            "Extra '@@{' (possibly missing chunk name) near ('test1.w', 9)", 
-            "Extra '@@{' (possibly missing chunk name) near ('test1.w', 9)"],
-            messages
+        self.assertEqual(log_capture.output, 
+            [
+                "ERROR:WebReader:At ('test1.w', 8): expected ('@@{',), found '@@o'",
+                "ERROR:WebReader:Extra '@@{' (possibly missing chunk name) near ('test1.w', 9)",
+                "ERROR:WebReader:Extra '@@{' (possibly missing chunk name) near ('test1.w', 9)"
+            ]
         )
-    def tearDown(self) -> None:
-        self.logger.setLevel(logging.CRITICAL)
-        self.logger.removeHandler(self.buffer)
-        super().tearDown()
-        
 @}
 
 @d Sample Document 1...
@@ -104,7 +99,8 @@ We'll cover most of the cases with a quick check for a failure to
 find an expected next token.
 
 In order to test the include file processing, we have to actually
-create a temporary file.  It's hard to mock the include processing.
+create a temporary file.  It's hard to mock the include processing,
+since it's a nested instance of the tokenizer.
 
 @d Load Test include...
 @{
@@ -116,25 +112,19 @@ class Test_IncludeParseErrors(ParseTestcase):
     def setUp(self) -> None:
         super().setUp()
         Path('test8_inc.tmp').write_text(test8_inc_w)
-        self.logger = logging.getLogger("WebReader")
-        self.buffer = logging.handlers.BufferingHandler(12)
-        self.buffer.setLevel(logging.WARN)
-        self.logger.addHandler(self.buffer)
-        self.logger.setLevel(logging.WARN)
     def test_error_should_count_2(self) -> None:
-        self.rdr.load(self.web, self.file_path, self.source)
+        with self.assertLogs('WebReader', level='WARN') as log_capture:
+            self.rdr.load(self.web, self.file_path, self.source)
         self.assertEqual(1, self.rdr.errors)
-        messages = [r.message for r in self.buffer.buffer]
-        self.assertEqual( 
-            ["At ('test8_inc.tmp', 4): end of input, ('@@{', '@@[') not found", 
-            "Errors in included file 'test8_inc.tmp', output is incomplete."],
-            messages
-        )
+        self.assertEqual(log_capture.output,
+            [
+                "ERROR:WebReader:At ('test8_inc.tmp', 4): end of input, ('@@{', '@@[') not found", 
+                "ERROR:WebReader:Errors in included file 'test8_inc.tmp', output is incomplete."
+            ]
+        ) 
     def tearDown(self) -> None:
-        self.logger.setLevel(logging.CRITICAL)
-        self.logger.removeHandler(self.buffer)
-        Path('test8_inc.tmp').unlink()
         super().tearDown()
+        Path('test8_inc.tmp').unlink()
 @}
 
 The sample document must reference the correct name that will
@@ -165,6 +155,7 @@ import logging
 import os
 from pathlib import Path
 import string
+import sys
 import types
 import unittest
 
@@ -176,7 +167,6 @@ A main program that configures logging and then runs the test.
 @d Load Test main program...
 @{
 if __name__ == "__main__":
-    import sys
     logging.basicConfig(stream=sys.stdout, level=logging.WARN)
     unittest.main()
 @}
@@ -207,14 +197,16 @@ exceptions raised.
 @d Tangle Test superclass...
 @{
 class TangleTestcase(unittest.TestCase):
-    text = ""
-    error = ""
-    file_path: Path
+    text: ClassVar[str]
+    error: ClassVar[str]
+    file_path: ClassVar[Path]
+    
     def setUp(self) -> None:
         self.source = io.StringIO(self.text)
         self.web = pyweb.Web()
         self.rdr = pyweb.WebReader()
         self.tangler = pyweb.Tangler()
+        
     def tangle_and_check_exception(self, exception_text: str) -> None:
         try:
             self.rdr.load(self.web, self.file_path, self.source)
@@ -223,6 +215,7 @@ class TangleTestcase(unittest.TestCase):
             self.fail("Should not tangle")
         except pyweb.Error as e:
             self.assertEqual(exception_text, e.args[0])
+            
     def tearDown(self) -> None:
         try:
             self.file_path.with_suffix(".tmp").unlink()
@@ -395,6 +388,7 @@ import io
 import logging
 import os
 from pathlib import Path
+from typing import ClassVar
 import unittest
 
 import pyweb
@@ -426,9 +420,10 @@ Weaving test cases have a common setup shown in this superclass.
 
 @d Weave Test superclass... @{
 class WeaveTestcase(unittest.TestCase):
-    text = ""
-    error = ""
-    file_path: Path
+    text: ClassVar[str]
+    error: ClassVar[str]
+    file_path: ClassVar[Path]
+    
     def setUp(self) -> None:
         self.source = io.StringIO(self.text)
         self.web = pyweb.Web()
@@ -526,9 +521,14 @@ to properly provide a consistent output from ``time.asctime()``.
 @d Weave Test evaluation... @{
 @<Sample Document 9@>
 
+from unittest.mock import Mock
+
 class TestEvaluations(WeaveTestcase):
     text = test9_w
     file_path = Path("test9.w")
+    def setUp(self):
+        super().setUp()
+        self.mock_time = Mock(asctime=Mock(return_value="mocked time"))
     def test_should_evaluate(self) -> None:
         self.rdr.load(self.web, self.file_path, self.source)
         doc = pyweb.HTML( )
@@ -537,7 +537,7 @@ class TestEvaluations(WeaveTestcase):
         actual = self.file_path.with_suffix(".html").read_text().splitlines()
         #print(actual)
         self.assertEqual("An anonymous chunk.", actual[0])
-        self.assertTrue(actual[1].startswith("Time ="))
+        self.assertTrue("Time = mocked time", actual[1])
         self.assertEqual("File = ('test9.w', 3)", actual[2])
         self.assertEqual('Version = 3.1', actual[3])
         self.assertEqual(f'CWD = {os.getcwd()}', actual[4])
@@ -561,6 +561,8 @@ import logging
 import os
 from pathlib import Path
 import string
+import sys
+from typing import ClassVar
 import unittest
 
 import pyweb
@@ -569,7 +571,6 @@ import pyweb
 @d Weave Test main program...
 @{
 if __name__ == "__main__":
-    import sys
     logging.basicConfig(stream=sys.stderr, level=logging.WARN)
     unittest.main()
 @}

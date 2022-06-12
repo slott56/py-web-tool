@@ -4,20 +4,23 @@ import io
 import logging
 import os
 from pathlib import Path
+from typing import ClassVar
 import unittest
 
 import pyweb
 
 
 class TangleTestcase(unittest.TestCase):
-    text = ""
-    error = ""
-    file_path: Path
+    text: ClassVar[str]
+    error: ClassVar[str]
+    file_path: ClassVar[Path]
+    
     def setUp(self) -> None:
         self.source = io.StringIO(self.text)
         self.web = pyweb.Web()
         self.rdr = pyweb.WebReader()
         self.tangler = pyweb.Tangler()
+        
     def tangle_and_check_exception(self, exception_text: str) -> None:
         try:
             self.rdr.load(self.web, self.file_path, self.source)
@@ -26,6 +29,7 @@ class TangleTestcase(unittest.TestCase):
             self.fail("Should not tangle")
         except pyweb.Error as e:
             self.assertEqual(exception_text, e.args[0])
+            
     def tearDown(self) -> None:
         try:
             self.file_path.with_suffix(".tmp").unlink()

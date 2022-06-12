@@ -19,12 +19,15 @@ Yet Another Literate Programming Tool
 
 @i func.w
 
-@i runner.w
+@i scripts.w
+
+No Longer supported: @@i runner.w, using **pytest** seems better.
 
 Additional Files
 =================
 
 To get the RST to look good, there are two additional files.
+These are clones of what's in the ``src`` directory.
 
 ``docutils.conf`` defines two CSS files to use.
 	The default CSS file may need to be customized.
@@ -61,6 +64,7 @@ div.document { width: 7in; }
 	font-size: smaller;
 }
 @}
+
 
 Indices
 =======

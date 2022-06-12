@@ -19,6 +19,10 @@ Changes for 3.1
 
 -   Add ``bootstrap`` directory with a snapshot of a previous working release to simplify development.
 
+-   Add Test cases for ``weave.py`` and ``tangle.py``
+
+-   Replace hand-build mock classes with ``unittest.mock.Mock`` objects
+
 Changes for 3.0
 
 -   Move to GitHub

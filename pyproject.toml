@@ -17,7 +17,7 @@ setenv =
     PYTHONPATH = {toxinidir}
 commands_pre = 
     python3 {env:PYLPWEB_BOOTSTRAP} pyweb.w
-    python3 pyweb.py -o test test/pyweb_test.w 
+    python3 pyweb.py -o tests tests/pyweb_test.w 
 commands = 
     pytest
 	mypy --strict --show-error-codes pyweb.py tangle.py weave.py

@@ -35,32 +35,37 @@ Note the general flow of this top-level script.
 @o tangle.py 
 @{#!/usr/bin/env python3
 """Sample tangle.py script."""
-import pyweb
-import logging
 import argparse
-		
-with pyweb.Logger(pyweb.log_config):
-	logger = logging.getLogger(__file__)
+import logging
+from pathlib import Path
+import pyweb
 
-	options = argparse.Namespace(
-		webFileName="pyweb.w",
-		verbosity=logging.INFO,
-		command='@@',
-		permitList=['@@i'],
-		tangler_line_numbers=False,
-		reference_style=pyweb.SimpleReference(),
-		theTangler=pyweb.TanglerMake(),
-		webReader=pyweb.WebReader(),
-		)
+def main(source: Path) -> None:
+    with pyweb.Logger(pyweb.log_config):
+        logger = logging.getLogger(__file__)
+    
+        options = argparse.Namespace(
+            source_path=source,
+            output=source.parent,
+            verbosity=logging.INFO,
+            command='@@',
+            permitList=['@@i'],
+            tangler_line_numbers=False,
+            reference_style=pyweb.SimpleReference(),
+            theTangler=pyweb.TanglerMake(),
+            webReader=pyweb.WebReader(),
+        )
+    
+        w = pyweb.Web() 
+        
+        for action in pyweb.LoadAction(), pyweb.TangleAction():
+            action.web = w
+            action.options = options
+            action()
+            logger.info(action.summary())
 
-	w = pyweb.Web() 
-	
-	for action in LoadAction(), TangleAction():
-		action.web = w
-		action.options = options
-		action()
-		logger.info(action.summary())
-
+if __name__ == "__main__":
+    main(Path("examples/test_rst.w"))
 @}
 
 ``weave.py`` Script
@@ -74,17 +79,20 @@ A customized weaver generally has three parts.
 
 @o weave.py
 @{@<weave.py overheads for correct operation of a script@>
+
 @<weave.py custom weaver definition to customize the Weaver being used@>
+
 @<weaver.py processing: load and weave the document@>
 @}
 
 @d weave.py overheads...
 @{#!/usr/bin/env python3
 """Sample weave.py script."""
-import pyweb
-import logging
 import argparse
+import logging
 import string
+from pathlib import Path
+import pyweb
 @}
 
 @d weave.py custom weaver definition...
@@ -135,28 +143,32 @@ class MyHTML(pyweb.HTML):
 
 @d weaver.py processing...
 @{
-with pyweb.Logger(pyweb.log_config):
-	logger = logging.getLogger(__file__)
+def main(source: Path) -> None:
+    with pyweb.Logger(pyweb.log_config):
+        logger = logging.getLogger(__file__)
+    
+        options = argparse.Namespace(
+            source_path=source,
+            output=source.parent,
+            verbosity=logging.INFO,
+            command='@@',
+            permitList=[],
+            tangler_line_numbers=False,
+            reference_style=pyweb.SimpleReference(),
+            theWeaver=MyHTML(),
+            webReader=pyweb.WebReader(),
+        )
+    
+        w = pyweb.Web() 
+    
+        for action in pyweb.LoadAction(), pyweb.WeaveAction():
+            action.web = w
+            action.options = options
+            action()
+            logger.info(action.summary())
 
-	options = argparse.Namespace(
-		webFileName="pyweb.w",
-		verbosity=logging.INFO,
-		command='@@',
-		theWeaver=MyHTML(),
-		permitList=[],
-		tangler_line_numbers=False,
-		reference_style=pyweb.SimpleReference(),
-		theTangler=pyweb.TanglerMake(),
-		webReader=pyweb.WebReader(),
-		)
-
-	w = pyweb.Web() 
-
-	for action in LoadAction(), WeaveAction():
-		action.web = w
-		action.options = options
-		action()
-		logger.info(action.summary())
+if __name__ == "__main__":
+    main(Path("examples/test_rst.w"))
 @}
 
 The ``setup.py``, ``requirements-dev.txt`` and ``MANIFEST.in`` files
@@ -193,7 +205,7 @@ We use a simple inclusion to augment the default manifest rules.
 
 @o MANIFEST.in
 @{include *.w *.css *.html *.conf *.rst
-include test/*.w test/*.css test/*.html test/*.conf test/*.py
+include tests/*.w tests/*.css tests/*.html tests/*.conf tests/*.py
 include jedit/*.xml
 @}
 
@@ -289,22 +301,22 @@ This will create the various output files from the source .w file.
 Testing
 -------
 
-The test directory includes ``pyweb_test.w``, which will create a 
+The ``tests`` directory includes ``pyweb_test.w``, which will create a 
 complete test suite.
 
 This weaves a ``pyweb_test.html`` file.
 
 This tangles several test modules:  ``test.py``, ``test_tangler.py``, ``test_weaver.py``,
-``test_loader.py`` and ``test_unit.py``.  Running the ``test.py`` module will include and
-execute all tests.
+``test_loader.py``, ``test_unit.py``, and ``test_scripts.py``.  
+Use **pytest** to run all the tests
 
 ::
 
-	cd test
-	python3 -m pyweb pyweb_test.w
-	PYTHONPATH=.. python3 test.py
-	rst2html.py pyweb_test.rst pyweb_test.html
-    mypy --strict pyweb.py
+	python3 bootstrap/pyweb.py -xw pyweb.w 
+	python3 pyweb.py tests/pyweb_test.w -o tests
+	PYTHONPATH=${PWD} pytest
+	rst2html.py tests/pyweb_test.rst tests/pyweb_test.html
+    mypy --strict pyweb.py weave.py tangle.py
 
 
 @}
@@ -355,18 +367,23 @@ bug in ``NamedChunk.tangle()`` that prevents handling zero-length text.
 
 @o .nojekyll
 @{
+
 @}
 
 Here's an ``index.html`` to redirect GitHub to the ``pyweb.html`` file.
 
 @o index.html
-@{<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head><title>Redirect</title>
-<meta http-equiv="refresh" content="0;url=pyweb.html" />
-</head>
-<body>Sorry, you should have been redirected <a href="pyweb.html">pyweb.html</a>.</body>
+@{<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="refresh" content="0;url=pyweb.html" />
+    <title>Redirect</title>
+  </head>
+  <body>
+    <p>Sorry, you should have been redirected <a href="pyweb.html">pyweb.html</a>.</p>
+  </body>
 </html>
 @}
 
@@ -384,9 +401,9 @@ Note that there are tabs in this file. We bootstrap the next version from the 3.
 # Requires a pyweb-3.0.py (untouched) to bootstrap the current version.
 
 SOURCE_PYLPWEB = pyweb.w intro.w overview.w impl.w tests.w additional.w todo.w done.w
-TEST_PYLPWEB = test/pyweb_test.w test/intro.w test/unit.w test/func.w test/runner.w	
+TEST_PYLPWEB = tests/pyweb_test.w tests/intro.w tests/unit.w tests/func.w tests/scripts.w	
 
-.PHONY : test doc weave build
+.PHONY : test doc build
 
 # Note the bootstrapping new version from version 3.0 as baseline.
 # Handy to keep this *outside* the project's Git repository.
@@ -394,12 +411,11 @@ PYLPWEB_BOOTSTRAP=bootstrap/pyweb.py
 
 test : $(SOURCE_PYLPWEB) $(TEST_PYLPWEB)
 	python3 $(PYLPWEB_BOOTSTRAP) -xw pyweb.w 
-	python3 pyweb.py test/pyweb_test.w -o test
+	python3 pyweb.py tests/pyweb_test.w -o tests
 	PYTHONPATH=${PWD} pytest
-	rst2html.py test/pyweb_test.rst test/pyweb_test.html
+	python3 pyweb.py tests/pyweb_test.w -xt -o tests
+	rst2html.py tests/pyweb_test.rst tests/pyweb_test.html
 	mypy --strict --show-error-codes pyweb.py tangle.py weave.py
-
-weave : pyweb.py tangle.py weave.py
 
 doc : pyweb.html
 
@@ -408,8 +424,15 @@ build : pyweb.py tangle.py weave.py pyweb.html
 pyweb.py pyweb.rst : $(SOURCE_PYLPWEB)
 	python3 $(PYLPWEB_BOOTSTRAP) pyweb.w 
          
+tests/pyweb_test.rst : pyweb.py $(TEST_PYLPWEB)
+	python3 pyweb.py tests/pyweb_test.w -o tests
+
 pyweb.html : pyweb.rst
 	rst2html.py $< $@
+
+tests/pyweb_test.html : tests/pyweb_test.rst
+	rst2html.py $< $@
+
 @}
 
 **TODO:** Finish ``tox.ini`` or ``pyproject.toml``.
@@ -434,7 +457,7 @@ setenv =
     PYTHONPATH = {toxinidir}
 commands_pre = 
     python3 {env:PYLPWEB_BOOTSTRAP} pyweb.w
-    python3 pyweb.py -o test test/pyweb_test.w 
+    python3 pyweb.py -o tests tests/pyweb_test.w 
 commands = 
     pytest
 	mypy --strict --show-error-codes pyweb.py tangle.py weave.py

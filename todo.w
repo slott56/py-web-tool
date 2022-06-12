@@ -22,9 +22,9 @@ Python 3.10 Migration
 
 #. [x] Add ``bootstrap`` directory.
 
-#. [ ] Test cases for ``weave.py`` and ``tangle.py``
+#. [x] Test cases for ``weave.py`` and ``tangle.py``
  
-#. [ ] Replace various mock classes with ``unittest.mock.Mock`` objects and appropriate extended testing.
+#. [x] Replace various mock classes with ``unittest.mock.Mock`` objects and appropriate testing.
 
 #. [ ] Separate ``tests``, ``examples``, and ``src`` from each other. 
 

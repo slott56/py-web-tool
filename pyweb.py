@@ -70,6 +70,13 @@ class Command(abc.ABC):
     def __str__(self) -> str:
         return f"at {self.lineNumber!r}"
         
+    def __eq__(self, other: Any) -> bool:
+        match other:
+            case Command():
+                return self.lineNumber == other.lineNumber and self.text == other.text
+            case _:
+                return NotImplemented
+                
         
     def startswith(self, prefix: str) -> bool:
         return False
@@ -244,15 +251,16 @@ class ReferenceCommand(Command):
 
 class Chunk:
     """Anonymous piece of input file: will be output through the weaver only."""
-    web : weakref.ReferenceType["Web"]
-    previous_command : "Command"
+    web: weakref.ReferenceType["Web"]
+    previous_command: "Command"
     initial: bool
     filePath: Path
+    
     def __init__(self) -> None:
         self.logger = logging.getLogger(self.__class__.__qualname__)
-        self.commands: list["Command"] = [ ]  # The list of children of this chunk
+        self.commands: list["Command"] = []  # The list of children of this chunk
         self.user_id_list: list[str] = []
-        self.name: str = ''
+        self.name: str = ""
         self.fullName: str = ""
         self.seq: int = 0
         self.referencedBy: list[Chunk] = []  # Chunks which reference this chunk.  Ideally just one.
@@ -263,6 +271,12 @@ class Chunk:
         return "\n".join(map(str, self.commands))
     def __repr__(self) -> str:
         return f"{self.__class__.__name__!s}({self.name!r})"
+    def __eq__(self, other: Any) -> bool:
+        match other:
+            case Chunk():
+                return self.name == other.name and self.commands == other.commands
+            case _:
+                return NotImplemented
         
         
     def append(self, command: Command) -> None:
@@ -273,16 +287,12 @@ class Chunk:
 
         
     def appendText(self, text: str, lineNumber: int = 0) -> None:
-        """Append a single character to the most recent TextCommand."""
-        try:
-            # Works for TextCommand, otherwise breaks
-            self.commands[-1].text += text
-        except IndexError as e:
-            # First command?  Then the list will have been empty.
-            self.commands.append(self.makeContent(text,lineNumber))
-        except AttributeError as e:
-            # Not a TextCommand?  Then there won't be a text attribute.
-            self.commands.append(self.makeContent(text,lineNumber))
+        """Append a string to the most recent TextCommand."""
+        match self.commands:
+            case [*Command, TextCommand()]:
+                self.commands[-1].text += text
+            case _:
+                self.commands.append(self.makeContent(text, lineNumber))
     
 
         
@@ -1312,7 +1322,8 @@ class Weaver(Emitter):
         if len(references) != 0:
             refList = [ 
                 self.ref_item_template.substitute(seq=s, fullName=n)
-                for n,s in references ]
+                for n, s in references 
+            ]
             return self.ref_template.substitute(refList=self.ref_separator.join(refList))
         else:
             return ""
@@ -1646,7 +1657,7 @@ class TanglerMake(Tangler):
             except OSError as e:
                 pass  # Doesn't exist. (Could check for errno.ENOENT)
             self.checkPath()
-            self.filePath.hardlink_to(self.tempname)  # type: ignore [attr-defined]
+            self.filePath.hardlink_to(self.tempname)
             os.remove(self.tempname)
             self.logger.info("Wrote %d lines to %s", self.linesWritten, self.filePath)
     
@@ -1901,7 +1912,7 @@ class Application:
         p.add_argument("-d", "--debug", dest="verbosity", action="store_const", const=logging.DEBUG)
         p.add_argument("-c", "--command", dest="command", action="store")
         p.add_argument("-w", "--weaver", dest="weaver", action="store")
-        p.add_argument("-x", "--except", dest="skip", action="store", choices=('w','t'))
+        p.add_argument("-x", "--except", dest="skip", action="store", choices=('w', 't'))
         p.add_argument("-p", "--permit", dest="permit", action="store")
         p.add_argument("-r", "--reference", dest="reference", action="store", choices=('t', 's'))
         p.add_argument("-n", "--linenumbers", dest="tangler_line_numbers", action="store_true")

@@ -5,15 +5,18 @@ import logging
 import os
 from pathlib import Path
 import string
+import sys
+from typing import ClassVar
 import unittest
 
 import pyweb
 
 
 class WeaveTestcase(unittest.TestCase):
-    text = ""
-    error = ""
-    file_path: Path
+    text: ClassVar[str]
+    error: ClassVar[str]
+    file_path: ClassVar[Path]
+    
     def setUp(self) -> None:
         self.source = io.StringIO(self.text)
         self.web = pyweb.Web()
@@ -108,9 +111,14 @@ CWD = @(os.path.realpath('.')@)
 """
 
 
+from unittest.mock import Mock
+
 class TestEvaluations(WeaveTestcase):
     text = test9_w
     file_path = Path("test9.w")
+    def setUp(self):
+        super().setUp()
+        self.mock_time = Mock(asctime=Mock(return_value="mocked time"))
     def test_should_evaluate(self) -> None:
         self.rdr.load(self.web, self.file_path, self.source)
         doc = pyweb.HTML( )
@@ -119,14 +127,13 @@ class TestEvaluations(WeaveTestcase):
         actual = self.file_path.with_suffix(".html").read_text().splitlines()
         #print(actual)
         self.assertEqual("An anonymous chunk.", actual[0])
-        self.assertTrue(actual[1].startswith("Time ="))
+        self.assertTrue("Time = mocked time", actual[1])
         self.assertEqual("File = ('test9.w', 3)", actual[2])
         self.assertEqual('Version = 3.1', actual[3])
         self.assertEqual(f'CWD = {os.getcwd()}', actual[4])
 
 
 if __name__ == "__main__":
-    import sys
     logging.basicConfig(stream=sys.stderr, level=logging.WARN)
     unittest.main()
 

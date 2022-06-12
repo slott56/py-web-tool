@@ -74,21 +74,21 @@ This will create the various output files from the source .w file.
 Testing
 -------
 
-The test directory includes ``pyweb_test.w``, which will create a 
+The ``tests`` directory includes ``pyweb_test.w``, which will create a 
 complete test suite.
 
 This weaves a ``pyweb_test.html`` file.
 
 This tangles several test modules:  ``test.py``, ``test_tangler.py``, ``test_weaver.py``,
-``test_loader.py`` and ``test_unit.py``.  Running the ``test.py`` module will include and
-execute all tests.
+``test_loader.py``, ``test_unit.py``, and ``test_scripts.py``.  
+Use **pytest** to run all the tests
 
 ::
 
-	cd test
-	python3 -m pyweb pyweb_test.w
-	PYTHONPATH=.. python3 test.py
-	rst2html.py pyweb_test.rst pyweb_test.html
-    mypy --strict pyweb.py
+	python3 bootstrap/pyweb.py -xw pyweb.w 
+	python3 pyweb.py tests/pyweb_test.w -o tests
+	PYTHONPATH=${PWD} pytest
+	rst2html.py tests/pyweb_test.rst tests/pyweb_test.html
+    mypy --strict pyweb.py weave.py tangle.py
 
 

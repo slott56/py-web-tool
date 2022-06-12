@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Sample weave.py script."""
-import pyweb
-import logging
 import argparse
+import logging
 import string
+from pathlib import Path
+import pyweb
+
 
 
 class MyHTML(pyweb.HTML):
@@ -50,26 +52,31 @@ class MyHTML(pyweb.HTML):
     name_ref_template = string.Template('<a href="#pyweb${seq}">${seq}</a>')
 
 
-with pyweb.Logger(pyweb.log_config):
-	logger = logging.getLogger(__file__)
 
-	options = argparse.Namespace(
-		webFileName="pyweb.w",
-		verbosity=logging.INFO,
-		command='@',
-		theWeaver=MyHTML(),
-		permitList=[],
-		tangler_line_numbers=False,
-		reference_style=pyweb.SimpleReference(),
-		theTangler=pyweb.TanglerMake(),
-		webReader=pyweb.WebReader(),
-		)
+def main(source: Path) -> None:
+    with pyweb.Logger(pyweb.log_config):
+        logger = logging.getLogger(__file__)
+    
+        options = argparse.Namespace(
+            source_path=source,
+            output=source.parent,
+            verbosity=logging.INFO,
+            command='@',
+            permitList=[],
+            tangler_line_numbers=False,
+            reference_style=pyweb.SimpleReference(),
+            theWeaver=MyHTML(),
+            webReader=pyweb.WebReader(),
+        )
+    
+        w = pyweb.Web() 
+    
+        for action in pyweb.LoadAction(), pyweb.WeaveAction():
+            action.web = w
+            action.options = options
+            action()
+            logger.info(action.summary())
 
-	w = pyweb.Web() 
-
-	for action in LoadAction(), WeaveAction():
-		action.web = w
-		action.options = options
-		action()
-		logger.info(action.summary())
+if __name__ == "__main__":
+    main(Path("examples/test_rst.w"))
 

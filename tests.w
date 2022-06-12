@@ -3,23 +3,23 @@
 Unit Tests
 ===========
 
-The ``test`` directory includes ``pyweb_test.w``, which will create a 
+The ``tests`` directory includes ``pyweb_test.w``, which will create a 
 complete test suite.
 
-This source will weaves a ``pyweb_test.html`` file. See file:test/pyweb_test.html
+This source will weaves a ``pyweb_test.html`` file. See `tests/pyweb_test.html <tests/pyweb_test.html>`_.
 
 This source will tangle several test modules:  ``test.py``, ``test_tangler.py``, ``test_weaver.py``,
-``test_loader.py`` and ``test_unit.py``.  Running the ``test.py`` module will include and
-execute all 78 tests.
+``test_loader.py``, ``test_unit.py``, and ``test_scripts.py``.  
+
+Use **pytest** to discover and run all 80+ test cases.
 
 Here's a script that works out well for running this without disturbing the development
 environment. The ``PYTHONPATH`` setting is essential to support importing ``pyweb``.
 
 ..	parsed-literal::
 
-	cd test
-	python ../pyweb.py pyweb_test.w
-	PYTHONPATH=.. python test.py
+	python pyweb.py -o tests tests/pyweb_test.w
+	PYTHONPATH=$(PWD) pytest
 
 Note that the last line really does set an environment variable and run 
-a program on a single line.
+the ``pytest`` tool on a single line.

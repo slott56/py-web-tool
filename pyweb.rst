@@ -1936,7 +1936,8 @@ Each code chunk includes the places where the chunk is referenced.
         if len(references) != 0:
             refList = [ 
                 self.ref\_item\_template.substitute(seq=s, fullName=n)
-                for n,s in references ]
+                for n, s in references 
+            ]
             return self.ref\_template.substitute(refList=self.ref\_separator.join(refList))
         else:
             return ""
@@ -3048,7 +3049,7 @@ and time) if nothing has changed.
             except OSError as e:
                 pass  # Doesn't exist. (Could check for errno.ENOENT)
             self.checkPath()
-            self.filePath.hardlink\_to(self.tempname)  # type: ignore [attr-defined]
+            self.filePath.hardlink\_to(self.tempname)
             os.remove(self.tempname)
             self.logger.info("Wrote %d lines to %s", self.linesWritten, self.filePath)
     
@@ -3249,15 +3250,16 @@ The ``Chunk`` constructor initializes the following instance variables:
     
     class Chunk:
         """Anonymous piece of input file: will be output through the weaver only."""
-        web : weakref.ReferenceType["Web"]
-        previous\_command : "Command"
+        web: weakref.ReferenceType["Web"]
+        previous\_command: "Command"
         initial: bool
         filePath: Path
+        
         def \_\_init\_\_(self) -> None:
             self.logger = logging.getLogger(self.\_\_class\_\_.\_\_qualname\_\_)
-            self.commands: list["Command"] = [ ]  # The list of children of this chunk
+            self.commands: list["Command"] = []  # The list of children of this chunk
             self.user\_id\_list: list[str] = []
-            self.name: str = ''
+            self.name: str = ""
             self.fullName: str = ""
             self.seq: int = 0
             self.referencedBy: list[Chunk] = []  # Chunks which reference this chunk.  Ideally just one.
@@ -3268,6 +3270,12 @@ The ``Chunk`` constructor initializes the following instance variables:
             return "\\n".join(map(str, self.commands))
         def \_\_repr\_\_(self) -> str:
             return f"{self.\_\_class\_\_.\_\_name\_\_!s}({self.name!r})"
+        def \_\_eq\_\_(self, other: Any) -> bool:
+            match other:
+                case Chunk():
+                    return self.name == other.name and self.commands == other.commands
+                case \_:
+                    return NotImplemented
             
         |srarr|\ Chunk append a command (`54`_)
         |srarr|\ Chunk append text (`55`_)
@@ -3330,16 +3338,12 @@ be a separate ``TextCommand`` because it will wind up indented.
 
     
     def appendText(self, text: str, lineNumber: int = 0) -> None:
-        """Append a single character to the most recent TextCommand."""
-        try:
-            # Works for TextCommand, otherwise breaks
-            self.commands[-1].text += text
-        except IndexError as e:
-            # First command?  Then the list will have been empty.
-            self.commands.append(self.makeContent(text,lineNumber))
-        except AttributeError as e:
-            # Not a TextCommand?  Then there won't be a text attribute.
-            self.commands.append(self.makeContent(text,lineNumber))
+        """Append a string to the most recent TextCommand."""
+        match self.commands:
+            case [\*Command, TextCommand()]:
+                self.commands[-1].text += text
+            case \_:
+                self.commands.append(self.makeContent(text, lineNumber))
     
 
 ..
@@ -4238,6 +4242,13 @@ the command began, in ``lineNumber``.
         def \_\_str\_\_(self) -> str:
             return f"at {self.lineNumber!r}"
             
+        def \_\_eq\_\_(self, other: Any) -> bool:
+            match other:
+                case Command():
+                    return self.lineNumber == other.lineNumber and self.text == other.text
+                case \_:
+                    return NotImplemented
+                    
         |srarr|\ Command analysis features: starts-with and Regular Expression search (`80`_)
         |srarr|\ Command tangle and weave functions (`81`_)
     
@@ -6311,7 +6322,8 @@ An ``os.getcwd()`` could be changed to ``os.path.realpath('.')``.
             theWebReader=self,
             theFile=self.theWeb.web\_path,
             thisApplication=sys.argv[0],
-            \_\_version\_\_=\_\_version\_\_,
+            \_\_version\_\_=\_\_version\_\_,  # Legacy compatibility. Deprecated.
+            version=\_\_version\_\_,
             )
         # Evaluate
         result = str(eval(expression, globals))
@@ -7834,11 +7846,12 @@ instances.
         p.add\_argument("-d", "--debug", dest="verbosity", action="store\_const", const=logging.DEBUG)
         p.add\_argument("-c", "--command", dest="command", action="store")
         p.add\_argument("-w", "--weaver", dest="weaver", action="store")
-        p.add\_argument("-x", "--except", dest="skip", action="store", choices=('w','t'))
+        p.add\_argument("-x", "--except", dest="skip", action="store", choices=('w', 't'))
         p.add\_argument("-p", "--permit", dest="permit", action="store")
         p.add\_argument("-r", "--reference", dest="reference", action="store", choices=('t', 's'))
         p.add\_argument("-n", "--linenumbers", dest="tangler\_line\_numbers", action="store\_true")
         p.add\_argument("-o", "--output", dest="output", action="store", type=Path)
+        p.add\_argument("-V", "--Version", action='version', version=f"py-web-tool pyweb.py {\_\_version\_\_}")
         p.add\_argument("files", nargs='+', type=Path)
         config = p.parse\_args(argv, namespace=self.defaults)
         self.expand(config)
@@ -8132,26 +8145,26 @@ weaver via the command-line option ``-w myweaver``.
 Unit Tests
 ===========
 
-The ``test`` directory includes ``pyweb_test.w``, which will create a 
+The ``tests`` directory includes ``pyweb_test.w``, which will create a 
 complete test suite.
 
-This source will weaves a ``pyweb_test.html`` file. See file:test/pyweb_test.html
+This source will weaves a ``pyweb_test.html`` file. See `tests/pyweb_test.html <tests/pyweb_test.html>`_.
 
 This source will tangle several test modules:  ``test.py``, ``test_tangler.py``, ``test_weaver.py``,
-``test_loader.py`` and ``test_unit.py``.  Running the ``test.py`` module will include and
-execute all 78 tests.
+``test_loader.py``, ``test_unit.py``, and ``test_scripts.py``.  
+
+Use **pytest** to discover and run all 80+ test cases.
 
 Here's a script that works out well for running this without disturbing the development
 environment. The ``PYTHONPATH`` setting is essential to support importing ``pyweb``.
 
 ..	parsed-literal::
 
-	cd test
-	python ../pyweb.py pyweb_test.w
-	PYTHONPATH=.. python test.py
+	python pyweb.py -o tests tests/pyweb_test.w
+	PYTHONPATH=$(PWD) pytest
 
 Note that the last line really does set an environment variable and run 
-a program on a single line.
+the ``pytest`` tool on a single line.
 
 
 ..  py-web-tool/additional.w
@@ -8196,32 +8209,37 @@ Note the general flow of this top-level script.
 
     #!/usr/bin/env python3
     """Sample tangle.py script."""
-    import pyweb
-    import logging
     import argparse
-    		
-    with pyweb.Logger(pyweb.log\_config):
-    	logger = logging.getLogger(\_\_file\_\_)
+    import logging
+    from pathlib import Path
+    import pyweb
     
-    	options = argparse.Namespace(
-    		webFileName="pyweb.w",
-    		verbosity=logging.INFO,
-    		command='@',
-    		permitList=['@i'],
-    		tangler\_line\_numbers=False,
-    		reference\_style=pyweb.SimpleReference(),
-    		theTangler=pyweb.TanglerMake(),
-    		webReader=pyweb.WebReader(),
-    		)
+    def main(source: Path) -> None:
+        with pyweb.Logger(pyweb.log\_config):
+            logger = logging.getLogger(\_\_file\_\_)
+        
+            options = argparse.Namespace(
+                source\_path=source,
+                output=source.parent,
+                verbosity=logging.INFO,
+                command='@',
+                permitList=['@i'],
+                tangler\_line\_numbers=False,
+                reference\_style=pyweb.SimpleReference(),
+                theTangler=pyweb.TanglerMake(),
+                webReader=pyweb.WebReader(),
+            )
+        
+            w = pyweb.Web() 
+            
+            for action in pyweb.LoadAction(), pyweb.TangleAction():
+                action.web = w
+                action.options = options
+                action()
+                logger.info(action.summary())
     
-    	w = pyweb.Web() 
-    	
-    	for action in LoadAction(), TangleAction():
-    		action.web = w
-    		action.options = options
-    		action()
-    		logger.info(action.summary())
-    
+    if \_\_name\_\_ == "\_\_main\_\_":
+        main(Path("examples/test\_rst.w"))
 
 ..
 
@@ -8246,7 +8264,9 @@ A customized weaver generally has three parts.
     :class: code
 
     |srarr|\ weave.py overheads for correct operation of a script (`172`_)
+    
     |srarr|\ weave.py custom weaver definition to customize the Weaver being used (`173`_)
+    
     |srarr|\ weaver.py processing: load and weave the document (`174`_)
 
 ..
@@ -8264,10 +8284,11 @@ A customized weaver generally has three parts.
 
     #!/usr/bin/env python3
     """Sample weave.py script."""
-    import pyweb
-    import logging
     import argparse
+    import logging
     import string
+    from pathlib import Path
+    import pyweb
 
 ..
 
@@ -8340,28 +8361,32 @@ A customized weaver generally has three parts.
     :class: code
 
     
-    with pyweb.Logger(pyweb.log\_config):
-    	logger = logging.getLogger(\_\_file\_\_)
+    def main(source: Path) -> None:
+        with pyweb.Logger(pyweb.log\_config):
+            logger = logging.getLogger(\_\_file\_\_)
+        
+            options = argparse.Namespace(
+                source\_path=source,
+                output=source.parent,
+                verbosity=logging.INFO,
+                command='@',
+                permitList=[],
+                tangler\_line\_numbers=False,
+                reference\_style=pyweb.SimpleReference(),
+                theWeaver=MyHTML(),
+                webReader=pyweb.WebReader(),
+            )
+        
+            w = pyweb.Web() 
+        
+            for action in pyweb.LoadAction(), pyweb.WeaveAction():
+                action.web = w
+                action.options = options
+                action()
+                logger.info(action.summary())
     
-    	options = argparse.Namespace(
-    		webFileName="pyweb.w",
-    		verbosity=logging.INFO,
-    		command='@',
-    		theWeaver=MyHTML(),
-    		permitList=[],
-    		tangler\_line\_numbers=False,
-    		reference\_style=pyweb.SimpleReference(),
-    		theTangler=pyweb.TanglerMake(),
-    		webReader=pyweb.WebReader(),
-    		)
-    
-    	w = pyweb.Web() 
-    
-    	for action in LoadAction(), WeaveAction():
-    		action.web = w
-    		action.options = options
-    		action()
-    		logger.info(action.summary())
+    if \_\_name\_\_ == "\_\_main\_\_":
+        main(Path("examples/test\_rst.w"))
 
 ..
 
@@ -8420,7 +8445,7 @@ We use a simple inclusion to augment the default manifest rules.
     :class: code
 
     include \*.w \*.css \*.html \*.conf \*.rst
-    include test/\*.w test/\*.css test/\*.html test/\*.conf test/\*.py
+    include tests/\*.w tests/\*.css tests/\*.html tests/\*.conf tests/\*.py
     include jedit/\*.xml
 
 ..
@@ -8538,22 +8563,22 @@ Here's the README file.
     Testing
     -------
     
-    The test directory includes \`\`pyweb\_test.w\`\`, which will create a 
+    The \`\`tests\`\` directory includes \`\`pyweb\_test.w\`\`, which will create a 
     complete test suite.
     
     This weaves a \`\`pyweb\_test.html\`\` file.
     
     This tangles several test modules:  \`\`test.py\`\`, \`\`test\_tangler.py\`\`, \`\`test\_weaver.py\`\`,
-    \`\`test\_loader.py\`\` and \`\`test\_unit.py\`\`.  Running the \`\`test.py\`\` module will include and
-    execute all tests.
+    \`\`test\_loader.py\`\`, \`\`test\_unit.py\`\`, and \`\`test\_scripts.py\`\`.  
+    Use \*\*pytest\*\* to run all the tests
     
     ::
     
-    	cd test
-    	python3 -m pyweb pyweb\_test.w
-    	PYTHONPATH=.. python3 test.py
-    	rst2html.py pyweb\_test.rst pyweb\_test.html
-        mypy --strict pyweb.py
+    	python3 bootstrap/pyweb.py -xw pyweb.w 
+    	python3 pyweb.py tests/pyweb\_test.w -o tests
+    	PYTHONPATH=${PWD} pytest
+    	rst2html.py tests/pyweb\_test.rst tests/pyweb\_test.html
+        mypy --strict pyweb.py weave.py tangle.py
     
     
 
@@ -8637,6 +8662,7 @@ bug in ``NamedChunk.tangle()`` that prevents handling zero-length text.
     :class: code
 
     
+    
 
 ..
 
@@ -8653,13 +8679,17 @@ Here's an ``index.html`` to redirect GitHub to the ``pyweb.html`` file.
 ..  parsed-literal::
     :class: code
 
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-    <html xmlns="http://www.w3.org/1999/xhtml">
-    <head><title>Redirect</title>
-    <meta http-equiv="refresh" content="0;url=pyweb.html" />
-    </head>
-    <body>Sorry, you should have been redirected <a href="pyweb.html">pyweb.html</a>.</body>
+    <!doctype html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="refresh" content="0;url=pyweb.html" />
+        <title>Redirect</title>
+      </head>
+      <body>
+        <p>Sorry, you should have been redirected <a href="pyweb.html">pyweb.html</a>.</p>
+      </body>
     </html>
 
 ..
@@ -8688,9 +8718,9 @@ Note that there are tabs in this file. We bootstrap the next version from the 3.
     # Requires a pyweb-3.0.py (untouched) to bootstrap the current version.
     
     SOURCE\_PYLPWEB = pyweb.w intro.w overview.w impl.w tests.w additional.w todo.w done.w
-    TEST\_PYLPWEB = test/pyweb\_test.w test/intro.w test/unit.w test/func.w test/runner.w	
+    TEST\_PYLPWEB = tests/pyweb\_test.w tests/intro.w tests/unit.w tests/func.w tests/scripts.w	
     
-    .PHONY : test doc weave build
+    .PHONY : test doc build
     
     # Note the bootstrapping new version from version 3.0 as baseline.
     # Handy to keep this \*outside\* the project's Git repository.
@@ -8698,12 +8728,11 @@ Note that there are tabs in this file. We bootstrap the next version from the 3.
     
     test : $(SOURCE\_PYLPWEB) $(TEST\_PYLPWEB)
     	python3 $(PYLPWEB\_BOOTSTRAP) -xw pyweb.w 
-    	python3 pyweb.py test/pyweb\_test.w -o test
+    	python3 pyweb.py tests/pyweb\_test.w -o tests
     	PYTHONPATH=${PWD} pytest
-    	rst2html.py test/pyweb\_test.rst test/pyweb\_test.html
+    	python3 pyweb.py tests/pyweb\_test.w -xt -o tests
+    	rst2html.py tests/pyweb\_test.rst tests/pyweb\_test.html
     	mypy --strict --show-error-codes pyweb.py tangle.py weave.py
-    
-    weave : pyweb.py tangle.py weave.py
     
     doc : pyweb.html
     
@@ -8712,8 +8741,15 @@ Note that there are tabs in this file. We bootstrap the next version from the 3.
     pyweb.py pyweb.rst : $(SOURCE\_PYLPWEB)
     	python3 $(PYLPWEB\_BOOTSTRAP) pyweb.w 
              
+    tests/pyweb\_test.rst : pyweb.py $(TEST\_PYLPWEB)
+    	python3 pyweb.py tests/pyweb\_test.w -o tests
+    
     pyweb.html : pyweb.rst
     	rst2html.py $< $@
+    
+    tests/pyweb\_test.html : tests/pyweb\_test.rst
+    	rst2html.py $< $@
+    
 
 ..
 
@@ -8749,7 +8785,7 @@ Note that there are tabs in this file. We bootstrap the next version from the 3.
         PYTHONPATH = {toxinidir}
     commands\_pre = 
         python3 {env:PYLPWEB\_BOOTSTRAP} pyweb.w
-        python3 pyweb.py -o test test/pyweb\_test.w 
+        python3 pyweb.py -o tests tests/pyweb\_test.w 
     commands = 
         pytest
     	mypy --strict --show-error-codes pyweb.py tangle.py weave.py
@@ -9031,14 +9067,14 @@ Python 3.10 Migration
 
 #. [x] Add ``bootstrap`` directory.
 
-#. [ ] Test cases for ``weave.py`` and ``tangle.py``
+#. [x] Test cases for ``weave.py`` and ``tangle.py``
  
-#. [ ] Rename the module from ``pyweb`` to ``pylpweb`` to avoid namespace squatting issues.
-       Rename the project from ``py-web-tool`` to ``py-lpweb-tool``.
-
-#. [ ] Replace various mock classes with ``unittest.mock.Mock`` objects and appropriate extended testing.
+#. [x] Replace various mock classes with ``unittest.mock.Mock`` objects and appropriate testing.
 
 #. [ ] Separate ``tests``, ``examples``, and ``src`` from each other. 
+
+#. [ ] Rename the module from ``pyweb`` to ``pylpweb`` to avoid namespace squatting issues.
+       Rename the project from ``py-web-tool`` to ``py-lpweb-tool``.
 
  
 To Do
@@ -9129,6 +9165,12 @@ Changes for 3.1
 -   Add a ``Makefile``, ``pyproject.toml``, ``requirements.txt`` and ``requirements-dev.txt``.
 
 -   Add ``-o dir`` option to write output to a directory of choice, simplifying **tox** setup.
+
+-   Add ``bootstrap`` directory with a snapshot of a previous working release to simplify development.
+
+-   Add Test cases for ``weave.py`` and ``tangle.py``
+
+-   Replace hand-build mock classes with ``unittest.mock.Mock`` objects
 
 Changes for 3.0
 
@@ -9610,7 +9652,7 @@ User Identifiers
 :CodeCommand:
     `65`_ [`83`_]
 :Command:
-    `53`_ `54`_ `57`_ `65`_ `75`_ [`79`_] `82`_ `84`_ `88`_ `165`_
+    `53`_ `54`_ `55`_ `57`_ `65`_ `75`_ [`79`_] `82`_ `84`_ `88`_ `165`_
 :Emitter:
     [`4`_] `5`_ `13`_ `44`_
 :Error:
@@ -9632,7 +9674,7 @@ User Identifiers
 :OutputChunk:
     [`71`_] `118`_
 :Path:
-    [`3`_] `4`_ `5`_ `53`_ `97`_ `114`_ `116`_ `120`_ `130`_ `163`_ `164`_
+    [`3`_] `4`_ `5`_ `53`_ `97`_ `114`_ `116`_ `120`_ `130`_ `163`_ `164`_ `170`_ `172`_ `174`_
 :ReferenceCommand:
     [`88`_] `123`_
 :TangleAction:
@@ -9640,7 +9682,7 @@ User Identifiers
 :Tangler:
     `4`_ [`44`_] `49`_ `63`_ `64`_ `69`_ `70`_ `74`_ `77`_ `81`_ `82`_ `83`_ `84`_ `92`_ `114`_ `164`_
 :TanglerMake:
-    [`49`_] `164`_ `168`_ `170`_ `174`_
+    [`49`_] `164`_ `168`_ `170`_
 :TextCommand:
     `55`_ `57`_ `69`_ `75`_ [`82`_] `83`_
 :Tokenizer:
@@ -9662,7 +9704,7 @@ User Identifiers
 :__exit__:
     [`5`_] `167`_
 :__version__:
-    `125`_ [`159`_]
+    `125`_ [`159`_] `164`_
 :_gatherUserId:
     [`110`_]
 :_updateUserId:
@@ -9750,7 +9792,7 @@ User Identifiers
 :logging.config:
     [`166`_] `167`_
 :main:
-    [`169`_]
+    [`169`_] `170`_ `174`_
 :makeContent:
     `55`_ [`57`_] `65`_ `75`_
 :multi_reference:
@@ -9802,7 +9844,7 @@ User Identifiers
 :startswith:
     `59`_ [`80`_] `82`_ `104`_ `113`_ `130`_ `137`_ `165`_
 :string:
-    [`12`_] `17`_ `18`_ `19`_ `20`_ `21`_ `22`_ `25`_ `26`_ `29`_ `31`_ `34`_ `35`_ `36`_ `37`_ `38`_ `40`_ `41`_ `42`_ `43`_ `172`_ `173`_
+    [`12`_] `17`_ `18`_ `19`_ `20`_ `21`_ `22`_ `25`_ `26`_ `29`_ `31`_ `34`_ `35`_ `36`_ `37`_ `38`_ `40`_ `41`_ `42`_ `43`_ `55`_ `172`_ `173`_
 :summary:
     `141`_ `145`_ `148`_ `151`_ [`154`_] `165`_ `170`_ `174`_
 :sys:
@@ -9849,7 +9891,7 @@ User Identifiers
 
 ..	class:: small
 
-	Created by bootstrap/pyweb.py at Sat Jun 11 08:20:45 2022.
+	Created by bootstrap/pyweb.py at Sun Jun 12 19:19:13 2022.
 
     Source pyweb.w modified Fri Jun 10 10:48:04 2022.
 

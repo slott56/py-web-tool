@@ -4,7 +4,7 @@ dev.sh
 pyweb-3.0.py
 __pycache__
 test/__pycache__/*.pyc
-test/.svn/*
+tests/.svn/*
 py_web_tool.egg-info/*
 *.pyc
 *.aux

@@ -179,7 +179,7 @@ This gives us the following outline for unit testing.
 ..  parsed-literal::
     :class: code
 
-    |srarr|\ Unit Test overheads: imports, etc. (`48`_)
+    |srarr|\ Unit Test overheads: imports, etc. (`48`_), |srarr|\ (`49`_)
     |srarr|\ Unit Test of Emitter class hierarchy (`2`_)
     |srarr|\ Unit Test of Chunk class hierarchy (`11`_)
     |srarr|\ Unit Test of Command class hierarchy (`23`_)
@@ -188,7 +188,7 @@ This gives us the following outline for unit testing.
     |srarr|\ Unit Test of WebReader class (`39`_), |srarr|\ (`40`_), |srarr|\ (`41`_)
     |srarr|\ Unit Test of Action class hierarchy (`42`_)
     |srarr|\ Unit Test of Application class (`47`_)
-    |srarr|\ Unit Test main (`49`_)
+    |srarr|\ Unit Test main (`50`_)
 
 ..
 
@@ -285,7 +285,19 @@ emitter is Tangler-like.
         |loz| *Unit Test of Emitter Superclass (3)*. Used by: Unit Test of Emitter class hierarchy... (`2`_)
 
 
-A Mock Chunk is a Chunk-like object that we can use to test Weavers.
+A mock Chunk is a Chunk-like object that we can use to test Weavers.
+
+Some tests will create multiple chunks. To keep their state separate,
+we define a function to return each mocked ``Chunk`` instance as a new Mock
+object. The overall ``MockChunk`` class, uses a side effect to 
+invoke the the ``mock_chunk_instance()`` function.
+
+The ``write_closure()`` is a function that calls the ``Tangler.write()`` 
+method. This is *not* consistent with best unit testing practices.
+It is merely a hold-over from an older testing strategy. The mock call
+history to the ``tangle()`` method of each ``Chunk`` instance is a better
+test strategy. 
+
 
 
 ..  _`4`:
@@ -294,25 +306,30 @@ A Mock Chunk is a Chunk-like object that we can use to test Weavers.
     :class: code
 
     
-    class MockChunk:
-        def \_\_init\_\_(self, name: str, seq: int, lineNumber: int) -> None:
-            self.name = name
-            self.fullName = name
-            self.seq = seq
-            self.lineNumber = lineNumber
-            self.initial = True
-            self.commands = []
-            self.referencedBy = []
-        def \_\_repr\_\_(self) -> str:
-            return f"({self.name!r}, {self.seq!r})"
-        def references(self, aWeaver: pyweb.Weaver) -> list[str]:
-            return [(c.name, c.seq) for c in self.referencedBy]
-        def reference\_indent(self, aWeb: "Web", aTangler: "Tangler", amount: int) -> None:
-            aTangler.addIndent(amount)
-        def reference\_dedent(self, aWeb: "Web", aTangler: "Tangler") -> None:
-            aTangler.clrIndent()
-        def tangle(self, aWeb: "Web", aTangler: "Tangler") -> None:
-            aTangler.write(self.name)
+    def mock\_chunk\_instance(name: str, seq: int, lineNumber: int) -> Mock:
+        def write\_closure(aWeb: pyweb.Web, aTangler: pyweb.Tangler) -> None:
+            aTangler.write(name)
+            
+        chunk = Mock(
+            wraps=pyweb.Chunk,
+            fullName=name,
+            seq=seq,
+            lineNumber=lineNumber,
+            initial=True,
+            commands=[],
+            referencedBy=[],
+            references=Mock(return\_value=[]),
+            reference\_indent=Mock(),
+            reference\_dedent=Mock(),
+            tangle=Mock(side\_effect=write\_closure)
+        )
+        chunk.name=name
+        return chunk
+        
+    MockChunk = Mock(
+        name="Chunk class",
+        side\_effect=mock\_chunk\_instance
+    )
 
 ..
 
@@ -336,9 +353,11 @@ The default Weaver is an Emitter that uses templates to produce RST markup.
             self.weaver.reference\_style = pyweb.SimpleReference() 
             self.filepath = Path("testweaver") 
             self.aFileChunk = MockChunk("File", 123, 456)
-            self.aFileChunk.referencedBy = [ ]
+            self.aFileChunk.referencedBy = []
             self.aChunk = MockChunk("Chunk", 314, 278)
             self.aChunk.referencedBy = [self.aFileChunk]
+            self.aChunk.references.return\_value=[(self.aFileChunk.name, self.aFileChunk.seq)]
+            
         def tearDown(self) -> None:
             try:
                 self.filepath.with\_suffix('.rst').unlink()
@@ -352,6 +371,8 @@ The default Weaver is an Emitter that uses templates to produce RST markup.
             self.assertEqual("File (\`123\`\_)", result)
             result = self.weaver.referenceTo("Chunk", 314)
             self.assertEqual(r"\|srarr\|\\ Chunk (\`314\`\_)", result)
+            self.assertEqual(self.aFileChunk.mock\_calls, [])
+            self.assertEqual(self.aChunk.mock\_calls, [call.references(self.weaver)])
       
         def test\_weaver\_should\_codeBegin(self) -> None:
             self.weaver.open(self.filepath)
@@ -424,6 +445,8 @@ We'll examine a few features of the LaTeX templates.
             self.aFileChunk.referencedBy = [ ]
             self.aChunk = MockChunk("Chunk", 314, 278)
             self.aChunk.referencedBy = [self.aFileChunk,]
+            self.aChunk.references.return\_value=[(self.aFileChunk.name, self.aFileChunk.seq)]
+    
         def tearDown(self) -> None:
             try:
                 self.filepath.with\_suffix(".tex").unlink()
@@ -434,9 +457,23 @@ We'll examine a few features of the LaTeX templates.
             result = self.weaver.quote("\\\\end{Verbatim}")
             self.assertEqual("\\\\end\\\\,{Verbatim}", result)
             result = self.weaver.references(self.aChunk)
-            self.assertEqual("\\n    \\\\footnotesize\\n    Used by:\\n    \\\\begin{list}{}{}\\n    \\n    \\\\item Code example File (123) (Sect. \\\\ref{pyweb123}, p. \\\\pageref{pyweb123})\\n\\n    \\\\end{list}\\n    \\\\normalsize\\n", result)
+            expected = textwrap.indent(
+                textwrap.dedent("""
+                    \\\\footnotesize
+                    Used by:
+                    \\\\begin{list}{}{}
+                        
+                    \\\\item Code example File (123) (Sect. \\\\ref{pyweb123}, p. \\\\pageref{pyweb123})
+                    
+                    \\\\end{list}
+                    \\\\normalsize
+                """), 
+            '    ')
+            self.assertEqual(rstrip\_lines(expected), rstrip\_lines(result))
             result = self.weaver.referenceTo("Chunk", 314)
             self.assertEqual("$\\\\triangleright$ Code Example Chunk (314)", result)
+            self.assertEqual(self.aFileChunk.mock\_calls, [])
+            self.assertEqual(self.aChunk.mock\_calls, [call.references(self.weaver)])
 
 ..
 
@@ -463,12 +500,13 @@ We'll examine a few features of the HTML templates.
             self.aFileChunk.referencedBy = []
             self.aChunk = MockChunk("Chunk", 314, 278)
             self.aChunk.referencedBy = [self.aFileChunk,]
+            self.aChunk.references.return\_value=[(self.aFileChunk.name, self.aFileChunk.seq)]
+    
         def tearDown(self) -> None:
             try:
                 self.filepath.with\_suffix(".html").unlink()
             except OSError:
                 pass
-    
                 
         def test\_weaver\_functions\_html(self) -> None:
             result = self.weaver.quote("a < b && c > d")
@@ -477,6 +515,8 @@ We'll examine a few features of the HTML templates.
             self.assertEqual('  Used by <a href="#pyweb123"><em>File</em>&nbsp;(123)</a>.', result)
             result = self.weaver.referenceTo("Chunk", 314)
             self.assertEqual('<a href="#pyweb314">&rarr;<em>Chunk</em> (314)</a>', result)
+            self.assertEqual(self.aFileChunk.mock\_calls, [])
+            self.assertEqual(self.aChunk.mock\_calls, [call.references(self.weaver)])
     
 
 ..
@@ -486,9 +526,9 @@ We'll examine a few features of the HTML templates.
         |loz| *Unit Test of HTML subclass of Emitter (7)*. Used by: Unit Test of Emitter class hierarchy... (`2`_)
 
 
-The unique feature of the ``HTMLShort`` class is just a template change.
+The unique feature of the ``HTMLShort`` class is a template change.
 
-    **To Do** Test ``HTMLShort``.
+    **TODO:** Test ``HTMLShort``.
 
 
 ..  _`8`:
@@ -555,9 +595,6 @@ the new version.  If the file content is the same, the old version
 is left intact with all of the operating system creation timestamps
 untouched.
 
-In order to be sure that the timestamps really have changed, we either 
-need to wait for a full second to elapse or we need to mock the various
-``os`` and ``filecmp`` features used by ``TanglerMake``.
 
 
 
@@ -573,7 +610,7 @@ need to wait for a full second to elapse or we need to mock the various
             self.tangler = pyweb.TanglerMake()
             self.filepath = Path("testtangler.code") 
             self.aChunk = MockChunk("Chunk", 314, 278)
-            #self.aChunk.references\_list = [ ("Container", 123) ]
+            #self.aChunk.references\_list = [("Container", 123)]
             self.tangler.open(self.filepath)
             self.tangler.codeBegin(self.aChunk)
             self.tangler.codeBlock(self.tangler.quote("\*The\* \`Code\`\\n"))
@@ -581,7 +618,6 @@ need to wait for a full second to elapse or we need to mock the various
             self.tangler.close()
             self.time\_original = self.filepath.stat().st\_mtime
             self.original = self.filepath.stat()
-            #time.sleep(0.75)  # Alternative to assure timestamps must be different
             
         def tearDown(self) -> None:
             try:
@@ -644,7 +680,7 @@ of chunks that are used to produce the documentation and the source files.
 In order to test the Chunk superclass, we need several mock objects.
 A Chunk contains one or more commands.  A Chunk is a part of a Web.
 Also, a Chunk is processed by a Tangler or a Weaver.  We'll need 
-Mock objects for all of these relationships in which a Chunk participates.
+mock objects for all of these relationships in which a Chunk participates.
 
 A MockCommand can be attached to a Chunk.
 
@@ -655,11 +691,15 @@ A MockCommand can be attached to a Chunk.
     :class: code
 
     
-    class MockCommand:
-        def \_\_init\_\_(self) -> None:
-            self.lineNumber = 314
-        def startswith(self, text: str) -> bool:
-            return False
+    MockCommand = Mock(
+        name="Command class",
+        side\_effect=lambda: Mock(
+            name="Command instance",
+            # text="",  # Only used for TextCommand.
+            lineNumber=314,
+            startswith=Mock(return\_value=False)
+        )
+    )
 
 ..
 
@@ -677,35 +717,30 @@ A MockWeb can contain a Chunk.
     :class: code
 
     
-    class MockWeb:
-        def \_\_init\_\_(self) -> None:
-            self.chunks = []
-            self.wove = None
-            self.tangled = None
-        def add(self, aChunk: pyweb.Chunk) -> None:
-            self.chunks.append(aChunk)
-        def addNamed(self, aChunk: pyweb.Chunk) -> None:
-            self.chunks.append(aChunk)
-        def addOutput(self, aChunk: pyweb.Chunk) -> None:
-            self.chunks.append(aChunk)
-        def fullNameFor(self, name: str) -> str:
-            return name
-        def fileXref(self) -> dict[str, list[int]]:
-            return {'file': [1,2,3]}
-        def chunkXref(self) -> dict[str, list[int]]:
-            return {'chunk': [4,5,6]}
-        def userNamesXref(self) -> dict[str, list[int]]:
-            return {'name': (7, [8,9,10])}
-        def getchunk(self, name: str) -> list[pyweb.Chunk]:
-            return [MockChunk(name, 1, 314)]
-        def createUsedBy(self) -> None: 
-            pass
-        def weaveChunk(self, name, weaver) -> None:
-            weaver.write(name)
-        def weave(self, weaver) -> None:
-            self.wove = weaver
-        def tangle(self, tangler) -> None:
-            self.tangled = tangler
+    
+    def mock\_web\_instance() -> Mock:
+        web = Mock(
+            name="Web instance",
+            chunks=[],
+            add=Mock(return\_value=None),
+            addNamed=Mock(return\_value=None),
+            addOutput=Mock(return\_value=None),
+            fullNameFor=Mock(side\_effect=lambda name: name),
+            fileXref=Mock(return\_value={'file': [1,2,3]}),
+            chunkXref=Mock(return\_value={'chunk': [4,5,6]}),
+            userNamesXref=Mock(return\_value={'name': (7, [8,9,10])}),
+            getchunk=Mock(side\_effect=lambda name: [MockChunk(name, 1, 314)]),
+            createUsedBy=Mock(),
+            weaveChunk=Mock(side\_effect=lambda name, weaver: weaver.write(name)),
+            weave=Mock(return\_value=None),
+            tangle=Mock(return\_value=None),
+        )
+        return web
+    
+    MockWeb = Mock(
+        name="Web class",
+        side\_effect=mock\_web\_instance
+    )
 
 ..
 
@@ -714,7 +749,14 @@ A MockWeb can contain a Chunk.
         |loz| *Unit Test of Chunk superclass (13)*. Used by: Unit Test of Chunk class hierarchy... (`11`_)
 
 
-A MockWeaver or MockTangle can process a Chunk.
+A MockWeaver or MockTangler appear to process a Chunk.
+We can interrogate the ``mock_calls`` to be sure the right things were done.
+
+We need to permit ``__enter__()`` and ``__exit__()``,
+which leads to a multi-step instance.
+The initial instance with ``__enter__()`` that
+returns the context manager instance.
+
 
 
 ..  _`14`:
@@ -723,63 +765,41 @@ A MockWeaver or MockTangle can process a Chunk.
     :class: code
 
     
-    class MockWeaver:
-        def \_\_init\_\_(self) -> None:
-            self.begin\_chunk = []
-            self.end\_chunk = []
-            self.written = []
-            self.code\_indent = None
-        def quote(self, text: str) -> str:
-            return text.replace("&", "&amp;") # token quoting
-        def docBegin(self, aChunk: pyweb.Chunk) -> None:
-            self.begin\_chunk.append(aChunk)
-        def write(self, text: str) -> None:
-            self.written.append(text)
-        def docEnd(self, aChunk: pyweb.Chunk) -> None:
-            self.end\_chunk.append(aChunk)
-        def codeBegin(self, aChunk: pyweb.Chunk) -> None:
-            self.begin\_chunk.append(aChunk)
-        def codeBlock(self, text: str) -> None:
-            self.written.append(text)
-        def codeEnd(self, aChunk: pyweb.Chunk) -> None:
-            self.end\_chunk.append(aChunk)
-        def fileBegin(self, aChunk: pyweb.Chunk) -> None:
-            self.begin\_chunk.append(aChunk)
-        def fileEnd(self, aChunk: pyweb.Chunk) -> None:
-            self.end\_chunk.append(aChunk)
-        def addIndent(self, increment=0):
-            pass
-        def setIndent(self, fixed: int \| None=None, command: str \| None=None) -> None:
-            self.indent = fixed
-        def addIndent(self, increment: int = 0) -> None:
-            self.indent = increment
-        def clrIndent(self) -> None:
-            pass
-        def xrefHead(self) -> None:
-            pass
-        def xrefLine(self, name: str, refList: list[int]) -> None:
-            self.written.append(f"{name} {refList}")
-        def xrefDefLine(self, name: str, defn: int, refList: list[int]) -> None:
-            self.written.append(f"{name} {defn} {refList}")
-        def xrefFoot(self) -> None:
-            pass
-        def referenceTo(self, name: str, seq: int) -> None:
-            pass
-        def open(self, aFile: str) -> "MockWeaver":
-            return self
-        def close(self) -> None:
-            pass
-        def \_\_enter\_\_(self) -> "MockWeaver":
-            return self
-        def \_\_exit\_\_(self, \*args: Any) -> bool:
-            return False
+    def mock\_weaver\_instance() -> MagicMock:
+        context = MagicMock(
+            name="Weaver instance context",
+            \_\_exit\_\_=Mock()
+        )
+        
+        weaver = MagicMock(
+            name="Weaver instance",
+            quote=Mock(return\_value="quoted"),
+            \_\_enter\_\_=Mock(return\_value=context)
+        )
+        return weaver
     
-    class MockTangler(MockWeaver):
-        def \_\_init\_\_(self) -> None:
-            super().\_\_init\_\_()
-            self.context = [0]
-        def addIndent(self, amount: int) -> None:
-            pass
+    MockWeaver = Mock(
+        name="Weaver class",
+        side\_effect=mock\_weaver\_instance
+    )
+    
+    def mock\_tangler\_instance() -> MagicMock:
+        context = MagicMock(
+            name="Tangler instance context",
+            \_\_exit\_\_=Mock()
+        )
+        
+        tangler = MagicMock(
+            name="Tangler instance",
+            \_\_enter\_\_=Mock(return\_value=context)
+        )
+        return tangler
+    
+    MockTangler = Mock(
+        name="Tangler class",
+        side\_effect=mock\_tangler\_instance
+    )
+    
 
 ..
 
@@ -800,8 +820,11 @@ A Chunk is built, interrogated and then emitted.
     class TestChunk(unittest.TestCase):
         def setUp(self) -> None:
             self.theChunk = pyweb.Chunk()
+            
         |srarr|\ Unit Test of Chunk construction (`16`_)
+        
         |srarr|\ Unit Test of Chunk interrogation (`17`_)
+        
         |srarr|\ Unit Test of Chunk emission (`18`_)
 
 ..
@@ -823,28 +846,32 @@ Can we build a Chunk?
     def test\_append\_command\_should\_work(self) -> None:
         cmd1 = MockCommand()
         self.theChunk.append(cmd1)
-        self.assertEqual(1, len(self.theChunk.commands) )
+        self.assertEqual(1, len(self.theChunk.commands))
+        self.assertEqual(cmd1.chunk, self.theChunk)
+        
         cmd2 = MockCommand()
         self.theChunk.append(cmd2)
-        self.assertEqual(2, len(self.theChunk.commands) )
-        
+        self.assertEqual(2, len(self.theChunk.commands))
+        self.assertEqual(cmd2.chunk, self.theChunk)
+    
     def test\_append\_initial\_and\_more\_text\_should\_work(self) -> None:
         self.theChunk.appendText("hi mom")
-        self.assertEqual(1, len(self.theChunk.commands) )
+        self.assertEqual(1, len(self.theChunk.commands))
         self.theChunk.appendText("&more text")
-        self.assertEqual(1, len(self.theChunk.commands) )
+        self.assertEqual(1, len(self.theChunk.commands))
         self.assertEqual("hi mom&more text", self.theChunk.commands[0].text)
         
     def test\_append\_following\_text\_should\_work(self) -> None:
         cmd1 = MockCommand()
         self.theChunk.append(cmd1)
         self.theChunk.appendText("hi mom")
-        self.assertEqual(2, len(self.theChunk.commands) )
-        
-    def test\_append\_to\_web\_should\_work(self) -> None:
+        self.assertEqual(2, len(self.theChunk.commands))
+        assert cmd1.chunk == self.theChunk
+    
+    def test\_append\_chunk\_to\_web\_should\_work(self) -> None:
         web = MockWeb()
         self.theChunk.webAdd(web)
-        self.assertEqual(1, len(web.chunks))
+        self.assertEqual(web.add.mock\_calls, [call(self.theChunk)])
 
 ..
 
@@ -885,6 +912,7 @@ Can we interrogate a Chunk?
         pat = re.compile(r"\\Wchunk\\W")
         found = self.theChunk.searchForRE(pat)
         self.assertTrue(found is self.theChunk)
+        
     def test\_regexp\_missing\_should\_not\_find(self):
         self.theChunk.appendText("this chunk has many words")
         pat = re.compile(r"\\Warpigs\\W")
@@ -913,16 +941,14 @@ Can we emit a Chunk with a weaver or tangler?
     :class: code
 
     
-    def test\_weave\_should\_work(self) -> None:
+    def test\_weave\_chunk\_should\_work(self) -> None:
         wvr = MockWeaver()
         web = MockWeb()
         self.theChunk.appendText("this chunk has very & many words")
         self.theChunk.weave(web, wvr)
-        self.assertEqual(1, len(wvr.begin\_chunk))
-        self.assertTrue(wvr.begin\_chunk[0] is self.theChunk)
-        self.assertEqual(1, len(wvr.end\_chunk))
-        self.assertTrue(wvr.end\_chunk[0] is self.theChunk)
-        self.assertEqual("this chunk has very & many words", "".join( wvr.written))
+        self.assertEqual(wvr.docBegin.mock\_calls, [call(self.theChunk)])
+        self.assertEqual(wvr.write.mock\_calls, [call("this chunk has very & many words")])
+        self.assertEqual(wvr.docEnd.mock\_calls, [call(self.theChunk)])
         
     def test\_tangle\_should\_fail(self) -> None:
         tnglr = MockTangler()
@@ -964,30 +990,27 @@ and tangled differently than anonymous chunks.
             self.assertEqual("index", self.theChunk.getUserIDRefs()[0])
             self.assertEqual("terms", self.theChunk.getUserIDRefs()[1])
             
-        def test\_append\_to\_web\_should\_work(self) -> None:
+        def test\_append\_named\_chunk\_to\_web\_should\_work(self) -> None:
             web = MockWeb()
             self.theChunk.webAdd(web)
-            self.assertEqual(1, len(web.chunks))
-            
+            self.assertEqual(web.addNamed.mock\_calls, [call(self.theChunk)])
+    
         def test\_weave\_should\_work(self) -> None:
             wvr = MockWeaver()
             web = MockWeb()
             self.theChunk.weave(web, wvr)
-            self.assertEqual(1, len(wvr.begin\_chunk))
-            self.assertTrue(wvr.begin\_chunk[0] is self.theChunk)
-            self.assertEqual(1, len(wvr.end\_chunk))
-            self.assertTrue(wvr.end\_chunk[0] is self.theChunk)
-            self.assertEqual("the words &amp; text of this Chunk", "".join( wvr.written))
+            self.assertEqual(wvr.codeBegin.mock\_calls, [call(self.theChunk)])
+            self.assertEqual(wvr.quote.mock\_calls, [call('the words & text of this Chunk')])
+            self.assertEqual(wvr.codeBlock.mock\_calls, [call('quoted')])
+            self.assertEqual(wvr.codeEnd.mock\_calls, [call(self.theChunk)])
     
         def test\_tangle\_should\_work(self) -> None:
             tnglr = MockTangler()
             web = MockWeb()
             self.theChunk.tangle(web, tnglr)
-            self.assertEqual(1, len(tnglr.begin\_chunk))
-            self.assertTrue(tnglr.begin\_chunk[0] is self.theChunk)
-            self.assertEqual(1, len(tnglr.end\_chunk))
-            self.assertTrue(tnglr.end\_chunk[0] is self.theChunk)
-            self.assertEqual("the words & text of this Chunk", "".join( tnglr.written))
+            self.assertEqual(tnglr.codeBegin.mock\_calls, [call(self.theChunk)])
+            self.assertEqual(tnglr.codeBlock.mock\_calls, [call("the words & text of this Chunk")])
+            self.assertEqual(tnglr.codeEnd.mock\_calls, [call(self.theChunk)])      
 
 ..
 
@@ -1005,7 +1028,7 @@ and tangled differently than anonymous chunks.
     
     class TestNamedChunk\_Noindent(unittest.TestCase):
         def setUp(self) -> None:
-            self.theChunk = pyweb.NamedChunk\_Noindent("Some Name...")
+            self.theChunk = pyweb.NamedChunk\_Noindent("NoIndent Name...")
             cmd = self.theChunk.makeContent("the words & text of this Chunk")
             self.theChunk.append(cmd)
             self.theChunk.setUserIDRefs("index terms")
@@ -1013,11 +1036,13 @@ and tangled differently than anonymous chunks.
             tnglr = MockTangler()
             web = MockWeb()
             self.theChunk.tangle(web, tnglr)
-            self.assertEqual(1, len(tnglr.begin\_chunk))
-            self.assertTrue(tnglr.begin\_chunk[0] is self.theChunk)
-            self.assertEqual(1, len(tnglr.end\_chunk))
-            self.assertTrue(tnglr.end\_chunk[0] is self.theChunk)
-            self.assertEqual("the words & text of this Chunk", "".join( tnglr.written))
+    
+            self.assertEqual(tnglr.mock\_calls, [
+                    call.codeBegin(self.theChunk),
+                    call.codeBlock('the words & text of this Chunk'),
+                    call.codeEnd(self.theChunk)
+                ]
+            )
 
 ..
 
@@ -1045,30 +1070,33 @@ and tangled differently than anonymous chunks.
             self.theChunk.append(cmd)
             self.theChunk.setUserIDRefs("index terms")
             
-        def test\_append\_to\_web\_should\_work(self) -> None:
+        def test\_append\_output\_chunk\_to\_web\_should\_work(self) -> None:
             web = MockWeb()
             self.theChunk.webAdd(web)
-            self.assertEqual(1, len(web.chunks))
-            
+            self.assertEqual(web.addOutput.mock\_calls, [call(self.theChunk)])
+    
         def test\_weave\_should\_work(self) -> None:
             wvr = MockWeaver()
             web = MockWeb()
             self.theChunk.weave(web, wvr)
-            self.assertEqual(1, len(wvr.begin\_chunk))
-            self.assertTrue(wvr.begin\_chunk[0] is self.theChunk)
-            self.assertEqual(1, len(wvr.end\_chunk))
-            self.assertTrue(wvr.end\_chunk[0] is self.theChunk)
-            self.assertEqual("the words &amp; text of this Chunk", "".join( wvr.written))
-    
+            self.assertEqual(wvr.mock\_calls, [
+                    call.fileBegin(self.theChunk),
+                    call.quote('the words & text of this Chunk'),
+                    call.codeBlock('quoted'),
+                    call.fileEnd(self.theChunk)
+                ]
+            )
+            
         def test\_tangle\_should\_work(self) -> None:
             tnglr = MockTangler()
             web = MockWeb()
             self.theChunk.tangle(web, tnglr)
-            self.assertEqual(1, len(tnglr.begin\_chunk))
-            self.assertTrue(tnglr.begin\_chunk[0] is self.theChunk)
-            self.assertEqual(1, len(tnglr.end\_chunk))
-            self.assertTrue(tnglr.end\_chunk[0] is self.theChunk)
-            self.assertEqual("the words & text of this Chunk", "".join( tnglr.written))
+            self.assertEqual(tnglr.mock\_calls, [
+                    call.codeBegin(self.theChunk),
+                    call.codeBlock('the words & text of this Chunk'),
+                    call.codeEnd(self.theChunk)
+                ]
+            )
 
 ..
 
@@ -1160,16 +1188,18 @@ A TextCommand object must be constructed, interrogated and emitted.
             self.assertTrue(self.cmd.searchForRE(pat2) is None)
             self.assertEqual(4, self.cmd.indent())
             self.assertEqual(0, self.cmd2.indent())
+            
         def test\_weave\_should\_work(self) -> None:
             wvr = MockWeaver()
             web = MockWeb()
             self.cmd.weave(web, wvr)
-            self.assertEqual("Some text & words in the document\\n    ", "".join( wvr.written))
+            self.assertEqual(wvr.write.mock\_calls, [call('Some text & words in the document\\n    ')])
+            
         def test\_tangle\_should\_work(self) -> None:
             tnglr = MockTangler()
             web = MockWeb()
             self.cmd.tangle(web, tnglr)
-            self.assertEqual("Some text & words in the document\\n    ", "".join( tnglr.written))
+            self.assertEqual(tnglr.write.mock\_calls, [call('Some text & words in the document\\n    ')])
 
 ..
 
@@ -1190,16 +1220,18 @@ A CodeCommand object is a TextCommand with different processing for being emitte
     class TestCodeCommand(unittest.TestCase):
         def setUp(self) -> None:
             self.cmd = pyweb.CodeCommand("Some text & words in the document\\n    ", 314)
+            
         def test\_weave\_should\_work(self) -> None:
             wvr = MockWeaver()
             web = MockWeb()
             self.cmd.weave(web, wvr)
-            self.assertEqual("Some text &amp; words in the document\\n    ", "".join( wvr.written))
+            self.assertEqual(wvr.codeBlock.mock\_calls, [call('quoted')])
+            
         def test\_tangle\_should\_work(self) -> None:
             tnglr = MockTangler()
             web = MockWeb()
             self.cmd.tangle(web, tnglr)
-            self.assertEqual("Some text & words in the document\\n    ", "".join( tnglr.written))
+            self.assertEqual(tnglr.codeBlock.mock\_calls, [call('Some text & words in the document\\n    ')])
 
 ..
 
@@ -1237,11 +1269,13 @@ locations.
     class TestFileXRefCommand(unittest.TestCase):
         def setUp(self) -> None:
             self.cmd = pyweb.FileXrefCommand(314)
+            
         def test\_weave\_should\_work(self) -> None:
             wvr = MockWeaver()
             web = MockWeb()
             self.cmd.weave(web, wvr)
-            self.assertEqual("file [1, 2, 3]", "".join( wvr.written))
+            self.assertEqual(wvr.mock\_calls, [call.xrefHead(), call.xrefLine('file', [1, 2, 3]), call.xrefFoot()])
+            
         def test\_tangle\_should\_fail(self) -> None:
             tnglr = MockTangler()
             web = MockWeb()
@@ -1271,11 +1305,13 @@ locations.
     class TestMacroXRefCommand(unittest.TestCase):
         def setUp(self) -> None:
             self.cmd = pyweb.MacroXrefCommand(314)
+            
         def test\_weave\_should\_work(self) -> None:
             wvr = MockWeaver()
             web = MockWeb()
             self.cmd.weave(web, wvr)
-            self.assertEqual("chunk [4, 5, 6]", "".join( wvr.written))
+            self.assertEqual(wvr.mock\_calls, [call.xrefHead(), call.xrefLine('chunk', [4, 5, 6]), call.xrefFoot()])
+    
         def test\_tangle\_should\_fail(self) -> None:
             tnglr = MockTangler()
             web = MockWeb()
@@ -1305,11 +1341,13 @@ names.
     class TestUserIdXrefCommand(unittest.TestCase):
         def setUp(self) -> None:
             self.cmd = pyweb.UserIdXrefCommand(314)
+            
         def test\_weave\_should\_work(self) -> None:
             wvr = MockWeaver()
             web = MockWeb()
             self.cmd.weave(web, wvr)
-            self.assertEqual("name 7 [8, 9, 10]", "".join( wvr.written))
+            self.assertEqual(wvr.mock\_calls, [call.xrefHead(), call.xrefDefLine('name', 7, [8, 9, 10]), call.xrefFoot()])
+            
         def test\_tangle\_should\_fail(self) -> None:
             tnglr = MockTangler()
             web = MockWeb()
@@ -1344,17 +1382,20 @@ They can't be simply tangled.
             self.cmd.chunk = self.chunk
             self.chunk.commands.append(self.cmd)
             self.chunk.previous\_command = pyweb.TextCommand("", self.chunk.commands[0].lineNumber)
+            
         def test\_weave\_should\_work(self) -> None:
             wvr = MockWeaver()
             web = MockWeb()
             self.cmd.weave(web, wvr)
-            self.assertEqual("Some Name", "".join( wvr.written))
+            self.assertEqual(wvr.write.mock\_calls, [call('Some Name')])
+    
         def test\_tangle\_should\_work(self) -> None:
             tnglr = MockTangler()
             web = MockWeb()
             web.add(self.chunk)
             self.cmd.tangle(web, tnglr)
-            self.assertEqual("Some Name", "".join( tnglr.written))
+            self.assertEqual(tnglr.write.mock\_calls, [call('Some Name')])
+    
 
 ..
 
@@ -1540,11 +1581,13 @@ This is more difficult to create mocks for.
     def test\_valid\_web\_should\_createUsedBy(self) -> None:
         self.web.createUsedBy()
         # If it raises an exception, the web structure is damaged
+        
     def test\_valid\_web\_should\_createFileXref(self) -> None:
         file\_xref = self.web.fileXref()
         self.assertEqual(1, len(file\_xref))
         self.assertTrue("A File" in file\_xref) 
         self.assertTrue(1, len(file\_xref["A File"]))
+        
     def test\_valid\_web\_should\_createChunkXref(self) -> None:
         chunk\_xref = self.web.chunkXref()
         self.assertEqual(2, len(chunk\_xref))
@@ -1553,6 +1596,7 @@ This is more difficult to create mocks for.
         self.assertTrue("Another Chunk" in chunk\_xref)
         self.assertEqual(1, len(chunk\_xref["Another Chunk"]))
         self.assertFalse("Not A Real Chunk" in chunk\_xref)
+        
     def test\_valid\_web\_should\_create\_userNamesXref(self) -> None:
         user\_xref = self.web.userNamesXref() 
         self.assertEqual(3, len(user\_xref))
@@ -1584,8 +1628,12 @@ This is more difficult to create mocks for.
     def test\_valid\_web\_should\_tangle(self) -> None:
         tangler = MockTangler()
         self.web.tangle(tangler)
-        self.assertEqual(3, len(tangler.written))
-        self.assertEqual(['some code', 'some user2a code', 'some user1 code'], tangler.written)
+        self.assertEqual(tangler.codeBlock.mock\_calls, [
+                call('some code'),
+                call('some user2a code'),
+                call('some user1 code'),
+            ]
+        )
 
 ..
 
@@ -1604,9 +1652,16 @@ This is more difficult to create mocks for.
     def test\_valid\_web\_should\_weave(self) -> None:
         weaver = MockWeaver()
         self.web.weave(weaver)
-        self.assertEqual(6, len(weaver.written))
-        expected = ['some text', 'some code', None, 'some user2a code', None, 'some user1 code']
-        self.assertEqual(expected, weaver.written)
+        self.assertEqual(weaver.write.mock\_calls, [
+                call('some text'),
+            ]
+        )
+        self.assertEqual(weaver.quote.mock\_calls, [
+                call('some code'),
+                call('some user2a code'),
+                call('some user1 code'),
+            ]
+        )
 
 ..
 
@@ -1740,6 +1795,8 @@ load, tangle, weave.
         |loz| *Unit Test of Action class hierarchy (42)*. Used by: test_unit.py (`1`_)
 
 
+**TODO:** Replace with Mock
+
 
 ..  _`43`:
 ..  rubric:: Unit test of Action Sequence class (43) =
@@ -1747,44 +1804,18 @@ load, tangle, weave.
     :class: code
 
     
-    class MockAction:
-        def \_\_init\_\_(self) -> None:
-            self.count = 0
-        def \_\_call\_\_(self) -> None:
-            self.count += 1
-            
-    class MockWebReader:
-        def \_\_init\_\_(self) -> None:
-            self.count = 0
-            self.theWeb = None
-            self.errors = 0
-        def web(self, aWeb: "Web") -> None:
-            """Deprecated"""
-            warnings.warn("deprecated", DeprecationWarning)
-            self.theWeb = aWeb
-            return self
-        def source(self, filename: str, file: TextIO) -> str:
-            """Deprecated"""
-            warnings.warn("deprecated", DeprecationWarning)
-            self.webFileName = filename
-        def load(self, aWeb: pyweb.Web, filename: str, source: TextIO \| None = None) -> None:
-            self.theWeb = aWeb
-            self.webFileName = filename
-            self.count += 1
-        
     class TestActionSequence(unittest.TestCase):
         def setUp(self) -> None:
             self.web = MockWeb()
-            self.a1 = MockAction()
-            self.a2 = MockAction()
+            self.a1 = MagicMock(name="Action1")
+            self.a2 = MagicMock(name="Action2")
             self.action = pyweb.ActionSequence("TwoSteps", [self.a1, self.a2])
             self.action.web = self.web
             self.action.options = argparse.Namespace()
         def test\_should\_execute\_both(self) -> None:
             self.action()
-            for c in self.action.opSequence:
-                self.assertEqual(1, c.count)
-                self.assertTrue(self.web is c.web)
+            self.assertEqual(self.a1.call\_count, 1)
+            self.assertEqual(self.a2.call\_count, 1)
 
 ..
 
@@ -1813,7 +1844,7 @@ load, tangle, weave.
             )
         def test\_should\_execute\_weaving(self) -> None:
             self.action()
-            self.assertTrue(self.web.wove is self.weaver)
+            self.assertEqual(self.web.weave.mock\_calls, [call(self.weaver)])
 
 ..
 
@@ -1842,7 +1873,7 @@ load, tangle, weave.
             )
         def test\_should\_execute\_tangling(self) -> None:
             self.action()
-            self.assertTrue(self.web.tangled is self.tangler)
+            self.assertEqual(self.web.tangle.mock\_calls, [call(self.tangler)])
 
 ..
 
@@ -1850,6 +1881,8 @@ load, tangle, weave.
 
         |loz| *Unit test of TangleAction class (45)*. Used by: Unit Test of Action class hierarchy... (`42`_)
 
+
+The mocked ``WebReader`` must provide an ``errors`` property to the ``LoadAction`` instance.
 
 
 ..  _`46`:
@@ -1862,11 +1895,15 @@ load, tangle, weave.
         def setUp(self) -> None:
             self.web = MockWeb()
             self.action = pyweb.LoadAction()
-            self.webReader = MockWebReader()
+            self.webReader = Mock(
+                name="WebReader",
+                errors=0,
+            )
             self.action.web = self.web
+            self.source\_path = Path("TestLoadAction.w")
             self.action.options = argparse.Namespace( 
                 webReader = self.webReader, 
-                source\_path=Path("TestLoadAction.w"),
+                source\_path=self.source\_path,
                 command="@",
                 permitList = [], 
                 output=Path.cwd(),
@@ -1879,7 +1916,11 @@ load, tangle, weave.
                 pass
         def test\_should\_execute\_loading(self) -> None:
             self.action()
-            self.assertEqual(1, self.webReader.count)
+            # Old: self.assertEqual(1, self.webReader.count)
+            print(self.webReader.load.mock\_calls)
+            self.assertEqual(self.webReader.load.mock\_calls, [call(self.web, self.source\_path)])
+            self.webReader.web.assert\_not\_called()  # Deprecated
+            self.webReader.source.assert\_not\_called()  # Deprecated
 
 ..
 
@@ -1893,6 +1934,8 @@ Application Tests
 
 As with testing WebReader, this requires extensive mocking.
 It's easier to simply run the various use cases.
+
+**TODO:** Test Application class
 
 
 ..  _`47`:
@@ -1927,9 +1970,12 @@ The boilerplate code for unit testing is the following.
     from pathlib import Path
     import re
     import string
+    import sys
+    import textwrap
     import time
     from typing import Any, TextIO
     import unittest
+    from unittest.mock import Mock, call, MagicMock, sentinel
     import warnings
     
     import pyweb
@@ -1941,15 +1987,34 @@ The boilerplate code for unit testing is the following.
         |loz| *Unit Test overheads: imports, etc. (48)*. Used by: test_unit.py (`1`_)
 
 
+One more overhead is a function we can inject into selected subclasses
+of ``unittest.TestCase``. This is monkeypatch feature that seems useful.
+
 
 ..  _`49`:
-..  rubric:: Unit Test main (49) =
+..  rubric:: Unit Test overheads: imports, etc. (49) +=
+..  parsed-literal::
+    :class: code
+
+    
+    def rstrip\_lines(source: str) -> list[str]:
+        return list(l.rstrip() for l in source.splitlines())    
+
+..
+
+    ..  class:: small
+
+        |loz| *Unit Test overheads: imports, etc. (49)*. Used by: test_unit.py (`1`_)
+
+
+
+..  _`50`:
+..  rubric:: Unit Test main (50) =
 ..  parsed-literal::
     :class: code
 
     
     if \_\_name\_\_ == "\_\_main\_\_":
-        import sys
         logging.basicConfig(stream=sys.stdout, level=logging.WARN)
         unittest.main()
 
@@ -1957,7 +2022,7 @@ The boilerplate code for unit testing is the following.
 
     ..  class:: small
 
-        |loz| *Unit Test main (49)*. Used by: test_unit.py (`1`_)
+        |loz| *Unit Test main (50)*. Used by: test_unit.py (`1`_)
 
 
 We run the default ``unittest.main()`` to execute the entire suite of tests.
@@ -1984,22 +2049,26 @@ Tests for Loading
 We need to be able to load a web from one or more source files.
 
 
-..  _`50`:
-..  rubric:: test_loader.py (50) =
+..  _`51`:
+..  rubric:: test_loader.py (51) =
 ..  parsed-literal::
     :class: code
 
-    |srarr|\ Load Test overheads: imports, etc. (`52`_), |srarr|\ (`57`_)
-    |srarr|\ Load Test superclass to refactor common setup (`51`_)
-    |srarr|\ Load Test error handling with a few common syntax errors (`53`_)
-    |srarr|\ Load Test include processing with syntax errors (`55`_)
-    |srarr|\ Load Test main program (`58`_)
+    |srarr|\ Load Test overheads: imports, etc. (`53`_), |srarr|\ (`58`_)
+    
+    |srarr|\ Load Test superclass to refactor common setup (`52`_)
+    
+    |srarr|\ Load Test error handling with a few common syntax errors (`54`_)
+    
+    |srarr|\ Load Test include processing with syntax errors (`56`_)
+    
+    |srarr|\ Load Test main program (`59`_)
 
 ..
 
     ..  class:: small
 
-        |loz| *test_loader.py (50)*.
+        |loz| *test_loader.py (51)*.
 
 
 Parsing test cases have a common setup shown in this superclass.
@@ -2009,15 +2078,16 @@ By using some class-level variables ``text``,
 input object to the ``WebReader`` instance.
 
 
-..  _`51`:
-..  rubric:: Load Test superclass to refactor common setup (51) =
+..  _`52`:
+..  rubric:: Load Test superclass to refactor common setup (52) =
 ..  parsed-literal::
     :class: code
 
     
     class ParseTestcase(unittest.TestCase):
-        text = ""
-        file\_path: Path
+        text: ClassVar[str]
+        file\_path: ClassVar[Path]
+        
         def setUp(self) -> None:
             self.source = io.StringIO(self.text)
             self.web = pyweb.Web()
@@ -2027,7 +2097,7 @@ input object to the ``WebReader`` instance.
 
     ..  class:: small
 
-        |loz| *Load Test superclass to refactor common setup (51)*. Used by: test_loader.py (`50`_)
+        |loz| *Load Test superclass to refactor common setup (52)*. Used by: test_loader.py (`51`_)
 
 
 There are a lot of specific parsing exceptions which can be thrown.
@@ -2035,67 +2105,57 @@ We'll cover most of the cases with a quick check for a failure to
 find an expected next token.
 
 
-..  _`52`:
-..  rubric:: Load Test overheads: imports, etc. (52) =
+..  _`53`:
+..  rubric:: Load Test overheads: imports, etc. (53) =
 ..  parsed-literal::
     :class: code
 
     
     import logging.handlers
     from pathlib import Path
+    from typing import ClassVar
 
 ..
 
     ..  class:: small
 
-        |loz| *Load Test overheads: imports, etc. (52)*. Used by: test_loader.py (`50`_)
-
-
-
-..  _`53`:
-..  rubric:: Load Test error handling with a few common syntax errors (53) =
-..  parsed-literal::
-    :class: code
-
-    
-    |srarr|\ Sample Document 1 with correct and incorrect syntax (`54`_)
-    
-    class Test\_ParseErrors(ParseTestcase):
-        text = test1\_w
-        file\_path = Path("test1.w")
-        def setUp(self) -> None:
-            super().setUp()
-            self.logger = logging.getLogger("WebReader")
-            self.buffer = logging.handlers.BufferingHandler(12)
-            self.buffer.setLevel(logging.WARN)
-            self.logger.addHandler(self.buffer)
-            self.logger.setLevel(logging.WARN)
-        def test\_error\_should\_count\_1(self) -> None:
-            self.rdr.load(self.web, self.file\_path, self.source)
-            self.assertEqual(3, self.rdr.errors)
-            messages = [r.message for r in self.buffer.buffer]
-            self.assertEqual( 
-                ["At ('test1.w', 8): expected ('@{',), found '@o'", 
-                "Extra '@{' (possibly missing chunk name) near ('test1.w', 9)", 
-                "Extra '@{' (possibly missing chunk name) near ('test1.w', 9)"],
-                messages
-            )
-        def tearDown(self) -> None:
-            self.logger.setLevel(logging.CRITICAL)
-            self.logger.removeHandler(self.buffer)
-            super().tearDown()
-            
-
-..
-
-    ..  class:: small
-
-        |loz| *Load Test error handling with a few common syntax errors (53)*. Used by: test_loader.py (`50`_)
+        |loz| *Load Test overheads: imports, etc. (53)*. Used by: test_loader.py (`51`_)
 
 
 
 ..  _`54`:
-..  rubric:: Sample Document 1 with correct and incorrect syntax (54) =
+..  rubric:: Load Test error handling with a few common syntax errors (54) =
+..  parsed-literal::
+    :class: code
+
+    
+    |srarr|\ Sample Document 1 with correct and incorrect syntax (`55`_)
+    
+    class Test\_ParseErrors(ParseTestcase):
+        text = test1\_w
+        file\_path = Path("test1.w")
+        def test\_error\_should\_count\_1(self) -> None:
+            with self.assertLogs('WebReader', level='WARN') as log\_capture:
+                self.rdr.load(self.web, self.file\_path, self.source)
+            self.assertEqual(3, self.rdr.errors)
+            self.assertEqual(log\_capture.output, 
+                [
+                    "ERROR:WebReader:At ('test1.w', 8): expected ('@{',), found '@o'",
+                    "ERROR:WebReader:Extra '@{' (possibly missing chunk name) near ('test1.w', 9)",
+                    "ERROR:WebReader:Extra '@{' (possibly missing chunk name) near ('test1.w', 9)"
+                ]
+            )
+
+..
+
+    ..  class:: small
+
+        |loz| *Load Test error handling with a few common syntax errors (54)*. Used by: test_loader.py (`51`_)
+
+
+
+..  _`55`:
+..  rubric:: Sample Document 1 with correct and incorrect syntax (55) =
 ..  parsed-literal::
     :class: code
 
@@ -2115,7 +2175,7 @@ find an expected next token.
 
     ..  class:: small
 
-        |loz| *Sample Document 1 with correct and incorrect syntax (54)*. Used by: Load Test error handling... (`53`_)
+        |loz| *Sample Document 1 with correct and incorrect syntax (55)*. Used by: Load Test error handling... (`54`_)
 
 
 All of the parsing exceptions should be correctly identified with
@@ -2124,16 +2184,17 @@ We'll cover most of the cases with a quick check for a failure to
 find an expected next token.
 
 In order to test the include file processing, we have to actually
-create a temporary file.  It's hard to mock the include processing.
+create a temporary file.  It's hard to mock the include processing,
+since it's a nested instance of the tokenizer.
 
 
-..  _`55`:
-..  rubric:: Load Test include processing with syntax errors (55) =
+..  _`56`:
+..  rubric:: Load Test include processing with syntax errors (56) =
 ..  parsed-literal::
     :class: code
 
     
-    |srarr|\ Sample Document 8 and the file it includes (`56`_)
+    |srarr|\ Sample Document 8 and the file it includes (`57`_)
     
     class Test\_IncludeParseErrors(ParseTestcase):
         text = test8\_w
@@ -2141,39 +2202,33 @@ create a temporary file.  It's hard to mock the include processing.
         def setUp(self) -> None:
             super().setUp()
             Path('test8\_inc.tmp').write\_text(test8\_inc\_w)
-            self.logger = logging.getLogger("WebReader")
-            self.buffer = logging.handlers.BufferingHandler(12)
-            self.buffer.setLevel(logging.WARN)
-            self.logger.addHandler(self.buffer)
-            self.logger.setLevel(logging.WARN)
         def test\_error\_should\_count\_2(self) -> None:
-            self.rdr.load(self.web, self.file\_path, self.source)
+            with self.assertLogs('WebReader', level='WARN') as log\_capture:
+                self.rdr.load(self.web, self.file\_path, self.source)
             self.assertEqual(1, self.rdr.errors)
-            messages = [r.message for r in self.buffer.buffer]
-            self.assertEqual( 
-                ["At ('test8\_inc.tmp', 4): end of input, ('@{', '@[') not found", 
-                "Errors in included file 'test8\_inc.tmp', output is incomplete."],
-                messages
-            )
+            self.assertEqual(log\_capture.output,
+                [
+                    "ERROR:WebReader:At ('test8\_inc.tmp', 4): end of input, ('@{', '@[') not found", 
+                    "ERROR:WebReader:Errors in included file 'test8\_inc.tmp', output is incomplete."
+                ]
+            ) 
         def tearDown(self) -> None:
-            self.logger.setLevel(logging.CRITICAL)
-            self.logger.removeHandler(self.buffer)
-            Path('test8\_inc.tmp').unlink()
             super().tearDown()
+            Path('test8\_inc.tmp').unlink()
 
 ..
 
     ..  class:: small
 
-        |loz| *Load Test include processing with syntax errors (55)*. Used by: test_loader.py (`50`_)
+        |loz| *Load Test include processing with syntax errors (56)*. Used by: test_loader.py (`51`_)
 
 
 The sample document must reference the correct name that will
 be given to the included document by ``setUp``.
 
 
-..  _`56`:
-..  rubric:: Sample Document 8 and the file it includes (56) =
+..  _`57`:
+..  rubric:: Sample Document 8 and the file it includes (57) =
 ..  parsed-literal::
     :class: code
 
@@ -2194,14 +2249,14 @@ be given to the included document by ``setUp``.
 
     ..  class:: small
 
-        |loz| *Sample Document 8 and the file it includes (56)*. Used by: Load Test include... (`55`_)
+        |loz| *Sample Document 8 and the file it includes (57)*. Used by: Load Test include... (`56`_)
 
 
 <p>The overheads for a Python unittest.</p>
 
 
-..  _`57`:
-..  rubric:: Load Test overheads: imports, etc. (57) +=
+..  _`58`:
+..  rubric:: Load Test overheads: imports, etc. (58) +=
 ..  parsed-literal::
     :class: code
 
@@ -2212,6 +2267,7 @@ be given to the included document by ``setUp``.
     import os
     from pathlib import Path
     import string
+    import sys
     import types
     import unittest
     
@@ -2221,20 +2277,19 @@ be given to the included document by ``setUp``.
 
     ..  class:: small
 
-        |loz| *Load Test overheads: imports, etc. (57)*. Used by: test_loader.py (`50`_)
+        |loz| *Load Test overheads: imports, etc. (58)*. Used by: test_loader.py (`51`_)
 
 
 A main program that configures logging and then runs the test.
 
 
-..  _`58`:
-..  rubric:: Load Test main program (58) =
+..  _`59`:
+..  rubric:: Load Test main program (59) =
 ..  parsed-literal::
     :class: code
 
     
     if \_\_name\_\_ == "\_\_main\_\_":
-        import sys
         logging.basicConfig(stream=sys.stdout, level=logging.WARN)
         unittest.main()
 
@@ -2242,7 +2297,7 @@ A main program that configures logging and then runs the test.
 
     ..  class:: small
 
-        |loz| *Load Test main program (58)*. Used by: test_loader.py (`50`_)
+        |loz| *Load Test main program (59)*. Used by: test_loader.py (`51`_)
 
 
 Tests for Tangling
@@ -2251,26 +2306,26 @@ Tests for Tangling
 We need to be able to tangle a web.
 
 
-..  _`59`:
-..  rubric:: test_tangler.py (59) =
+..  _`60`:
+..  rubric:: test_tangler.py (60) =
 ..  parsed-literal::
     :class: code
 
-    |srarr|\ Tangle Test overheads: imports, etc. (`73`_)
-    |srarr|\ Tangle Test superclass to refactor common setup (`60`_)
-    |srarr|\ Tangle Test semantic error 2 (`61`_)
-    |srarr|\ Tangle Test semantic error 3 (`63`_)
-    |srarr|\ Tangle Test semantic error 4 (`65`_)
-    |srarr|\ Tangle Test semantic error 5 (`67`_)
-    |srarr|\ Tangle Test semantic error 6 (`69`_)
-    |srarr|\ Tangle Test include error 7 (`71`_)
-    |srarr|\ Tangle Test main program (`74`_)
+    |srarr|\ Tangle Test overheads: imports, etc. (`74`_)
+    |srarr|\ Tangle Test superclass to refactor common setup (`61`_)
+    |srarr|\ Tangle Test semantic error 2 (`62`_)
+    |srarr|\ Tangle Test semantic error 3 (`64`_)
+    |srarr|\ Tangle Test semantic error 4 (`66`_)
+    |srarr|\ Tangle Test semantic error 5 (`68`_)
+    |srarr|\ Tangle Test semantic error 6 (`70`_)
+    |srarr|\ Tangle Test include error 7 (`72`_)
+    |srarr|\ Tangle Test main program (`75`_)
 
 ..
 
     ..  class:: small
 
-        |loz| *test_tangler.py (59)*.
+        |loz| *test_tangler.py (60)*.
 
 
 Tangling test cases have a common setup and teardown shown in this superclass.
@@ -2280,21 +2335,23 @@ exceptions raised.
 
 
 
-..  _`60`:
-..  rubric:: Tangle Test superclass to refactor common setup (60) =
+..  _`61`:
+..  rubric:: Tangle Test superclass to refactor common setup (61) =
 ..  parsed-literal::
     :class: code
 
     
     class TangleTestcase(unittest.TestCase):
-        text = ""
-        error = ""
-        file\_path: Path
+        text: ClassVar[str]
+        error: ClassVar[str]
+        file\_path: ClassVar[Path]
+        
         def setUp(self) -> None:
             self.source = io.StringIO(self.text)
             self.web = pyweb.Web()
             self.rdr = pyweb.WebReader()
             self.tangler = pyweb.Tangler()
+            
         def tangle\_and\_check\_exception(self, exception\_text: str) -> None:
             try:
                 self.rdr.load(self.web, self.file\_path, self.source)
@@ -2303,6 +2360,7 @@ exceptions raised.
                 self.fail("Should not tangle")
             except pyweb.Error as e:
                 self.assertEqual(exception\_text, e.args[0])
+                
         def tearDown(self) -> None:
             try:
                 self.file\_path.with\_suffix(".tmp").unlink()
@@ -2313,17 +2371,17 @@ exceptions raised.
 
     ..  class:: small
 
-        |loz| *Tangle Test superclass to refactor common setup (60)*. Used by: test_tangler.py (`59`_)
+        |loz| *Tangle Test superclass to refactor common setup (61)*. Used by: test_tangler.py (`60`_)
 
 
 
-..  _`61`:
-..  rubric:: Tangle Test semantic error 2 (61) =
+..  _`62`:
+..  rubric:: Tangle Test semantic error 2 (62) =
 ..  parsed-literal::
     :class: code
 
     
-    |srarr|\ Sample Document 2 (`62`_)
+    |srarr|\ Sample Document 2 (`63`_)
     
     class Test\_SemanticError\_2(TangleTestcase):
         text = test2\_w
@@ -2335,12 +2393,12 @@ exceptions raised.
 
     ..  class:: small
 
-        |loz| *Tangle Test semantic error 2 (61)*. Used by: test_tangler.py (`59`_)
+        |loz| *Tangle Test semantic error 2 (62)*. Used by: test_tangler.py (`60`_)
 
 
 
-..  _`62`:
-..  rubric:: Sample Document 2 (62) =
+..  _`63`:
+..  rubric:: Sample Document 2 (63) =
 ..  parsed-literal::
     :class: code
 
@@ -2358,17 +2416,17 @@ exceptions raised.
 
     ..  class:: small
 
-        |loz| *Sample Document 2 (62)*. Used by: Tangle Test semantic error 2... (`61`_)
+        |loz| *Sample Document 2 (63)*. Used by: Tangle Test semantic error 2... (`62`_)
 
 
 
-..  _`63`:
-..  rubric:: Tangle Test semantic error 3 (63) =
+..  _`64`:
+..  rubric:: Tangle Test semantic error 3 (64) =
 ..  parsed-literal::
     :class: code
 
     
-    |srarr|\ Sample Document 3 (`64`_)
+    |srarr|\ Sample Document 3 (`65`_)
     
     class Test\_SemanticError\_3(TangleTestcase):
         text = test3\_w
@@ -2380,12 +2438,12 @@ exceptions raised.
 
     ..  class:: small
 
-        |loz| *Tangle Test semantic error 3 (63)*. Used by: test_tangler.py (`59`_)
+        |loz| *Tangle Test semantic error 3 (64)*. Used by: test_tangler.py (`60`_)
 
 
 
-..  _`64`:
-..  rubric:: Sample Document 3 (64) =
+..  _`65`:
+..  rubric:: Sample Document 3 (65) =
 ..  parsed-literal::
     :class: code
 
@@ -2404,18 +2462,18 @@ exceptions raised.
 
     ..  class:: small
 
-        |loz| *Sample Document 3 (64)*. Used by: Tangle Test semantic error 3... (`63`_)
+        |loz| *Sample Document 3 (65)*. Used by: Tangle Test semantic error 3... (`64`_)
 
 
 
 
-..  _`65`:
-..  rubric:: Tangle Test semantic error 4 (65) =
+..  _`66`:
+..  rubric:: Tangle Test semantic error 4 (66) =
 ..  parsed-literal::
     :class: code
 
     
-    |srarr|\ Sample Document 4 (`66`_)
+    |srarr|\ Sample Document 4 (`67`_)
     
     class Test\_SemanticError\_4(TangleTestcase):
         text = test4\_w
@@ -2427,12 +2485,12 @@ exceptions raised.
 
     ..  class:: small
 
-        |loz| *Tangle Test semantic error 4 (65)*. Used by: test_tangler.py (`59`_)
+        |loz| *Tangle Test semantic error 4 (66)*. Used by: test_tangler.py (`60`_)
 
 
 
-..  _`66`:
-..  rubric:: Sample Document 4 (66) =
+..  _`67`:
+..  rubric:: Sample Document 4 (67) =
 ..  parsed-literal::
     :class: code
 
@@ -2451,17 +2509,17 @@ exceptions raised.
 
     ..  class:: small
 
-        |loz| *Sample Document 4 (66)*. Used by: Tangle Test semantic error 4... (`65`_)
+        |loz| *Sample Document 4 (67)*. Used by: Tangle Test semantic error 4... (`66`_)
 
 
 
-..  _`67`:
-..  rubric:: Tangle Test semantic error 5 (67) =
+..  _`68`:
+..  rubric:: Tangle Test semantic error 5 (68) =
 ..  parsed-literal::
     :class: code
 
     
-    |srarr|\ Sample Document 5 (`68`_)
+    |srarr|\ Sample Document 5 (`69`_)
     
     class Test\_SemanticError\_5(TangleTestcase):
         text = test5\_w
@@ -2473,12 +2531,12 @@ exceptions raised.
 
     ..  class:: small
 
-        |loz| *Tangle Test semantic error 5 (67)*. Used by: test_tangler.py (`59`_)
+        |loz| *Tangle Test semantic error 5 (68)*. Used by: test_tangler.py (`60`_)
 
 
 
-..  _`68`:
-..  rubric:: Sample Document 5 (68) =
+..  _`69`:
+..  rubric:: Sample Document 5 (69) =
 ..  parsed-literal::
     :class: code
 
@@ -2499,17 +2557,17 @@ exceptions raised.
 
     ..  class:: small
 
-        |loz| *Sample Document 5 (68)*. Used by: Tangle Test semantic error 5... (`67`_)
+        |loz| *Sample Document 5 (69)*. Used by: Tangle Test semantic error 5... (`68`_)
 
 
 
-..  _`69`:
-..  rubric:: Tangle Test semantic error 6 (69) =
+..  _`70`:
+..  rubric:: Tangle Test semantic error 6 (70) =
 ..  parsed-literal::
     :class: code
 
      
-    |srarr|\ Sample Document 6 (`70`_)
+    |srarr|\ Sample Document 6 (`71`_)
     
     class Test\_SemanticError\_6(TangleTestcase):
         text = test6\_w
@@ -2526,12 +2584,12 @@ exceptions raised.
 
     ..  class:: small
 
-        |loz| *Tangle Test semantic error 6 (69)*. Used by: test_tangler.py (`59`_)
+        |loz| *Tangle Test semantic error 6 (70)*. Used by: test_tangler.py (`60`_)
 
 
 
-..  _`70`:
-..  rubric:: Sample Document 6 (70) =
+..  _`71`:
+..  rubric:: Sample Document 6 (71) =
 ..  parsed-literal::
     :class: code
 
@@ -2552,17 +2610,17 @@ exceptions raised.
 
     ..  class:: small
 
-        |loz| *Sample Document 6 (70)*. Used by: Tangle Test semantic error 6... (`69`_)
+        |loz| *Sample Document 6 (71)*. Used by: Tangle Test semantic error 6... (`70`_)
 
 
 
-..  _`71`:
-..  rubric:: Tangle Test include error 7 (71) =
+..  _`72`:
+..  rubric:: Tangle Test include error 7 (72) =
 ..  parsed-literal::
     :class: code
 
     
-    |srarr|\ Sample Document 7 and it's included file (`72`_)
+    |srarr|\ Sample Document 7 and it's included file (`73`_)
     
     class Test\_IncludeError\_7(TangleTestcase):
         text = test7\_w
@@ -2584,12 +2642,12 @@ exceptions raised.
 
     ..  class:: small
 
-        |loz| *Tangle Test include error 7 (71)*. Used by: test_tangler.py (`59`_)
+        |loz| *Tangle Test include error 7 (72)*. Used by: test_tangler.py (`60`_)
 
 
 
-..  _`72`:
-..  rubric:: Sample Document 7 and it's included file (72) =
+..  _`73`:
+..  rubric:: Sample Document 7 and it's included file (73) =
 ..  parsed-literal::
     :class: code
 
@@ -2609,12 +2667,12 @@ exceptions raised.
 
     ..  class:: small
 
-        |loz| *Sample Document 7 and it's included file (72)*. Used by: Tangle Test include error 7... (`71`_)
+        |loz| *Sample Document 7 and it's included file (73)*. Used by: Tangle Test include error 7... (`72`_)
 
 
 
-..  _`73`:
-..  rubric:: Tangle Test overheads: imports, etc. (73) =
+..  _`74`:
+..  rubric:: Tangle Test overheads: imports, etc. (74) =
 ..  parsed-literal::
     :class: code
 
@@ -2624,6 +2682,7 @@ exceptions raised.
     import logging
     import os
     from pathlib import Path
+    from typing import ClassVar
     import unittest
     
     import pyweb
@@ -2632,12 +2691,12 @@ exceptions raised.
 
     ..  class:: small
 
-        |loz| *Tangle Test overheads: imports, etc. (73)*. Used by: test_tangler.py (`59`_)
+        |loz| *Tangle Test overheads: imports, etc. (74)*. Used by: test_tangler.py (`60`_)
 
 
 
-..  _`74`:
-..  rubric:: Tangle Test main program (74) =
+..  _`75`:
+..  rubric:: Tangle Test main program (75) =
 ..  parsed-literal::
     :class: code
 
@@ -2651,7 +2710,7 @@ exceptions raised.
 
     ..  class:: small
 
-        |loz| *Tangle Test main program (74)*. Used by: test_tangler.py (`59`_)
+        |loz| *Tangle Test main program (75)*. Used by: test_tangler.py (`60`_)
 
 
 
@@ -2661,37 +2720,38 @@ Tests for Weaving
 We need to be able to weave a document from one or more source files.
 
 
-..  _`75`:
-..  rubric:: test_weaver.py (75) =
+..  _`76`:
+..  rubric:: test_weaver.py (76) =
 ..  parsed-literal::
     :class: code
 
-    |srarr|\ Weave Test overheads: imports, etc. (`82`_)
-    |srarr|\ Weave Test superclass to refactor common setup (`76`_)
-    |srarr|\ Weave Test references and definitions (`77`_)
-    |srarr|\ Weave Test evaluation of expressions (`80`_)
-    |srarr|\ Weave Test main program (`83`_)
+    |srarr|\ Weave Test overheads: imports, etc. (`83`_)
+    |srarr|\ Weave Test superclass to refactor common setup (`77`_)
+    |srarr|\ Weave Test references and definitions (`78`_)
+    |srarr|\ Weave Test evaluation of expressions (`81`_)
+    |srarr|\ Weave Test main program (`84`_)
 
 ..
 
     ..  class:: small
 
-        |loz| *test_weaver.py (75)*.
+        |loz| *test_weaver.py (76)*.
 
 
 Weaving test cases have a common setup shown in this superclass.
 
 
-..  _`76`:
-..  rubric:: Weave Test superclass to refactor common setup (76) =
+..  _`77`:
+..  rubric:: Weave Test superclass to refactor common setup (77) =
 ..  parsed-literal::
     :class: code
 
     
     class WeaveTestcase(unittest.TestCase):
-        text = ""
-        error = ""
-        file\_path: Path
+        text: ClassVar[str]
+        error: ClassVar[str]
+        file\_path: ClassVar[Path]
+        
         def setUp(self) -> None:
             self.source = io.StringIO(self.text)
             self.web = pyweb.Web()
@@ -2707,18 +2767,18 @@ Weaving test cases have a common setup shown in this superclass.
 
     ..  class:: small
 
-        |loz| *Weave Test superclass to refactor common setup (76)*. Used by: test_weaver.py (`75`_)
+        |loz| *Weave Test superclass to refactor common setup (77)*. Used by: test_weaver.py (`76`_)
 
 
 
-..  _`77`:
-..  rubric:: Weave Test references and definitions (77) =
+..  _`78`:
+..  rubric:: Weave Test references and definitions (78) =
 ..  parsed-literal::
     :class: code
 
     
-    |srarr|\ Sample Document 0 (`78`_)
-    |srarr|\ Expected Output 0 (`79`_)
+    |srarr|\ Sample Document 0 (`79`_)
+    |srarr|\ Expected Output 0 (`80`_)
     
     class Test\_RefDefWeave(WeaveTestcase):
         text = test0\_w
@@ -2740,12 +2800,12 @@ Weaving test cases have a common setup shown in this superclass.
 
     ..  class:: small
 
-        |loz| *Weave Test references and definitions (77)*. Used by: test_weaver.py (`75`_)
+        |loz| *Weave Test references and definitions (78)*. Used by: test_weaver.py (`76`_)
 
 
 
-..  _`78`:
-..  rubric:: Sample Document 0 (78) =
+..  _`79`:
+..  rubric:: Sample Document 0 (79) =
 ..  parsed-literal::
     :class: code
 
@@ -2776,12 +2836,12 @@ Weaving test cases have a common setup shown in this superclass.
 
     ..  class:: small
 
-        |loz| *Sample Document 0 (78)*. Used by: Weave Test references... (`77`_)
+        |loz| *Sample Document 0 (79)*. Used by: Weave Test references... (`78`_)
 
 
 
-..  _`79`:
-..  rubric:: Expected Output 0 (79) =
+..  _`80`:
+..  rubric:: Expected Output 0 (80) =
 ..  parsed-literal::
     :class: code
 
@@ -2821,24 +2881,29 @@ Weaving test cases have a common setup shown in this superclass.
 
     ..  class:: small
 
-        |loz| *Expected Output 0 (79)*. Used by: Weave Test references... (`77`_)
+        |loz| *Expected Output 0 (80)*. Used by: Weave Test references... (`78`_)
 
 
 Note that this really requires a mocked ``time`` module in order
 to properly provide a consistent output from ``time.asctime()``.
 
 
-..  _`80`:
-..  rubric:: Weave Test evaluation of expressions (80) =
+..  _`81`:
+..  rubric:: Weave Test evaluation of expressions (81) =
 ..  parsed-literal::
     :class: code
 
     
-    |srarr|\ Sample Document 9 (`81`_)
+    |srarr|\ Sample Document 9 (`82`_)
+    
+    from unittest.mock import Mock
     
     class TestEvaluations(WeaveTestcase):
         text = test9\_w
         file\_path = Path("test9.w")
+        def setUp(self):
+            super().setUp()
+            self.mock\_time = Mock(asctime=Mock(return\_value="mocked time"))
         def test\_should\_evaluate(self) -> None:
             self.rdr.load(self.web, self.file\_path, self.source)
             doc = pyweb.HTML( )
@@ -2847,7 +2912,7 @@ to properly provide a consistent output from ``time.asctime()``.
             actual = self.file\_path.with\_suffix(".html").read\_text().splitlines()
             #print(actual)
             self.assertEqual("An anonymous chunk.", actual[0])
-            self.assertTrue(actual[1].startswith("Time ="))
+            self.assertTrue("Time = mocked time", actual[1])
             self.assertEqual("File = ('test9.w', 3)", actual[2])
             self.assertEqual('Version = 3.1', actual[3])
             self.assertEqual(f'CWD = {os.getcwd()}', actual[4])
@@ -2856,12 +2921,12 @@ to properly provide a consistent output from ``time.asctime()``.
 
     ..  class:: small
 
-        |loz| *Weave Test evaluation of expressions (80)*. Used by: test_weaver.py (`75`_)
+        |loz| *Weave Test evaluation of expressions (81)*. Used by: test_weaver.py (`76`_)
 
 
 
-..  _`81`:
-..  rubric:: Sample Document 9 (81) =
+..  _`82`:
+..  rubric:: Sample Document 9 (82) =
 ..  parsed-literal::
     :class: code
 
@@ -2877,12 +2942,12 @@ to properly provide a consistent output from ``time.asctime()``.
 
     ..  class:: small
 
-        |loz| *Sample Document 9 (81)*. Used by: Weave Test evaluation... (`80`_)
+        |loz| *Sample Document 9 (82)*. Used by: Weave Test evaluation... (`81`_)
 
 
 
-..  _`82`:
-..  rubric:: Weave Test overheads: imports, etc. (82) =
+..  _`83`:
+..  rubric:: Weave Test overheads: imports, etc. (83) =
 ..  parsed-literal::
     :class: code
 
@@ -2893,6 +2958,8 @@ to properly provide a consistent output from ``time.asctime()``.
     import os
     from pathlib import Path
     import string
+    import sys
+    from typing import ClassVar
     import unittest
     
     import pyweb
@@ -2901,18 +2968,17 @@ to properly provide a consistent output from ``time.asctime()``.
 
     ..  class:: small
 
-        |loz| *Weave Test overheads: imports, etc. (82)*. Used by: test_weaver.py (`75`_)
+        |loz| *Weave Test overheads: imports, etc. (83)*. Used by: test_weaver.py (`76`_)
 
 
 
-..  _`83`:
-..  rubric:: Weave Test main program (83) =
+..  _`84`:
+..  rubric:: Weave Test main program (84) =
 ..  parsed-literal::
     :class: code
 
     
     if \_\_name\_\_ == "\_\_main\_\_":
-        import sys
         logging.basicConfig(stream=sys.stderr, level=logging.WARN)
         unittest.main()
 
@@ -2920,176 +2986,330 @@ to properly provide a consistent output from ``time.asctime()``.
 
     ..  class:: small
 
-        |loz| *Weave Test main program (83)*. Used by: test_weaver.py (`75`_)
+        |loz| *Weave Test main program (84)*. Used by: test_weaver.py (`76`_)
 
 
 
-Combined Test Runner
-=====================
+Additional Scripts Testing
+==========================
 
-.. test/runner.w
+.. test/scripts.w
 
-This is a small runner that executes all tests in all test modules.
-Instead of test discovery as done by **pytest** and others,
-this defines a test suite "the hard way" with an explicit list of modules.
+We provide these two additional scripts; effectively command-line short-cuts:
 
+-   ``tangle.py``
 
-..  _`84`:
-..  rubric:: runner.py (84) =
-..  parsed-literal::
-    :class: code
+-   ``weave.py``
 
-    |srarr|\ Combined Test overheads, imports, etc. (`85`_)
-    |srarr|\ Combined Test suite which imports all other test modules (`86`_)
-    |srarr|\ Combined Test command line options (`87`_)
-    |srarr|\ Combined Test main script (`88`_)
-
-..
-
-    ..  class:: small
-
-        |loz| *runner.py (84)*.
+These need their own test cases.
 
 
-The overheads import unittest and logging, because those are essential
-infrastructure.  Additionally, each of the test modules is also imported.
+This gives us the following outline for the script testing.
 
 
 ..  _`85`:
-..  rubric:: Combined Test overheads, imports, etc. (85) =
+..  rubric:: test_scripts.py (85) =
 ..  parsed-literal::
     :class: code
 
-    """Combined tests."""
-    import argparse
-    import unittest
-    import test\_loader
-    import test\_tangler
-    import test\_weaver
-    import test\_unit
-    import logging
-    import sys
+    |srarr|\ Script Test overheads: imports, etc. (`90`_)
     
+    |srarr|\ Sample web file to test with (`86`_)
+    
+    |srarr|\ Superclass for test cases (`87`_)
+    
+    |srarr|\ Test of weave.py (`88`_)
+    
+    |srarr|\ Test of tangle.py (`89`_)
+    
+    |srarr|\ Scripts Test main (`91`_)
 
 ..
 
     ..  class:: small
 
-        |loz| *Combined Test overheads, imports, etc. (85)*. Used by: runner.py (`84`_)
+        |loz| *test_scripts.py (85)*.
 
 
-The test suite is built from each of the individual test modules.
+Sample Web File
+---------------
+
+This is a web ``.w`` file to create a document and tangle a small file.
 
 
 ..  _`86`:
-..  rubric:: Combined Test suite which imports all other test modules (86) =
+..  rubric:: Sample web file to test with (86) =
 ..  parsed-literal::
     :class: code
 
     
-    def suite():
-        s = unittest.TestSuite()
-        for m in (test\_loader, test\_tangler, test\_weaver, test\_unit):
-            s.addTests(unittest.defaultTestLoader.loadTestsFromModule(m))
-        return s
+    sample = textwrap.dedent("""
+        <!doctype html>
+        <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Sample HTML web file</title>
+          </head>
+          <body>
+            <h1>Sample HTML web file</h1>
+            <p>We're avoiding using Python specifically.
+            This hints at other languages being tangled by this tool.</p>
+            
+        @o sample\_tangle.code
+        @{
+        @<preamble@>
+        @<body@>
+        @}
+        
+        @d preamble
+        @{
+        #include <stdio.h>
+        @}
+        
+        @d body
+        @{
+        int main() {
+            println("Hello, World!")
+        }
+        @}
+        
+          </body>
+        </html>
+        """)
 
 ..
 
     ..  class:: small
 
-        |loz| *Combined Test suite which imports all other test modules (86)*. Used by: runner.py (`84`_)
+        |loz| *Sample web file to test with (86)*. Used by: test_scripts.py (`85`_)
 
 
-In order to debug failing tests, we accept some command-line
-parameters to the combined testing script.
+Superclass for test cases
+-------------------------
+
+This superclass definition creates a consistent test fixture for both test cases.
+The sample ``test_sample.w`` file is created and removed after the test.
 
 
 ..  _`87`:
-..  rubric:: Combined Test command line options (87) =
+..  rubric:: Superclass for test cases (87) =
 ..  parsed-literal::
     :class: code
 
     
-    def get\_options(argv: list[str] = sys.argv[1:]) -> argparse.Namespace:
-        parser = argparse.ArgumentParser()
-        parser.add\_argument("-v", "--verbose", dest="verbosity", action="store\_const", const=logging.INFO)
-        parser.add\_argument("-d", "--debug", dest="verbosity", action="store\_const", const=logging.DEBUG)
-        parser.add\_argument("-l", "--logger", dest="logger", action="store", help="comma-separated list")
-        defaults = argparse.Namespace(
-            verbosity=logging.CRITICAL,
-            logger=""
-        )
-        config = parser.parse\_args(argv, namespace=defaults)
-        return config
+    class SampleWeb(unittest.TestCase):
+        def setUp(self) -> None:
+            self.sample\_path = Path("test\_sample.w")
+            self.sample\_path.write\_text(sample)
+        def tearDown(self) -> None:
+            self.sample\_path.unlink()
+    
 
 ..
 
     ..  class:: small
 
-        |loz| *Combined Test command line options (87)*. Used by: runner.py (`84`_)
+        |loz| *Superclass for test cases (87)*. Used by: test_scripts.py (`85`_)
 
 
-This means we can use ``-dlWebReader`` to debug the Web Reader.
-We can use ``-d -lWebReader,TanglerMake`` to debug both
-the WebReader class and the TanglerMake class. Not all classes have named loggers.
-Logger names include ``Emitter``, 
-``indent.Emitter``, 
-``Chunk``, 
-``Command``, 
-``Reference``, 
-``Web``, 
-``WebReader``, 
-``Action``, and
-``Application``.
-As well as subclasses of Emitter, Chunk, Command, and Action.
+Weave Script Test
+-----------------
 
-The main script initializes logging. Note that the typical setup
-uses ``logging.CRITICAL`` to silence some expected warning messages.
-For debugging, ``logging.WARN`` provides more information.
-
-Once logging is running, it executes the ``unittest.TextTestRunner`` on the test suite.
-
+We check the weave output to be sure it's what we expected. 
+This could be altered to check a few features of the weave file rather than compare the entire file.
 
 
 ..  _`88`:
-..  rubric:: Combined Test main script (88) =
+..  rubric:: Test of weave.py (88) =
+..  parsed-literal::
+    :class: code
+
+    
+    expected\_weave = textwrap.dedent("""
+        <!doctype html>
+        <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Sample HTML web file</title>
+          </head>
+          <body>
+            <h1>Sample HTML web file</h1>
+            <p>We're avoiding using Python specifically.
+            This hints at other languages being tangled by this tool.</p>
+        
+        <a name="pyweb1"></a>
+            <!--line number 16-->
+            <p>\`\`sample\_tangle.code\`\` (1)&nbsp;=</p>
+            <pre><code>
+        
+        <a href="#pyweb2">&rarr;<em>preamble</em>&nbsp;(2)</a>
+        <a href="#pyweb3">&rarr;<em>body</em>&nbsp;(3)</a>
+        </code></pre>
+            <p>&loz; \`\`sample\_tangle.code\`\` (1).
+            []
+            </p>
+        
+        
+        <a name="pyweb2"></a>
+            <!--line number 22-->
+            <p><em>preamble</em> (2)&nbsp;=</p>
+            <pre><code>
+        
+        #include &lt;stdio.h&gt;
+        
+            </code></pre>
+            <p>&loz; <em>preamble</em> (2).
+              Used by <a href="#pyweb1"><em>sample\_tangle.code</em>&nbsp;(1)</a>.
+            </p>
+        
+        
+        <a name="pyweb3"></a>
+            <!--line number 27-->
+            <p><em>body</em> (3)&nbsp;=</p>
+            <pre><code>
+        
+        int main() {
+            println(&quot;Hello, World!&quot;)
+        }
+        
+            </code></pre>
+            <p>&loz; <em>body</em> (3).
+              Used by <a href="#pyweb1"><em>sample\_tangle.code</em>&nbsp;(1)</a>.
+            </p>
+        
+        
+          </body>
+        </html>
+        """)
+        
+    class TestWeave(SampleWeb):
+        def setUp(self) -> None:
+            super().setUp()
+            self.output = self.sample\_path.with\_suffix(".html")
+        def test(self) -> None:
+            weave.main(self.sample\_path)
+            result = self.output.read\_text()
+            self.assertEqual(result, expected\_weave)
+        def tearDown(self) -> None:
+            super().tearDown()
+            self.output.unlink()
+
+..
+
+    ..  class:: small
+
+        |loz| *Test of weave.py (88)*. Used by: test_scripts.py (`85`_)
+
+
+Tangle Script Test
+------------------
+
+We check the tangle output to be sure it's what we expected. 
+
+
+..  _`89`:
+..  rubric:: Test of tangle.py (89) =
+..  parsed-literal::
+    :class: code
+
+    
+    
+    expected\_tangle = textwrap.dedent("""
+    
+        #include <stdio.h>
+        
+        
+        int main() {
+            println("Hello, World!")
+        }
+        
+        """)
+        
+    class TestTangle(SampleWeb):
+        def setUp(self) -> None:
+            super().setUp()
+            self.output = Path("sample\_tangle.code")
+        def test(self) -> None:
+            tangle.main(self.sample\_path)
+            result = self.output.read\_text()
+            self.assertEqual(result, expected\_tangle)
+        def tearDown(self) -> None:
+            super().tearDown()
+            self.output.unlink()
+
+..
+
+    ..  class:: small
+
+        |loz| *Test of tangle.py (89)*. Used by: test_scripts.py (`85`_)
+
+
+Overheads and Main Script
+--------------------------
+
+This is typical of the other test modules. We provide a unittest runner 
+here in case we want to run these tests in isolation.
+
+
+..  _`90`:
+..  rubric:: Script Test overheads: imports, etc. (90) =
+..  parsed-literal::
+    :class: code
+
+    """Script tests."""
+    import logging
+    from pathlib import Path
+    import sys
+    import textwrap
+    import unittest
+    
+    import tangle
+    import weave
+
+..
+
+    ..  class:: small
+
+        |loz| *Script Test overheads: imports, etc. (90)*. Used by: test_scripts.py (`85`_)
+
+
+
+..  _`91`:
+..  rubric:: Scripts Test main (91) =
 ..  parsed-literal::
     :class: code
 
     
     if \_\_name\_\_ == "\_\_main\_\_":
-        options = get\_options()
-        logging.basicConfig(stream=sys.stderr, level=options.verbosity)
-        logger = logging.getLogger("test")
-        for logger\_name in (n.strip() for n in options.logger.split(',')):
-            l = logging.getLogger(logger\_name)
-            l.setLevel(options.verbosity)
-            logger.info(f"Setting {l}")
-            
-        tr = unittest.TextTestRunner()
-        result = tr.run(suite())
-        logging.shutdown()
-        sys.exit(len(result.failures) + len(result.errors))
+        logging.basicConfig(stream=sys.stdout, level=logging.WARN)
+        unittest.main()
 
 ..
 
     ..  class:: small
 
-        |loz| *Combined Test main script (88)*. Used by: runner.py (`84`_)
+        |loz| *Scripts Test main (91)*. Used by: test_scripts.py (`85`_)
 
 
+We run the default ``unittest.main()`` to execute the entire suite of tests.
+
+
+No Longer supported: @i runner.w, using pytest seems better.
 
 Additional Files
 =================
 
 To get the RST to look good, there are two additional files.
+These are clones of what's in the ``src`` directory.
 
 ``docutils.conf`` defines two CSS files to use.
 	The default CSS file may need to be customized.
 
 
-..  _`89`:
-..  rubric:: docutils.conf (89) =
+..  _`92`:
+..  rubric:: docutils.conf (92) =
 ..  parsed-literal::
     :class: code
 
@@ -3104,7 +3324,7 @@ To get the RST to look good, there are two additional files.
 
     ..  class:: small
 
-        |loz| *docutils.conf (89)*.
+        |loz| *docutils.conf (92)*.
 
 
 ``page-layout.css``  This tweaks one CSS to be sure that
@@ -3112,8 +3332,8 @@ the resulting HTML pages are easier to read. These are minor
 tweaks to the default CSS.
 
 
-..  _`90`:
-..  rubric:: page-layout.css (90) =
+..  _`93`:
+..  rubric:: page-layout.css (93) =
 ..  parsed-literal::
     :class: code
 
@@ -3139,7 +3359,7 @@ tweaks to the default CSS.
 
     ..  class:: small
 
-        |loz| *page-layout.css (90)*.
+        |loz| *page-layout.css (93)*.
 
 
 Indices
@@ -3150,19 +3370,19 @@ Files
 
 
 :docutils.conf:
-    |srarr|\ (`89`_)
+    |srarr|\ (`92`_)
 :page-layout.css:
-    |srarr|\ (`90`_)
-:runner.py:
-    |srarr|\ (`84`_)
+    |srarr|\ (`93`_)
 :test_loader.py:
-    |srarr|\ (`50`_)
+    |srarr|\ (`51`_)
+:test_scripts.py:
+    |srarr|\ (`85`_)
 :test_tangler.py:
-    |srarr|\ (`59`_)
+    |srarr|\ (`60`_)
 :test_unit.py:
     |srarr|\ (`1`_)
 :test_weaver.py:
-    |srarr|\ (`75`_)
+    |srarr|\ (`76`_)
 
 
 
@@ -3170,64 +3390,68 @@ Macros
 ------
 
 
-:Combined Test command line options:
-    |srarr|\ (`87`_)
-:Combined Test main script:
-    |srarr|\ (`88`_)
-:Combined Test overheads, imports, etc.:
-    |srarr|\ (`85`_)
-:Combined Test suite which imports all other test modules:
-    |srarr|\ (`86`_)
 :Expected Output 0:
-    |srarr|\ (`79`_)
+    |srarr|\ (`80`_)
 :Load Test error handling with a few common syntax errors:
-    |srarr|\ (`53`_)
-:Load Test include processing with syntax errors:
-    |srarr|\ (`55`_)
-:Load Test main program:
-    |srarr|\ (`58`_)
-:Load Test overheads: imports, etc.:
-    |srarr|\ (`52`_) |srarr|\ (`57`_)
-:Load Test superclass to refactor common setup:
-    |srarr|\ (`51`_)
-:Sample Document 0:
-    |srarr|\ (`78`_)
-:Sample Document 1 with correct and incorrect syntax:
     |srarr|\ (`54`_)
-:Sample Document 2:
-    |srarr|\ (`62`_)
-:Sample Document 3:
-    |srarr|\ (`64`_)
-:Sample Document 4:
-    |srarr|\ (`66`_)
-:Sample Document 5:
-    |srarr|\ (`68`_)
-:Sample Document 6:
-    |srarr|\ (`70`_)
-:Sample Document 7 and it's included file:
-    |srarr|\ (`72`_)
-:Sample Document 8 and the file it includes:
+:Load Test include processing with syntax errors:
     |srarr|\ (`56`_)
-:Sample Document 9:
-    |srarr|\ (`81`_)
-:Tangle Test include error 7:
-    |srarr|\ (`71`_)
-:Tangle Test main program:
-    |srarr|\ (`74`_)
-:Tangle Test overheads: imports, etc.:
-    |srarr|\ (`73`_)
-:Tangle Test semantic error 2:
-    |srarr|\ (`61`_)
-:Tangle Test semantic error 3:
+:Load Test main program:
+    |srarr|\ (`59`_)
+:Load Test overheads: imports, etc.:
+    |srarr|\ (`53`_) |srarr|\ (`58`_)
+:Load Test superclass to refactor common setup:
+    |srarr|\ (`52`_)
+:Sample Document 0:
+    |srarr|\ (`79`_)
+:Sample Document 1 with correct and incorrect syntax:
+    |srarr|\ (`55`_)
+:Sample Document 2:
     |srarr|\ (`63`_)
-:Tangle Test semantic error 4:
+:Sample Document 3:
     |srarr|\ (`65`_)
-:Tangle Test semantic error 5:
+:Sample Document 4:
     |srarr|\ (`67`_)
-:Tangle Test semantic error 6:
+:Sample Document 5:
     |srarr|\ (`69`_)
+:Sample Document 6:
+    |srarr|\ (`71`_)
+:Sample Document 7 and it's included file:
+    |srarr|\ (`73`_)
+:Sample Document 8 and the file it includes:
+    |srarr|\ (`57`_)
+:Sample Document 9:
+    |srarr|\ (`82`_)
+:Sample web file to test with:
+    |srarr|\ (`86`_)
+:Script Test overheads: imports, etc.:
+    |srarr|\ (`90`_)
+:Scripts Test main:
+    |srarr|\ (`91`_)
+:Superclass for test cases:
+    |srarr|\ (`87`_)
+:Tangle Test include error 7:
+    |srarr|\ (`72`_)
+:Tangle Test main program:
+    |srarr|\ (`75`_)
+:Tangle Test overheads: imports, etc.:
+    |srarr|\ (`74`_)
+:Tangle Test semantic error 2:
+    |srarr|\ (`62`_)
+:Tangle Test semantic error 3:
+    |srarr|\ (`64`_)
+:Tangle Test semantic error 4:
+    |srarr|\ (`66`_)
+:Tangle Test semantic error 5:
+    |srarr|\ (`68`_)
+:Tangle Test semantic error 6:
+    |srarr|\ (`70`_)
 :Tangle Test superclass to refactor common setup:
-    |srarr|\ (`60`_)
+    |srarr|\ (`61`_)
+:Test of tangle.py:
+    |srarr|\ (`89`_)
+:Test of weave.py:
+    |srarr|\ (`88`_)
 :Unit Test Mock Chunk class:
     |srarr|\ (`4`_)
 :Unit Test Web class chunk cross-reference:
@@ -3241,7 +3465,7 @@ Macros
 :Unit Test Web class weave:
     |srarr|\ (`38`_)
 :Unit Test main:
-    |srarr|\ (`49`_)
+    |srarr|\ (`50`_)
 :Unit Test of Action class hierarchy:
     |srarr|\ (`42`_)
 :Unit Test of Application class:
@@ -3305,7 +3529,7 @@ Macros
 :Unit Test of XrefCommand superclass for all cross-reference commands:
     |srarr|\ (`27`_)
 :Unit Test overheads: imports, etc.:
-    |srarr|\ (`48`_)
+    |srarr|\ (`48`_) |srarr|\ (`49`_)
 :Unit test of Action Sequence class:
     |srarr|\ (`43`_)
 :Unit test of LoadAction class:
@@ -3315,15 +3539,15 @@ Macros
 :Unit test of WeaverAction class:
     |srarr|\ (`44`_)
 :Weave Test evaluation of expressions:
-    |srarr|\ (`80`_)
+    |srarr|\ (`81`_)
 :Weave Test main program:
-    |srarr|\ (`83`_)
+    |srarr|\ (`84`_)
 :Weave Test overheads: imports, etc.:
-    |srarr|\ (`82`_)
+    |srarr|\ (`83`_)
 :Weave Test references and definitions:
-    |srarr|\ (`77`_)
+    |srarr|\ (`78`_)
 :Weave Test superclass to refactor common setup:
-    |srarr|\ (`76`_)
+    |srarr|\ (`77`_)
 
 
 
@@ -3337,9 +3561,9 @@ User Identifiers
 
 ..	class:: small
 
-	Created by pyweb.py at Sat Jun 11 08:26:49 2022.
+	Created by pyweb.py at Sun Jun 12 19:07:28 2022.
 
-    Source test/pyweb_test.w modified Fri Jun 10 17:07:24 2022.
+    Source tests/pyweb_test.w modified Sat Jun 11 08:30:06 2022.
 
 	pyweb.__version__ '3.1'.
 
