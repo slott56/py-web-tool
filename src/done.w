@@ -1,4 +1,4 @@
-..    py-web-tool/done.w 
+..    py-web-tool/src/done.w 
 
 Change Log
 ===========
@@ -22,6 +22,8 @@ Changes for 3.1
 -   Add Test cases for ``weave.py`` and ``tangle.py``
 
 -   Replace hand-build mock classes with ``unittest.mock.Mock`` objects
+
+-   Separate the projec into ``src``, ``tests``, ``examples``. Cleanup ``Makefile``, ``pyproject.toml``, etc.
 
 Changes for 3.0
 

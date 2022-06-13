@@ -1,4 +1,4 @@
-..  py-web-tool/test.w
+..  py-web-tool/src/test.w
 
 Unit Tests
 ===========

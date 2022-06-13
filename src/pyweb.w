@@ -20,9 +20,7 @@ Yet Another Literate Programming Tool
 
 @i tests.w
 
-@i additional.w
-
-@i jedit.w
+@i scripts.w
 
 @i todo.w
 

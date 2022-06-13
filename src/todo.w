@@ -1,4 +1,4 @@
-..    py-web-tool/todo.w 
+..    py-web-tool/src/todo.w 
 
 Python 3.10 Migration
 =====================
@@ -26,7 +26,7 @@ Python 3.10 Migration
  
 #. [x] Replace various mock classes with ``unittest.mock.Mock`` objects and appropriate testing.
 
-#. [ ] Separate ``tests``, ``examples``, and ``src`` from each other. 
+#. [x] Separate ``tests``, ``examples``, and ``src`` from each other. 
 
 #. [ ] Rename the module from ``pyweb`` to ``pylpweb`` to avoid namespace squatting issues.
        Rename the project from ``py-web-tool`` to ``py-lpweb-tool``.

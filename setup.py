@@ -9,7 +9,7 @@ setup(name='py-web-tool',
       author='S. Lott',
       author_email='slott56@gmail.com',
       url='http://slott-softwarearchitect.blogspot.com/',
-      py_modules=['pyweb'],
+      py_modules=['src/pyweb'],
       classifiers=[
           'Intended Audience :: Developers',
           'Topic :: Documentation',

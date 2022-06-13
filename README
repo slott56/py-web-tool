@@ -24,12 +24,12 @@ Installation
 
 This requires Python 3.10.
 
-First, downnload the distribution kit from PyPI.
+This can be installed with PIP:
 
 ::
 
-    python3 setup.py install
-
+    python -m pip install py-web-tool
+    
 This will install the ``pyweb`` module, and the ``weave`` and ``tangle`` applications.
 
 Produce Documentation
@@ -43,14 +43,15 @@ The supplied documentation uses RST markup; it requires docutils.
 
 ::
 
-	python3 -m pyweb pyweb.w
-	rst2html.py pyweb.rst pyweb.html
+	python3 -m pyweb src/pyweb.w -o src
+	rst2html.py src/pyweb.rst src/pyweb.html
 
 Authoring
 ---------
 
 The ``pyweb.html`` document describes the markup used to define code chunks
 and assemble those code chunks into a coherent document as well as working code.
+You'll create a ``.w`` file with documentation and code.
 
 If you're a JEdit user, the ``jedit`` directory can be used
 to configure syntax highlighting that includes **py-web-tool** and RST.
@@ -58,37 +59,48 @@ to configure syntax highlighting that includes **py-web-tool** and RST.
 Operation
 ---------
 
-After installation and authoring, you can then run **py-web-tool** with
+After installation and authoring, you can then run **py-web-tool** with the following 
+command
 
 ::
 
-    python3 -m pyweb pyweb.w 
+    python3 -m pyweb src/pyweb.w -o src 
 
-This will create the various output files from the source .w file.
+This will create the various output files from the source ```.w`` file.
 
--   ``pyweb.html`` is the final woven document.
+-   ``pyweb.rst`` is the final woven document. This can be run through docutils for publication.
 
--   ``pyweb.py``, ``tangle.py``, ``weave.py``, ``README``, ``setup.py`` and ``MANIFEST.in`` 
-	``.nojekyll`` and ``index.html`` are tangled output files.
+-   ``pyweb.py``, ``tangle.py``, ``weave.py`` are the tangled code files.
+
+All of the files are produced from a single source.
 
 Testing
 -------
 
 The ``tests`` directory includes ``pyweb_test.w``, which will create a 
 complete test suite.
-
-This weaves a ``pyweb_test.html`` file.
-
-This tangles several test modules:  ``test.py``, ``test_tangler.py``, ``test_weaver.py``,
-``test_loader.py``, ``test_unit.py``, and ``test_scripts.py``.  
-Use **pytest** to run all the tests
+You can create this with the following command
 
 ::
 
-	python3 bootstrap/pyweb.py -xw pyweb.w 
-	python3 pyweb.py tests/pyweb_test.w -o tests
-	PYTHONPATH=${PWD} pytest
+    python3 -m pyweb tests/pyweb_test.w -o tests 
+
+This weaves a ``tests/pyweb_test.rst`` file. This can be run through docutils for publication.
+
+This tangles several test modules:  ``test.py``, ``test_tangler.py``, ``test_weaver.py``,
+``test_loader.py``, ``test_unit.py``, and ``test_scripts.py``.  
+
+Use **pytest** to run all the tests.
+
+Here's a typical sequence, used during development:
+
+::
+
+	python3 bootstrap/pyweb.py -xw src/pyweb.w -o src 
+	python3 src/pyweb.py tests/pyweb_test.w -o tests
+	PYTHONPATH=${PWD}/src pytest
 	rst2html.py tests/pyweb_test.rst tests/pyweb_test.html
-    mypy --strict pyweb.py weave.py tangle.py
+    mypy --strict src
 
-
+Note that a previous release, untouched, is saved in the ``bootstrap`` directory.
+This is **not** changed during development, since **py-web-tool** is written with **py-web-tool**.

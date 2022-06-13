@@ -1,4 +1,4 @@
-.. py-web-tool/impl.w
+.. py-web-tool/src/impl.w
 
 Implementation
 ==============
