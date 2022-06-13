@@ -3,7 +3,6 @@
 Python 3.10 Migration
 =====================
 
-
 1. [x] Add type hints.
 
 #. [x] Replace all ``.format()`` with f-strings.
@@ -28,50 +27,65 @@ Python 3.10 Migration
 
 #. [x] Separate ``tests``, ``examples``, and ``src`` from each other. 
 
-#. [ ] Rename the module from ``pyweb`` to ``pylpweb`` to avoid namespace squatting issues.
-       Rename the project from ``py-web-tool`` to ``py-lpweb-tool``.
+#. [ ] Rename the module from ``pyweb`` to ``pylpweb`` to avoid name squatting issues.
+       Rename the project from ``py-web-tool`` to ``py-lpweb``.
 
  
 To Do
 =======
     
-1.  Silence the ERROR-level logging during testing.
-
-2.  Silence the error when creating an empty file i.e. ``.nojekyll``
-
-#.  Add a JSON-based (or TOML) configuration file to configure templates.
+1.  Add a JSON-based (or TOML) configuration file for templates.
 
     -   See the ``weave.py`` example. 
-        This removes any need for a weaver command-line option; its defined within the source.
-        Also, setting the command character can be done in this configuration, too.
+        Defining templates in the source removes any need for a command-line option. A silly optimization.
+        Setting the "command character" to something other than ``@@`` can be done in the configuration, too.
 
     -   An alternative is to get markup templates from some kind of "header" section in the ``.w`` file.  
-
         To support reuse over multiple projects, a header could be included with ``@@i``.
-        The downside is that we have a lot of variable = value syntax that makes it
+        The downside is that we have a lot of *variable = value* syntax that makes it
         more like a properties file than a ``.w`` syntax file. It seems needless to invent 
         a lot of new syntax just for configuration.
+        
+    -   See below on switching to Jinja2. In this case, the templates can be provided via
+        a Jinja configuration (there are many choices.) By stepping away from the ``string.Template``,
+        we can incorporate list-processing ``{%for%}...{%endfor%}`` construct that 
+        pushes some processing into the template.
 
-#.  JSON-based logging configuration file would be helpful. 
+#.  Separate TOML-based logging configuration file would be helpful. 
     Should be separate from template configuration.
 
+#.  Rethink the weaver header. Are |loz| and |srarr| REALLY necessary? 
+    Can we use ◊ and → now that Unicode is more universal?
+    And why ``'\N{LOZENGE}'``? There's a nice ``'\N{END OF PROOF}'`` symbol we could use.
+
+    -   Currently, we rely on a list of things which **must** be present
+        in the document to be woven correctly. Consider a standard RST starter template with the definitions
+        provided. 
+
+    -   Add a ``@@h`` "header goes here" command to allow weaving any **pyWeb** required addons to 
+        a LaTeX header, HTML header or RST header.
+        These are extra ``..  include::``, ``\\usepackage{fancyvrb}`` or maybe an HTML CSS reference
+        that come from **pyWeb** and need to be folded into otherwise boilerplate documents.
+    
+#.  Tangling can include non-woven code in it.
+    The use case is a book chapter with test cases that are **not** woven into the text.
+    Add an option to define tangle-only chunks that are NOT woven into the final document. 
+    
+#.  Update the ``-indent`` option on @@d chunks to accept a numeric argument with the 
+    specific indentation value. This becomes a kind of "noindent" with a given
+    value. The ``-noindent`` would then be the same as ``-indent 0``.  
+    Currently, `-indent` and `-noindent` are true/false flags. 
+    
 #.  We might want to decompose the ``impl.w`` file: it's huge.
     
 #.  We might want to interleave code and test into a document that presents both
-    side-by-side. They get routed to different output files.
+    side-by-side. We can route to multiple files.
+    It's a little awkward to create tangled files in multiple directories;
+    We'd have to use ``../tests/whatever.py``, **assuming** we were always using ``-o src``.
 
-#.  Fix name definition order. There's no **good** reason why a full name should
+#.  Fix name definition order. There's no **good** reason why a full name must
     be first and elided names defined later.
 
-#.  Add a ``@@h`` "header goes here" command to allow weaving any **pyWeb** required addons to 
-    a LaTeX header, HTML header or RST header.
-    These are extra ``..  include::``, ``\\usepackage{fancyvrb}`` or maybe an HTML CSS reference
-    that come from **pyWeb** and need to be folded into otherwise boilerplate documents.
-    
-#.  Update the ``-indent`` option to accept a numeric argument with the 
-    specific indentation value. This becomes a kind of "noindent" with a given
-    value. The ``-noindent`` would then be the same as ``-indent 0``.
-    
 #.  Offer a basic XHTML template that uses ``CDATA`` sections instead of quoting.
     Does require the standard quoting for the ``CDATA`` end tag.
 
@@ -94,7 +108,7 @@ There are two possible projects that might prove useful.
 
 -   Jinja2 for better templates.
 
--   pyYAML for slightly cleaner encoding of logging configuration
+-   ``pyYAML`` or ``toml`` for slightly cleaner encoding of logging configuration
     or other configuration.
 
 There are advantages and disadvantages to depending on other projects. 

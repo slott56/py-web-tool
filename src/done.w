@@ -5,17 +5,17 @@ Change Log
 
 Changes for 3.1
 
--   Change to Python 3.10.
+-   Change to Python 3.10 as the supported version.
 
--   Add type hints, f-strings, pathlib, abc.ABC.
+-   Add type hints, f-strings, ``pathlib``, ``abc.ABC``.
 
 -   Replace some complex ``elif`` blocks with ``match`` statements.
 
--   Use pytest as a test runner.
+-   Use **pytest** as a test runner.
 
 -   Add a ``Makefile``, ``pyproject.toml``, ``requirements.txt`` and ``requirements-dev.txt``.
 
--   Add ``-o dir`` option to write output to a directory of choice, simplifying **tox** setup.
+-   Implement ``-o dir`` option to write output to a directory of choice, simplifying **tox** setup.
 
 -   Add ``bootstrap`` directory with a snapshot of a previous working release to simplify development.
 
@@ -24,6 +24,9 @@ Changes for 3.1
 -   Replace hand-build mock classes with ``unittest.mock.Mock`` objects
 
 -   Separate the projec into ``src``, ``tests``, ``examples``. Cleanup ``Makefile``, ``pyproject.toml``, etc.
+
+-   Silence the ERROR-level logging during testing.
+
 
 Changes for 3.0
 

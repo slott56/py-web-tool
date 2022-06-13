@@ -1,36 +1,30 @@
-####################
-Test Program
-####################
+\documentclass{article}
+\usepackage{fancyvrb}
+\title{Test Program}
+\author{Jason R. Fruit}
 
-===============
-Jason R. Fruit
-===============
+\begin{document}
 
-..  include:: <isoamsa.txt>
+\maketitle
+\tableofcontents
 
-..  contents::
+\section{Introduction}
 
-
-Introduction
-============
-
-This test program prints the word "hello", followed by the name of
+This test program prints the word ``hello'', followed by the name of
 the operating system as understood by Python.  It is implemented in
-Python and uses the ``os`` module.  It builds the message string
+Python and uses the \texttt{os} module.  It builds the message string
 in two different ways, and writes separate versions of the program to
 two different files.
 
-Implementation
-==============
+\section{Implementation}
 
-Output files
-------------
+\subsection{Output files}
 
 This document contains the makings of two files; the first,
-``test.py``, uses simple string concatenation to build its output
+\texttt{test.py}, uses simple string concatenation to build its output
 message:
 
-@o rst_test_1.py
+@o hw_latex_1.py
 @{
 @< Import the os module @>
 @< Get the OS description @>
@@ -40,7 +34,7 @@ message:
 
 The second uses string substitution:
 
-@o rst_test_2.py
+@o hw_latex_2.py
 @{
 @< Import the os module @>
 @< Get the OS description @>
@@ -48,8 +42,7 @@ The second uses string substitution:
 @< Print the message @>
 @}
 
-Retrieving the OS description
--------------------------------
+\subsection{Retrieving the OS description}
 
 First we must import the os module so we can learn about the OS:
 
@@ -65,8 +58,7 @@ That having been done, we can retrieve Python's name for the OS type:
 os_name = os.name
 @}
 
-Building the message
----------------------
+\subsection{Building the message}
 
 Now, we're ready for the meat of the application: concatenating two strings:
 
@@ -83,11 +75,10 @@ better:
 msg = f"Hello, {os_name}!" 
 @}
 
-We'll use the first of these methods in ``rst_test_1.py``, and the
-other in ``rst_test_2.py``.
+We'll use the first of these methods in \texttt{latex_test.py}, and the
+other in \texttt{latex_test_2.py}.
 
-Printing the message
-----------------------
+\subsection{Printing the message}
 
 Finally, we print the message out for the user to see.  Hopefully, a
 cheery greeting will make them happy to know what operating system
@@ -97,3 +88,5 @@ they have:
 @{
 print(msg)
 @}
+
+\end{document}

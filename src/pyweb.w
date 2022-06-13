@@ -14,6 +14,10 @@ Yet Another Literate Programming Tool
 
 @i intro.w
 
+@i usage.w
+
+@i language.w
+
 @i overview.w
 
 @i impl.w

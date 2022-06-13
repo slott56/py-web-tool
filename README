@@ -24,13 +24,16 @@ Installation
 
 This requires Python 3.10.
 
-This can be installed with PIP:
+This is not (currently) hosted in PyPI. Instead of installing it with PIP,
+clone the GitHub repository or download the distribution kit.
+
+Install pyweb "manually" using the provided ``setup.py``.
 
 ::
 
-    python -m pip install py-web-tool
+    python setup.py install
     
-This will install the ``pyweb`` module, and the ``weave`` and ``tangle`` applications.
+This will install the ``pyweb`` module.
 
 Produce Documentation
 ---------------------

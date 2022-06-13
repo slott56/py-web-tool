@@ -109,7 +109,7 @@ fit elsewhere
 
 The above order is reasonably helpful for Python and minimizes forward
 references. A ``Chunk`` and a ``Web`` do have a circular relationship.
-We'll present the designs from the most important first, the Emitters`_. 
+We'll present the designs from the most important first, the `Emitters`_. 
 
 Emitters
 ---------
@@ -275,24 +275,25 @@ import abc
 @{
 class Emitter:
     """Emit an output file; handling indentation context."""
-    code_indent = 0 # Used by a Tangler
-    filePath : Path  # Path within the base directory (on the name is used)
-    output : Path  # Base directory to write
     
-    theFile: TextIO
+    code_indent = 0 #: Used by a Tangler
+    filePath : Path  #: Path within the base directory (on the name is used)
+    output : Path  #: Base directory to write
+    theFile: TextIO  #: Open file being written
+    
     def __init__(self) -> None:
         self.logger = logging.getLogger(self.__class__.__qualname__)
         self.log_indent = logging.getLogger("indent." + self.__class__.__qualname__)
-        # Summary
-        self.linesWritten = 0
-        self.totalFiles = 0
-        self.totalLines = 0
         # Working State
         self.lastIndent = 0
         self.fragment = False
         self.context: list[int] = []
         self.readdIndent(self.code_indent)  # Create context and initial lastIndent values
-        
+        # Summary
+        self.linesWritten = 0
+        self.totalFiles = 0
+        self.totalLines = 0
+
     def __str__(self) -> str:
         return self.__class__.__name__
         
@@ -589,7 +590,7 @@ Instance-level configuration values:
         
 @d Imports
 @{import string
-from textwrap import dedent
+from textwrap import dedent, indent, shorten
 @| string
 @}
 
@@ -606,7 +607,11 @@ class Weaver(Emitter):
     """
     extension = ".rst" 
     code_indent = 4
-    header = """\n..  include:: <isoamsa.txt>\n..  include:: <isopub.txt>\n"""
+    # Not actually used.
+    header = dedent("""
+        ..  include:: <isoamsa.txt>
+        ..  include:: <isopub.txt>
+    """)
     
     reference_style : "Reference"
     
@@ -710,9 +715,13 @@ Each code chunk includes the places where the chunk is referenced.
 
 @d Weaver reference summary...
 @{
-ref_template = string.Template("${refList}")
+ref_template = string.Template(
+    "${refList}"
+)
 ref_separator = "; "
-ref_item_template = string.Template("$fullName (`${seq}`_)")
+ref_item_template = string.Template(
+    "$fullName (`${seq}`_)"
+)
 
 def references(self, aChunk: Chunk) -> str:
     references = aChunk.references(self)
@@ -739,7 +748,25 @@ refer to this chunk can be emitted.
 
 @d Weaver code...
 @{
-cb_template = string.Template("\n..  _`${seq}`:\n..  rubric:: ${fullName} (${seq}) ${concat}\n..  parsed-literal::\n    :class: code\n\n")
+cb_template = string.Template(
+    dedent("""
+        ..  _`${seq}`:
+        ..  rubric:: ${fullName} (${seq}) ${concat}
+        ..  parsed-literal::
+            :class: code
+            
+    """)
+)
+
+ce_template = string.Template(
+    dedent("""
+        ..
+            
+            ..  class:: small
+                
+                |loz| *${fullName} (${seq})*. Used by: ${references}
+    """)
+)
 
 def codeBegin(self, aChunk: Chunk) -> None:
     txt = self.cb_template.substitute( 
@@ -750,8 +777,6 @@ def codeBegin(self, aChunk: Chunk) -> None:
     )
     self.write(txt)
     
-ce_template = string.Template("\n..\n\n    ..  class:: small\n\n        |loz| *${fullName} (${seq})*. Used by: ${references}\n")
-
 def codeEnd(self, aChunk: Chunk) -> None:
     txt = self.ce_template.substitute( 
         seq = aChunk.seq,
@@ -762,6 +787,10 @@ def codeEnd(self, aChunk: Chunk) -> None:
     self.write(txt)
 @| codeBegin codeEnd
 @}
+
+**TODO:** Is this really necessary? Should we inject additional material
+into the woven output? It seems like a potentially bad idea because
+of the complications of various markup tool chains.
 
 The ``fileBegin()`` method emits the necessary material prior to 
 a chunk of source code, defined with the ``@@o`` command.
@@ -776,7 +805,25 @@ list is always empty.
 
 @d Weaver file...
 @{
-fb_template = string.Template("\n..  _`${seq}`:\n..  rubric:: ${fullName} (${seq}) ${concat}\n..  parsed-literal::\n    :class: code\n\n")
+fb_template = string.Template(
+    dedent("""
+        ..  _`${seq}`:
+        ..  rubric:: ${fullName} (${seq}) ${concat}
+        ..  parsed-literal::
+            :class: code
+    
+    """)
+)
+
+fe_template = string.Template(
+    dedent("""
+        ..
+            
+            ..  class:: small
+                    
+                |loz| *${fullName} (${seq})*.
+    """)
+)
 
 def fileBegin(self, aChunk: Chunk) -> None:
     txt = self.fb_template.substitute(
@@ -786,8 +833,6 @@ def fileBegin(self, aChunk: Chunk) -> None:
         concat="=" if aChunk.initial else "+=",
     )
     self.write(txt)
-
-fe_template = string.Template("\n..\n\n    ..  class:: small\n\n        |loz| *${fullName} (${seq})*.\n")
 
 def fileEnd(self, aChunk: Chunk) -> None:
     assert len(self.references(aChunk)) == 0
@@ -814,14 +859,19 @@ a simple ``" "`` because it looks better.
 
 @d Weaver reference command...
 @{
-refto_name_template = string.Template(r"|srarr|\ ${fullName} (`${seq}`_)")
-refto_seq_template = string.Template(r"|srarr|\ (`${seq}`_)")
+refto_name_template = string.Template(
+    r"|srarr|\ ${fullName} (`${seq}`_)"
+)
+refto_seq_template = string.Template(
+    r"|srarr|\ (`${seq}`_)"
+)
 refto_seq_separator = ", "
 
 def referenceTo(self, aName: str | None, seq: int) -> str:
     """Weave a reference to a chunk.
     Provide name to get a full reference.
-    name=None to get a short reference."""
+    name=None to get a short reference.
+    """
     if aName:
         return self.refto_name_template.substitute(fullName=aName, seq=seq)
     else:
@@ -856,12 +906,29 @@ The default behavior simply writes the Python data structure used
 to represent cross reference information.  A subclass may override this 
 to change the look of the final woven document.
 
+Note that the ``xref_item_template`` and ``xref_empty_template`` have no leading ``\n`` character. They have
+an indentation on the first line, however, to make ``dedent()`` work. The spaces to create proper
+RST indentation are a bit fiddly here.
+
 @d Weaver cross reference...
 @{
-xref_head_template = string.Template("\n")
-xref_foot_template = string.Template("\n")
-xref_item_template = string.Template(":${fullName}:\n    ${refList}\n")
-xref_empty_template = string.Template("(None)\n")
+xref_head_template = string.Template(
+    dedent("""
+    """)
+)
+xref_foot_template = string.Template(
+    dedent("""
+    """)
+)
+xref_item_template = string.Template(
+    dedent("""    :${fullName}:
+    ${refList}
+    """)
+)
+xref_empty_template = string.Template(
+    dedent("""    (None)
+    """)
+)
 
 def xrefHead(self) -> None:
     txt = self.xref_head_template.substitute()
@@ -884,8 +951,12 @@ Cross-reference definition line
 
 @d Weaver cross reference...
 @{
-name_def_template = string.Template('[`${seq}`_]')
-name_ref_template = string.Template('`${seq}`_')
+name_def_template = string.Template(
+    '[`${seq}`_]'
+)
+name_ref_template = string.Template(
+    '`${seq}`_'
+)
 
 def xrefDefLine(self, name: str, defn: int, refList: list[int]) -> None:
     """Special template for the definition, default reference for all others."""
@@ -949,7 +1020,10 @@ class LaTeX(Weaver):
     """
     extension = ".tex"
     code_indent = 0
-    header = """\n\\usepackage{fancyvrb}\n"""
+    # Not actually used
+    header = dedent("""
+        \\usepackage{fancyvrb}
+    """)
 
     @<LaTeX code chunk begin@>
     @<LaTeX code chunk end@>
@@ -969,19 +1043,21 @@ The LaTeX ``codeBegin()`` template writes the header prior to a
 chunk of source code.  It aligns the block to the left, prints an
 italicised header, and opens a preformatted block.
 
-There's no leading ``\n`` -- we're trying to avoid an indent when weaving.
+There's no leading ``\n`` in the template -- we're trying to avoid an indent when weaving.
+To make ``dedent()`` work, we have to provide the same leading whitespace on the first line
+to match the subsequent lines.
 
 @d LaTeX code chunk begin
 @{
 cb_template = string.Template(
-"""\\label{pyweb${seq}}
-\\begin{flushleft}
-\\textit{Code example ${fullName} (${seq})}
-\\begin{Verbatim}[commandchars=\\\\\\{\\},codes={\\catcode`$$=3\\catcode`^=7},frame=single]\n"""
+    dedent("""        \\label{pyweb${seq}}
+        \\begin{flushleft}
+        \\textit{Code example ${fullName} (${seq})}
+        \\begin{Verbatim}[commandchars=\\\\\\{\\},codes={\\catcode`$$=3\\catcode`^=7},frame=single]
+    """)
 )
 @| codeBegin
 @}
-
 
 The LaTeX ``codeEnd()`` template writes the trailer subsequent to
 a chunk of source code.  This first closes the preformatted block and
@@ -991,10 +1067,13 @@ indentation.
   
 @d LaTeX code chunk end
 @{
-ce_template = string.Template("""
-\\end{Verbatim}
-${references}
-\\end{flushleft}\n""")
+ce_template = string.Template(
+    dedent("""
+        \\end{Verbatim}
+        ${references}
+        \\end{flushleft}
+    """)
+)
 @| codeEnd
 @}
 
@@ -1025,19 +1104,34 @@ The ``references()`` template writes a list of references after a
 chunk of code.  Each reference includes the example number, the title,
 and a reference to the LaTeX section and page numbers on which the
 referring block appears.
+
+The spacing around ``ref_item_template`` and ``ref_template`` are particularly fiddly.
+This isn't easy to prepare with ``dedent()``. The ``indent()`` provides the indent
+that makes the resulting LaTeX readable, distinct from the indent that makes the code readable.
   
 @d LaTeX references summary...
 @{
-ref_item_template = string.Template("""
-\\item Code example ${fullName} (${seq}) (Sect. \\ref{pyweb${seq}}, p. \\pageref{pyweb${seq}})\n""")
+ref_item_template = string.Template(
+    indent(
+        dedent("""
+            \\item Code example ${fullName} (${seq}) (Sect. \\ref{pyweb${seq}}, p. \\pageref{pyweb${seq}})
+            """),
+        '    '
+    )
+)
 
-ref_template = string.Template("""
-\\footnotesize
-Used by:
-\\begin{list}{}{}
-${refList}
-\\end{list}
-\\normalsize\n""")
+ref_template = string.Template(
+    indent(
+        dedent("""
+            \\footnotesize
+            Used by:
+            \\begin{list}{}{}
+            ${refList}
+            \\end{list}
+            \\normalsize"""),
+        '    '
+    )
+)
 @| references
 @}
 
@@ -1065,9 +1159,13 @@ the current line of code.
 
 @d LaTeX reference to...
 @{
-refto_name_template = string.Template("""$$\\triangleright$$ Code Example ${fullName} (${seq})""")
+refto_name_template = string.Template(
+    """$$\\triangleright$$ Code Example ${fullName} (${seq})"""
+)
 
-refto_seq_template = string.Template("""(${seq})""")
+refto_seq_template = string.Template(
+    """(${seq})"""
+)
 @| referenceTo
 @}
 
@@ -1134,11 +1232,17 @@ and HTML tags necessary to set the code off visually.
 
 @d HTML code chunk begin
 @{
-cb_template = string.Template("""
-<a name="pyweb${seq}"></a>
-<!--line number ${lineNumber}-->
-<p><em>${fullName}</em> (${seq})&nbsp;${concat}</p>
-<pre><code>\n""")
+cb_template = string.Template(
+    indent(
+        dedent("""
+            <a name="pyweb${seq}"></a>
+            <!--line number ${lineNumber}-->
+            <p><em>${fullName}</em> (${seq})&nbsp;${concat}</p>
+            <pre><code>
+            """),
+        '    '
+    )
+)
 @| codeBegin
 @}
 
@@ -1148,11 +1252,17 @@ write the list of chunks that reference this chunk.
 
 @d HTML code chunk end
 @{
-ce_template = string.Template("""
-</code></pre>
-<p>&loz; <em>${fullName}</em> (${seq}).
-${references}
-</p>\n""")
+ce_template = string.Template(
+    indent(
+        dedent("""
+            </code></pre>
+            <p>&loz; <em>${fullName}</em> (${seq}).
+            ${references}
+            </p>
+            """),
+        '    '
+    )
+)
 @| codeEnd
 @}
 
@@ -1161,10 +1271,16 @@ and HTML tags necessary to set the code off visually.
 
 @d HTML output file begin
 @{
-fb_template = string.Template("""<a name="pyweb${seq}"></a>
-<!--line number ${lineNumber}-->
-<p>``${fullName}`` (${seq})&nbsp;${concat}</p>
-<pre><code>\n""") # Prevent indent
+fb_template = string.Template(
+    indent(
+        dedent("""            <a name="pyweb${seq}"></a>
+            <!--line number ${lineNumber}-->
+            <p>``${fullName}`` (${seq})&nbsp;${concat}</p>
+            <pre><code>
+        """), # No leading \\n.
+        '    '
+    )
+)
 @| fileBegin
 @}
 
@@ -1174,10 +1290,16 @@ write the list of chunks that reference this chunk.
 
 @d HTML output file end
 @{
-fe_template = string.Template( """</code></pre>
-<p>&loz; ``${fullName}`` (${seq}).
-${references}
-</p>\n""")
+fe_template = string.Template(
+    indent(
+        dedent("""            </code></pre>
+            <p>&loz; ``${fullName}`` (${seq}).
+            ${references}
+            </p>
+            """),
+        '    '
+    )
+)
 @| fileEnd
 @}
 
@@ -1187,9 +1309,13 @@ transitive references.
 
 @d HTML references summary...
 @{
-ref_item_template = string.Template('<a href="#pyweb${seq}"><em>${fullName}</em>&nbsp;(${seq})</a>')
+ref_item_template = string.Template(
+    '<a href="#pyweb${seq}"><em>${fullName}</em>&nbsp;(${seq})</a>'
+)
 
-ref_template = string.Template('  Used by ${refList}.')
+ref_template = string.Template(
+    '  Used by ${refList}.'
+)
 @| references
 @}
 
@@ -1214,9 +1340,13 @@ surrounding source code.
 
 @d HTML reference to a chunk
 @{
-refto_name_template = string.Template('<a href="#pyweb${seq}">&rarr;<em>${fullName}</em> (${seq})</a>')
+refto_name_template = string.Template(
+    '<a href="#pyweb${seq}">&rarr;<em>${fullName}</em> (${seq})</a>'
+)
 
-refto_seq_template = string.Template('<a href="#pyweb${seq}">(${seq})</a>')
+refto_seq_template = string.Template(
+    '<a href="#pyweb${seq}">(${seq})</a>'
+)
 @| referenceTo
 @}
 
@@ -1231,9 +1361,18 @@ The ``xrefLine()`` method writes a line for the file or macro cross reference bl
 
 @d HTML simple cross reference markup
 @{
-xref_head_template = string.Template("<dl>\n")
-xref_foot_template = string.Template("</dl>\n")
-xref_item_template = string.Template("<dt>${fullName}</dt><dd>${refList}</dd>\n")
+xref_head_template = string.Template(
+    dedent("""    <dl>
+    """)
+)
+xref_foot_template = string.Template(
+    dedent("""    </dl>
+    """)
+)
+xref_item_template = string.Template(
+    dedent("""    <dt>${fullName}</dt><dd>${refList}</dd>
+    """)
+)
 
 @<HTML write user id cross reference line@>
 @| xrefHead xrefFoot xrefLine
@@ -1246,9 +1385,13 @@ is included in the correct order with the other instances, but is bold and marke
 
 @d HTML write user id cross reference line
 @{
-name_def_template = string.Template('<a href="#pyweb${seq}"><b>&bull;${seq}</b></a>')
+name_def_template = string.Template(
+    '<a href="#pyweb${seq}"><b>&bull;${seq}</b></a>'
+)
 
-name_ref_template = string.Template('<a href="#pyweb${seq}">${seq}</a>')
+name_ref_template = string.Template(
+    '<a href="#pyweb${seq}">${seq}</a>'
+)
 @| xrefDefLine
 @}
 
@@ -1260,7 +1403,9 @@ transitive references.
 
 @d HTML short references summary...
 @{
-ref_item_template = string.Template('<a href="#pyweb${seq}">(${seq})</a>')
+ref_item_template = string.Template(
+    '<a href="#pyweb${seq}">(${seq})</a>'
+)
 @| references
 @}
 
@@ -2398,7 +2543,7 @@ This subclass provides a concrete implementation for all of the methods.  Since
 text is the author's original markup language, it is emitted directly to the weaver
 or tangler.
 
-**TODO:** Use textwrap to snip off first 32 chars of the text.
+**TODO:** Use textwrap.shorten to snip off first 32 chars of the text.
 
 @d TextCommand class...
 @{

@@ -3,13 +3,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.6: http://docutils.sourceforge.net/" />
+<meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 <title>Test Program</title>
 <style type="text/css">
 
 /*
 :Author: David Goodger (goodger@python.org)
-:Id: $Id: html4css1.css 5951 2009-05-18 18:03:10Z milde $
+:Id: $Id: html4css1.css 7952 2016-07-26 18:15:59Z milde $
 :Copyright: This stylesheet has been placed in the public domain.
 
 Default cascading style sheet for the HTML output of Docutils.
@@ -37,6 +37,14 @@ table.borderless td, table.borderless th {
 .hidden {
   display: none }
 
+.subscript {
+  vertical-align: sub;
+  font-size: smaller }
+
+.superscript {
+  vertical-align: super;
+  font-size: smaller }
+
 a.toc-backref {
   text-decoration: none ;
   color: black }
@@ -46,6 +54,10 @@ blockquote.epigraph {
 
 dl.docutils dd {
   margin-bottom: 0.5em }
+
+object[type="image/svg+xml"], object[type="application/x-shockwave-flash"] {
+  overflow: hidden;
+}
 
 /* Uncomment (and remove this text!) to get bold-faced definition list terms
 dl.docutils dt {
@@ -73,7 +85,7 @@ div.tip p.admonition-title {
 
 div.attention p.admonition-title, div.caution p.admonition-title,
 div.danger p.admonition-title, div.error p.admonition-title,
-div.warning p.admonition-title {
+div.warning p.admonition-title, .code .error {
   color: red ;
   font-weight: bold ;
   font-family: sans-serif }
@@ -157,15 +169,26 @@ h2.subtitle {
 hr.docutils {
   width: 75% }
 
-img.align-left, .figure.align-left{
+img.align-left, .figure.align-left, object.align-left, table.align-left {
   clear: left ;
   float: left ;
   margin-right: 1em }
 
-img.align-right, .figure.align-right {
+img.align-right, .figure.align-right, object.align-right, table.align-right {
   clear: right ;
   float: right ;
   margin-left: 1em }
+
+img.align-center, .figure.align-center, object.align-center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+table.align-center {
+  margin-left: auto;
+  margin-right: auto;
+}
 
 .align-left {
   text-align: left }
@@ -179,10 +202,19 @@ img.align-right, .figure.align-right {
 
 /* reset inner alignment in figures */
 div.align-right {
-  text-align: left }
+  text-align: inherit }
 
 /* div.align-center * { */
 /*   text-align: left } */
+
+.align-top    {
+  vertical-align: top }
+
+.align-middle {
+  vertical-align: middle }
+
+.align-bottom {
+  vertical-align: bottom }
 
 ol.simple, ul.simple {
   margin-bottom: 1em }
@@ -239,9 +271,18 @@ pre.address {
   margin-top: 0 ;
   font: inherit }
 
-pre.literal-block, pre.doctest-block {
+pre.literal-block, pre.doctest-block, pre.math, pre.code {
   margin-left: 2em ;
   margin-right: 2em }
+
+pre.code .ln { color: grey; } /* line numbers */
+pre.code, code { background-color: #eeeeee }
+pre.code .comment, code .comment { color: #5C6576 }
+pre.code .keyword, code .keyword { color: #3B0D06; font-weight: bold }
+pre.code .literal.string, code .literal.string { color: #0C5404 }
+pre.code .name.builtin, code .name.builtin { color: #352B84 }
+pre.code .deleted, code .deleted { background-color: #DEB0A1}
+pre.code .inserted, code .inserted { background-color: #A3D289}
 
 span.classifier {
   font-family: sans-serif ;
@@ -294,12 +335,48 @@ table.docutils th.field-name, table.docinfo th.docinfo-name {
   white-space: nowrap ;
   padding-left: 0 }
 
+/* "booktabs" style (no vertical lines) */
+table.docutils.booktabs {
+  border: 0px;
+  border-top: 2px solid;
+  border-bottom: 2px solid;
+  border-collapse: collapse;
+}
+table.docutils.booktabs * {
+  border: 0px;
+}
+table.docutils.booktabs th {
+  border-bottom: thin solid;
+  text-align: left;
+}
+
 h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
 h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
   font-size: 100% }
 
 ul.auto-toc {
   list-style-type: none }
+
+</style>
+<style type="text/css">
+
+/* Page layout tweaks */
+div.document { width: 7in; }
+.small { font-size: smaller; }
+.code
+{
+	color: #101080;
+	display: block;
+	border-color: black;
+	border-width: thin;
+	border-style: solid;
+	background-color: #E0FFFF;
+	/*#99FFFF*/
+	padding: 0 0 0 1%;
+	margin: 0 6% 0 6%;
+	text-align: left;
+	font-size: smaller;
+}
 
 </style>
 </head>
@@ -313,21 +390,26 @@ ul.auto-toc {
 <http://www.w3.org/2003/entities/xml/>.
 Processed by unicode2rstsubs.py, part of Docutils:
 <http://docutils.sourceforge.net>. -->
+<!-- This data file has been placed in the public domain. -->
+<!-- Derived from the Unicode character mappings available from
+<http://www.w3.org/2003/entities/xml/>.
+Processed by unicode2rstsubs.py, part of Docutils:
+<http://docutils.sourceforge.net>. -->
 <div class="contents topic" id="contents">
-<p class="topic-title first">Contents</p>
+<p class="topic-title">Contents</p>
 <ul class="simple">
-<li><a class="reference internal" href="#introduction" id="id8">Introduction</a></li>
-<li><a class="reference internal" href="#implementation" id="id9">Implementation</a><ul>
-<li><a class="reference internal" href="#output-files" id="id10">Output files</a></li>
-<li><a class="reference internal" href="#retrieving-the-os-description" id="id11">Retrieving the OS description</a></li>
-<li><a class="reference internal" href="#building-the-message" id="id12">Building the message</a></li>
-<li><a class="reference internal" href="#printing-the-message" id="id13">Printing the message</a></li>
+<li><a class="reference internal" href="#introduction" id="toc-entry-1">Introduction</a></li>
+<li><a class="reference internal" href="#implementation" id="toc-entry-2">Implementation</a><ul>
+<li><a class="reference internal" href="#output-files" id="toc-entry-3">Output files</a></li>
+<li><a class="reference internal" href="#retrieving-the-os-description" id="toc-entry-4">Retrieving the OS description</a></li>
+<li><a class="reference internal" href="#building-the-message" id="toc-entry-5">Building the message</a></li>
+<li><a class="reference internal" href="#printing-the-message" id="toc-entry-6">Printing the message</a></li>
 </ul>
 </li>
 </ul>
 </div>
 <div class="section" id="introduction">
-<h1><a class="toc-backref" href="#id8">Introduction</a></h1>
+<h1><a class="toc-backref" href="#toc-entry-1">Introduction</a></h1>
 <p>This test program prints the word &quot;hello&quot;, followed by the name of
 the operating system as understood by Python.  It is implemented in
 Python and uses the <tt class="docutils literal">os</tt> module.  It builds the message string
@@ -335,71 +417,94 @@ in two different ways, and writes separate versions of the program to
 two different files.</p>
 </div>
 <div class="section" id="implementation">
-<h1><a class="toc-backref" href="#id9">Implementation</a></h1>
+<h1><a class="toc-backref" href="#toc-entry-2">Implementation</a></h1>
 <div class="section" id="output-files">
-<h2><a class="toc-backref" href="#id10">Output files</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-3">Output files</a></h2>
 <p>This document contains the makings of two files; the first,
 <tt class="docutils literal">test.py</tt>, uses simple string concatenation to build its output
 message:</p>
-<p class="rubric" id="id1">test.py (1)</p>
-<pre class="literal-block">
-→ Import the os module (<a class="reference internal" href="#id3">3</a>)
-→ Get the OS description (<a class="reference internal" href="#id4">4</a>)
-→ Construct the message with Concatenation (<a class="reference internal" href="#id5">5</a>)
-→ Print the message (<a class="reference internal" href="#id7">7</a>)
+<p class="rubric" id="target-1">hw_rst_1.py (1) =</p>
+<pre class="code literal-block">
+→Import the os module (<a class="reference internal" href="#target-3">3</a>)
+→Get the OS description (<a class="reference internal" href="#target-4">4</a>)
+→Construct the message with Concatenation (<a class="reference internal" href="#target-5">5</a>)
+→Print the message (<a class="reference internal" href="#target-7">7</a>)
 </pre>
+<!--  -->
+<blockquote>
+<p class="small">◊ <em>hw_rst_1.py (1)</em>.</p>
+</blockquote>
 <p>The second uses string substitution:</p>
-<p class="rubric" id="id2">test2.py (2)</p>
-<pre class="literal-block">
-→ Import the os module (<a class="reference internal" href="#id3">3</a>)
-→ Get the OS description (<a class="reference internal" href="#id4">4</a>)
-→ Construct the message with Substitution (<a class="reference internal" href="#id6">6</a>)
-→ Print the message (<a class="reference internal" href="#id7">7</a>)
+<p class="rubric" id="target-2">hw_rst_2.py (2) =</p>
+<pre class="code literal-block">
+→Import the os module (<a class="reference internal" href="#target-3">3</a>)
+→Get the OS description (<a class="reference internal" href="#target-4">4</a>)
+→Construct the message with Substitution (<a class="reference internal" href="#target-6">6</a>)
+→Print the message (<a class="reference internal" href="#target-7">7</a>)
 </pre>
+<!--  -->
+<blockquote>
+<p class="small">◊ <em>hw_rst_2.py (2)</em>.</p>
+</blockquote>
 </div>
 <div class="section" id="retrieving-the-os-description">
-<h2><a class="toc-backref" href="#id11">Retrieving the OS description</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-4">Retrieving the OS description</a></h2>
 <p>First we must import the os module so we can learn about the OS:</p>
-<p class="rubric" id="id3">Import the os module (3)</p>
-<pre class="literal-block">
+<p class="rubric" id="target-3">Import the os module (3) =</p>
+<pre class="code literal-block">
 import os
 </pre>
-<p>Used by: test.py (<a class="reference internal" href="#id1">1</a>); test2.py (<a class="reference internal" href="#id2">2</a>)</p>
+<!--  -->
+<blockquote>
+<p class="small">◊ <em>Import the os module (3)</em>. Used by: hw_rst_1.py (<a class="reference internal" href="#target-1">1</a>); hw_rst_2.py (<a class="reference internal" href="#target-2">2</a>)</p>
+</blockquote>
 <p>That having been done, we can retrieve Python's name for the OS type:</p>
-<p class="rubric" id="id4">Get the OS description (4)</p>
-<pre class="literal-block">
+<p class="rubric" id="target-4">Get the OS description (4) =</p>
+<pre class="code literal-block">
 os_name = os.name
 </pre>
-<p>Used by: test.py (<a class="reference internal" href="#id1">1</a>); test2.py (<a class="reference internal" href="#id2">2</a>)</p>
+<!--  -->
+<blockquote>
+<p class="small">◊ <em>Get the OS description (4)</em>. Used by: hw_rst_1.py (<a class="reference internal" href="#target-1">1</a>); hw_rst_2.py (<a class="reference internal" href="#target-2">2</a>)</p>
+</blockquote>
 </div>
 <div class="section" id="building-the-message">
-<h2><a class="toc-backref" href="#id12">Building the message</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-5">Building the message</a></h2>
 <p>Now, we're ready for the meat of the application: concatenating two strings:</p>
-<p class="rubric" id="id5">Construct the message with Concatenation (5)</p>
-<pre class="literal-block">
+<p class="rubric" id="target-5">Construct the message with Concatenation (5) =</p>
+<pre class="code literal-block">
 msg = &quot;Hello, &quot; + os_name + &quot;!&quot;
 </pre>
-<p>Used by: test.py (<a class="reference internal" href="#id1">1</a>)</p>
+<!--  -->
+<blockquote>
+<p class="small">◊ <em>Construct the message with Concatenation (5)</em>. Used by: hw_rst_1.py (<a class="reference internal" href="#target-1">1</a>)</p>
+</blockquote>
 <p>But wait!  Is there a better way?  Using string substitution might be
 better:</p>
-<p class="rubric" id="id6">Construct the message with Substitution (6)</p>
-<pre class="literal-block">
-msg = &quot;Hello, %s!&quot; % os_name
+<p class="rubric" id="target-6">Construct the message with Substitution (6) =</p>
+<pre class="code literal-block">
+msg = f&quot;Hello, {os_name}!&quot;
 </pre>
-<p>Used by: test2.py (<a class="reference internal" href="#id2">2</a>)</p>
-<p>We'll use the first of these methods in <tt class="docutils literal">test.py</tt>, and the
-other in <tt class="docutils literal">test2.py</tt>.</p>
+<!--  -->
+<blockquote>
+<p class="small">◊ <em>Construct the message with Substitution (6)</em>. Used by: hw_rst_2.py (<a class="reference internal" href="#target-2">2</a>)</p>
+</blockquote>
+<p>We'll use the first of these methods in <tt class="docutils literal">rst_test_1.py</tt>, and the
+other in <tt class="docutils literal">rst_test_2.py</tt>.</p>
 </div>
 <div class="section" id="printing-the-message">
-<h2><a class="toc-backref" href="#id13">Printing the message</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-6">Printing the message</a></h2>
 <p>Finally, we print the message out for the user to see.  Hopefully, a
 cheery greeting will make them happy to know what operating system
 they have:</p>
-<p class="rubric" id="id7">Print the message (7)</p>
-<pre class="literal-block">
-print msg
+<p class="rubric" id="target-7">Print the message (7) =</p>
+<pre class="code literal-block">
+print(msg)
 </pre>
-<p>Used by: test.py (<a class="reference internal" href="#id1">1</a>); test2.py (<a class="reference internal" href="#id2">2</a>)</p>
+<!--  -->
+<blockquote>
+<p class="small">◊ <em>Print the message (7)</em>. Used by: hw_rst_1.py (<a class="reference internal" href="#target-1">1</a>); hw_rst_2.py (<a class="reference internal" href="#target-2">2</a>)</p>
+</blockquote>
 </div>
 </div>
 </div>

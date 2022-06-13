@@ -402,126 +402,133 @@ Processed by unicode2rstsubs.py, part of Docutils:
 <li><a class="reference internal" href="#background" id="toc-entry-2">Background</a></li>
 <li><a class="reference internal" href="#other-tools" id="toc-entry-3">Other Tools</a></li>
 <li><a class="reference internal" href="#py-web-tool" id="toc-entry-4"><strong>py-web-tool</strong></a></li>
-<li><a class="reference internal" href="#use-cases" id="toc-entry-5">Use Cases</a><ul>
-<li><a class="reference internal" href="#tangle-source-files" id="toc-entry-6">Tangle Source Files</a></li>
-<li><a class="reference internal" href="#weave-documentation" id="toc-entry-7">Weave Documentation</a></li>
-<li><a class="reference internal" href="#tangle-test-and-weave-with-test-results" id="toc-entry-8">Tangle, Test, and Weave with Test Results</a></li>
+<li><a class="reference internal" href="#acknowledgements" id="toc-entry-5">Acknowledgements</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#writing-py-web-tool-w-files" id="toc-entry-9">Writing <strong>py-web-tool</strong> <tt class="docutils literal">.w</tt> Files</a><ul>
-<li><a class="reference internal" href="#structural-tags" id="toc-entry-10">Structural Tags</a></li>
-<li><a class="reference internal" href="#inline-tags" id="toc-entry-11">Inline Tags</a></li>
-<li><a class="reference internal" href="#content-tags" id="toc-entry-12">Content Tags</a></li>
-<li><a class="reference internal" href="#additional-features" id="toc-entry-13">Additional Features</a></li>
-<li><a class="reference internal" href="#controlling-indentation" id="toc-entry-14">Controlling Indentation</a></li>
-<li><a class="reference internal" href="#tracking-source-line-numbers" id="toc-entry-15">Tracking Source Line Numbers</a></li>
-<li><a class="reference internal" href="#expression-context" id="toc-entry-16">Expression Context</a></li>
+<li><a class="reference internal" href="#installing" id="toc-entry-6">Installing</a></li>
+<li><a class="reference internal" href="#using" id="toc-entry-7">Using</a><ul>
+<li><a class="reference internal" href="#tangle-source-files" id="toc-entry-8">Tangle Source Files</a></li>
+<li><a class="reference internal" href="#weave-documentation" id="toc-entry-9">Weave Documentation</a></li>
+<li><a class="reference internal" href="#tangle-test-and-weave-with-test-results" id="toc-entry-10">Tangle, Test, and Weave with Test Results</a></li>
+<li><a class="reference internal" href="#running-py-web-tool-to-tangle-and-weave" id="toc-entry-11">Running <strong>py-web-tool</strong> to Tangle and Weave</a><ul>
+<li><a class="reference internal" href="#command-line-options" id="toc-entry-12">Command Line Options</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#running-py-web-tool-to-tangle-and-weave" id="toc-entry-17">Running <strong>py-web-tool</strong> to Tangle and Weave</a><ul>
-<li><a class="reference internal" href="#command-line-options" id="toc-entry-18">Command Line Options</a></li>
+<li><a class="reference internal" href="#bootstrapping" id="toc-entry-13">Bootstrapping</a></li>
+<li><a class="reference internal" href="#dependencies" id="toc-entry-14">Dependencies</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#bootstrapping" id="toc-entry-19">Bootstrapping</a></li>
-<li><a class="reference internal" href="#dependencies" id="toc-entry-20">Dependencies</a></li>
-<li><a class="reference internal" href="#acknowledgements" id="toc-entry-21">Acknowledgements</a></li>
+<li><a class="reference internal" href="#the-py-web-tool-w-markup-language" id="toc-entry-15">The <strong>py-web-tool</strong> <tt class="docutils literal">.w</tt> Markup Language</a><ul>
+<li><a class="reference internal" href="#concepts" id="toc-entry-16">Concepts</a><ul>
+<li><a class="reference internal" href="#rst" id="toc-entry-17">RST</a></li>
+<li><a class="reference internal" href="#latex" id="toc-entry-18">LaTeX</a></li>
+<li><a class="reference internal" href="#html" id="toc-entry-19">HTML</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#architecture-and-design-overview" id="toc-entry-22">Architecture and Design Overview</a><ul>
-<li><a class="reference internal" href="#representation" id="toc-entry-23">Representation</a></li>
-<li><a class="reference internal" href="#reading-and-parsing" id="toc-entry-24">Reading and Parsing</a></li>
-<li><a class="reference internal" href="#weaving" id="toc-entry-25">Weaving</a></li>
-<li><a class="reference internal" href="#tangling" id="toc-entry-26">Tangling</a></li>
-<li><a class="reference internal" href="#application" id="toc-entry-27">Application</a></li>
+<li><a class="reference internal" href="#structural-tags" id="toc-entry-20">Structural Tags</a></li>
+<li><a class="reference internal" href="#inline-tags" id="toc-entry-21">Inline Tags</a></li>
+<li><a class="reference internal" href="#content-tags" id="toc-entry-22">Content Tags</a></li>
+<li><a class="reference internal" href="#additional-features" id="toc-entry-23">Additional Features</a></li>
+<li><a class="reference internal" href="#controlling-indentation" id="toc-entry-24">Controlling Indentation</a></li>
+<li><a class="reference internal" href="#tracking-source-line-numbers" id="toc-entry-25">Tracking Source Line Numbers</a></li>
+<li><a class="reference internal" href="#expression-context" id="toc-entry-26">Expression Context</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#implementation" id="toc-entry-28">Implementation</a><ul>
-<li><a class="reference internal" href="#base-class-definitions" id="toc-entry-29">Base Class Definitions</a></li>
-<li><a class="reference internal" href="#emitters" id="toc-entry-30">Emitters</a><ul>
-<li><a class="reference internal" href="#emitter-superclass" id="toc-entry-31">Emitter Superclass</a></li>
-<li><a class="reference internal" href="#weaver-subclass-of-emitter" id="toc-entry-32">Weaver subclass of Emitter</a></li>
-<li><a class="reference internal" href="#rst-subclass-of-weaver" id="toc-entry-33">RST subclass of Weaver</a></li>
-<li><a class="reference internal" href="#latex-subclass-of-weaver" id="toc-entry-34">LaTeX subclass of Weaver</a></li>
-<li><a class="reference internal" href="#html-subclasses-of-weaver" id="toc-entry-35">HTML subclasses of Weaver</a></li>
-<li><a class="reference internal" href="#tangler-subclass-of-emitter" id="toc-entry-36">Tangler subclass of Emitter</a></li>
-<li><a class="reference internal" href="#tanglermake-subclass-of-tangler" id="toc-entry-37">TanglerMake subclass of Tangler</a></li>
+<li><a class="reference internal" href="#architecture-and-design-overview" id="toc-entry-27">Architecture and Design Overview</a><ul>
+<li><a class="reference internal" href="#representation" id="toc-entry-28">Representation</a></li>
+<li><a class="reference internal" href="#reading-and-parsing" id="toc-entry-29">Reading and Parsing</a></li>
+<li><a class="reference internal" href="#weaving" id="toc-entry-30">Weaving</a></li>
+<li><a class="reference internal" href="#tangling" id="toc-entry-31">Tangling</a></li>
+<li><a class="reference internal" href="#application" id="toc-entry-32">Application</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#chunks" id="toc-entry-38">Chunks</a><ul>
-<li><a class="reference internal" href="#chunk-superclass" id="toc-entry-39">Chunk Superclass</a></li>
-<li><a class="reference internal" href="#namedchunk-class" id="toc-entry-40">NamedChunk class</a></li>
-<li><a class="reference internal" href="#outputchunk-class" id="toc-entry-41">OutputChunk class</a></li>
-<li><a class="reference internal" href="#nameddocumentchunk-class" id="toc-entry-42">NamedDocumentChunk class</a></li>
+<li><a class="reference internal" href="#implementation" id="toc-entry-33">Implementation</a><ul>
+<li><a class="reference internal" href="#base-class-definitions" id="toc-entry-34">Base Class Definitions</a></li>
+<li><a class="reference internal" href="#emitters" id="toc-entry-35">Emitters</a><ul>
+<li><a class="reference internal" href="#emitter-superclass" id="toc-entry-36">Emitter Superclass</a></li>
+<li><a class="reference internal" href="#weaver-subclass-of-emitter" id="toc-entry-37">Weaver subclass of Emitter</a></li>
+<li><a class="reference internal" href="#rst-subclass-of-weaver" id="toc-entry-38">RST subclass of Weaver</a></li>
+<li><a class="reference internal" href="#latex-subclass-of-weaver" id="toc-entry-39">LaTeX subclass of Weaver</a></li>
+<li><a class="reference internal" href="#html-subclasses-of-weaver" id="toc-entry-40">HTML subclasses of Weaver</a></li>
+<li><a class="reference internal" href="#tangler-subclass-of-emitter" id="toc-entry-41">Tangler subclass of Emitter</a></li>
+<li><a class="reference internal" href="#tanglermake-subclass-of-tangler" id="toc-entry-42">TanglerMake subclass of Tangler</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#commands" id="toc-entry-43">Commands</a><ul>
-<li><a class="reference internal" href="#command-superclass" id="toc-entry-44">Command Superclass</a></li>
-<li><a class="reference internal" href="#textcommand-class" id="toc-entry-45">TextCommand class</a></li>
-<li><a class="reference internal" href="#codecommand-class" id="toc-entry-46">CodeCommand class</a></li>
-<li><a class="reference internal" href="#xrefcommand-superclass" id="toc-entry-47">XrefCommand superclass</a></li>
-<li><a class="reference internal" href="#filexrefcommand-class" id="toc-entry-48">FileXrefCommand class</a></li>
-<li><a class="reference internal" href="#macroxrefcommand-class" id="toc-entry-49">MacroXrefCommand class</a></li>
-<li><a class="reference internal" href="#useridxrefcommand-class" id="toc-entry-50">UserIdXrefCommand class</a></li>
-<li><a class="reference internal" href="#referencecommand-class" id="toc-entry-51">ReferenceCommand class</a></li>
+<li><a class="reference internal" href="#chunks" id="toc-entry-43">Chunks</a><ul>
+<li><a class="reference internal" href="#chunk-superclass" id="toc-entry-44">Chunk Superclass</a></li>
+<li><a class="reference internal" href="#namedchunk-class" id="toc-entry-45">NamedChunk class</a></li>
+<li><a class="reference internal" href="#outputchunk-class" id="toc-entry-46">OutputChunk class</a></li>
+<li><a class="reference internal" href="#nameddocumentchunk-class" id="toc-entry-47">NamedDocumentChunk class</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#reference-strategy" id="toc-entry-52">Reference Strategy</a><ul>
-<li><a class="reference internal" href="#reference-superclass" id="toc-entry-53">Reference Superclass</a></li>
-<li><a class="reference internal" href="#simplereference-class" id="toc-entry-54">SimpleReference Class</a></li>
-<li><a class="reference internal" href="#transitivereference-class" id="toc-entry-55">TransitiveReference Class</a></li>
+<li><a class="reference internal" href="#commands" id="toc-entry-48">Commands</a><ul>
+<li><a class="reference internal" href="#command-superclass" id="toc-entry-49">Command Superclass</a></li>
+<li><a class="reference internal" href="#textcommand-class" id="toc-entry-50">TextCommand class</a></li>
+<li><a class="reference internal" href="#codecommand-class" id="toc-entry-51">CodeCommand class</a></li>
+<li><a class="reference internal" href="#xrefcommand-superclass" id="toc-entry-52">XrefCommand superclass</a></li>
+<li><a class="reference internal" href="#filexrefcommand-class" id="toc-entry-53">FileXrefCommand class</a></li>
+<li><a class="reference internal" href="#macroxrefcommand-class" id="toc-entry-54">MacroXrefCommand class</a></li>
+<li><a class="reference internal" href="#useridxrefcommand-class" id="toc-entry-55">UserIdXrefCommand class</a></li>
+<li><a class="reference internal" href="#referencecommand-class" id="toc-entry-56">ReferenceCommand class</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#error-class" id="toc-entry-56">Error class</a></li>
-<li><a class="reference internal" href="#the-web-and-webreader-classes" id="toc-entry-57">The Web and WebReader Classes</a><ul>
-<li><a class="reference internal" href="#web-construction" id="toc-entry-58">Web Construction</a></li>
-<li><a class="reference internal" href="#web-chunk-name-resolution" id="toc-entry-59">Web Chunk Name Resolution</a></li>
-<li><a class="reference internal" href="#web-cross-reference-support" id="toc-entry-60">Web Cross-Reference Support</a></li>
-<li><a class="reference internal" href="#loop-detection" id="toc-entry-61">Loop Detection</a></li>
-<li><a class="reference internal" href="#tangle-and-weave-support" id="toc-entry-62">Tangle and Weave Support</a></li>
-<li><a class="reference internal" href="#the-webreader-class" id="toc-entry-63">The WebReader Class</a></li>
-<li><a class="reference internal" href="#the-tokenizer-class" id="toc-entry-64">The Tokenizer Class</a></li>
-<li><a class="reference internal" href="#the-option-parser-class" id="toc-entry-65">The Option Parser Class</a></li>
+<li><a class="reference internal" href="#reference-strategy" id="toc-entry-57">Reference Strategy</a><ul>
+<li><a class="reference internal" href="#reference-superclass" id="toc-entry-58">Reference Superclass</a></li>
+<li><a class="reference internal" href="#simplereference-class" id="toc-entry-59">SimpleReference Class</a></li>
+<li><a class="reference internal" href="#transitivereference-class" id="toc-entry-60">TransitiveReference Class</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#action-class-hierarchy" id="toc-entry-66">Action Class Hierarchy</a><ul>
-<li><a class="reference internal" href="#action-class" id="toc-entry-67">Action Class</a></li>
-<li><a class="reference internal" href="#actionsequence-class" id="toc-entry-68">ActionSequence Class</a></li>
-<li><a class="reference internal" href="#weaveaction-class" id="toc-entry-69">WeaveAction Class</a></li>
-<li><a class="reference internal" href="#tangleaction-class" id="toc-entry-70">TangleAction Class</a></li>
-<li><a class="reference internal" href="#loadaction-class" id="toc-entry-71">LoadAction Class</a></li>
+<li><a class="reference internal" href="#error-class" id="toc-entry-61">Error class</a></li>
+<li><a class="reference internal" href="#the-web-and-webreader-classes" id="toc-entry-62">The Web and WebReader Classes</a><ul>
+<li><a class="reference internal" href="#web-construction" id="toc-entry-63">Web Construction</a></li>
+<li><a class="reference internal" href="#web-chunk-name-resolution" id="toc-entry-64">Web Chunk Name Resolution</a></li>
+<li><a class="reference internal" href="#web-cross-reference-support" id="toc-entry-65">Web Cross-Reference Support</a></li>
+<li><a class="reference internal" href="#loop-detection" id="toc-entry-66">Loop Detection</a></li>
+<li><a class="reference internal" href="#tangle-and-weave-support" id="toc-entry-67">Tangle and Weave Support</a></li>
+<li><a class="reference internal" href="#the-webreader-class" id="toc-entry-68">The WebReader Class</a></li>
+<li><a class="reference internal" href="#the-tokenizer-class" id="toc-entry-69">The Tokenizer Class</a></li>
+<li><a class="reference internal" href="#the-option-parser-class" id="toc-entry-70">The Option Parser Class</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#pyweb-module-file" id="toc-entry-72"><strong>pyWeb</strong> Module File</a><ul>
-<li><a class="reference internal" href="#python-library-imports" id="toc-entry-73">Python Library Imports</a></li>
-<li><a class="reference internal" href="#overheads" id="toc-entry-74">Overheads</a></li>
+<li><a class="reference internal" href="#action-class-hierarchy" id="toc-entry-71">Action Class Hierarchy</a><ul>
+<li><a class="reference internal" href="#action-class" id="toc-entry-72">Action Class</a></li>
+<li><a class="reference internal" href="#actionsequence-class" id="toc-entry-73">ActionSequence Class</a></li>
+<li><a class="reference internal" href="#weaveaction-class" id="toc-entry-74">WeaveAction Class</a></li>
+<li><a class="reference internal" href="#tangleaction-class" id="toc-entry-75">TangleAction Class</a></li>
+<li><a class="reference internal" href="#loadaction-class" id="toc-entry-76">LoadAction Class</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#the-application-class" id="toc-entry-75">The Application Class</a></li>
-<li><a class="reference internal" href="#logging-setup" id="toc-entry-76">Logging Setup</a></li>
-<li><a class="reference internal" href="#the-main-function" id="toc-entry-77">The Main Function</a></li>
+<li><a class="reference internal" href="#pyweb-module-file" id="toc-entry-77"><strong>pyWeb</strong> Module File</a><ul>
+<li><a class="reference internal" href="#python-library-imports" id="toc-entry-78">Python Library Imports</a></li>
+<li><a class="reference internal" href="#overheads" id="toc-entry-79">Overheads</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#unit-tests" id="toc-entry-78">Unit Tests</a></li>
-<li><a class="reference internal" href="#handy-scripts-and-other-files" id="toc-entry-79">Handy Scripts and Other Files</a><ul>
-<li><a class="reference internal" href="#tangle-py-script" id="toc-entry-80"><tt class="docutils literal">tangle.py</tt> Script</a></li>
-<li><a class="reference internal" href="#weave-py-script" id="toc-entry-81"><tt class="docutils literal">weave.py</tt> Script</a></li>
+<li><a class="reference internal" href="#the-application-class" id="toc-entry-80">The Application Class</a></li>
+<li><a class="reference internal" href="#logging-setup" id="toc-entry-81">Logging Setup</a></li>
+<li><a class="reference internal" href="#the-main-function" id="toc-entry-82">The Main Function</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#python-3-10-migration" id="toc-entry-82">Python 3.10 Migration</a></li>
-<li><a class="reference internal" href="#to-do" id="toc-entry-83">To Do</a><ul>
-<li><a class="reference internal" href="#other-thoughts" id="toc-entry-84">Other Thoughts</a></li>
+<li><a class="reference internal" href="#unit-tests" id="toc-entry-83">Unit Tests</a></li>
+<li><a class="reference internal" href="#handy-scripts-and-other-files" id="toc-entry-84">Handy Scripts and Other Files</a><ul>
+<li><a class="reference internal" href="#tangle-py-script" id="toc-entry-85"><tt class="docutils literal">tangle.py</tt> Script</a></li>
+<li><a class="reference internal" href="#weave-py-script" id="toc-entry-86"><tt class="docutils literal">weave.py</tt> Script</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#change-log" id="toc-entry-85">Change Log</a></li>
-<li><a class="reference internal" href="#indices" id="toc-entry-86">Indices</a><ul>
-<li><a class="reference internal" href="#files" id="toc-entry-87">Files</a></li>
-<li><a class="reference internal" href="#macros" id="toc-entry-88">Macros</a></li>
-<li><a class="reference internal" href="#user-identifiers" id="toc-entry-89">User Identifiers</a></li>
+<li><a class="reference internal" href="#python-3-10-migration" id="toc-entry-87">Python 3.10 Migration</a></li>
+<li><a class="reference internal" href="#to-do" id="toc-entry-88">To Do</a><ul>
+<li><a class="reference internal" href="#other-thoughts" id="toc-entry-89">Other Thoughts</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#change-log" id="toc-entry-90">Change Log</a></li>
+<li><a class="reference internal" href="#indices" id="toc-entry-91">Indices</a><ul>
+<li><a class="reference internal" href="#files" id="toc-entry-92">Files</a></li>
+<li><a class="reference internal" href="#macros" id="toc-entry-93">Macros</a></li>
+<li><a class="reference internal" href="#user-identifiers" id="toc-entry-94">User Identifiers</a></li>
 </ul>
 </li>
 </ul>
 </div>
-<!-- py-web-tool/intro.w -->
+<!-- py-web-tool/src/intro.w -->
 <div class="section" id="introduction">
 <h1><a class="toc-backref" href="#toc-entry-1">Introduction</a></h1>
 <p>Literate programming was pioneered by Knuth as a method for
@@ -751,13 +758,41 @@ very large programs.</td>
 </table>
 </blockquote>
 </div>
-<div class="section" id="use-cases">
-<h2><a class="toc-backref" href="#toc-entry-5">Use Cases</a></h2>
+<div class="section" id="acknowledgements">
+<h2><a class="toc-backref" href="#toc-entry-5">Acknowledgements</a></h2>
+<dl class="docutils">
+<dt>This application is very directly based on (derived from?) work that</dt>
+<dd>preceded this, particularly the following:</dd>
+</dl>
+<ul class="simple">
+<li>Ross N. Williams' <em>FunnelWeb</em> <a class="reference external" href="http://www.ross.net/funnelweb/">http://www.ross.net/funnelweb/</a></li>
+<li>Norman Ramsey's <em>noweb</em> <a class="reference external" href="http://www.eecs.harvard.edu/~nr/noweb/">http://www.eecs.harvard.edu/~nr/noweb/</a></li>
+<li>Preston Briggs' <em>nuweb</em> <a class="reference external" href="http://sourceforge.net/projects/nuweb/">http://sourceforge.net/projects/nuweb/</a>
+Currently supported by Charles Martin and Marc W. Mengel</li>
+</ul>
+<p>Also, after using John Skaller's <em>interscript</em> <a class="reference external" href="http://interscript.sourceforge.net/">http://interscript.sourceforge.net/</a>
+for two large development efforts, I finally understood the feature set I really wanted.</p>
+<p>Jason Fruit and others contributed to the previous version.</p>
+<!-- py-web-tool/src/usage.w -->
+</div>
+</div>
+<div class="section" id="installing">
+<h1><a class="toc-backref" href="#toc-entry-6">Installing</a></h1>
+<p>This requires Python 3.10.</p>
+<p>This is not (currently) hosted in PyPI. Instead of installing it with PIP,
+clone the GitHub repository or download the distribution kit.</p>
+<p>Install pyweb &quot;manually&quot; using the provided <tt class="docutils literal">setup.py</tt>.</p>
+<pre class="literal-block">
+python setup.py install
+</pre>
+<p>This will install the <tt class="docutils literal">pyweb</tt> module.</p>
+</div>
+<div class="section" id="using">
+<h1><a class="toc-backref" href="#toc-entry-7">Using</a></h1>
 <p><strong>py-web-tool</strong> supports two use cases, <a class="reference internal" href="#tangle-source-files">Tangle Source Files</a> and <a class="reference internal" href="#weave-documentation">Weave Documentation</a>.
-These are often combined into a single request of the application that will both
-weave and tangle.</p>
+These are often combined to both tangle and weave an application and it's documentation.</p>
 <div class="section" id="tangle-source-files">
-<h3><a class="toc-backref" href="#toc-entry-6">Tangle Source Files</a></h3>
+<h2><a class="toc-backref" href="#toc-entry-8">Tangle Source Files</a></h2>
 <p>A user initiates this process when they have a complete <tt class="docutils literal">.w</tt> file that contains
 a description of source files.  These source files are described with <tt class="docutils literal">&#64;o</tt> commands
 in the <tt class="docutils literal">.w</tt> file.</p>
@@ -766,22 +801,31 @@ in the <tt class="docutils literal">.w</tt> file.</p>
 <tt class="docutils literal">.w</tt> file.  This will lead to a need to restart this use case.</p>
 <p>The use case is a failure when the source files cannot be produced, due to
 errors in the <tt class="docutils literal">.w</tt> file.  These must be corrected based on information in log messages.</p>
-<p>The sequence is <tt class="docutils literal">./pyweb.py <span class="pre">*theFile*.w</span></tt>.</p>
+<p>A typical command to tangle (without weaving) is:</p>
+<pre class="literal-block">
+python -m pyweb -xw <em>theFile</em>.w
+</pre>
+<p>The outputs will be defined by the <tt class="docutils literal">&#64;o</tt> commands in the source.</p>
 </div>
 <div class="section" id="weave-documentation">
-<h3><a class="toc-backref" href="#toc-entry-7">Weave Documentation</a></h3>
+<h2><a class="toc-backref" href="#toc-entry-9">Weave Documentation</a></h2>
 <p>A user initiates this process when they have a <tt class="docutils literal">.w</tt> file that contains
 a description of a document to produce.  The document is described by the entire
-<tt class="docutils literal">.w</tt> file.</p>
+<tt class="docutils literal">.w</tt> file. The default is to use ReSTructured Text (RST) markup.
+The output file will have the <tt class="docutils literal">.rst</tt> suffix.</p>
 <p>The use case is successful when the documentation file is produced.</p>
 <p>Outside this use case, the user will edit the documentation file, possibly updating the
 <tt class="docutils literal">.w</tt> file.  This will lead to a need to restart this use case.</p>
 <p>The use case is a failure when the documentation file cannot be produced, due to
 errors in the <tt class="docutils literal">.w</tt> file.  These must be corrected based on information in log messages.</p>
-<p>The sequence is <tt class="docutils literal">./pyweb.py <span class="pre">*theFile*.w</span></tt>.</p>
+<p>A typical command to weave (without tangling) is:</p>
+<pre class="literal-block">
+python -m pyweb -xt <em>theFile</em>.w
+</pre>
+<p>The output will be the <em>theFile</em><tt class="docutils literal">.rst</tt>.</p>
 </div>
 <div class="section" id="tangle-test-and-weave-with-test-results">
-<h3><a class="toc-backref" href="#toc-entry-8">Tangle, Test, and Weave with Test Results</a></h3>
+<h2><a class="toc-backref" href="#toc-entry-10">Tangle, Test, and Weave with Test Results</a></h2>
 <p>A user initiates this process when they have a <tt class="docutils literal">.w</tt> file that contains
 a description of a document to produce.  The document is described by the entire
 <tt class="docutils literal">.w</tt> file.  Further, their final document should include test output
@@ -796,26 +840,88 @@ errors in the <tt class="docutils literal">.w</tt> file.  These must be correcte
 test output.</p>
 <p>The sequence is as follows:</p>
 <pre class="literal-block">
-./pyweb.py -xw -pi <em>theFile</em>.w
-python <em>theTest</em> &gt;<em>aLog</em>
-./pyweb.py -xt <em>theFile</em>.w
+python -m pyweb -xw -pi <em>theFile</em>.w
+pytest &gt;<em>aLog</em>
+python -m pyweb -xt <em>theFile</em>.w
 </pre>
-<p>Another possibility includes the following:</p>
-<blockquote>
-<pre class="literal-block">
-./pyweb.py -xw -pi <em>theFile</em>.w
-python -m pytest <em>theTestFile</em> &gt;<em>aLog</em>
-./pyweb.py -xt <em>theFile</em>.w
-</pre>
-</blockquote>
 <p>The first step excludes weaving and permits errors on the <tt class="docutils literal">&#64;i</tt> command.  The <tt class="docutils literal"><span class="pre">-pi</span></tt> option
 is necessary in the event that the log file does not yet exist.  The second step
 runs the test, creating a log file.  The third step weaves the final document,
 including the test output.</p>
 </div>
+<div class="section" id="running-py-web-tool-to-tangle-and-weave">
+<h2><a class="toc-backref" href="#toc-entry-11">Running <strong>py-web-tool</strong> to Tangle and Weave</a></h2>
+<p>Assuming that you have marked <tt class="docutils literal">pyweb.py</tt> as executable,
+you do the following:</p>
+<pre class="literal-block">
+python -m pyweb <em>theFile</em>.w
+</pre>
+<p>This will tangle the <tt class="docutils literal">&#64;o</tt> commands in each <em>theFile</em>.
+It will also weave the output, and create <em>theFile</em>.rst.</p>
+<div class="section" id="command-line-options">
+<h3><a class="toc-backref" href="#toc-entry-12">Command Line Options</a></h3>
+<p>Currently, the following command line options are accepted.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">-v:</th><td class="field-body">Verbose logging.</td>
+</tr>
+<tr class="field"><th class="field-name">-s:</th><td class="field-body">Silent operation.</td>
+</tr>
+<tr class="field"><th class="field-name">-c<em>x</em>:</th><td class="field-body">Change the command character from <tt class="docutils literal">&#64;</tt> to <tt class="docutils literal">*x*</tt>.</td>
+</tr>
+<tr class="field"><th class="field-name">-w<em>weaver</em>:</th><td class="field-body">Choose a particular documentation weaver template. Currently the choices
+are RST and HTML.</td>
+</tr>
+<tr class="field"><th class="field-name">-xw:</th><td class="field-body">Exclude weaving.  This does tangling of source program files only.</td>
+</tr>
+<tr class="field"><th class="field-name">-xt:</th><td class="field-body">Exclude tangling.  This does weaving of the document file only.</td>
+</tr>
+<tr class="field"><th class="field-name">-p<em>command</em>:</th><td class="field-body">Permit errors in the given list of commands.  The most common
+version is <tt class="docutils literal"><span class="pre">-pi</span></tt> to permit errors in locating an include file.
+This is done in the following scenario: pass 1 uses <tt class="docutils literal"><span class="pre">-xw</span> <span class="pre">-pi</span></tt> to exclude
+weaving and permit include-file errors;
+the tangled program is run to create test results; pass 2 uses
+<tt class="docutils literal"><span class="pre">-xt</span></tt> to exclude tangling and include the test results.</td>
+</tr>
+<tr class="field"><th class="field-name">-o<em>directory</em>:</th><td class="field-body">The directory to which to write output files.</td>
+</tr>
+</tbody>
+</table>
 </div>
-<div class="section" id="writing-py-web-tool-w-files">
-<h2><a class="toc-backref" href="#toc-entry-9">Writing <strong>py-web-tool</strong> <tt class="docutils literal">.w</tt> Files</a></h2>
+</div>
+<div class="section" id="bootstrapping">
+<h2><a class="toc-backref" href="#toc-entry-13">Bootstrapping</a></h2>
+<p><strong>py-web-tool</strong> is written using <strong>py-web-tool</strong>. The distribution includes the original <tt class="docutils literal">.w</tt>
+files as well as a <tt class="docutils literal">.py</tt> module.</p>
+<p>The bootstrap procedure is to run a &quot;known good&quot; <tt class="docutils literal">pyweb</tt> to transform
+a working copy into a new version of <tt class="docutils literal">pyweb</tt>. We provide the previous release in the <tt class="docutils literal">bootstrap</tt>
+directory.</p>
+<pre class="literal-block">
+python bootstrap/pyweb.py pyweb.w
+rst2html.py pyweb.rst pyweb.html
+</pre>
+<p>The resulting <tt class="docutils literal">pyweb.html</tt> file is the updated documentation.
+The <tt class="docutils literal">pyweb.py</tt> is the updated candidate release of <strong>py-web-tool</strong>.</p>
+<p>Similarly, the tests built from a <tt class="docutils literal">.w</tt> files.</p>
+<pre class="literal-block">
+python pyweb.py tests/pyweb_test.w -o tests
+PYTHONPATH=.. pytest
+rst2html.py tests/pyweb_test.rst tests/pyweb_test.html
+</pre>
+</div>
+<div class="section" id="dependencies">
+<h2><a class="toc-backref" href="#toc-entry-14">Dependencies</a></h2>
+<p><strong>py-web-tool</strong> requires Python 3.10 or newer.</p>
+<p>If you create RST output, you'll want to use <tt class="docutils literal">docutils</tt> to translate
+the RST to HTML or LaTeX or any of the other formats supported by docutils.</p>
+<p>Tools like <tt class="docutils literal">pytest</tt> and <tt class="docutils literal">tox</tt> are also used for development.</p>
+<!-- py-web-tool/src/language.w -->
+</div>
+</div>
+<div class="section" id="the-py-web-tool-w-markup-language">
+<h1><a class="toc-backref" href="#toc-entry-15">The <strong>py-web-tool</strong> <tt class="docutils literal">.w</tt> Markup Language</a></h1>
 <p>The essence of literate programming is a markup language that distinguishes code
 from documentation. For tangling, the code is relevant. For weaving, both code
 and documentation are relevant.</p>
@@ -843,8 +949,76 @@ explicitly a code chunk is output without modification.</p>
 various chunks.  The <em>Inline</em> tags are (called &quot;minor commands&quot;) are used to control the
 woven and tangled output from those chunks. There are <em>Content</em> tags which generate
 summary cross-reference content in woven files.</p>
+<div class="section" id="concepts">
+<h2><a class="toc-backref" href="#toc-entry-16">Concepts</a></h2>
+<p>The <tt class="docutils literal">.w</tt> file <strong>is</strong> the final documentation.  The code is tangled out
+of this.</p>
+<p>There are some mandatory &quot;boilerplate&quot; required to make a working document.
+Requirements vary by markup language.</p>
+<div class="section" id="rst">
+<h3><a class="toc-backref" href="#toc-entry-17">RST</a></h3>
+<p>The RST template uses two substitutions, <tt class="docutils literal">|srarr|</tt> and <tt class="docutils literal">|loz|</tt>.</p>
+<p>These can be provided by</p>
+<pre class="literal-block">
+..  include:: &lt;isoamsa.txt&gt;
+..  include:: &lt;isopub.txt&gt;
+</pre>
+<p>Or</p>
+<pre class="literal-block">
+.. |srarr|  unicode:: U+02192 .. RIGHTWARDS ARROW
+.. |loz|    unicode:: U+025CA .. LOZENGE
+</pre>
+<p>Often the boilerplate document looks like this</p>
+<pre class="literal-block">
+####################
+<em>Title</em>
+####################
+
+===============
+<em>Author</em>
+===============
+
+..  include:: &lt;isoamsa.txt&gt;
+..  include:: &lt;isopub.txt&gt;
+
+..  contents::
+
+<em>Your Document Starts Here</em>
+</pre>
+</div>
+<div class="section" id="latex">
+<h3><a class="toc-backref" href="#toc-entry-18">LaTeX</a></h3>
+<p>The LaTeX templates use <tt class="docutils literal">\\fancyvrb</tt>.
+The following is required.</p>
+<pre class="literal-block">
+\\usepackage{fancyvrb}
+</pre>
+<p>Some minimal boilerplate document looks like this:</p>
+<pre class="literal-block">
+documentclass{article}
+usepackage{fancyvrb}
+title{ <em>Title</em> }
+author{ <em>Author</em> }
+
+begin{document}
+
+maketitle
+tableofcontents
+
+<em>Your Document Starts Here</em>
+
+end{document}
+</pre>
+</div>
+<div class="section" id="html">
+<h3><a class="toc-backref" href="#toc-entry-19">HTML</a></h3>
+<p>No additional setup is required for HTML. However, there's often
+a fairly large amount of HTML boilerplate, depending on the CSS
+requirements.</p>
+</div>
+</div>
 <div class="section" id="structural-tags">
-<h3><a class="toc-backref" href="#toc-entry-10">Structural Tags</a></h3>
+<h2><a class="toc-backref" href="#toc-entry-20">Structural Tags</a></h2>
 <p>There are two definitional tags; these define the various chunks
 in an input file.</p>
 <p><tt class="docutils literal">&#64;o</tt> <em>file</em> <tt class="docutils literal">&#64;{</tt> <em>text</em> <tt class="docutils literal">&#64;}</tt></p>
@@ -906,7 +1080,7 @@ documentation. It includes a named output chunk which will write to <tt class="d
 It ends with an anonymous chunk of documentation.</p>
 </div>
 <div class="section" id="inline-tags">
-<h3><a class="toc-backref" href="#toc-entry-11">Inline Tags</a></h3>
+<h2><a class="toc-backref" href="#toc-entry-21">Inline Tags</a></h2>
 <p>There are several tags that are replaced by content in the woven output.</p>
 <p><tt class="docutils literal">&#64;&#64;</tt></p>
 <blockquote>
@@ -927,7 +1101,7 @@ woven in place.  A few global variables and modules are available.
 These are described in <a class="reference internal" href="#expression-context">Expression Context</a>.</blockquote>
 </div>
 <div class="section" id="content-tags">
-<h3><a class="toc-backref" href="#toc-entry-12">Content Tags</a></h3>
+<h2><a class="toc-backref" href="#toc-entry-22">Content Tags</a></h2>
 <p>There are three index creation tags that are replaced by content in the woven output.</p>
 <p><tt class="docutils literal">&#64;f</tt></p>
 <blockquote>
@@ -946,7 +1120,7 @@ This index lists the name of each chunk created by an <tt class="docutils litera
 and all of the various chunks that are concatenated to create the complete chunk.</blockquote>
 </div>
 <div class="section" id="additional-features">
-<h3><a class="toc-backref" href="#toc-entry-13">Additional Features</a></h3>
+<h2><a class="toc-backref" href="#toc-entry-23">Additional Features</a></h2>
 <p><strong>Sequence Numbers</strong>. The named chunks (from both <tt class="docutils literal">&#64;o</tt> and <tt class="docutils literal">&#64;d</tt> commands) are assigned
 unique sequence numbers to simplify cross references.</p>
 <p><strong>Case Sensitive</strong>. Chunk names and file names are case sensitive.</p>
@@ -1036,7 +1210,7 @@ import math, time
 <p>This puts a newline character before and after the import line.</p>
 </div>
 <div class="section" id="controlling-indentation">
-<h3><a class="toc-backref" href="#toc-entry-14">Controlling Indentation</a></h3>
+<h2><a class="toc-backref" href="#toc-entry-24">Controlling Indentation</a></h2>
 <p>We have two choices in indentation:</p>
 <ul class="simple">
 <li>Context-Sensitive.</li>
@@ -1113,7 +1287,7 @@ provided by the <tt class="docutils literal">some bigger chunk</tt> context.</p>
 <p>After the first newline (<em>More that uses &quot;&quot;&quot;</em>) will be at the left margin.</p>
 </div>
 <div class="section" id="tracking-source-line-numbers">
-<h3><a class="toc-backref" href="#toc-entry-15">Tracking Source Line Numbers</a></h3>
+<h2><a class="toc-backref" href="#toc-entry-25">Tracking Source Line Numbers</a></h2>
 <p>Since the tangled output files are -- well -- tangled, it can be difficult to
 trace back from a Python error stack to the original line in the <tt class="docutils literal">.w</tt> file that
 needs to be fixed.</p>
@@ -1135,7 +1309,7 @@ start and end syntax. This will lead to comments embedded in the tangled output
 which contain source line numbers for every (every!) chunk.</p>
 </div>
 <div class="section" id="expression-context">
-<h3><a class="toc-backref" href="#toc-entry-16">Expression Context</a></h3>
+<h2><a class="toc-backref" href="#toc-entry-26">Expression Context</a></h2>
 <p>There are two possible implementations for evaluation of a Python
 expression in the input.</p>
 <ol class="arabic simple">
@@ -1182,92 +1356,11 @@ if some other script is being used.</td>
 </tr>
 </tbody>
 </table>
-</div>
-</div>
-<div class="section" id="running-py-web-tool-to-tangle-and-weave">
-<h2><a class="toc-backref" href="#toc-entry-17">Running <strong>py-web-tool</strong> to Tangle and Weave</a></h2>
-<p>Assuming that you have marked <tt class="docutils literal">pyweb.py</tt> as executable,
-you do the following.</p>
-<pre class="literal-block">
-./pyweb.py <em>file</em>...
-</pre>
-<p>This will tangle the <tt class="docutils literal">&#64;o</tt> commands in each <em>file</em>.
-It will also weave the output, and create <em>file</em>.txt.</p>
-<div class="section" id="command-line-options">
-<h3><a class="toc-backref" href="#toc-entry-18">Command Line Options</a></h3>
-<p>Currently, the following command line options are accepted.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th class="field-name">-v:</th><td class="field-body">Verbose logging.</td>
-</tr>
-<tr class="field"><th class="field-name">-s:</th><td class="field-body">Silent operation.</td>
-</tr>
-<tr class="field"><th class="field-name">-c<em>x</em>:</th><td class="field-body">Change the command character from <tt class="docutils literal">&#64;</tt> to <tt class="docutils literal">*x*</tt>.</td>
-</tr>
-<tr class="field"><th class="field-name">-w<em>weaver</em>:</th><td class="field-body">Choose a particular documentation weaver template. Currently the choices
-are RST and HTML.</td>
-</tr>
-<tr class="field"><th class="field-name">-xw:</th><td class="field-body">Exclude weaving.  This does tangling of source program files only.</td>
-</tr>
-<tr class="field"><th class="field-name">-xt:</th><td class="field-body">Exclude tangling.  This does weaving of the document file only.</td>
-</tr>
-<tr class="field"><th class="field-name">-p<em>command</em>:</th><td class="field-body">Permit errors in the given list of commands.  The most common
-version is <tt class="docutils literal"><span class="pre">-pi</span></tt> to permit errors in locating an include file.
-This is done in the following scenario: pass 1 uses <tt class="docutils literal"><span class="pre">-xw</span> <span class="pre">-pi</span></tt> to exclude
-weaving and permit include-file errors;
-the tangled program is run to create test results; pass 2 uses
-<tt class="docutils literal"><span class="pre">-xt</span></tt> to exclude tangling and include the test results.</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<div class="section" id="bootstrapping">
-<h2><a class="toc-backref" href="#toc-entry-19">Bootstrapping</a></h2>
-<p><strong>py-web-tool</strong> is written using <strong>py-web-tool</strong>. The distribution includes the original <tt class="docutils literal">.w</tt>
-files as well as a <tt class="docutils literal">.py</tt> module.</p>
-<p>The bootstrap procedure is this.</p>
-<pre class="literal-block">
-python pyweb.py pyweb.w
-rst2html.py pyweb.rst pyweb.html
-</pre>
-<p>The resulting <tt class="docutils literal">pyweb.html</tt> file is the final documentation.</p>
-<p>Similarly, the tests are bootstrapped from <tt class="docutils literal">.w</tt> files.</p>
-<pre class="literal-block">
-cd test
-python ../pyweb.py pyweb_test.w
-PYTHONPATH=.. python test.py
-rst2html.py pyweb_test.rst pyweb_test.html
-</pre>
-</div>
-<div class="section" id="dependencies">
-<h2><a class="toc-backref" href="#toc-entry-20">Dependencies</a></h2>
-<p><strong>py-web-tool</strong> requires Python 3.10 or newer.</p>
-<p>If you create RST output, you'll want to use docutils to translate
-the RST to HTML or LaTeX or any of the other formats supported by docutils.</p>
-</div>
-<div class="section" id="acknowledgements">
-<h2><a class="toc-backref" href="#toc-entry-21">Acknowledgements</a></h2>
-<dl class="docutils">
-<dt>This application is very directly based on (derived from?) work that</dt>
-<dd>preceded this, particularly the following:</dd>
-</dl>
-<ul class="simple">
-<li>Ross N. Williams' <em>FunnelWeb</em> <a class="reference external" href="http://www.ross.net/funnelweb/">http://www.ross.net/funnelweb/</a></li>
-<li>Norman Ramsey's <em>noweb</em> <a class="reference external" href="http://www.eecs.harvard.edu/~nr/noweb/">http://www.eecs.harvard.edu/~nr/noweb/</a></li>
-<li>Preston Briggs' <em>nuweb</em> <a class="reference external" href="http://sourceforge.net/projects/nuweb/">http://sourceforge.net/projects/nuweb/</a>
-Currently supported by Charles Martin and Marc W. Mengel</li>
-</ul>
-<p>Also, after using John Skaller's <em>interscript</em> <a class="reference external" href="http://interscript.sourceforge.net/">http://interscript.sourceforge.net/</a>
-for two large development efforts, I finally understood the feature set I really wanted.</p>
-<p>Jason Fruit and others contributed to the previous version.</p>
-<!-- py-web-tool/overview.w -->
+<!-- py-web-tool/src/overview.w -->
 </div>
 </div>
 <div class="section" id="architecture-and-design-overview">
-<h1><a class="toc-backref" href="#toc-entry-22">Architecture and Design Overview</a></h1>
+<h1><a class="toc-backref" href="#toc-entry-27">Architecture and Design Overview</a></h1>
 <p>This application breaks the overall problem into the following sub-problems.</p>
 <ol class="arabic simple">
 <li>Representation of the Web as Chunks and Commands</li>
@@ -1276,7 +1369,7 @@ for two large development efforts, I finally understood the feature set I really
 <li>Tangling the desired program source files.</li>
 </ol>
 <div class="section" id="representation">
-<h2><a class="toc-backref" href="#toc-entry-23">Representation</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-28">Representation</a></h2>
 <p>The basic parse tree has three layers. The source document is transformed into a web,
 which is the overall container. The source is
 decomposed into a simple sequence of Chunks.  Each Chunk is a simple sequence
@@ -1295,7 +1388,7 @@ composes a Chunk.</p>
 Otherwise, the output and input work is largely independent of the Web itself.</p>
 </div>
 <div class="section" id="reading-and-parsing">
-<h2><a class="toc-backref" href="#toc-entry-24">Reading and Parsing</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-29">Reading and Parsing</a></h2>
 <p>A solution to the reading and parsing problem depends on a convenient
 tool for breaking up the input stream and a representation for the chunks of input.
 Input decomposition is done with the Python Splitter pattern.</p>
@@ -1328,7 +1421,7 @@ the syntax rules for Tcl or the shell. Optional fields are prefaced with <tt cla
 All options come before all positional arguments.</p>
 </div>
 <div class="section" id="weaving">
-<h2><a class="toc-backref" href="#toc-entry-25">Weaving</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-30">Weaving</a></h2>
 <p>The weaving operation depends on the target document markup language.
 There are several approaches to this problem.</p>
 <ul class="simple">
@@ -1353,7 +1446,7 @@ toolset to convert to other output languages.</p>
 <p>The templates used to wrap code sections can be tweaked relatively easily.</p>
 </div>
 <div class="section" id="tangling">
-<h2><a class="toc-backref" href="#toc-entry-26">Tangling</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-31">Tangling</a></h2>
 <p>The tangling operation produces output files.  In other tools,
 some care was taken to understand the source code context for tangling, and
 provide a correct indentation.  This required a command-line parameter
@@ -1368,7 +1461,7 @@ particularly for users of Python, where indentation is significant.</p>
 rule to force the material to be placed at the left margin.</p>
 </div>
 <div class="section" id="application">
-<h2><a class="toc-backref" href="#toc-entry-27">Application</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-32">Application</a></h2>
 <p>The overall application has two layers to it. There are actions (Load, Tangle, Weave)
 as well as a top-level main function that parses the command line, creates
 and configures the actions, and then closes up shop when all done.</p>
@@ -1378,7 +1471,7 @@ We want <tt class="docutils literal"><span class="pre">Weave(&quot;someFile.w&qu
 </div>
 </div>
 <div class="section" id="implementation">
-<h1><a class="toc-backref" href="#toc-entry-28">Implementation</a></h1>
+<h1><a class="toc-backref" href="#toc-entry-33">Implementation</a></h1>
 <p>The implementation is contained in a file that both defines
 the base classes and provides an overall <tt class="docutils literal">main()</tt> function.  The <tt class="docutils literal">main()</tt>
 function uses these base classes to weave and tangle the output files.</p>
@@ -1408,7 +1501,7 @@ It could be a set of related functions, but we've bound them into a class.</li>
 <li><a class="reference internal" href="#the-main-function">The Main Function</a>.</li>
 </ul>
 <div class="section" id="base-class-definitions">
-<h2><a class="toc-backref" href="#toc-entry-29">Base Class Definitions</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-34">Base Class Definitions</a></h2>
 <p>There are the core classes that define the enduring application objects. These form
 fairly complex hierarchies.</p>
 <ul class="simple">
@@ -1468,10 +1561,10 @@ fit elsewhere</p>
 </blockquote>
 <p>The above order is reasonably helpful for Python and minimizes forward
 references. A <tt class="docutils literal">Chunk</tt> and a <tt class="docutils literal">Web</tt> do have a circular relationship.
-We'll present the designs from the most important first, the Emitters`_.</p>
+We'll present the designs from the most important first, the <a class="reference internal" href="#emitters">Emitters</a>.</p>
 </div>
 <div class="section" id="emitters">
-<h2><a class="toc-backref" href="#toc-entry-30">Emitters</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-35">Emitters</a></h2>
 <p>An <tt class="docutils literal">Emitter</tt> instance is responsible for control of an output file format.
 This includes the necessary file naming, opening, writing and closing operations.
 It also includes providing the correct markup for the file type.</p>
@@ -1554,7 +1647,7 @@ a code chunk in the Weaver's markup language.</li>
 </ol>
 </blockquote>
 <div class="section" id="emitter-superclass">
-<h3><a class="toc-backref" href="#toc-entry-31">Emitter Superclass</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-36">Emitter Superclass</a></h3>
 <p>The <tt class="docutils literal">Emitter</tt> class is an abstract base class.  It
 contains common features factored out of the <tt class="docutils literal">Weaver</tt> and <tt class="docutils literal">Tangler</tt> subclasses.</p>
 <p>Inheriting from the <tt class="docutils literal">Emitter</tt> class generally requires overriding one or more
@@ -1625,23 +1718,24 @@ import abc
 <pre class="code literal-block">
 class Emitter:
     &quot;&quot;&quot;Emit an output file; handling indentation context.&quot;&quot;&quot;
-    code_indent = 0 # Used by a Tangler
-    filePath : Path  # Path within the base directory (on the name is used)
-    output : Path  # Base directory to write
 
-    theFile: TextIO
+    code_indent = 0 #: Used by a Tangler
+    filePath : Path  #: Path within the base directory (on the name is used)
+    output : Path  #: Base directory to write
+    theFile: TextIO  #: Open file being written
+
     def __init__(self) -&gt; None:
         self.logger = logging.getLogger(self.__class__.__qualname__)
         self.log_indent = logging.getLogger(&quot;indent.&quot; + self.__class__.__qualname__)
-        # Summary
-        self.linesWritten = 0
-        self.totalFiles = 0
-        self.totalLines = 0
         # Working State
         self.lastIndent = 0
         self.fragment = False
         self.context: list[int] = []
         self.readdIndent(self.code_indent)  # Create context and initial lastIndent values
+        # Summary
+        self.linesWritten = 0
+        self.totalFiles = 0
+        self.totalLines = 0
 
     def __str__(self) -&gt; str:
         return self.__class__.__name__
@@ -1897,7 +1991,7 @@ def readdIndent(self, indent: int = 0) -&gt; None:
 </blockquote>
 </div>
 <div class="section" id="weaver-subclass-of-emitter">
-<h3><a class="toc-backref" href="#toc-entry-32">Weaver subclass of Emitter</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-37">Weaver subclass of Emitter</a></h3>
 <p>A Weaver is an Emitter that produces the final user-focused document.
 This will include the source document with the code blocks surrounded by
 markup to present that code properly.  In effect, the <strong>py-web-tool</strong>  <tt class="docutils literal">&#64;</tt> commands
@@ -1945,7 +2039,7 @@ is required.</td>
 <p class="rubric" id="target-12">Imports (12) +=</p>
 <pre class="code literal-block">
 import string
-from textwrap import dedent
+from textwrap import dedent, indent, shorten
 </pre>
 <!--  -->
 <blockquote>
@@ -1964,7 +2058,11 @@ class Weaver(Emitter):
     &quot;&quot;&quot;
     extension = &quot;.rst&quot;
     code_indent = 4
-    header = &quot;&quot;&quot;\n..  include:: &lt;isoamsa.txt&gt;\n..  include:: &lt;isopub.txt&gt;\n&quot;&quot;&quot;
+    # Not actually used.
+    header = dedent(&quot;&quot;&quot;
+        ..  include:: &lt;isoamsa.txt&gt;
+        ..  include:: &lt;isopub.txt&gt;
+    &quot;&quot;&quot;)
 
     reference_style : &quot;Reference&quot;
 
@@ -2067,9 +2165,13 @@ def docEnd(self, aChunk: Chunk) -&gt; None:
 </div>
 <p class="rubric" id="target-17">Weaver reference summary, used by code chunk and file chunk (17) =</p>
 <pre class="code literal-block">
-ref_template = string.Template(&quot;${refList}&quot;)
+ref_template = string.Template(
+    &quot;${refList}&quot;
+)
 ref_separator = &quot;; &quot;
-ref_item_template = string.Template(&quot;$fullName (`${seq}`_)&quot;)
+ref_item_template = string.Template(
+    &quot;$fullName (`${seq}`_)&quot;
+)
 
 def references(self, aChunk: Chunk) -&gt; str:
     references = aChunk.references(self)
@@ -2094,7 +2196,25 @@ Links or cross references to chunks that
 refer to this chunk can be emitted.</p>
 <p class="rubric" id="target-18">Weaver code chunk begin-end (18) =</p>
 <pre class="code literal-block">
-cb_template = string.Template(&quot;\n..  _`${seq}`:\n..  rubric:: ${fullName} (${seq}) ${concat}\n..  parsed-literal::\n    :class: code\n\n&quot;)
+cb_template = string.Template(
+    dedent(&quot;&quot;&quot;
+        ..  _`${seq}`:
+        ..  rubric:: ${fullName} (${seq}) ${concat}
+        ..  parsed-literal::
+            :class: code
+
+    &quot;&quot;&quot;)
+)
+
+ce_template = string.Template(
+    dedent(&quot;&quot;&quot;
+        ..
+
+            ..  class:: small
+
+                |loz| *${fullName} (${seq})*. Used by: ${references}
+    &quot;&quot;&quot;)
+)
 
 def codeBegin(self, aChunk: Chunk) -&gt; None:
     txt = self.cb_template.substitute(
@@ -2104,8 +2224,6 @@ def codeBegin(self, aChunk: Chunk) -&gt; None:
         concat=&quot;=&quot; if aChunk.initial else &quot;+=&quot;,
     )
     self.write(txt)
-
-ce_template = string.Template(&quot;\n..\n\n    ..  class:: small\n\n        |loz| *${fullName} (${seq})*. Used by: ${references}\n&quot;)
 
 def codeEnd(self, aChunk: Chunk) -&gt; None:
     txt = self.ce_template.substitute(
@@ -2120,6 +2238,9 @@ def codeEnd(self, aChunk: Chunk) -&gt; None:
 <blockquote>
 <p class="small">◊ <em>Weaver code chunk begin-end (18)</em>. Used by: Weaver subclass of Emitter... (<a class="reference internal" href="#target-13">13</a>)</p>
 </blockquote>
+<p><strong>TODO:</strong> Is this really necessary? Should we inject additional material
+into the woven output? It seems like a potentially bad idea because
+of the complications of various markup tool chains.</p>
 <p>The <tt class="docutils literal">fileBegin()</tt> method emits the necessary material prior to
 a chunk of source code, defined with the <tt class="docutils literal">&#64;o</tt> command.
 A subclass would override this to provide specific text
@@ -2130,7 +2251,25 @@ a chunk of source code, defined with the <tt class="docutils literal">&#64;o</tt
 list is always empty.</p>
 <p class="rubric" id="target-19">Weaver file chunk begin-end (19) =</p>
 <pre class="code literal-block">
-fb_template = string.Template(&quot;\n..  _`${seq}`:\n..  rubric:: ${fullName} (${seq}) ${concat}\n..  parsed-literal::\n    :class: code\n\n&quot;)
+fb_template = string.Template(
+    dedent(&quot;&quot;&quot;
+        ..  _`${seq}`:
+        ..  rubric:: ${fullName} (${seq}) ${concat}
+        ..  parsed-literal::
+            :class: code
+
+    &quot;&quot;&quot;)
+)
+
+fe_template = string.Template(
+    dedent(&quot;&quot;&quot;
+        ..
+
+            ..  class:: small
+
+                |loz| *${fullName} (${seq})*.
+    &quot;&quot;&quot;)
+)
 
 def fileBegin(self, aChunk: Chunk) -&gt; None:
     txt = self.fb_template.substitute(
@@ -2140,8 +2279,6 @@ def fileBegin(self, aChunk: Chunk) -&gt; None:
         concat=&quot;=&quot; if aChunk.initial else &quot;+=&quot;,
     )
     self.write(txt)
-
-fe_template = string.Template(&quot;\n..\n\n    ..  class:: small\n\n        |loz| *${fullName} (${seq})*.\n&quot;)
 
 def fileEnd(self, aChunk: Chunk) -&gt; None:
     assert len(self.references(aChunk)) == 0
@@ -2167,14 +2304,19 @@ in a sequence of references. It's usually a <tt class="docutils literal">&quot;,
 a simple <tt class="docutils literal">&quot; &quot;</tt> because it looks better.</p>
 <p class="rubric" id="target-20">Weaver reference command output (20) =</p>
 <pre class="code literal-block">
-refto_name_template = string.Template(r&quot;|srarr|\ ${fullName} (`${seq}`_)&quot;)
-refto_seq_template = string.Template(r&quot;|srarr|\ (`${seq}`_)&quot;)
+refto_name_template = string.Template(
+    r&quot;|srarr|\ ${fullName} (`${seq}`_)&quot;
+)
+refto_seq_template = string.Template(
+    r&quot;|srarr|\ (`${seq}`_)&quot;
+)
 refto_seq_separator = &quot;, &quot;
 
 def referenceTo(self, aName: str | None, seq: int) -&gt; str:
     &quot;&quot;&quot;Weave a reference to a chunk.
     Provide name to get a full reference.
-    name=None to get a short reference.&quot;&quot;&quot;
+    name=None to get a short reference.
+    &quot;&quot;&quot;
     if aName:
         return self.refto_name_template.substitute(fullName=aName, seq=seq)
     else:
@@ -2205,12 +2347,28 @@ defining chunk, all others are referencing chunks.</p>
 <p>The default behavior simply writes the Python data structure used
 to represent cross reference information.  A subclass may override this
 to change the look of the final woven document.</p>
+<p>Note that the <tt class="docutils literal">xref_item_template</tt> and <tt class="docutils literal">xref_empty_template</tt> have no leading <tt class="docutils literal">\n</tt> character. They have
+an indentation on the first line, however, to make <tt class="docutils literal">dedent()</tt> work. The spaces to create proper
+RST indentation are a bit fiddly here.</p>
 <p class="rubric" id="target-21">Weaver cross reference output methods (21) =</p>
 <pre class="code literal-block">
-xref_head_template = string.Template(&quot;\n&quot;)
-xref_foot_template = string.Template(&quot;\n&quot;)
-xref_item_template = string.Template(&quot;:${fullName}:\n    ${refList}\n&quot;)
-xref_empty_template = string.Template(&quot;(None)\n&quot;)
+xref_head_template = string.Template(
+    dedent(&quot;&quot;&quot;
+    &quot;&quot;&quot;)
+)
+xref_foot_template = string.Template(
+    dedent(&quot;&quot;&quot;
+    &quot;&quot;&quot;)
+)
+xref_item_template = string.Template(
+    dedent(&quot;&quot;&quot;    :${fullName}:
+    ${refList}
+    &quot;&quot;&quot;)
+)
+xref_empty_template = string.Template(
+    dedent(&quot;&quot;&quot;    (None)
+    &quot;&quot;&quot;)
+)
 
 def xrefHead(self) -&gt; None:
     txt = self.xref_head_template.substitute()
@@ -2235,8 +2393,12 @@ def xrefEmpty(self) -&gt; None:
 <p>Cross-reference definition line</p>
 <p class="rubric" id="target-22">Weaver cross reference output methods (22) +=</p>
 <pre class="code literal-block">
-name_def_template = string.Template('[`${seq}`_]')
-name_ref_template = string.Template('`${seq}`_')
+name_def_template = string.Template(
+    '[`${seq}`_]'
+)
+name_ref_template = string.Template(
+    '`${seq}`_'
+)
 
 def xrefDefLine(self, name: str, defn: int, refList: list[int]) -&gt; None:
     &quot;&quot;&quot;Special template for the definition, default reference for all others.&quot;&quot;&quot;
@@ -2255,7 +2417,7 @@ def xrefDefLine(self, name: str, defn: int, refList: list[int]) -&gt; None:
 </blockquote>
 </div>
 <div class="section" id="rst-subclass-of-weaver">
-<h3><a class="toc-backref" href="#toc-entry-33">RST subclass of Weaver</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-38">RST subclass of Weaver</a></h3>
 <p>A degenerate case: the base <tt class="docutils literal">Weaver</tt> class does <tt class="docutils literal">RST</tt>.
 Using this class name slightly simplifies the configuration and makes the output
 look a little nicer.</p>
@@ -2270,7 +2432,7 @@ class RST(Weaver):
 </blockquote>
 </div>
 <div class="section" id="latex-subclass-of-weaver">
-<h3><a class="toc-backref" href="#toc-entry-34">LaTeX subclass of Weaver</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-39">LaTeX subclass of Weaver</a></h3>
 <p>Experimental, at best.</p>
 <p>An instance of <tt class="docutils literal">LaTeX</tt> can be used by the <tt class="docutils literal">Web</tt> object to
 weave an output document.  The instance is created outside the Web, and
@@ -2296,7 +2458,10 @@ class LaTeX(Weaver):
     &quot;&quot;&quot;
     extension = &quot;.tex&quot;
     code_indent = 0
-    header = &quot;&quot;&quot;\n\\usepackage{fancyvrb}\n&quot;&quot;&quot;
+    # Not actually used
+    header = dedent(&quot;&quot;&quot;
+        \\usepackage{fancyvrb}
+    &quot;&quot;&quot;)
 
     →LaTeX code chunk begin (<a class="reference internal" href="#target-25">25</a>)
     →LaTeX code chunk end (<a class="reference internal" href="#target-26">26</a>)
@@ -2315,14 +2480,17 @@ source file's suffix with <tt class="docutils literal">&quot;.tex&quot;</tt> and
 <p>The LaTeX <tt class="docutils literal">codeBegin()</tt> template writes the header prior to a
 chunk of source code.  It aligns the block to the left, prints an
 italicised header, and opens a preformatted block.</p>
-<p>There's no leading <tt class="docutils literal">\n</tt> -- we're trying to avoid an indent when weaving.</p>
+<p>There's no leading <tt class="docutils literal">\n</tt> in the template -- we're trying to avoid an indent when weaving.
+To make <tt class="docutils literal">dedent()</tt> work, we have to provide the same leading whitespace on the first line
+to match the subsequent lines.</p>
 <p class="rubric" id="target-25">LaTeX code chunk begin (25) =</p>
 <pre class="code literal-block">
 cb_template = string.Template(
-&quot;&quot;&quot;\\label{pyweb${seq}}
-\\begin{flushleft}
-\\textit{Code example ${fullName} (${seq})}
-\\begin{Verbatim}[commandchars=\\\\\\{\\},codes={\\catcode`$$=3\\catcode`^=7},frame=single]\n&quot;&quot;&quot;
+    dedent(&quot;&quot;&quot;        \\label{pyweb${seq}}
+        \\begin{flushleft}
+        \\textit{Code example ${fullName} (${seq})}
+        \\begin{Verbatim}[commandchars=\\\\\\{\\},codes={\\catcode`$$=3\\catcode`^=7},frame=single]
+    &quot;&quot;&quot;)
 )
 </pre>
 <!--  -->
@@ -2336,10 +2504,13 @@ to the chunk that invokes this chunk; finally, it restores paragraph
 indentation.</p>
 <p class="rubric" id="target-26">LaTeX code chunk end (26) =</p>
 <pre class="code literal-block">
-ce_template = string.Template(&quot;&quot;&quot;
-\\end{Verbatim}
-${references}
-\\end{flushleft}\n&quot;&quot;&quot;)
+ce_template = string.Template(
+    dedent(&quot;&quot;&quot;
+        \\end{Verbatim}
+        ${references}
+        \\end{flushleft}
+    &quot;&quot;&quot;)
+)
 </pre>
 <!--  -->
 <blockquote>
@@ -2372,18 +2543,32 @@ fe_template = ce_template
 chunk of code.  Each reference includes the example number, the title,
 and a reference to the LaTeX section and page numbers on which the
 referring block appears.</p>
+<p>The spacing around <tt class="docutils literal">ref_item_template</tt> and <tt class="docutils literal">ref_template</tt> are particularly fiddly.
+This isn't easy to prepare with <tt class="docutils literal">dedent()</tt>. The <tt class="docutils literal">indent()</tt> provides the indent
+that makes the resulting LaTeX readable, distinct from the indent that makes the code readable.</p>
 <p class="rubric" id="target-29">LaTeX references summary at the end of a chunk (29) =</p>
 <pre class="code literal-block">
-ref_item_template = string.Template(&quot;&quot;&quot;
-\\item Code example ${fullName} (${seq}) (Sect. \\ref{pyweb${seq}}, p. \\pageref{pyweb${seq}})\n&quot;&quot;&quot;)
+ref_item_template = string.Template(
+    indent(
+        dedent(&quot;&quot;&quot;
+            \\item Code example ${fullName} (${seq}) (Sect. \\ref{pyweb${seq}}, p. \\pageref{pyweb${seq}})
+            &quot;&quot;&quot;),
+        '    '
+    )
+)
 
-ref_template = string.Template(&quot;&quot;&quot;
-\\footnotesize
-Used by:
-\\begin{list}{}{}
-${refList}
-\\end{list}
-\\normalsize\n&quot;&quot;&quot;)
+ref_template = string.Template(
+    indent(
+        dedent(&quot;&quot;&quot;
+            \\footnotesize
+            Used by:
+            \\begin{list}{}{}
+            ${refList}
+            \\end{list}
+            \\normalsize&quot;&quot;&quot;),
+        '    '
+    )
+)
 </pre>
 <!--  -->
 <blockquote>
@@ -2411,9 +2596,13 @@ code.  It uses write directly as to follow the current indentation on
 the current line of code.</p>
 <p class="rubric" id="target-31">LaTeX reference to a chunk (31) =</p>
 <pre class="code literal-block">
-refto_name_template = string.Template(&quot;&quot;&quot;$$\\triangleright$$ Code Example ${fullName} (${seq})&quot;&quot;&quot;)
+refto_name_template = string.Template(
+    &quot;&quot;&quot;$$\\triangleright$$ Code Example ${fullName} (${seq})&quot;&quot;&quot;
+)
 
-refto_seq_template = string.Template(&quot;&quot;&quot;(${seq})&quot;&quot;&quot;)
+refto_seq_template = string.Template(
+    &quot;&quot;&quot;(${seq})&quot;&quot;&quot;
+)
 </pre>
 <!--  -->
 <blockquote>
@@ -2421,7 +2610,7 @@ refto_seq_template = string.Template(&quot;&quot;&quot;(${seq})&quot;&quot;&quot
 </blockquote>
 </div>
 <div class="section" id="html-subclasses-of-weaver">
-<h3><a class="toc-backref" href="#toc-entry-35">HTML subclasses of Weaver</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-40">HTML subclasses of Weaver</a></h3>
 <p>An instance of <tt class="docutils literal">HTML</tt> can be used by the <tt class="docutils literal">Web</tt> object to
 weave an output document.  The instance is created outside the Web, and
 given to the <tt class="docutils literal">weave()</tt> method of the Web.</p>
@@ -2476,11 +2665,17 @@ class HTMLShort(HTML):
 and HTML tags necessary to set the code off visually.</p>
 <p class="rubric" id="target-34">HTML code chunk begin (34) =</p>
 <pre class="code literal-block">
-cb_template = string.Template(&quot;&quot;&quot;
-&lt;a name=&quot;pyweb${seq}&quot;&gt;&lt;/a&gt;
-&lt;!--line number ${lineNumber}--&gt;
-&lt;p&gt;&lt;em&gt;${fullName}&lt;/em&gt; (${seq})&amp;nbsp;${concat}&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;\n&quot;&quot;&quot;)
+cb_template = string.Template(
+    indent(
+        dedent(&quot;&quot;&quot;
+            &lt;a name=&quot;pyweb${seq}&quot;&gt;&lt;/a&gt;
+            &lt;!--line number ${lineNumber}--&gt;
+            &lt;p&gt;&lt;em&gt;${fullName}&lt;/em&gt; (${seq})&amp;nbsp;${concat}&lt;/p&gt;
+            &lt;pre&gt;&lt;code&gt;
+            &quot;&quot;&quot;),
+        '    '
+    )
+)
 </pre>
 <!--  -->
 <blockquote>
@@ -2491,11 +2686,17 @@ to finish the code block visually.  This calls the references method to
 write the list of chunks that reference this chunk.</p>
 <p class="rubric" id="target-35">HTML code chunk end (35) =</p>
 <pre class="code literal-block">
-ce_template = string.Template(&quot;&quot;&quot;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&amp;loz; &lt;em&gt;${fullName}&lt;/em&gt; (${seq}).
-${references}
-&lt;/p&gt;\n&quot;&quot;&quot;)
+ce_template = string.Template(
+    indent(
+        dedent(&quot;&quot;&quot;
+            &lt;/code&gt;&lt;/pre&gt;
+            &lt;p&gt;&amp;loz; &lt;em&gt;${fullName}&lt;/em&gt; (${seq}).
+            ${references}
+            &lt;/p&gt;
+            &quot;&quot;&quot;),
+        '    '
+    )
+)
 </pre>
 <!--  -->
 <blockquote>
@@ -2505,10 +2706,16 @@ ${references}
 and HTML tags necessary to set the code off visually.</p>
 <p class="rubric" id="target-36">HTML output file begin (36) =</p>
 <pre class="code literal-block">
-fb_template = string.Template(&quot;&quot;&quot;&lt;a name=&quot;pyweb${seq}&quot;&gt;&lt;/a&gt;
-&lt;!--line number ${lineNumber}--&gt;
-&lt;p&gt;``${fullName}`` (${seq})&amp;nbsp;${concat}&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;\n&quot;&quot;&quot;) # Prevent indent
+fb_template = string.Template(
+    indent(
+        dedent(&quot;&quot;&quot;            &lt;a name=&quot;pyweb${seq}&quot;&gt;&lt;/a&gt;
+            &lt;!--line number ${lineNumber}--&gt;
+            &lt;p&gt;``${fullName}`` (${seq})&amp;nbsp;${concat}&lt;/p&gt;
+            &lt;pre&gt;&lt;code&gt;
+        &quot;&quot;&quot;), # No leading \\n.
+        '    '
+    )
+)
 </pre>
 <!--  -->
 <blockquote>
@@ -2519,10 +2726,16 @@ to finish the code block visually.  This calls the references method to
 write the list of chunks that reference this chunk.</p>
 <p class="rubric" id="target-37">HTML output file end (37) =</p>
 <pre class="code literal-block">
-fe_template = string.Template( &quot;&quot;&quot;&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&amp;loz; ``${fullName}`` (${seq}).
-${references}
-&lt;/p&gt;\n&quot;&quot;&quot;)
+fe_template = string.Template(
+    indent(
+        dedent(&quot;&quot;&quot;            &lt;/code&gt;&lt;/pre&gt;
+            &lt;p&gt;&amp;loz; ``${fullName}`` (${seq}).
+            ${references}
+            &lt;/p&gt;
+            &quot;&quot;&quot;),
+        '    '
+    )
+)
 </pre>
 <!--  -->
 <blockquote>
@@ -2533,9 +2746,13 @@ Note that this list could be rather long because of the possibility of
 transitive references.</p>
 <p class="rubric" id="target-38">HTML references summary at the end of a chunk (38) =</p>
 <pre class="code literal-block">
-ref_item_template = string.Template('&lt;a href=&quot;#pyweb${seq}&quot;&gt;&lt;em&gt;${fullName}&lt;/em&gt;&amp;nbsp;(${seq})&lt;/a&gt;')
+ref_item_template = string.Template(
+    '&lt;a href=&quot;#pyweb${seq}&quot;&gt;&lt;em&gt;${fullName}&lt;/em&gt;&amp;nbsp;(${seq})&lt;/a&gt;'
+)
 
-ref_template = string.Template('  Used by ${refList}.')
+ref_template = string.Template(
+    '  Used by ${refList}.'
+)
 </pre>
 <!--  -->
 <blockquote>
@@ -2562,9 +2779,13 @@ direct <tt class="docutils literal">write()</tt> method so that the reference is
 surrounding source code.</p>
 <p class="rubric" id="target-40">HTML reference to a chunk (40) =</p>
 <pre class="code literal-block">
-refto_name_template = string.Template('&lt;a href=&quot;#pyweb${seq}&quot;&gt;&amp;rarr;&lt;em&gt;${fullName}&lt;/em&gt; (${seq})&lt;/a&gt;')
+refto_name_template = string.Template(
+    '&lt;a href=&quot;#pyweb${seq}&quot;&gt;&amp;rarr;&lt;em&gt;${fullName}&lt;/em&gt; (${seq})&lt;/a&gt;'
+)
 
-refto_seq_template = string.Template('&lt;a href=&quot;#pyweb${seq}&quot;&gt;(${seq})&lt;/a&gt;')
+refto_seq_template = string.Template(
+    '&lt;a href=&quot;#pyweb${seq}&quot;&gt;(${seq})&lt;/a&gt;'
+)
 </pre>
 <!--  -->
 <blockquote>
@@ -2578,9 +2799,18 @@ refto_seq_template = string.Template('&lt;a href=&quot;#pyweb${seq}&quot;&gt;(${
 <tt class="docutils literal">&#64;f</tt> or <tt class="docutils literal">&#64;m</tt>.  In this implementation, the cross references are simply unordered lists.</p>
 <p class="rubric" id="target-41">HTML simple cross reference markup (41) =</p>
 <pre class="code literal-block">
-xref_head_template = string.Template(&quot;&lt;dl&gt;\n&quot;)
-xref_foot_template = string.Template(&quot;&lt;/dl&gt;\n&quot;)
-xref_item_template = string.Template(&quot;&lt;dt&gt;${fullName}&lt;/dt&gt;&lt;dd&gt;${refList}&lt;/dd&gt;\n&quot;)
+xref_head_template = string.Template(
+    dedent(&quot;&quot;&quot;    &lt;dl&gt;
+    &quot;&quot;&quot;)
+)
+xref_foot_template = string.Template(
+    dedent(&quot;&quot;&quot;    &lt;/dl&gt;
+    &quot;&quot;&quot;)
+)
+xref_item_template = string.Template(
+    dedent(&quot;&quot;&quot;    &lt;dt&gt;${fullName}&lt;/dt&gt;&lt;dd&gt;${refList}&lt;/dd&gt;
+    &quot;&quot;&quot;)
+)
 
 →HTML write user id cross reference line (<a class="reference internal" href="#target-42">42</a>)
 </pre>
@@ -2593,9 +2823,13 @@ xref_item_template = string.Template(&quot;&lt;dt&gt;${fullName}&lt;/dt&gt;&lt;d
 is included in the correct order with the other instances, but is bold and marked with a bullet (&amp;bull;).</p>
 <p class="rubric" id="target-42">HTML write user id cross reference line (42) =</p>
 <pre class="code literal-block">
-name_def_template = string.Template('&lt;a href=&quot;#pyweb${seq}&quot;&gt;&lt;b&gt;&amp;bull;${seq}&lt;/b&gt;&lt;/a&gt;')
+name_def_template = string.Template(
+    '&lt;a href=&quot;#pyweb${seq}&quot;&gt;&lt;b&gt;&amp;bull;${seq}&lt;/b&gt;&lt;/a&gt;'
+)
 
-name_ref_template = string.Template('&lt;a href=&quot;#pyweb${seq}&quot;&gt;${seq}&lt;/a&gt;')
+name_ref_template = string.Template(
+    '&lt;a href=&quot;#pyweb${seq}&quot;&gt;${seq}&lt;/a&gt;'
+)
 </pre>
 <!--  -->
 <blockquote>
@@ -2608,7 +2842,9 @@ Note that this list could be rather long because of the possibility of
 transitive references.</p>
 <p class="rubric" id="target-43">HTML short references summary at the end of a chunk (43) =</p>
 <pre class="code literal-block">
-ref_item_template = string.Template('&lt;a href=&quot;#pyweb${seq}&quot;&gt;(${seq})&lt;/a&gt;')
+ref_item_template = string.Template(
+    '&lt;a href=&quot;#pyweb${seq}&quot;&gt;(${seq})&lt;/a&gt;'
+)
 </pre>
 <!--  -->
 <blockquote>
@@ -2616,7 +2852,7 @@ ref_item_template = string.Template('&lt;a href=&quot;#pyweb${seq}&quot;&gt;(${s
 </blockquote>
 </div>
 <div class="section" id="tangler-subclass-of-emitter">
-<h3><a class="toc-backref" href="#toc-entry-36">Tangler subclass of Emitter</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-41">Tangler subclass of Emitter</a></h3>
 <p>The <tt class="docutils literal">Tangler</tt> class is concrete, and can tangle source files.  An
 instance of <tt class="docutils literal">Tangler</tt> is given to the <tt class="docutils literal">Web</tt> class <tt class="docutils literal">tangle()</tt> method.</p>
 <pre class="literal-block">
@@ -2724,7 +2960,7 @@ def codeEnd(self, aChunk: Chunk) -&gt; None:
 </blockquote>
 </div>
 <div class="section" id="tanglermake-subclass-of-tangler">
-<h3><a class="toc-backref" href="#toc-entry-37">TanglerMake subclass of Tangler</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-42">TanglerMake subclass of Tangler</a></h3>
 <p>The <tt class="docutils literal">TanglerMake</tt> class is can tangle source files.  An
 instance of <tt class="docutils literal">TanglerMake</tt> is given to the <tt class="docutils literal">Web</tt> class <tt class="docutils literal">tangle()</tt> method.</p>
 <pre class="literal-block">
@@ -2816,7 +3052,7 @@ def doClose(self) -&gt; None:
 </div>
 </div>
 <div class="section" id="chunks">
-<h2><a class="toc-backref" href="#toc-entry-38">Chunks</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-43">Chunks</a></h2>
 <p>A <tt class="docutils literal">Chunk</tt> is a piece of the input file.  It is a collection of <tt class="docutils literal">Command</tt> instances.
 A chunk can be woven or tangled to create output.</p>
 <p>The two most important methods are the <tt class="docutils literal">weave()</tt> and <tt class="docutils literal">tangle()</tt> methods.  These
@@ -2852,7 +3088,7 @@ This must be a chunk of source programming language, bracketed with <tt class="d
 This is a chunk of documentation in the target markup language,
 bracketed with <tt class="docutils literal">&#64;[</tt> and <tt class="docutils literal">&#64;]</tt>.</p>
 <div class="section" id="chunk-superclass">
-<h3><a class="toc-backref" href="#toc-entry-39">Chunk Superclass</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-44">Chunk Superclass</a></h3>
 <p>An instance of the <tt class="docutils literal">Chunk</tt> class has a life that includes four important events:</p>
 <ul class="simple">
 <li>creation,</li>
@@ -3227,7 +3463,7 @@ def reference_dedent(self, aWeb: &quot;Web&quot;, aTangler: &quot;Tangler&quot;)
 </blockquote>
 </div>
 <div class="section" id="namedchunk-class">
-<h3><a class="toc-backref" href="#toc-entry-40">NamedChunk class</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-45">NamedChunk class</a></h3>
 <p>A <tt class="docutils literal">NamedChunk</tt> is created and used almost identically to an anonymous <tt class="docutils literal">Chunk</tt>.
 The most significant difference is that a name is provided when the <tt class="docutils literal">NamedChunk</tt> is created.
 This name is used by the <tt class="docutils literal">Web</tt> to organize the chunks.</p>
@@ -3413,7 +3649,7 @@ class NamedChunk_Noindent(NamedChunk):
 </blockquote>
 </div>
 <div class="section" id="outputchunk-class">
-<h3><a class="toc-backref" href="#toc-entry-41">OutputChunk class</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-46">OutputChunk class</a></h3>
 <p>A <tt class="docutils literal">OutputChunk</tt> is created and used identically to a <tt class="docutils literal">NamedChunk</tt>.
 The difference between this class and the parent class is the decoration of
 the markup when weaving.</p>
@@ -3495,7 +3731,7 @@ def tangle(self, aWeb: &quot;Web&quot;, aTangler: &quot;Tangler&quot;) -&gt; Non
 </blockquote>
 </div>
 <div class="section" id="nameddocumentchunk-class">
-<h3><a class="toc-backref" href="#toc-entry-42">NamedDocumentChunk class</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-47">NamedDocumentChunk class</a></h3>
 <p>A <tt class="docutils literal">NamedDocumentChunk</tt> is created and used identically to a <tt class="docutils literal">NamedChunk</tt>.
 The difference between this class and the parent class is that this chunk
 is only woven when referenced.  The original definition is silently skipped.</p>
@@ -3562,7 +3798,7 @@ def tangle(self, aWeb: &quot;Web&quot;, aTangler: &quot;Tangler&quot;) -&gt; Non
 </div>
 </div>
 <div class="section" id="commands">
-<h2><a class="toc-backref" href="#toc-entry-43">Commands</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-48">Commands</a></h2>
 <p>The input stream is broken into individual commands, based on the
 various <tt class="docutils literal">&#64;*x*</tt> strings in the file.  There are several subclasses of <tt class="docutils literal">Command</tt>,
 each used to describe a different command or block of text in the input.</p>
@@ -3596,7 +3832,7 @@ cross reference information and tangle a file or weave the final document.</p>
 <p class="small">◊ <em>Command class hierarchy - used to describe individual commands (78)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
 </blockquote>
 <div class="section" id="command-superclass">
-<h3><a class="toc-backref" href="#toc-entry-44">Command Superclass</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-49">Command Superclass</a></h3>
 <p>A <tt class="docutils literal">Command</tt> is created by the <tt class="docutils literal">WebReader</tt>, and attached to a <tt class="docutils literal">Chunk</tt>.
 The Command participates in cross reference creation, weaving and tangling.</p>
 <p>The <tt class="docutils literal">Command</tt> superclass is abstract, and has default methods factored out
@@ -3700,7 +3936,7 @@ def tangle(self, aWeb: &quot;Web&quot;, aTangler: &quot;Tangler&quot;) -&gt; Non
 </blockquote>
 </div>
 <div class="section" id="textcommand-class">
-<h3><a class="toc-backref" href="#toc-entry-45">TextCommand class</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-50">TextCommand class</a></h3>
 <p>A <tt class="docutils literal">TextCommand</tt> is created by a <tt class="docutils literal">Chunk</tt> or a <tt class="docutils literal">NamedDocumentChunk</tt> when a
 <tt class="docutils literal">WebReader</tt> calls the chunk's <tt class="docutils literal">appendText()</tt> method.</p>
 <p>This Command participates in cross reference creation, weaving and tangling.  When it is
@@ -3711,7 +3947,7 @@ in an anonymous block or a named chunk delimited with <tt class="docutils litera
 <p>This subclass provides a concrete implementation for all of the methods.  Since
 text is the author's original markup language, it is emitted directly to the weaver
 or tangler.</p>
-<p><strong>TODO:</strong> Use textwrap to snip off first 32 chars of the text.</p>
+<p><strong>TODO:</strong> Use textwrap.shorten to snip off first 32 chars of the text.</p>
 <p class="rubric" id="target-82">TextCommand class to contain a document text block (82) =</p>
 <pre class="code literal-block">
 class TextCommand(Command):
@@ -3744,7 +3980,7 @@ class TextCommand(Command):
 </blockquote>
 </div>
 <div class="section" id="codecommand-class">
-<h3><a class="toc-backref" href="#toc-entry-46">CodeCommand class</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-51">CodeCommand class</a></h3>
 <p>A <tt class="docutils literal">CodeCommand</tt> is created by a <tt class="docutils literal">NamedChunk</tt> when a
 <tt class="docutils literal">WebReader</tt> calls the <tt class="docutils literal">appendText()</tt> method.
 The Command participates in cross reference creation, weaving and tangling.  When it is
@@ -3771,7 +4007,7 @@ class CodeCommand(TextCommand):
 </blockquote>
 </div>
 <div class="section" id="xrefcommand-superclass">
-<h3><a class="toc-backref" href="#toc-entry-47">XrefCommand superclass</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-52">XrefCommand superclass</a></h3>
 <p>An <tt class="docutils literal">XrefCommand</tt> is created by the <tt class="docutils literal">WebReader</tt> when any of the
 <tt class="docutils literal">&#64;f</tt>, <tt class="docutils literal">&#64;m</tt>, <tt class="docutils literal">&#64;u</tt> commands are found in the input stream.
 The Command is then appended to the current Chunk being built by the WebReader.</p>
@@ -3809,7 +4045,7 @@ class XrefCommand(Command):
 </blockquote>
 </div>
 <div class="section" id="filexrefcommand-class">
-<h3><a class="toc-backref" href="#toc-entry-48">FileXrefCommand class</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-53">FileXrefCommand class</a></h3>
 <p>A <tt class="docutils literal">FileXrefCommand</tt> is created by the <tt class="docutils literal">WebReader</tt> when the
 <tt class="docutils literal">&#64;f</tt> command is found in the input stream.
 The Command is then appended to the current Chunk being built by the WebReader.</p>
@@ -3830,7 +4066,7 @@ class FileXrefCommand(XrefCommand):
 </blockquote>
 </div>
 <div class="section" id="macroxrefcommand-class">
-<h3><a class="toc-backref" href="#toc-entry-49">MacroXrefCommand class</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-54">MacroXrefCommand class</a></h3>
 <p>A <tt class="docutils literal">MacroXrefCommand</tt> is created by the <tt class="docutils literal">WebReader</tt> when the
 <tt class="docutils literal">&#64;m</tt> command is found in the input stream.
 The Command is then appended to the current Chunk being built by the WebReader.</p>
@@ -3851,7 +4087,7 @@ class MacroXrefCommand(XrefCommand):
 </blockquote>
 </div>
 <div class="section" id="useridxrefcommand-class">
-<h3><a class="toc-backref" href="#toc-entry-50">UserIdXrefCommand class</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-55">UserIdXrefCommand class</a></h3>
 <p>A <tt class="docutils literal">MacroXrefCommand</tt> is created by the <tt class="docutils literal">WebReader</tt> when the
 <tt class="docutils literal">&#64;u</tt> command is found in the input stream.
 The Command is then appended to the current Chunk being built by the WebReader.</p>
@@ -3887,7 +4123,7 @@ class UserIdXrefCommand(XrefCommand):
 </blockquote>
 </div>
 <div class="section" id="referencecommand-class">
-<h3><a class="toc-backref" href="#toc-entry-51">ReferenceCommand class</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-56">ReferenceCommand class</a></h3>
 <p>A <tt class="docutils literal">ReferenceCommand</tt> instance is created by a <tt class="docutils literal">WebReader</tt> when
 a <tt class="docutils literal">&#64;&lt;</tt><em>name</em><tt class="docutils literal">&#64;&gt;</tt> construct in is found in the input stream.  This is attached
 to the current <tt class="docutils literal">Chunk</tt> being built by the WebReader.</p>
@@ -4007,7 +4243,7 @@ def tangle(self, aWeb: &quot;Web&quot;, aTangler: &quot;Tangler&quot;) -&gt; Non
 </div>
 </div>
 <div class="section" id="reference-strategy">
-<h2><a class="toc-backref" href="#toc-entry-52">Reference Strategy</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-57">Reference Strategy</a></h2>
 <p>The Reference Strategy has two implementations.  An instance
 of this is injected into each Chunk by the Web.  By injecting this
 algorithm, we assure that:</p>
@@ -4016,7 +4252,7 @@ algorithm, we assure that:</p>
 <li>a simple configuration change can be applied to the document.</li>
 </ol>
 <div class="section" id="reference-superclass">
-<h3><a class="toc-backref" href="#toc-entry-53">Reference Superclass</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-58">Reference Superclass</a></h3>
 <p>The superclass is an abstract class that defines the interface for
 this object.</p>
 <p class="rubric" id="target-93">Reference class hierarchy - strategies for references to a chunk (93) =</p>
@@ -4036,7 +4272,7 @@ class Reference(abc.ABC):
 </blockquote>
 </div>
 <div class="section" id="simplereference-class">
-<h3><a class="toc-backref" href="#toc-entry-54">SimpleReference Class</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-59">SimpleReference Class</a></h3>
 <p>The SimpleReference subclass does the simplest version of resolution. It returns
 the <tt class="docutils literal">Chunks</tt> referenced.</p>
 <p class="rubric" id="target-94">Reference class hierarchy - strategies for references to a chunk (94) +=</p>
@@ -4052,7 +4288,7 @@ class SimpleReference(Reference):
 </blockquote>
 </div>
 <div class="section" id="transitivereference-class">
-<h3><a class="toc-backref" href="#toc-entry-55">TransitiveReference Class</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-60">TransitiveReference Class</a></h3>
 <p>The TransitiveReference subclass does a transitive closure of all
 references to this Chunk.</p>
 <p>This requires walking through the <tt class="docutils literal">Web</tt> to locate &quot;parents&quot; of each referenced
@@ -4081,7 +4317,7 @@ class TransitiveReference(Reference):
 </div>
 </div>
 <div class="section" id="error-class">
-<h2><a class="toc-backref" href="#toc-entry-56">Error class</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-61">Error class</a></h2>
 <p>An <tt class="docutils literal">Error</tt> is raised whenever processing cannot continue.  Since it
 is a subclass of Exception, it takes an arbitrary number of arguments.  The
 first should be the basic message text.  Subsequent arguments provide
@@ -4118,7 +4354,7 @@ class Error(Exception): pass
 </blockquote>
 </div>
 <div class="section" id="the-web-and-webreader-classes">
-<h2><a class="toc-backref" href="#toc-entry-57">The Web and WebReader Classes</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-62">The Web and WebReader Classes</a></h2>
 <p>The overall web of chunks is carried in a
 single instance of the <tt class="docutils literal">Web</tt> class that is the principle parameter for the weaving and tangling actions.
 Broadly, the functionality of a Web can be separated into several areas.</p>
@@ -4199,7 +4435,7 @@ class Web:
 <p class="small">◊ <em>Web class - describes the overall &quot;web&quot; of chunks (97)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
 </blockquote>
 <div class="section" id="web-construction">
-<h3><a class="toc-backref" href="#toc-entry-58">Web Construction</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-63">Web Construction</a></h3>
 <p>During web construction, it is convenient to capture
 information about the individual <tt class="docutils literal">Chunk</tt> instances being appended to
 the web.  This done using a <strong>Callback</strong> design pattern.
@@ -4375,7 +4611,7 @@ def addOutput(self, chunk: Chunk) -&gt; None:
 </blockquote>
 </div>
 <div class="section" id="web-chunk-name-resolution">
-<h3><a class="toc-backref" href="#toc-entry-59">Web Chunk Name Resolution</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-64">Web Chunk Name Resolution</a></h3>
 <p>Web Chunk name resolution has three aspects.  The first
 is resolving elided names (those ending with <tt class="docutils literal">...</tt>) to their
 full names.  The second is finding the named chunk
@@ -4442,7 +4678,7 @@ def getchunk(self, name: str) -&gt; list[Chunk]:
 </blockquote>
 </div>
 <div class="section" id="web-cross-reference-support">
-<h3><a class="toc-backref" href="#toc-entry-60">Web Cross-Reference Support</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-65">Web Cross-Reference Support</a></h3>
 <p>Cross-reference support includes creating and reporting
 on the various cross-references available in a web.  This includes
 creating the list of chunks that reference a given chunk;
@@ -4625,7 +4861,7 @@ for id in ux.keys():
 </blockquote>
 </div>
 <div class="section" id="loop-detection">
-<h3><a class="toc-backref" href="#toc-entry-61">Loop Detection</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-66">Loop Detection</a></h3>
 <p>How do we assure that the web is a proper tree and doesn't contain any loops?</p>
 <p>Consider this example web</p>
 <pre class="literal-block">
@@ -4653,7 +4889,7 @@ be two references: from the <tt class="docutils literal">&#64;o</tt> and a <tt c
 The simple reference count will do.</p>
 </div>
 <div class="section" id="tangle-and-weave-support">
-<h3><a class="toc-backref" href="#toc-entry-62">Tangle and Weave Support</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-67">Tangle and Weave Support</a></h3>
 <p>The <tt class="docutils literal">language()</tt> method makes a stab at determining the output language.
 The determination of the language can be done a variety of ways.
 One is to use command line parameters, another is to use the filename
@@ -4734,7 +4970,7 @@ def weaveChunk(self, name: str, aWeaver: &quot;Weaver&quot;) -&gt; None:
 </blockquote>
 </div>
 <div class="section" id="the-webreader-class">
-<h3><a class="toc-backref" href="#toc-entry-63">The WebReader Class</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-68">The WebReader Class</a></h3>
 <p>There are two forms of the constructor for a <tt class="docutils literal">WebReader</tt>.  The
 initial <tt class="docutils literal">WebReader</tt> instance is created with code like the following:</p>
 <pre class="literal-block">
@@ -5318,7 +5554,7 @@ self.cmdu = self.command+'u'
 </blockquote>
 </div>
 <div class="section" id="the-tokenizer-class">
-<h3><a class="toc-backref" href="#toc-entry-64">The Tokenizer Class</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-69">The Tokenizer Class</a></h3>
 <p>The <tt class="docutils literal">WebReader</tt> requires a tokenizer. The tokenizer breaks the input text
 into a stream of tokens. There are two broad classes of tokens:</p>
 <ul class="simple">
@@ -5381,7 +5617,7 @@ class Tokenizer(Iterator[str]):
 </blockquote>
 </div>
 <div class="section" id="the-option-parser-class">
-<h3><a class="toc-backref" href="#toc-entry-65">The Option Parser Class</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-70">The Option Parser Class</a></h3>
 <p>For some commands (<tt class="docutils literal">&#64;d</tt> and <tt class="docutils literal">&#64;o</tt>) we have options as well as the chunk name
 or file name. This roughly parallels the way Tcl or the shell works.</p>
 <p>The two examples are</p>
@@ -5513,7 +5749,7 @@ yield trailers[0], &quot; &quot;.join(final)
 </div>
 </div>
 <div class="section" id="action-class-hierarchy">
-<h2><a class="toc-backref" href="#toc-entry-66">Action Class Hierarchy</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-71">Action Class Hierarchy</a></h2>
 <p>This application performs three major actions: loading the document web,
 weaving and tangling.  Generally,
 the use case is to perform a load, weave and tangle.  However, a less common use case
@@ -5558,7 +5794,7 @@ that defines the application options, inputs and results.</p>
 <p class="small">◊ <em>Action class hierarchy - used to describe actions of the application (138)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
 </blockquote>
 <div class="section" id="action-class">
-<h3><a class="toc-backref" href="#toc-entry-67">Action Class</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-72">Action Class</a></h3>
 <p>The <tt class="docutils literal">Action</tt> class embodies the basic operations of <strong>py-web-tool</strong> .
 The intent of this hierarchy is to both provide an easily expanded method of
 adding new actions, but an easily specified list of actions for a particular
@@ -5647,7 +5883,7 @@ def summary(self) -&gt; str:
 </blockquote>
 </div>
 <div class="section" id="actionsequence-class">
-<h3><a class="toc-backref" href="#toc-entry-68">ActionSequence Class</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-73">ActionSequence Class</a></h3>
 <p>A <tt class="docutils literal">ActionSequence</tt> defines a composite action; it is a sequence of
 other actions.  When the macro is performed, it delegates to the
 sub-actions.</p>
@@ -5720,7 +5956,7 @@ def summary(self) -&gt; str:
 </blockquote>
 </div>
 <div class="section" id="weaveaction-class">
-<h3><a class="toc-backref" href="#toc-entry-69">WeaveAction Class</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-74">WeaveAction Class</a></h3>
 <p>The <tt class="docutils literal">WeaveAction</tt> defines the action of weaving.  This action
 logs a message, and invokes the <tt class="docutils literal">weave()</tt> method of the <tt class="docutils literal">Web</tt> instance.
 This method also includes the basic decision on which weaver to use.  If a <tt class="docutils literal">Weaver</tt> was
@@ -5790,7 +6026,7 @@ def summary(self) -&gt; str:
 </blockquote>
 </div>
 <div class="section" id="tangleaction-class">
-<h3><a class="toc-backref" href="#toc-entry-70">TangleAction Class</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-75">TangleAction Class</a></h3>
 <p>The <tt class="docutils literal">TangleAction</tt> defines the action of tangling.  This operation
 logs a message, and invokes the <tt class="docutils literal">weave()</tt> method of the <tt class="docutils literal">Web</tt> instance.
 This method also includes the basic decision on which weaver to use.  If a <tt class="docutils literal">Weaver</tt> was
@@ -5849,7 +6085,7 @@ def summary(self) -&gt; str:
 </blockquote>
 </div>
 <div class="section" id="loadaction-class">
-<h3><a class="toc-backref" href="#toc-entry-71">LoadAction Class</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-76">LoadAction Class</a></h3>
 <p>The <tt class="docutils literal">LoadAction</tt> defines the action of loading the web structure.  This action
 uses the application's <tt class="docutils literal">webReader</tt> to actually do the load.</p>
 <p>An instance is created during parsing of the input parameters.  An instance of
@@ -5933,7 +6169,7 @@ def summary(self) -&gt; str:
 </div>
 </div>
 <div class="section" id="pyweb-module-file">
-<h2><a class="toc-backref" href="#toc-entry-72"><strong>pyWeb</strong> Module File</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-77"><strong>pyWeb</strong> Module File</a></h2>
 <p>The <strong>pyWeb</strong> application file is shown below:</p>
 <p class="rubric" id="target-155">pyweb.py (155) =</p>
 <pre class="code literal-block">
@@ -5962,7 +6198,7 @@ def summary(self) -&gt; str:
 <li>Interface Functions</li>
 </ul>
 <div class="section" id="python-library-imports">
-<h3><a class="toc-backref" href="#toc-entry-73">Python Library Imports</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-78">Python Library Imports</a></h3>
 <p>Numerous Python library modules are used by this application.</p>
 <p>A few are listed here because they're used widely. Others are listed
 closer to where they're referenced.</p>
@@ -5991,7 +6227,7 @@ import types
 are provided in the expression context.</p>
 </div>
 <div class="section" id="overheads">
-<h3><a class="toc-backref" href="#toc-entry-74">Overheads</a></h3>
+<h3><a class="toc-backref" href="#toc-entry-79">Overheads</a></h3>
 <p>The shell escape is provided so that the user can define this
 file as executable, and launch it directly from their shell.
 The shell reads the first line of a file; when it finds the <tt class="docutils literal"><span class="pre">'#!'</span></tt> shell
@@ -6035,7 +6271,7 @@ __version__ = &quot;&quot;&quot;3.1&quot;&quot;&quot;
 
 ### DO NOT EDIT THIS FILE!
 ### It was created by /Users/slott/Documents/Projects/py-web-tool/bootstrap/pyweb.py, __version__='3.0'.
-### From source pyweb.w modified Sun Jun 12 19:32:17 2022.
+### From source pyweb.w modified Mon Jun 13 08:52:05 2022.
 ### In working directory '/Users/slott/Documents/Projects/py-web-tool/src'.
 </pre>
 <!--  -->
@@ -6045,7 +6281,7 @@ __version__ = &quot;&quot;&quot;3.1&quot;&quot;&quot;
 </div>
 </div>
 <div class="section" id="the-application-class">
-<h2><a class="toc-backref" href="#toc-entry-75">The Application Class</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-80">The Application Class</a></h2>
 <p>The <tt class="docutils literal">Application</tt> class is provided so that the <tt class="docutils literal">Action</tt> instances
 have an overall application to update.  This allows the <tt class="docutils literal">WeaveAction</tt> to
 provide the selected <tt class="docutils literal">Weaver</tt> instance to the application.  It also provides a
@@ -6337,7 +6573,7 @@ def process(self, config: argparse.Namespace) -&gt; None:
 </blockquote>
 </div>
 <div class="section" id="logging-setup">
-<h2><a class="toc-backref" href="#toc-entry-76">Logging Setup</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-81">Logging Setup</a></h2>
 <p>We'll create a logging context manager. This allows us to wrap the <tt class="docutils literal">main()</tt>
 function in an explicit <tt class="docutils literal">with</tt> statement that assures that logging is
 configured and cleaned up politely.</p>
@@ -6419,7 +6655,7 @@ log_config = {
 <p>Also, we might want a decorator to define loggers consistently for each class.</p>
 </div>
 <div class="section" id="the-main-function">
-<h2><a class="toc-backref" href="#toc-entry-77">The Main Function</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-82">The Main Function</a></h2>
 <p>The top-level interface is the <tt class="docutils literal">main()</tt> function.
 This function creates an <tt class="docutils literal">Application</tt> instance.</p>
 <p>The <tt class="docutils literal">Application</tt> object parses the command-line arguments.
@@ -6463,7 +6699,7 @@ weaver via the command-line option <tt class="docutils literal"><span class="pre
 </div>
 </div>
 <div class="section" id="unit-tests">
-<h1><a class="toc-backref" href="#toc-entry-78">Unit Tests</a></h1>
+<h1><a class="toc-backref" href="#toc-entry-83">Unit Tests</a></h1>
 <p>The <tt class="docutils literal">tests</tt> directory includes <tt class="docutils literal">pyweb_test.w</tt>, which will create a
 complete test suite.</p>
 <p>This source will weaves a <tt class="docutils literal">pyweb_test.html</tt> file. See <a class="reference external" href="tests/pyweb_test.html">tests/pyweb_test.html</a>.</p>
@@ -6481,11 +6717,11 @@ the <tt class="docutils literal">pytest</tt> tool on a single line.</p>
 <!-- py-web-tool/src/scripts.w -->
 </div>
 <div class="section" id="handy-scripts-and-other-files">
-<h1><a class="toc-backref" href="#toc-entry-79">Handy Scripts and Other Files</a></h1>
+<h1><a class="toc-backref" href="#toc-entry-84">Handy Scripts and Other Files</a></h1>
 <p>Two aditional scripts, <tt class="docutils literal">tangle.py</tt> and <tt class="docutils literal">weave.py</tt>, are provided as examples
 which can be customized and extended.</p>
 <div class="section" id="tangle-py-script">
-<h2><a class="toc-backref" href="#toc-entry-80"><tt class="docutils literal">tangle.py</tt> Script</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-85"><tt class="docutils literal">tangle.py</tt> Script</a></h2>
 <p>This script shows a simple version of Tangling.  This has a permitted
 error for '&#64;i' commands to allow an include file (for example test results)
 to be omitted from the tangle operation.</p>
@@ -6541,7 +6777,7 @@ if __name__ == &quot;__main__&quot;:
 </blockquote>
 </div>
 <div class="section" id="weave-py-script">
-<h2><a class="toc-backref" href="#toc-entry-81"><tt class="docutils literal">weave.py</tt> Script</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-86"><tt class="docutils literal">weave.py</tt> Script</a></h2>
 <p>This script shows a simple version of Weaving.  This shows how
 to define a customized set of templates for a different markup language.</p>
 <p>A customized weaver generally has three parts.</p>
@@ -6657,7 +6893,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <div class="section" id="python-3-10-migration">
-<h1><a class="toc-backref" href="#toc-entry-82">Python 3.10 Migration</a></h1>
+<h1><a class="toc-backref" href="#toc-entry-87">Python 3.10 Migration</a></h1>
 <ol class="arabic simple">
 <li>[x] Add type hints.</li>
 <li>[x] Replace all <tt class="docutils literal">.format()</tt> with f-strings.</li>
@@ -6672,75 +6908,77 @@ if __name__ == &quot;__main__&quot;:
 <li>[x] Replace various mock classes with <tt class="docutils literal">unittest.mock.Mock</tt> objects and appropriate testing.</li>
 <li>[x] Separate <tt class="docutils literal">tests</tt>, <tt class="docutils literal">examples</tt>, and <tt class="docutils literal">src</tt> from each other.</li>
 <li><dl class="first docutils">
-<dt>[ ] Rename the module from <tt class="docutils literal">pyweb</tt> to <tt class="docutils literal">pylpweb</tt> to avoid namespace squatting issues.</dt>
-<dd>Rename the project from <tt class="docutils literal"><span class="pre">py-web-tool</span></tt> to <tt class="docutils literal"><span class="pre">py-lpweb-tool</span></tt>.</dd>
+<dt>[ ] Rename the module from <tt class="docutils literal">pyweb</tt> to <tt class="docutils literal">pylpweb</tt> to avoid name squatting issues.</dt>
+<dd>Rename the project from <tt class="docutils literal"><span class="pre">py-web-tool</span></tt> to <tt class="docutils literal"><span class="pre">py-lpweb</span></tt>.</dd>
 </dl>
 </li>
 </ol>
 </div>
 <div class="section" id="to-do">
-<h1><a class="toc-backref" href="#toc-entry-83">To Do</a></h1>
-<ol class="arabic">
-<li><p class="first">Silence the ERROR-level logging during testing.</p>
-</li>
-<li><p class="first">Silence the error when creating an empty file i.e. <tt class="docutils literal">.nojekyll</tt></p>
-</li>
-<li><p class="first">Add a JSON-based (or TOML) configuration file to configure templates.</p>
-<ul>
-<li><p class="first">See the <tt class="docutils literal">weave.py</tt> example.
-This removes any need for a weaver command-line option; its defined within the source.
-Also, setting the command character can be done in this configuration, too.</p>
-</li>
-<li><p class="first">An alternative is to get markup templates from some kind of &quot;header&quot; section in the <tt class="docutils literal">.w</tt> file.</p>
-<p>To support reuse over multiple projects, a header could be included with <tt class="docutils literal">&#64;i</tt>.
-The downside is that we have a lot of variable = value syntax that makes it
+<h1><a class="toc-backref" href="#toc-entry-88">To Do</a></h1>
+<ol class="arabic simple">
+<li>Add a JSON-based (or TOML) configuration file for templates.<ul>
+<li>See the <tt class="docutils literal">weave.py</tt> example.
+Defining templates in the source removes any need for a command-line option. A silly optimization.
+Setting the &quot;command character&quot; to something other than <tt class="docutils literal">&#64;</tt> can be done in the configuration, too.</li>
+<li>An alternative is to get markup templates from some kind of &quot;header&quot; section in the <tt class="docutils literal">.w</tt> file.
+To support reuse over multiple projects, a header could be included with <tt class="docutils literal">&#64;i</tt>.
+The downside is that we have a lot of <em>variable = value</em> syntax that makes it
 more like a properties file than a <tt class="docutils literal">.w</tt> syntax file. It seems needless to invent
-a lot of new syntax just for configuration.</p>
-</li>
+a lot of new syntax just for configuration.</li>
+<li>See below on switching to Jinja2. In this case, the templates can be provided via
+a Jinja configuration (there are many choices.) By stepping away from the <tt class="docutils literal">string.Template</tt>,
+we can incorporate list-processing <tt class="docutils literal"><span class="pre">{%for%}...{%endfor%}</span></tt> construct that
+pushes some processing into the template.</li>
 </ul>
 </li>
-<li><p class="first">JSON-based logging configuration file would be helpful.
-Should be separate from template configuration.</p>
-</li>
-<li><p class="first">We might want to decompose the <tt class="docutils literal">impl.w</tt> file: it's huge.</p>
-</li>
-<li><p class="first">We might want to interleave code and test into a document that presents both
-side-by-side. They get routed to different output files.</p>
-</li>
-<li><p class="first">Fix name definition order. There's no <strong>good</strong> reason why a full name should
-be first and elided names defined later.</p>
-</li>
-<li><p class="first">Add a <tt class="docutils literal">&#64;h</tt> &quot;header goes here&quot; command to allow weaving any <strong>pyWeb</strong> required addons to
+<li>Separate TOML-based logging configuration file would be helpful.
+Should be separate from template configuration.</li>
+<li>Rethink the weaver header. Are ◊ and → REALLY necessary?
+Can we use ◊ and → now that Unicode is more universal?
+And why <tt class="docutils literal">'\N{LOZENGE}'</tt>? There's a nice <tt class="docutils literal">'\N{END OF PROOF}'</tt> symbol we could use.<ul>
+<li>Currently, we rely on a list of things which <strong>must</strong> be present
+in the document to be woven correctly. Consider a standard RST starter template with the definitions
+provided.</li>
+<li>Add a <tt class="docutils literal">&#64;h</tt> &quot;header goes here&quot; command to allow weaving any <strong>pyWeb</strong> required addons to
 a LaTeX header, HTML header or RST header.
 These are extra <tt class="docutils literal">..&nbsp; include::</tt>, <tt class="docutils literal">\\usepackage{fancyvrb}</tt> or maybe an HTML CSS reference
-that come from <strong>pyWeb</strong> and need to be folded into otherwise boilerplate documents.</p>
+that come from <strong>pyWeb</strong> and need to be folded into otherwise boilerplate documents.</li>
+<li>In the long run, even tangling should permit templates with &quot;assumed&quot; or &quot;implied&quot; code in it.
+The use case is the book chapters with test cases that are <strong>not</strong> woven into the text.</li>
+<li>Or. Tangle-only chunks that are NOT woven into the final document.</li>
+</ul>
 </li>
-<li><p class="first">Update the <tt class="docutils literal"><span class="pre">-indent</span></tt> option to accept a numeric argument with the
+<li>Update the <tt class="docutils literal"><span class="pre">-indent</span></tt> option on &#64;d chunks to accept a numeric argument with the
 specific indentation value. This becomes a kind of &quot;noindent&quot; with a given
-value. The <tt class="docutils literal"><span class="pre">-noindent</span></tt> would then be the same as <tt class="docutils literal"><span class="pre">-indent</span> 0</tt>.</p>
-</li>
-<li><p class="first">Offer a basic XHTML template that uses <tt class="docutils literal">CDATA</tt> sections instead of quoting.
-Does require the standard quoting for the <tt class="docutils literal">CDATA</tt> end tag.</p>
-</li>
-<li><p class="first">The <tt class="docutils literal">createUsedBy()</tt> method can be done incrementally by
+value. The <tt class="docutils literal"><span class="pre">-noindent</span></tt> would then be the same as <tt class="docutils literal"><span class="pre">-indent</span> 0</tt>.
+Currently, <cite>-indent</cite> and <cite>-noindent</cite> are true/false flags.</li>
+<li>We might want to decompose the <tt class="docutils literal">impl.w</tt> file: it's huge.</li>
+<li>We might want to interleave code and test into a document that presents both
+side-by-side. We can route to multiple files.
+It's a little awkward to create tangled files in multiple directories;
+We'd have to use <tt class="docutils literal"><span class="pre">../tests/whatever.py</span></tt>, <strong>assuming</strong> we were always using <tt class="docutils literal"><span class="pre">-o</span> src</tt>.</li>
+<li>Fix name definition order. There's no <strong>good</strong> reason why a full name must
+be first and elided names defined later.</li>
+<li>Offer a basic XHTML template that uses <tt class="docutils literal">CDATA</tt> sections instead of quoting.
+Does require the standard quoting for the <tt class="docutils literal">CDATA</tt> end tag.</li>
+<li>The <tt class="docutils literal">createUsedBy()</tt> method can be done incrementally by
 accumulating a list of forward references to chunks; as each
 new chunk is added, any references to the chunk are removed from
 the forward references list, and a call is made to the Web's
 setUsage method.  References backward to already existing chunks
-are easily resolved with a simple lookup.</p>
-</li>
-<li><p class="first">Note that the overall <tt class="docutils literal">Web</tt> is a bit like a <tt class="docutils literal">NamedChunk</tt> that contains <tt class="docutils literal">Chunks</tt>.
+are easily resolved with a simple lookup.</li>
+<li>Note that the overall <tt class="docutils literal">Web</tt> is a bit like a <tt class="docutils literal">NamedChunk</tt> that contains <tt class="docutils literal">Chunks</tt>.
 This similarity could be factored out.
 While this will create a more proper <strong>Composition</strong> pattern implementation, it
-leads to the question of why nest <tt class="docutils literal">&#64;d</tt> or <tt class="docutils literal">&#64;o</tt> chunks in the first place?</p>
-</li>
+leads to the question of why nest <tt class="docutils literal">&#64;d</tt> or <tt class="docutils literal">&#64;o</tt> chunks in the first place?</li>
 </ol>
 <div class="section" id="other-thoughts">
-<h2><a class="toc-backref" href="#toc-entry-84">Other Thoughts</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-89">Other Thoughts</a></h2>
 <p>There are two possible projects that might prove useful.</p>
 <ul class="simple">
 <li>Jinja2 for better templates.</li>
-<li>pyYAML for slightly cleaner encoding of logging configuration
+<li><tt class="docutils literal">pyYAML</tt> or <tt class="docutils literal">toml</tt> for slightly cleaner encoding of logging configuration
 or other configuration.</li>
 </ul>
 <p>There are advantages and disadvantages to depending on other projects.
@@ -6750,19 +6988,20 @@ The advantage of adding these two projects might be some simplification.</p>
 </div>
 </div>
 <div class="section" id="change-log">
-<h1><a class="toc-backref" href="#toc-entry-85">Change Log</a></h1>
+<h1><a class="toc-backref" href="#toc-entry-90">Change Log</a></h1>
 <p>Changes for 3.1</p>
 <ul class="simple">
-<li>Change to Python 3.10.</li>
-<li>Add type hints, f-strings, pathlib, abc.ABC.</li>
+<li>Change to Python 3.10 as the supported version.</li>
+<li>Add type hints, f-strings, <tt class="docutils literal">pathlib</tt>, <tt class="docutils literal">abc.ABC</tt>.</li>
 <li>Replace some complex <tt class="docutils literal">elif</tt> blocks with <tt class="docutils literal">match</tt> statements.</li>
-<li>Use pytest as a test runner.</li>
+<li>Use <strong>pytest</strong> as a test runner.</li>
 <li>Add a <tt class="docutils literal">Makefile</tt>, <tt class="docutils literal">pyproject.toml</tt>, <tt class="docutils literal">requirements.txt</tt> and <tt class="docutils literal"><span class="pre">requirements-dev.txt</span></tt>.</li>
-<li>Add <tt class="docutils literal"><span class="pre">-o</span> dir</tt> option to write output to a directory of choice, simplifying <strong>tox</strong> setup.</li>
+<li>Implement <tt class="docutils literal"><span class="pre">-o</span> dir</tt> option to write output to a directory of choice, simplifying <strong>tox</strong> setup.</li>
 <li>Add <tt class="docutils literal">bootstrap</tt> directory with a snapshot of a previous working release to simplify development.</li>
 <li>Add Test cases for <tt class="docutils literal">weave.py</tt> and <tt class="docutils literal">tangle.py</tt></li>
 <li>Replace hand-build mock classes with <tt class="docutils literal">unittest.mock.Mock</tt> objects</li>
 <li>Separate the projec into <tt class="docutils literal">src</tt>, <tt class="docutils literal">tests</tt>, <tt class="docutils literal">examples</tt>. Cleanup <tt class="docutils literal">Makefile</tt>, <tt class="docutils literal">pyproject.toml</tt>, etc.</li>
+<li>Silence the ERROR-level logging during testing.</li>
 </ul>
 <p>Changes for 3.0</p>
 <ul class="simple">
@@ -6860,9 +7099,9 @@ of the ReferenceCommand.</li>
 </ul>
 </div>
 <div class="section" id="indices">
-<h1><a class="toc-backref" href="#toc-entry-86">Indices</a></h1>
+<h1><a class="toc-backref" href="#toc-entry-91">Indices</a></h1>
 <div class="section" id="files">
-<h2><a class="toc-backref" href="#toc-entry-87">Files</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-92">Files</a></h2>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -6877,7 +7116,7 @@ of the ReferenceCommand.</li>
 </table>
 </div>
 <div class="section" id="macros">
-<h2><a class="toc-backref" href="#toc-entry-88">Macros</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-93">Macros</a></h2>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -7313,7 +7552,7 @@ of the ReferenceCommand.</li>
 </table>
 </div>
 <div class="section" id="user-identifiers">
-<h2><a class="toc-backref" href="#toc-entry-89">User Identifiers</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-94">User Identifiers</a></h2>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -7572,8 +7811,8 @@ of the ReferenceCommand.</li>
 </table>
 <hr class="docutils" />
 <blockquote class="small">
-Created by /Users/slott/Documents/Projects/py-web-tool/bootstrap/pyweb.py at Sun Jun 12 20:16:28 2022.</blockquote>
-<p class="small">Source pyweb.w modified Sun Jun 12 19:32:17 2022.</p>
+Created by /Users/slott/Documents/Projects/py-web-tool/bootstrap/pyweb.py at Mon Jun 13 11:12:26 2022.</blockquote>
+<p class="small">Source pyweb.w modified Mon Jun 13 08:52:05 2022.</p>
 <blockquote class="small">
 <p>pyweb.__version__ '3.0'.</p>
 <p>Working directory '/Users/slott/Documents/Projects/py-web-tool/src'.</p>

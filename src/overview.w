@@ -1,4 +1,4 @@
-.. py-web-tool/overview.w 
+.. py-web-tool/src/overview.w 
 
 Architecture and Design Overview
 ================================

@@ -12,7 +12,7 @@ Yet Another Literate Programming Tool
 ..	contents::
 
 
-..  py-web-tool/intro.w
+..  py-web-tool/src/intro.w
 
 Introduction
 ============
@@ -264,15 +264,51 @@ simple approach started by *nuweb* and adopted by **py-web-tool**.
         languages (say, Fortran and C). It's also an advantage when constructing 
         very large programs.
 
-Use Cases
------------
+Acknowledgements
+----------------
+
+This application is very directly based on (derived from?) work that
+ preceded this, particularly the following:
+
+-   Ross N. Williams' *FunnelWeb* http://www.ross.net/funnelweb/
+
+-   Norman Ramsey's *noweb* http://www.eecs.harvard.edu/~nr/noweb/
+
+-   Preston Briggs' *nuweb* http://sourceforge.net/projects/nuweb/
+    Currently supported by Charles Martin and Marc W. Mengel
+
+Also, after using John Skaller's *interscript* http://interscript.sourceforge.net/
+for two large development efforts, I finally understood the feature set I really wanted.
+
+Jason Fruit and others contributed to the previous version.
+
+
+.. py-web-tool/src/usage.w
+
+Installing
+==========
+
+This requires Python 3.10.
+
+This is not (currently) hosted in PyPI. Instead of installing it with PIP,
+clone the GitHub repository or download the distribution kit.
+
+Install pyweb "manually" using the provided ``setup.py``.
+
+::
+
+    python setup.py install
+    
+This will install the ``pyweb`` module.
+
+Using
+=====
 
 **py-web-tool** supports two use cases, `Tangle Source Files`_ and `Weave Documentation`_.
-These are often combined into a single request of the application that will both
-weave and tangle.
+These are often combined to both tangle and weave an application and it's documentation.
 
 Tangle Source Files
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 A user initiates this process when they have a complete ``.w`` file that contains 
 a description of source files.  These source files are described with ``@o`` commands
@@ -286,14 +322,21 @@ Outside this use case, the user will debug those source files, possibly updating
 The use case is a failure when the source files cannot be produced, due to 
 errors in the ``.w`` file.  These must be corrected based on information in log messages.
 
-The sequence is ``./pyweb.py *theFile*.w``.
+A typical command to tangle (without weaving) is:
+
+..  parsed-literal::
+
+    python -m pyweb -xw *theFile*.w
+
+The outputs will be defined by the ``@o`` commands in the source.
 
 Weave Documentation
-~~~~~~~~~~~~~~~~~~~~
+-------------------
 
 A user initiates this process when they have a ``.w`` file that contains 
 a description of a document to produce.  The document is described by the entire
-``.w`` file.
+``.w`` file. The default is to use ReSTructured Text (RST) markup.
+The output file will have the ``.rst`` suffix. 
 
 The use case is successful when the documentation file is produced.
 
@@ -303,10 +346,16 @@ Outside this use case, the user will edit the documentation file, possibly updat
 The use case is a failure when the documentation file cannot be produced, due to 
 errors in the ``.w`` file.  These must be corrected based on information in log messages.
 
-The sequence is ``./pyweb.py *theFile*.w``.
+A typical command to weave (without tangling) is:
+
+..  parsed-literal::
+
+    python -m pyweb -xt *theFile*\ .w
+    
+The output will be the *theFile*\ ``.rst``.
 
 Tangle, Test, and Weave with Test Results
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------------------
 
 A user initiates this process when they have a ``.w`` file that contains 
 a description of a document to produce.  The document is described by the entire
@@ -329,25 +378,105 @@ The sequence is as follows:
 
 ..  parsed-literal::
 
-    ./pyweb.py -xw -pi *theFile*\ .w
-    python *theTest* >\ *aLog*
-    ./pyweb.py -xt *theFile*\ .w
-
-Another possibility includes the following:
-
- ..  parsed-literal::
-
-     ./pyweb.py -xw -pi *theFile*\ .w
-     python -m pytest *theTestFile* >\ *aLog*
-     ./pyweb.py -xt *theFile*\ .w
+    python -m pyweb -xw -pi *theFile*\ .w
+    pytest >\ *aLog*
+    python -m pyweb -xt *theFile*\ .w
      
 The first step excludes weaving and permits errors on the ``@i`` command.  The ``-pi`` option
 is necessary in the event that the log file does not yet exist.  The second step 
 runs the test, creating a log file.  The third step weaves the final document,
 including the test output.
 
-Writing **py-web-tool** ``.w`` Files
--------------------------------------
+Running **py-web-tool** to Tangle and Weave
+-------------------------------------------
+
+Assuming that you have marked ``pyweb.py`` as executable,
+you do the following:
+
+..  parsed-literal::
+
+    python -m pyweb *theFile*\ .w
+
+This will tangle the ``@o`` commands in each *theFile*.
+It will also weave the output, and create *theFile*.rst.
+
+Command Line Options
+~~~~~~~~~~~~~~~~~~~~~
+
+Currently, the following command line options are accepted.
+
+
+:-v:
+    Verbose logging. 
+    
+:-s:
+    Silent operation.
+
+:-c\ *x*:
+    Change the command character from ``@`` to ``*x*``.
+
+:-w\ *weaver*:
+    Choose a particular documentation weaver template. Currently the choices
+    are RST and HTML.
+
+:-xw:
+    Exclude weaving.  This does tangling of source program files only.
+
+:-xt:
+    Exclude tangling.  This does weaving of the document file only.
+
+:-p\ *command*:
+    Permit errors in the given list of commands.  The most common
+    version is ``-pi`` to permit errors in locating an include file.
+    This is done in the following scenario: pass 1 uses ``-xw -pi`` to exclude
+    weaving and permit include-file errors; 
+    the tangled program is run to create test results; pass 2 uses
+    ``-xt`` to exclude tangling and include the test results.
+    
+:-o\ *directory*:
+    The directory to which to write output files.
+
+Bootstrapping
+--------------
+
+**py-web-tool** is written using **py-web-tool**. The distribution includes the original ``.w``
+files as well as a ``.py`` module.
+
+The bootstrap procedure is to run a "known good" ``pyweb`` to transform
+a working copy into a new version of ``pyweb``. We provide the previous release in the ``bootstrap``
+directory.
+
+..  parsed-literal::
+
+    python bootstrap/pyweb.py pyweb.w
+    rst2html.py pyweb.rst pyweb.html
+    
+The resulting ``pyweb.html`` file is the updated documentation.
+The ``pyweb.py`` is the updated candidate release of **py-web-tool**.
+
+Similarly, the tests built from a ``.w`` files.
+
+..  parsed-literal::
+
+    python pyweb.py tests/pyweb_test.w -o tests
+    PYTHONPATH=.. pytest
+    rst2html.py tests/pyweb_test.rst tests/pyweb_test.html    
+
+Dependencies
+-------------
+
+**py-web-tool** requires Python 3.10 or newer.
+
+If you create RST output, you'll want to use ``docutils`` to translate
+the RST to HTML or LaTeX or any of the other formats supported by docutils.
+
+Tools like ``pytest`` and ``tox`` are also used for development.
+
+
+.. py-web-tool/src/language.w
+
+The **py-web-tool** ``.w`` Markup Language
+==========================================
 
 The essence of literate programming is a markup language that distinguishes code
 from documentation. For tangling, the code is relevant. For weaving, both code
@@ -385,9 +514,91 @@ various chunks.  The *Inline* tags are (called "minor commands") are used to con
 woven and tangled output from those chunks. There are *Content* tags which generate 
 summary cross-reference content in woven files.
 
+Concepts
+--------
+
+The ``.w`` file **is** the final documentation.  The code is tangled out 
+of this.  
+
+There are some mandatory "boilerplate" required to make a working document.
+Requirements vary by markup language.
+
+RST
+~~~
+
+The RST template uses two substitutions, ``|srarr|`` and ``|loz|``.
+
+These can be provided by 
+
+::
+    
+    ..	include:: <isoamsa.txt>
+    ..	include:: <isopub.txt>
+    
+Or
+
+::
+
+    .. |srarr|  unicode:: U+02192 .. RIGHTWARDS ARROW
+    .. |loz|    unicode:: U+025CA .. LOZENGE
+    
+Often the boilerplate document looks like this
+
+..  parsed-literal::
+    
+    ####################
+    *Title*
+    ####################
+    
+    ===============
+    *Author*
+    ===============
+    
+    ..  include:: <isoamsa.txt>
+    ..	include:: <isopub.txt>
+    
+    ..  contents::
+    
+    *Your Document Starts Here*
+
+
+LaTeX
+~~~~~
+
+The LaTeX templates use ``\\fancyvrb``.
+The following is required.
+
+::
+
+    \\usepackage{fancyvrb}
+
+Some minimal boilerplate document looks like this:
+
+..  parsed-literal::
+    
+    \documentclass{article}
+    \usepackage{fancyvrb}
+    \title{ *Title* }
+    \author{ *Author* }
+    
+    \begin{document}
+    
+    \maketitle
+    \tableofcontents
+
+    *Your Document Starts Here*
+
+    \end{document}
+
+HTML
+~~~~
+
+No additional setup is required for HTML. However, there's often
+a fairly large amount of HTML boilerplate, depending on the CSS
+requirements.
 
 Structural Tags
-~~~~~~~~~~~~~~~
+---------------
 
 There are two definitional tags; these define the various chunks
 in an input file. 
@@ -462,7 +673,7 @@ documentation. It includes a named output chunk which will write to ``myFile.py`
 It ends with an anonymous chunk of documentation.
 
 Inline Tags
-~~~~~~~~~~~~
+---------------
 
 There are several tags that are replaced by content in the woven output.
 
@@ -488,7 +699,7 @@ There are several tags that are replaced by content in the woven output.
     These are described in `Expression Context`_.
 
 Content Tags
-~~~~~~~~~~~~~
+---------------
 
 There are three index creation tags that are replaced by content in the woven output.
 
@@ -513,7 +724,7 @@ There are three index creation tags that are replaced by content in the woven ou
 
 
 Additional Features
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 **Sequence Numbers**. The named chunks (from both ``@o`` and ``@d`` commands) are assigned 
 unique sequence numbers to simplify cross references.  
@@ -621,7 +832,7 @@ named chunk was defined with the following.
 This puts a newline character before and after the import line.
 
 Controlling Indentation
-~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------
 
 We have two choices in indentation:
 
@@ -711,7 +922,7 @@ provided by the ``some bigger chunk`` context.
 After the first newline (*More that uses """*) will be at the left margin.
 
 Tracking Source Line Numbers
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------
 
 Since the tangled output files are -- well -- tangled, it can be difficult to
 trace back from a Python error stack to the original line in the ``.w`` file that
@@ -738,7 +949,7 @@ start and end syntax. This will lead to comments embedded in the tangled output
 which contain source line numbers for every (every!) chunk.
 
 Expression Context
-~~~~~~~~~~~~~~~~~~~~
+-------------------
 
 There are two possible implementations for evaluation of a Python
 expression in the input.
@@ -794,104 +1005,7 @@ A global context is created with the following variables defined.
     The version string in the **py-web-tool** application.
 
 
-Running **py-web-tool** to Tangle and Weave
--------------------------------------------
-
-Assuming that you have marked ``pyweb.py`` as executable,
-you do the following.
-
-..  parsed-literal::
-
-    ./pyweb.py *file*...
-
-This will tangle the ``@o`` commands in each *file*.
-It will also weave the output, and create *file*.txt.
-
-Command Line Options
-~~~~~~~~~~~~~~~~~~~~~
-
-Currently, the following command line options are accepted.
-
-
-:-v:
-    Verbose logging. 
-    
-:-s:
-    Silent operation.
-
-:-c\ *x*:
-    Change the command character from ``@`` to ``*x*``.
-
-:-w\ *weaver*:
-    Choose a particular documentation weaver template. Currently the choices
-    are RST and HTML.
-
-:-xw:
-    Exclude weaving.  This does tangling of source program files only.
-
-:-xt:
-    Exclude tangling.  This does weaving of the document file only.
-
-:-p\ *command*:
-    Permit errors in the given list of commands.  The most common
-    version is ``-pi`` to permit errors in locating an include file.
-    This is done in the following scenario: pass 1 uses ``-xw -pi`` to exclude
-    weaving and permit include-file errors; 
-    the tangled program is run to create test results; pass 2 uses
-    ``-xt`` to exclude tangling and include the test results.
-
-Bootstrapping
---------------
-
-**py-web-tool** is written using **py-web-tool**. The distribution includes the original ``.w``
-files as well as a ``.py`` module.
-
-The bootstrap procedure is this.
-
-..  parsed-literal::
-
-    python pyweb.py pyweb.w
-    rst2html.py pyweb.rst pyweb.html
-    
-The resulting ``pyweb.html`` file is the final documentation.
-
-Similarly, the tests are bootstrapped from ``.w`` files.
-
-..  parsed-literal::
-
-    cd test
-    python ../pyweb.py pyweb_test.w
-    PYTHONPATH=.. python test.py
-    rst2html.py pyweb_test.rst pyweb_test.html    
-
-Dependencies
--------------
-
-**py-web-tool** requires Python 3.10 or newer.
-
-If you create RST output, you'll want to use docutils to translate
-the RST to HTML or LaTeX or any of the other formats supported by docutils.
-
-Acknowledgements
-----------------
-
-This application is very directly based on (derived from?) work that
- preceded this, particularly the following:
-
--   Ross N. Williams' *FunnelWeb* http://www.ross.net/funnelweb/
-
--   Norman Ramsey's *noweb* http://www.eecs.harvard.edu/~nr/noweb/
-
--   Preston Briggs' *nuweb* http://sourceforge.net/projects/nuweb/
-    Currently supported by Charles Martin and Marc W. Mengel
-
-Also, after using John Skaller's *interscript* http://interscript.sourceforge.net/
-for two large development efforts, I finally understood the feature set I really wanted.
-
-Jason Fruit and others contributed to the previous version.
-
-
-.. py-web-tool/overview.w 
+.. py-web-tool/src/overview.w 
 
 Architecture and Design Overview
 ================================
@@ -1154,7 +1268,7 @@ fit elsewhere
 
 The above order is reasonably helpful for Python and minimizes forward
 references. A ``Chunk`` and a ``Web`` do have a circular relationship.
-We'll present the designs from the most important first, the Emitters`_. 
+We'll present the designs from the most important first, the `Emitters`_. 
 
 Emitters
 ---------
@@ -1347,24 +1461,25 @@ The ``codeBlock()`` method to indent each line written.
     
     class Emitter:
         """Emit an output file; handling indentation context."""
-        code\_indent = 0 # Used by a Tangler
-        filePath : Path  # Path within the base directory (on the name is used)
-        output : Path  # Base directory to write
         
-        theFile: TextIO
+        code\_indent = 0 #: Used by a Tangler
+        filePath : Path  #: Path within the base directory (on the name is used)
+        output : Path  #: Base directory to write
+        theFile: TextIO  #: Open file being written
+        
         def \_\_init\_\_(self) -> None:
             self.logger = logging.getLogger(self.\_\_class\_\_.\_\_qualname\_\_)
             self.log\_indent = logging.getLogger("indent." + self.\_\_class\_\_.\_\_qualname\_\_)
-            # Summary
-            self.linesWritten = 0
-            self.totalFiles = 0
-            self.totalLines = 0
             # Working State
             self.lastIndent = 0
             self.fragment = False
             self.context: list[int] = []
             self.readdIndent(self.code\_indent)  # Create context and initial lastIndent values
-            
+            # Summary
+            self.linesWritten = 0
+            self.totalFiles = 0
+            self.totalLines = 0
+    
         def \_\_str\_\_(self) -> str:
             return self.\_\_class\_\_.\_\_name\_\_
             
@@ -1751,7 +1866,7 @@ Instance-level configuration values:
     :class: code
 
     import string
-    from textwrap import dedent
+    from textwrap import dedent, indent, shorten
     
 
 ..
@@ -1779,7 +1894,11 @@ Instance-level configuration values:
         """
         extension = ".rst" 
         code\_indent = 4
-        header = """\\n..  include:: <isoamsa.txt>\\n..  include:: <isopub.txt>\\n"""
+        # Not actually used.
+        header = dedent("""
+            ..  include:: <isoamsa.txt>
+            ..  include:: <isopub.txt>
+        """)
         
         reference\_style : "Reference"
         
@@ -1927,9 +2046,13 @@ Each code chunk includes the places where the chunk is referenced.
     :class: code
 
     
-    ref\_template = string.Template("${refList}")
+    ref\_template = string.Template(
+        "${refList}"
+    )
     ref\_separator = "; "
-    ref\_item\_template = string.Template("$fullName (\`${seq}\`\_)")
+    ref\_item\_template = string.Template(
+        "$fullName (\`${seq}\`\_)"
+    )
     
     def references(self, aChunk: Chunk) -> str:
         references = aChunk.references(self)
@@ -1967,7 +2090,25 @@ refer to this chunk can be emitted.
     :class: code
 
     
-    cb\_template = string.Template("\\n..  \_\`${seq}\`:\\n..  rubric:: ${fullName} (${seq}) ${concat}\\n..  parsed-literal::\\n    :class: code\\n\\n")
+    cb\_template = string.Template(
+        dedent("""
+            ..  \_\`${seq}\`:
+            ..  rubric:: ${fullName} (${seq}) ${concat}
+            ..  parsed-literal::
+                :class: code
+                
+        """)
+    )
+    
+    ce\_template = string.Template(
+        dedent("""
+            ..
+                
+                ..  class:: small
+                    
+                    \|loz\| \*${fullName} (${seq})\*. Used by: ${references}
+        """)
+    )
     
     def codeBegin(self, aChunk: Chunk) -> None:
         txt = self.cb\_template.substitute( 
@@ -1978,8 +2119,6 @@ refer to this chunk can be emitted.
         )
         self.write(txt)
         
-    ce\_template = string.Template("\\n..\\n\\n    ..  class:: small\\n\\n        \|loz\| \*${fullName} (${seq})\*. Used by: ${references}\\n")
-    
     def codeEnd(self, aChunk: Chunk) -> None:
         txt = self.ce\_template.substitute( 
             seq = aChunk.seq,
@@ -1996,6 +2135,10 @@ refer to this chunk can be emitted.
 
         |loz| *Weaver code chunk begin-end (18)*. Used by: Weaver subclass of Emitter... (`13`_)
 
+
+**TODO:** Is this really necessary? Should we inject additional material
+into the woven output? It seems like a potentially bad idea because
+of the complications of various markup tool chains.
 
 The ``fileBegin()`` method emits the necessary material prior to 
 a chunk of source code, defined with the ``@o`` command.
@@ -2015,7 +2158,25 @@ list is always empty.
     :class: code
 
     
-    fb\_template = string.Template("\\n..  \_\`${seq}\`:\\n..  rubric:: ${fullName} (${seq}) ${concat}\\n..  parsed-literal::\\n    :class: code\\n\\n")
+    fb\_template = string.Template(
+        dedent("""
+            ..  \_\`${seq}\`:
+            ..  rubric:: ${fullName} (${seq}) ${concat}
+            ..  parsed-literal::
+                :class: code
+        
+        """)
+    )
+    
+    fe\_template = string.Template(
+        dedent("""
+            ..
+                
+                ..  class:: small
+                        
+                    \|loz\| \*${fullName} (${seq})\*.
+        """)
+    )
     
     def fileBegin(self, aChunk: Chunk) -> None:
         txt = self.fb\_template.substitute(
@@ -2025,8 +2186,6 @@ list is always empty.
             concat="=" if aChunk.initial else "+=",
         )
         self.write(txt)
-    
-    fe\_template = string.Template("\\n..\\n\\n    ..  class:: small\\n\\n        \|loz\| \*${fullName} (${seq})\*.\\n")
     
     def fileEnd(self, aChunk: Chunk) -> None:
         assert len(self.references(aChunk)) == 0
@@ -2064,14 +2223,19 @@ a simple ``" "`` because it looks better.
     :class: code
 
     
-    refto\_name\_template = string.Template(r"\|srarr\|\\ ${fullName} (\`${seq}\`\_)")
-    refto\_seq\_template = string.Template(r"\|srarr\|\\ (\`${seq}\`\_)")
+    refto\_name\_template = string.Template(
+        r"\|srarr\|\\ ${fullName} (\`${seq}\`\_)"
+    )
+    refto\_seq\_template = string.Template(
+        r"\|srarr\|\\ (\`${seq}\`\_)"
+    )
     refto\_seq\_separator = ", "
     
     def referenceTo(self, aName: str \| None, seq: int) -> str:
         """Weave a reference to a chunk.
         Provide name to get a full reference.
-        name=None to get a short reference."""
+        name=None to get a short reference.
+        """
         if aName:
             return self.refto\_name\_template.substitute(fullName=aName, seq=seq)
         else:
@@ -2112,6 +2276,10 @@ The default behavior simply writes the Python data structure used
 to represent cross reference information.  A subclass may override this 
 to change the look of the final woven document.
 
+Note that the ``xref_item_template`` and ``xref_empty_template`` have no leading ``\n`` character. They have
+an indentation on the first line, however, to make ``dedent()`` work. The spaces to create proper
+RST indentation are a bit fiddly here.
+
 
 ..  _`21`:
 ..  rubric:: Weaver cross reference output methods (21) =
@@ -2119,10 +2287,23 @@ to change the look of the final woven document.
     :class: code
 
     
-    xref\_head\_template = string.Template("\\n")
-    xref\_foot\_template = string.Template("\\n")
-    xref\_item\_template = string.Template(":${fullName}:\\n    ${refList}\\n")
-    xref\_empty\_template = string.Template("(None)\\n")
+    xref\_head\_template = string.Template(
+        dedent("""
+        """)
+    )
+    xref\_foot\_template = string.Template(
+        dedent("""
+        """)
+    )
+    xref\_item\_template = string.Template(
+        dedent("""    :${fullName}:
+        ${refList}
+        """)
+    )
+    xref\_empty\_template = string.Template(
+        dedent("""    (None)
+        """)
+    )
     
     def xrefHead(self) -> None:
         txt = self.xref\_head\_template.substitute()
@@ -2156,8 +2337,12 @@ Cross-reference definition line
     :class: code
 
     
-    name\_def\_template = string.Template('[\`${seq}\`\_]')
-    name\_ref\_template = string.Template('\`${seq}\`\_')
+    name\_def\_template = string.Template(
+        '[\`${seq}\`\_]'
+    )
+    name\_ref\_template = string.Template(
+        '\`${seq}\`\_'
+    )
     
     def xrefDefLine(self, name: str, defn: int, refList: list[int]) -> None:
         """Special template for the definition, default reference for all others."""
@@ -2243,7 +2428,10 @@ function pretty well in most L\ !sub:`A`\ T\ !sub:`E`\ X documents.
         """
         extension = ".tex"
         code\_indent = 0
-        header = """\\n\\\\usepackage{fancyvrb}\\n"""
+        # Not actually used
+        header = dedent("""
+            \\\\usepackage{fancyvrb}
+        """)
     
         |srarr|\ LaTeX code chunk begin (`25`_)
         |srarr|\ LaTeX code chunk end (`26`_)
@@ -2269,7 +2457,9 @@ The LaTeX ``codeBegin()`` template writes the header prior to a
 chunk of source code.  It aligns the block to the left, prints an
 italicised header, and opens a preformatted block.
 
-There's no leading ``\n`` -- we're trying to avoid an indent when weaving.
+There's no leading ``\n`` in the template -- we're trying to avoid an indent when weaving.
+To make ``dedent()`` work, we have to provide the same leading whitespace on the first line
+to match the subsequent lines.
 
 
 ..  _`25`:
@@ -2279,10 +2469,11 @@ There's no leading ``\n`` -- we're trying to avoid an indent when weaving.
 
     
     cb\_template = string.Template(
-    """\\\\label{pyweb${seq}}
-    \\\\begin{flushleft}
-    \\\\textit{Code example ${fullName} (${seq})}
-    \\\\begin{Verbatim}[commandchars=\\\\\\\\\\\\{\\\\},codes={\\\\catcode\`$$=3\\\\catcode\`^=7},frame=single]\\n"""
+        dedent("""        \\\\label{pyweb${seq}}
+            \\\\begin{flushleft}
+            \\\\textit{Code example ${fullName} (${seq})}
+            \\\\begin{Verbatim}[commandchars=\\\\\\\\\\\\{\\\\},codes={\\\\catcode\`$$=3\\\\catcode\`^=7},frame=single]
+        """)
     )
     
 
@@ -2291,7 +2482,6 @@ There's no leading ``\n`` -- we're trying to avoid an indent when weaving.
     ..  class:: small
 
         |loz| *LaTeX code chunk begin (25)*. Used by: LaTeX subclass... (`24`_)
-
 
 
 The LaTeX ``codeEnd()`` template writes the trailer subsequent to
@@ -2307,10 +2497,13 @@ indentation.
     :class: code
 
     
-    ce\_template = string.Template("""
-    \\\\end{Verbatim}
-    ${references}
-    \\\\end{flushleft}\\n""")
+    ce\_template = string.Template(
+        dedent("""
+            \\\\end{Verbatim}
+            ${references}
+            \\\\end{flushleft}
+        """)
+    )
     
 
 ..
@@ -2369,6 +2562,10 @@ The ``references()`` template writes a list of references after a
 chunk of code.  Each reference includes the example number, the title,
 and a reference to the LaTeX section and page numbers on which the
 referring block appears.
+
+The spacing around ``ref_item_template`` and ``ref_template`` are particularly fiddly.
+This isn't easy to prepare with ``dedent()``. The ``indent()`` provides the indent
+that makes the resulting LaTeX readable, distinct from the indent that makes the code readable.
   
 
 ..  _`29`:
@@ -2377,16 +2574,27 @@ referring block appears.
     :class: code
 
     
-    ref\_item\_template = string.Template("""
-    \\\\item Code example ${fullName} (${seq}) (Sect. \\\\ref{pyweb${seq}}, p. \\\\pageref{pyweb${seq}})\\n""")
+    ref\_item\_template = string.Template(
+        indent(
+            dedent("""
+                \\\\item Code example ${fullName} (${seq}) (Sect. \\\\ref{pyweb${seq}}, p. \\\\pageref{pyweb${seq}})
+                """),
+            '    '
+        )
+    )
     
-    ref\_template = string.Template("""
-    \\\\footnotesize
-    Used by:
-    \\\\begin{list}{}{}
-    ${refList}
-    \\\\end{list}
-    \\\\normalsize\\n""")
+    ref\_template = string.Template(
+        indent(
+            dedent("""
+                \\\\footnotesize
+                Used by:
+                \\\\begin{list}{}{}
+                ${refList}
+                \\\\end{list}
+                \\\\normalsize"""),
+            '    '
+        )
+    )
     
 
 ..
@@ -2436,9 +2644,13 @@ the current line of code.
     :class: code
 
     
-    refto\_name\_template = string.Template("""$$\\\\triangleright$$ Code Example ${fullName} (${seq})""")
+    refto\_name\_template = string.Template(
+        """$$\\\\triangleright$$ Code Example ${fullName} (${seq})"""
+    )
     
-    refto\_seq\_template = string.Template("""(${seq})""")
+    refto\_seq\_template = string.Template(
+        """(${seq})"""
+    )
     
 
 ..
@@ -2538,11 +2750,17 @@ and HTML tags necessary to set the code off visually.
     :class: code
 
     
-    cb\_template = string.Template("""
-    <a name="pyweb${seq}"></a>
-    <!--line number ${lineNumber}-->
-    <p><em>${fullName}</em> (${seq})&nbsp;${concat}</p>
-    <pre><code>\\n""")
+    cb\_template = string.Template(
+        indent(
+            dedent("""
+                <a name="pyweb${seq}"></a>
+                <!--line number ${lineNumber}-->
+                <p><em>${fullName}</em> (${seq})&nbsp;${concat}</p>
+                <pre><code>
+                """),
+            '    '
+        )
+    )
     
 
 ..
@@ -2563,11 +2781,17 @@ write the list of chunks that reference this chunk.
     :class: code
 
     
-    ce\_template = string.Template("""
-    </code></pre>
-    <p>&loz; <em>${fullName}</em> (${seq}).
-    ${references}
-    </p>\\n""")
+    ce\_template = string.Template(
+        indent(
+            dedent("""
+                </code></pre>
+                <p>&loz; <em>${fullName}</em> (${seq}).
+                ${references}
+                </p>
+                """),
+            '    '
+        )
+    )
     
 
 ..
@@ -2587,10 +2811,16 @@ and HTML tags necessary to set the code off visually.
     :class: code
 
     
-    fb\_template = string.Template("""<a name="pyweb${seq}"></a>
-    <!--line number ${lineNumber}-->
-    <p>\`\`${fullName}\`\` (${seq})&nbsp;${concat}</p>
-    <pre><code>\\n""") # Prevent indent
+    fb\_template = string.Template(
+        indent(
+            dedent("""            <a name="pyweb${seq}"></a>
+                <!--line number ${lineNumber}-->
+                <p>\`\`${fullName}\`\` (${seq})&nbsp;${concat}</p>
+                <pre><code>
+            """), # No leading \\\\n.
+            '    '
+        )
+    )
     
 
 ..
@@ -2611,10 +2841,16 @@ write the list of chunks that reference this chunk.
     :class: code
 
     
-    fe\_template = string.Template( """</code></pre>
-    <p>&loz; \`\`${fullName}\`\` (${seq}).
-    ${references}
-    </p>\\n""")
+    fe\_template = string.Template(
+        indent(
+            dedent("""            </code></pre>
+                <p>&loz; \`\`${fullName}\`\` (${seq}).
+                ${references}
+                </p>
+                """),
+            '    '
+        )
+    )
     
 
 ..
@@ -2635,9 +2871,13 @@ transitive references.
     :class: code
 
     
-    ref\_item\_template = string.Template('<a href="#pyweb${seq}"><em>${fullName}</em>&nbsp;(${seq})</a>')
+    ref\_item\_template = string.Template(
+        '<a href="#pyweb${seq}"><em>${fullName}</em>&nbsp;(${seq})</a>'
+    )
     
-    ref\_template = string.Template('  Used by ${refList}.')
+    ref\_template = string.Template(
+        '  Used by ${refList}.'
+    )
     
 
 ..
@@ -2684,9 +2924,13 @@ surrounding source code.
     :class: code
 
     
-    refto\_name\_template = string.Template('<a href="#pyweb${seq}">&rarr;<em>${fullName}</em> (${seq})</a>')
+    refto\_name\_template = string.Template(
+        '<a href="#pyweb${seq}">&rarr;<em>${fullName}</em> (${seq})</a>'
+    )
     
-    refto\_seq\_template = string.Template('<a href="#pyweb${seq}">(${seq})</a>')
+    refto\_seq\_template = string.Template(
+        '<a href="#pyweb${seq}">(${seq})</a>'
+    )
     
 
 ..
@@ -2712,9 +2956,18 @@ The ``xrefLine()`` method writes a line for the file or macro cross reference bl
     :class: code
 
     
-    xref\_head\_template = string.Template("<dl>\\n")
-    xref\_foot\_template = string.Template("</dl>\\n")
-    xref\_item\_template = string.Template("<dt>${fullName}</dt><dd>${refList}</dd>\\n")
+    xref\_head\_template = string.Template(
+        dedent("""    <dl>
+        """)
+    )
+    xref\_foot\_template = string.Template(
+        dedent("""    </dl>
+        """)
+    )
+    xref\_item\_template = string.Template(
+        dedent("""    <dt>${fullName}</dt><dd>${refList}</dd>
+        """)
+    )
     
     |srarr|\ HTML write user id cross reference line (`42`_)
     
@@ -2738,9 +2991,13 @@ is included in the correct order with the other instances, but is bold and marke
     :class: code
 
     
-    name\_def\_template = string.Template('<a href="#pyweb${seq}"><b>&bull;${seq}</b></a>')
+    name\_def\_template = string.Template(
+        '<a href="#pyweb${seq}"><b>&bull;${seq}</b></a>'
+    )
     
-    name\_ref\_template = string.Template('<a href="#pyweb${seq}">${seq}</a>')
+    name\_ref\_template = string.Template(
+        '<a href="#pyweb${seq}">${seq}</a>'
+    )
     
 
 ..
@@ -2763,7 +3020,9 @@ transitive references.
     :class: code
 
     
-    ref\_item\_template = string.Template('<a href="#pyweb${seq}">(${seq})</a>')
+    ref\_item\_template = string.Template(
+        '<a href="#pyweb${seq}">(${seq})</a>'
+    )
     
 
 ..
@@ -4325,7 +4584,7 @@ This subclass provides a concrete implementation for all of the methods.  Since
 text is the author's original markup language, it is emitted directly to the weaver
 or tangler.
 
-**TODO:** Use textwrap to snip off first 32 chars of the text.
+**TODO:** Use textwrap.shorten to snip off first 32 chars of the text.
 
 
 ..  _`82`:
@@ -7590,7 +7849,7 @@ source files.
     
     ### DO NOT EDIT THIS FILE!
     ### It was created by /Users/slott/Documents/Projects/py-web-tool/bootstrap/pyweb.py, \_\_version\_\_='3.0'.
-    ### From source pyweb.w modified Sun Jun 12 19:32:17 2022.
+    ### From source pyweb.w modified Mon Jun 13 08:52:05 2022.
     ### In working directory '/Users/slott/Documents/Projects/py-web-tool/src'.
 
 ..
@@ -8395,7 +8654,6 @@ A customized weaver generally has three parts.
 Python 3.10 Migration
 =====================
 
-
 1. [x] Add type hints.
 
 #. [x] Replace all ``.format()`` with f-strings.
@@ -8420,50 +8678,67 @@ Python 3.10 Migration
 
 #. [x] Separate ``tests``, ``examples``, and ``src`` from each other. 
 
-#. [ ] Rename the module from ``pyweb`` to ``pylpweb`` to avoid namespace squatting issues.
-       Rename the project from ``py-web-tool`` to ``py-lpweb-tool``.
+#. [ ] Rename the module from ``pyweb`` to ``pylpweb`` to avoid name squatting issues.
+       Rename the project from ``py-web-tool`` to ``py-lpweb``.
 
  
 To Do
 =======
     
-1.  Silence the ERROR-level logging during testing.
-
-2.  Silence the error when creating an empty file i.e. ``.nojekyll``
-
-#.  Add a JSON-based (or TOML) configuration file to configure templates.
+1.  Add a JSON-based (or TOML) configuration file for templates.
 
     -   See the ``weave.py`` example. 
-        This removes any need for a weaver command-line option; its defined within the source.
-        Also, setting the command character can be done in this configuration, too.
+        Defining templates in the source removes any need for a command-line option. A silly optimization.
+        Setting the "command character" to something other than ``@`` can be done in the configuration, too.
 
     -   An alternative is to get markup templates from some kind of "header" section in the ``.w`` file.  
-
         To support reuse over multiple projects, a header could be included with ``@i``.
-        The downside is that we have a lot of variable = value syntax that makes it
+        The downside is that we have a lot of *variable = value* syntax that makes it
         more like a properties file than a ``.w`` syntax file. It seems needless to invent 
         a lot of new syntax just for configuration.
+        
+    -   See below on switching to Jinja2. In this case, the templates can be provided via
+        a Jinja configuration (there are many choices.) By stepping away from the ``string.Template``,
+        we can incorporate list-processing ``{%for%}...{%endfor%}`` construct that 
+        pushes some processing into the template.
 
-#.  JSON-based logging configuration file would be helpful. 
+#.  Separate TOML-based logging configuration file would be helpful. 
     Should be separate from template configuration.
 
+#.  Rethink the weaver header. Are |loz| and |srarr| REALLY necessary? 
+    Can we use ◊ and → now that Unicode is more universal?
+    And why ``'\N{LOZENGE}'``? There's a nice ``'\N{END OF PROOF}'`` symbol we could use.
+
+    -   Currently, we rely on a list of things which **must** be present
+        in the document to be woven correctly. Consider a standard RST starter template with the definitions
+        provided. 
+
+    -   Add a ``@h`` "header goes here" command to allow weaving any **pyWeb** required addons to 
+        a LaTeX header, HTML header or RST header.
+        These are extra ``..  include::``, ``\\usepackage{fancyvrb}`` or maybe an HTML CSS reference
+        that come from **pyWeb** and need to be folded into otherwise boilerplate documents.
+        
+    
+    -   In the long run, even tangling should permit templates with "assumed" or "implied" code in it.
+        The use case is the book chapters with test cases that are **not** woven into the text.
+    
+    -   Or. Tangle-only chunks that are NOT woven into the final document. 
+    
+#.  Update the ``-indent`` option on @d chunks to accept a numeric argument with the 
+    specific indentation value. This becomes a kind of "noindent" with a given
+    value. The ``-noindent`` would then be the same as ``-indent 0``.  
+    Currently, `-indent` and `-noindent` are true/false flags. 
+    
 #.  We might want to decompose the ``impl.w`` file: it's huge.
     
 #.  We might want to interleave code and test into a document that presents both
-    side-by-side. They get routed to different output files.
+    side-by-side. We can route to multiple files.
+    It's a little awkward to create tangled files in multiple directories;
+    We'd have to use ``../tests/whatever.py``, **assuming** we were always using ``-o src``.
 
-#.  Fix name definition order. There's no **good** reason why a full name should
+#.  Fix name definition order. There's no **good** reason why a full name must
     be first and elided names defined later.
 
-#.  Add a ``@h`` "header goes here" command to allow weaving any **pyWeb** required addons to 
-    a LaTeX header, HTML header or RST header.
-    These are extra ``..  include::``, ``\\usepackage{fancyvrb}`` or maybe an HTML CSS reference
-    that come from **pyWeb** and need to be folded into otherwise boilerplate documents.
-    
-#.  Update the ``-indent`` option to accept a numeric argument with the 
-    specific indentation value. This becomes a kind of "noindent" with a given
-    value. The ``-noindent`` would then be the same as ``-indent 0``.
-    
 #.  Offer a basic XHTML template that uses ``CDATA`` sections instead of quoting.
     Does require the standard quoting for the ``CDATA`` end tag.
 
@@ -8486,7 +8761,7 @@ There are two possible projects that might prove useful.
 
 -   Jinja2 for better templates.
 
--   pyYAML for slightly cleaner encoding of logging configuration
+-   ``pyYAML`` or ``toml`` for slightly cleaner encoding of logging configuration
     or other configuration.
 
 There are advantages and disadvantages to depending on other projects. 
@@ -8501,17 +8776,17 @@ Change Log
 
 Changes for 3.1
 
--   Change to Python 3.10.
+-   Change to Python 3.10 as the supported version.
 
--   Add type hints, f-strings, pathlib, abc.ABC.
+-   Add type hints, f-strings, ``pathlib``, ``abc.ABC``.
 
 -   Replace some complex ``elif`` blocks with ``match`` statements.
 
--   Use pytest as a test runner.
+-   Use **pytest** as a test runner.
 
 -   Add a ``Makefile``, ``pyproject.toml``, ``requirements.txt`` and ``requirements-dev.txt``.
 
--   Add ``-o dir`` option to write output to a directory of choice, simplifying **tox** setup.
+-   Implement ``-o dir`` option to write output to a directory of choice, simplifying **tox** setup.
 
 -   Add ``bootstrap`` directory with a snapshot of a previous working release to simplify development.
 
@@ -8520,6 +8795,9 @@ Changes for 3.1
 -   Replace hand-build mock classes with ``unittest.mock.Mock`` objects
 
 -   Separate the projec into ``src``, ``tests``, ``examples``. Cleanup ``Makefile``, ``pyproject.toml``, etc.
+
+-   Silence the ERROR-level logging during testing.
+
 
 Changes for 3.0
 
@@ -9212,9 +9490,9 @@ User Identifiers
 
 ..	class:: small
 
-	Created by /Users/slott/Documents/Projects/py-web-tool/bootstrap/pyweb.py at Sun Jun 12 20:16:28 2022.
+	Created by /Users/slott/Documents/Projects/py-web-tool/bootstrap/pyweb.py at Mon Jun 13 11:12:26 2022.
 
-    Source pyweb.w modified Sun Jun 12 19:32:17 2022.
+    Source pyweb.w modified Mon Jun 13 08:52:05 2022.
 
 	pyweb.__version__ '3.0'.
 

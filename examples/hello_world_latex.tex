@@ -26,7 +26,7 @@ message:
 
 \label{pyweb1}
     \begin{flushleft}
-    \textit{Code example test.py (1)}
+    \textit{Code example hw_latex_1.py (1)}
     \begin{Verbatim}[commandchars=\\\{\},codes={\catcode`$=3\catcode`^=7},frame=single]
 
 $\triangleright$ Code Example Import the os module (3)
@@ -34,16 +34,16 @@ $\triangleright$ Code Example Get the OS description (4)
 $\triangleright$ Code Example Construct the message with Concatenation (5)
 $\triangleright$ Code Example Print the message (7)
 
-    \end{Verbatim}
-    
-    \end{flushleft}
+\end{Verbatim}
+[]
+\end{flushleft}
 
 
 The second uses string substitution:
 
 \label{pyweb2}
     \begin{flushleft}
-    \textit{Code example test2.py (2)}
+    \textit{Code example hw_latex_2.py (2)}
     \begin{Verbatim}[commandchars=\\\{\},codes={\catcode`$=3\catcode`^=7},frame=single]
 
 $\triangleright$ Code Example Import the os module (3)
@@ -51,9 +51,9 @@ $\triangleright$ Code Example Get the OS description (4)
 $\triangleright$ Code Example Construct the message with Substitution (6)
 $\triangleright$ Code Example Print the message (7)
 
-    \end{Verbatim}
-    
-    \end{flushleft}
+\end{Verbatim}
+[]
+\end{flushleft}
 
 
 \subsection{Retrieving the OS description}
@@ -67,20 +67,19 @@ First we must import the os module so we can learn about the OS:
 
 import os
 
-    \end{Verbatim}
-    
+\end{Verbatim}
+
     \footnotesize
     Used by:
     \begin{list}{}{}
     
-    \item Code example test.py (1) (Sect. \ref{pyweb1}, p. \pageref{pyweb1})
+    \item Code example hw_latex_1.py (1) (Sect. \ref{pyweb1}, p. \pageref{pyweb1})
 ; 
-    \item Code example test2.py (2) (Sect. \ref{pyweb2}, p. \pageref{pyweb2})
+    \item Code example hw_latex_2.py (2) (Sect. \ref{pyweb2}, p. \pageref{pyweb2})
 
     \end{list}
     \normalsize
-    
-    \end{flushleft}
+\end{flushleft}
 
 
 That having been done, we can retrieve Python's name for the OS type:
@@ -92,20 +91,19 @@ That having been done, we can retrieve Python's name for the OS type:
 
 os_name = os.name
 
-    \end{Verbatim}
-    
+\end{Verbatim}
+
     \footnotesize
     Used by:
     \begin{list}{}{}
     
-    \item Code example test.py (1) (Sect. \ref{pyweb1}, p. \pageref{pyweb1})
+    \item Code example hw_latex_1.py (1) (Sect. \ref{pyweb1}, p. \pageref{pyweb1})
 ; 
-    \item Code example test2.py (2) (Sect. \ref{pyweb2}, p. \pageref{pyweb2})
+    \item Code example hw_latex_2.py (2) (Sect. \ref{pyweb2}, p. \pageref{pyweb2})
 
     \end{list}
     \normalsize
-    
-    \end{flushleft}
+\end{flushleft}
 
 
 \subsection{Building the message}
@@ -119,18 +117,17 @@ Now, we're ready for the meat of the application: concatenating two strings:
 
 msg = "Hello, " + os_name + "!"
 
-    \end{Verbatim}
-    
+\end{Verbatim}
+
     \footnotesize
     Used by:
     \begin{list}{}{}
     
-    \item Code example test.py (1) (Sect. \ref{pyweb1}, p. \pageref{pyweb1})
+    \item Code example hw_latex_1.py (1) (Sect. \ref{pyweb1}, p. \pageref{pyweb1})
 
     \end{list}
     \normalsize
-    
-    \end{flushleft}
+\end{flushleft}
 
 
 But wait!  Is there a better way?  Using string substitution might be
@@ -141,24 +138,23 @@ better:
     \textit{Code example Construct the message with Substitution (6)}
     \begin{Verbatim}[commandchars=\\\{\},codes={\catcode`$=3\catcode`^=7},frame=single]
 
-msg = "Hello, %s!" % os_name
+msg = f"Hello, {os_name}!" 
 
-    \end{Verbatim}
-    
+\end{Verbatim}
+
     \footnotesize
     Used by:
     \begin{list}{}{}
     
-    \item Code example test2.py (2) (Sect. \ref{pyweb2}, p. \pageref{pyweb2})
+    \item Code example hw_latex_2.py (2) (Sect. \ref{pyweb2}, p. \pageref{pyweb2})
 
     \end{list}
     \normalsize
-    
-    \end{flushleft}
+\end{flushleft}
 
 
-We'll use the first of these methods in \texttt{test.py}, and the
-other in \texttt{test2.py}.
+We'll use the first of these methods in \texttt{latex_test.py}, and the
+other in \texttt{latex_test_2.py}.
 
 \subsection{Printing the message}
 
@@ -171,22 +167,21 @@ they have:
     \textit{Code example Print the message (7)}
     \begin{Verbatim}[commandchars=\\\{\},codes={\catcode`$=3\catcode`^=7},frame=single]
 
-print msg
+print(msg)
 
-    \end{Verbatim}
-    
+\end{Verbatim}
+
     \footnotesize
     Used by:
     \begin{list}{}{}
     
-    \item Code example test.py (1) (Sect. \ref{pyweb1}, p. \pageref{pyweb1})
+    \item Code example hw_latex_1.py (1) (Sect. \ref{pyweb1}, p. \pageref{pyweb1})
 ; 
-    \item Code example test2.py (2) (Sect. \ref{pyweb2}, p. \pageref{pyweb2})
+    \item Code example hw_latex_2.py (2) (Sect. \ref{pyweb2}, p. \pageref{pyweb2})
 
     \end{list}
     \normalsize
-    
-    \end{flushleft}
+\end{flushleft}
 
 
 \end{document}
