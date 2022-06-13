@@ -478,49 +478,69 @@ Tools like ``pytest`` and ``tox`` are also used for development.
 The **py-web-tool** ``.w`` Markup Language
 ==========================================
 
-The essence of literate programming is a markup language that distinguishes code
+The essence of literate programming is a markup language that includes both code
 from documentation. For tangling, the code is relevant. For weaving, both code
 and documentation are relevant.
 
-The **py-web-tool** markup defines a sequence of *Chunks*. 
-Each Chunk is either program source code to 
-be *tangled* or it is documentation to be *woven*.  The bulk of
-the file is typically documentation chunks that describe the program in
-some human-oriented markup language like RST, HTML, or LaTeX.
+The source document is a "Web" documentation that includes the code.
+It's important to see the ``.w`` file as the final documentation.  The code is tangled out 
+of the source web.  
 
-
-The **py-web-tool** tool parses the input, and performs the
+The **py-web-tool** tool parses the ``.w`` file, and performs the
 tangle and weave operations.  It *tangles* each individual output file
-from the program source chunks.  It *weaves* a final documentation file
+from the program source chunks.  It *weaves* the final documentation file
 file from the entire sequence of chunks provided, mixing the author's 
 original documentation with some markup around the embedded program source.
 
-**py-web-tool** markup surrounds the code with tags. Everything else is documentation.
-When tangling, the tagged code is assembled into the final file.
-When weaving, the tags are replaced with output markup. This means that **py-web-tool**
-is not **totally** independent of the output markup.
+Concepts
+---------
 
-The code chunks will have their indentation adjusted to match the context in which
-they were originally defined. This assures that Python (which relies on indentation)
-parses correctly. For other languages, proper indentation is expected but not required.
+The ``.w`` file has two tiers of markup in it.
 
-The non-code chunks are not transformed up in any way.  Everything that's not
+-   At the top, it has **py-web-tool** markup to distinguish
+    documentation chunks from code chunks. 
+    
+-   Within the documentation chunks, there can be 
+    markup for the target publication tool chain. This might
+    be RST, LaTeX, HTML, or some other markup language.
+    
+The **py-web-tool** markup decomposes the source document a sequence of *Chunks*. 
+Each Chunk is one of the two kinds:
+ 
+-   program source code to be *tangled* and *woven*.
+
+-   documentation to be *woven*.  
+
+The bulk of the file is typically documentation chunks that describe the program in
+some publication-oriented markup language like RST, HTML, or LaTeX.
+
+**py-web-tool** markup surrounds the code with "commands." Everything else is documentation.
+
+The code chunks have two transformations applied.
+
+- When Tangling, the indentation is adjusted to match the context in which they were originally defined. 
+  This assures that Python (which relies on indentation)
+  parses correctly. For other languages, proper indentation is expected but not required.
+
+- When Weaving, selected characters can be quoted so they don't break the publication tool.
+  For HTML, ``&``, ``<``, ``>`` are quoted properly. For LaTeX, a few escapes are used
+  to avoid problems with the ``fancyvrb`` environment.
+
+The non-code, documentation chunks are not transformed up in any way.  Everything that's not
 explicitly a code chunk is output without modification.
 
-All of the **py-web-tool** tags begin with ``@``.  This can be changed.
+All of the **py-web-tool** tags begin with ``@``. This is sometimes called the command prefix.
+(This can be changed.) The tags were historically referred to as "commands."
 
 The *Structural* tags (historically called "major commands") partition the input and define the
 various chunks.  The *Inline* tags are (called "minor commands") are used to control the
-woven and tangled output from those chunks. There are *Content* tags which generate 
+woven and tangled output from the defined chunks. There are *Content* tags which generate 
 summary cross-reference content in woven files.
 
-Concepts
---------
+Boilerplate
+-----------
 
-The ``.w`` file **is** the final documentation.  The code is tangled out 
-of this.  
-
-There are some mandatory "boilerplate" required to make a working document.
+There is some mandatory "boilerplate" required to make a working document.
 Requirements vary by markup language.
 
 RST
@@ -8651,78 +8671,35 @@ A customized weaver generally has three parts.
 
 ..    py-web-tool/src/todo.w 
 
-Python 3.10 Migration
-=====================
-
-1. [x] Add type hints.
-
-#. [x] Replace all ``.format()`` with f-strings.
-
-#. [x] Replace filename strings (and ``os.path``) with ``pathlib.Path``.
-
-#. [x] Add ``abc`` to formalize Abstract Base Classes.
-
-#. [x] Use ``match`` statements for some of the ``elif`` blocks.
-
-#. [x] Introduce pytest instead of building a test runner from ``runner.w``.
-
-#. [x] Add ``-o dir`` option to write output to a directory of choice. Requires ``pathlib``.
-
-#. [x] Finish ``pyproject.toml``. Requires ``-o dir`` option.
-
-#. [x] Add ``bootstrap`` directory.
-
-#. [x] Test cases for ``weave.py`` and ``tangle.py``
- 
-#. [x] Replace various mock classes with ``unittest.mock.Mock`` objects and appropriate testing.
-
-#. [x] Separate ``tests``, ``examples``, and ``src`` from each other. 
-
-#. [ ] Rename the module from ``pyweb`` to ``pylpweb`` to avoid name squatting issues.
-       Rename the project from ``py-web-tool`` to ``py-lpweb``.
-
  
 To Do
 =======
+
+1.  Rename the module from ``pyweb`` to ``pylpweb`` to avoid name squatting issues.
+    Rename the project from ``py-web-tool`` to ``py-lpweb``.
     
-1.  Add a JSON-based (or TOML) configuration file for templates.
+2.  Switch to jinja templates.
 
     -   See the ``weave.py`` example. 
         Defining templates in the source removes any need for a command-line option. A silly optimization.
         Setting the "command character" to something other than ``@`` can be done in the configuration, too.
 
-    -   An alternative is to get markup templates from some kind of "header" section in the ``.w`` file.  
-        To support reuse over multiple projects, a header could be included with ``@i``.
-        The downside is that we have a lot of *variable = value* syntax that makes it
-        more like a properties file than a ``.w`` syntax file. It seems needless to invent 
-        a lot of new syntax just for configuration.
-        
-    -   See below on switching to Jinja2. In this case, the templates can be provided via
+    -   With Jinjda templates can be provided via
         a Jinja configuration (there are many choices.) By stepping away from the ``string.Template``,
         we can incorporate list-processing ``{%for%}...{%endfor%}`` construct that 
         pushes some processing into the template.
 
 #.  Separate TOML-based logging configuration file would be helpful. 
-    Should be separate from template configuration.
+    Must be separate from template configuration.
 
-#.  Rethink the weaver header. Are |loz| and |srarr| REALLY necessary? 
+#.  Rethink the presentation. Are |loz| and |srarr| REALLY necessary? 
     Can we use ◊ and → now that Unicode is more universal?
     And why ``'\N{LOZENGE}'``? There's a nice ``'\N{END OF PROOF}'`` symbol we could use.
-
-    -   Currently, we rely on a list of things which **must** be present
-        in the document to be woven correctly. Consider a standard RST starter template with the definitions
-        provided. 
-
-    -   Add a ``@h`` "header goes here" command to allow weaving any **pyWeb** required addons to 
-        a LaTeX header, HTML header or RST header.
-        These are extra ``..  include::``, ``\\usepackage{fancyvrb}`` or maybe an HTML CSS reference
-        that come from **pyWeb** and need to be folded into otherwise boilerplate documents.
-        
+    Remove the unused ``header``, ``docBegin()``, and ``docEnd()``. 
     
-    -   In the long run, even tangling should permit templates with "assumed" or "implied" code in it.
-        The use case is the book chapters with test cases that are **not** woven into the text.
-    
-    -   Or. Tangle-only chunks that are NOT woven into the final document. 
+#.  Tangling can include non-woven content. More usefully, Weaving can exclude some chunks.
+    The use case is a book chapter with test cases that are **not** woven into the text.
+    Add an option to define tangle-only chunks that are NOT woven into the final document. 
     
 #.  Update the ``-indent`` option on @d chunks to accept a numeric argument with the 
     specific indentation value. This becomes a kind of "noindent" with a given
@@ -8754,20 +8731,6 @@ To Do
     While this will create a more proper **Composition** pattern implementation, it
     leads to the question of why nest ``@d`` or ``@o`` chunks in the first place?
 
-Other Thoughts
-----------------
-
-There are two possible projects that might prove useful.
-
--   Jinja2 for better templates.
-
--   ``pyYAML`` or ``toml`` for slightly cleaner encoding of logging configuration
-    or other configuration.
-
-There are advantages and disadvantages to depending on other projects. 
-The disadvantage is a (very low, but still present) barrier to adoption. 
-The advantage of adding these two projects might be some simplification.
-
 
 ..    py-web-tool/src/done.w 
 
@@ -8798,6 +8761,7 @@ Changes for 3.1
 
 -   Silence the ERROR-level logging during testing.
 
+-   Clean up the examples
 
 Changes for 3.0
 
@@ -9490,7 +9454,7 @@ User Identifiers
 
 ..	class:: small
 
-	Created by /Users/slott/Documents/Projects/py-web-tool/bootstrap/pyweb.py at Mon Jun 13 11:12:26 2022.
+	Created by /Users/slott/Documents/Projects/py-web-tool/bootstrap/pyweb.py at Mon Jun 13 13:20:24 2022.
 
     Source pyweb.w modified Mon Jun 13 08:52:05 2022.
 

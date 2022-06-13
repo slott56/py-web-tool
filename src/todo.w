@@ -1,73 +1,32 @@
 ..    py-web-tool/src/todo.w 
 
-Python 3.10 Migration
-=====================
-
-1. [x] Add type hints.
-
-#. [x] Replace all ``.format()`` with f-strings.
-
-#. [x] Replace filename strings (and ``os.path``) with ``pathlib.Path``.
-
-#. [x] Add ``abc`` to formalize Abstract Base Classes.
-
-#. [x] Use ``match`` statements for some of the ``elif`` blocks.
-
-#. [x] Introduce pytest instead of building a test runner from ``runner.w``.
-
-#. [x] Add ``-o dir`` option to write output to a directory of choice. Requires ``pathlib``.
-
-#. [x] Finish ``pyproject.toml``. Requires ``-o dir`` option.
-
-#. [x] Add ``bootstrap`` directory.
-
-#. [x] Test cases for ``weave.py`` and ``tangle.py``
- 
-#. [x] Replace various mock classes with ``unittest.mock.Mock`` objects and appropriate testing.
-
-#. [x] Separate ``tests``, ``examples``, and ``src`` from each other. 
-
-#. [ ] Rename the module from ``pyweb`` to ``pylpweb`` to avoid name squatting issues.
-       Rename the project from ``py-web-tool`` to ``py-lpweb``.
-
  
 To Do
 =======
+
+1.  Rename the module from ``pyweb`` to ``pylpweb`` to avoid name squatting issues.
+    Rename the project from ``py-web-tool`` to ``py-lpweb``.
     
-1.  Add a JSON-based (or TOML) configuration file for templates.
+2.  Switch to jinja templates.
 
     -   See the ``weave.py`` example. 
         Defining templates in the source removes any need for a command-line option. A silly optimization.
         Setting the "command character" to something other than ``@@`` can be done in the configuration, too.
 
-    -   An alternative is to get markup templates from some kind of "header" section in the ``.w`` file.  
-        To support reuse over multiple projects, a header could be included with ``@@i``.
-        The downside is that we have a lot of *variable = value* syntax that makes it
-        more like a properties file than a ``.w`` syntax file. It seems needless to invent 
-        a lot of new syntax just for configuration.
-        
-    -   See below on switching to Jinja2. In this case, the templates can be provided via
+    -   With Jinjda templates can be provided via
         a Jinja configuration (there are many choices.) By stepping away from the ``string.Template``,
         we can incorporate list-processing ``{%for%}...{%endfor%}`` construct that 
         pushes some processing into the template.
 
 #.  Separate TOML-based logging configuration file would be helpful. 
-    Should be separate from template configuration.
+    Must be separate from template configuration.
 
-#.  Rethink the weaver header. Are |loz| and |srarr| REALLY necessary? 
+#.  Rethink the presentation. Are |loz| and |srarr| REALLY necessary? 
     Can we use ◊ and → now that Unicode is more universal?
     And why ``'\N{LOZENGE}'``? There's a nice ``'\N{END OF PROOF}'`` symbol we could use.
-
-    -   Currently, we rely on a list of things which **must** be present
-        in the document to be woven correctly. Consider a standard RST starter template with the definitions
-        provided. 
-
-    -   Add a ``@@h`` "header goes here" command to allow weaving any **pyWeb** required addons to 
-        a LaTeX header, HTML header or RST header.
-        These are extra ``..  include::``, ``\\usepackage{fancyvrb}`` or maybe an HTML CSS reference
-        that come from **pyWeb** and need to be folded into otherwise boilerplate documents.
+    Remove the unused ``header``, ``docBegin()``, and ``docEnd()``. 
     
-#.  Tangling can include non-woven code in it.
+#.  Tangling can include non-woven content. More usefully, Weaving can exclude some chunks.
     The use case is a book chapter with test cases that are **not** woven into the text.
     Add an option to define tangle-only chunks that are NOT woven into the final document. 
     
@@ -100,17 +59,3 @@ To Do
     This similarity could be factored out. 
     While this will create a more proper **Composition** pattern implementation, it
     leads to the question of why nest ``@@d`` or ``@@o`` chunks in the first place?
-
-Other Thoughts
-----------------
-
-There are two possible projects that might prove useful.
-
--   Jinja2 for better templates.
-
--   ``pyYAML`` or ``toml`` for slightly cleaner encoding of logging configuration
-    or other configuration.
-
-There are advantages and disadvantages to depending on other projects. 
-The disadvantage is a (very low, but still present) barrier to adoption. 
-The advantage of adding these two projects might be some simplification.

@@ -27,6 +27,7 @@ Changes for 3.1
 
 -   Silence the ERROR-level logging during testing.
 
+-   Clean up the examples
 
 Changes for 3.0
 
