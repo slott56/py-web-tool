@@ -3,6 +3,14 @@
 Change Log
 ===========
 
+Changes for 3.2
+
+-   Replaced weaving process with Jinja templates.
+
+-   Dramatic redesign to Class, Chunk, and Command class hierarchies.
+
+-   Dramatic redesign to Emitters.
+
 Changes for 3.1
 
 -   Change to Python 3.10 as the supported version.

@@ -8,22 +8,22 @@ DOCUTILS_PYLPWEB = docutils.conf pyweb.css page-layout.css
 
 .PHONY : test
 
-# Note the bootstrapping new version from version 3.0 as baseline.
-# Handy to keep this *outside* the project's Git repository.
-# Note that the bootstrap 3.0 version doesn't support the -o option.
+# Note the bootstrapping new version from version 3.1 as baseline.
 PYLPWEB_BOOTSTRAP=${PWD}/bootstrap/pyweb.py
 
 test : $(SOURCE_PYLPWEB) $(TEST_PYLPWEB)
-	cd src && python3 $(PYLPWEB_BOOTSTRAP) -xw pyweb.w 
+	python3 $(PYLPWEB_BOOTSTRAP) -xw -v -o src src/pyweb.w 
 	python3 src/pyweb.py tests/pyweb_test.w -o tests
-	PYTHONPATH=${PWD}/src pytest
+	PYTHONPATH=${PWD}/src PYTHONHASHSEED=0 pytest -vv
 	python3 src/pyweb.py tests/pyweb_test.w -xt -o tests
 	rst2html.py tests/pyweb_test.rst tests/pyweb_test.html
 	mypy --strict --show-error-codes src
 
+pretest : src/pyweb.py tests/pyweb_test.rst
+
 doc : src/pyweb.html
 
-build : src/pyweb.py src/tangle.py src/weave.py src/pyweb.html
+build : src/pyweb.py src/tangle.py src/weave.py src/pyweb.html tests/pyweb_test.rst
 
 examples : examples/hello_world_latex.tex examples/hello_world_rst.html examples/ackermanns.html
 

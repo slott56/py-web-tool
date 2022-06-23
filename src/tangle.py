@@ -20,13 +20,9 @@ def main(source: Path) -> None:
             theTangler=pyweb.TanglerMake(),
             webReader=pyweb.WebReader(),
         )
-    
-        w = pyweb.Web() 
-        
+            
         for action in pyweb.LoadAction(), pyweb.TangleAction():
-            action.web = w
-            action.options = options
-            action()
+            action(options)
             logger.info(action.summary())
 
 if __name__ == "__main__":

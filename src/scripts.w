@@ -49,13 +49,9 @@ def main(source: Path) -> None:
             theTangler=pyweb.TanglerMake(),
             webReader=pyweb.WebReader(),
         )
-    
-        w = pyweb.Web() 
-        
+            
         for action in pyweb.LoadAction(), pyweb.TangleAction():
-            action.web = w
-            action.options = options
-            action()
+            action(options)
             logger.info(action.summary())
 
 if __name__ == "__main__":
@@ -91,7 +87,7 @@ import pyweb
 
 @d weave.py custom weaver definition...
 @{
-class MyHTML(pyweb.HTML):
+class MyHTML(pyweb.Weaver):
     """HTML formatting templates."""
     extension = ".html"
     
@@ -145,6 +141,7 @@ def main(source: Path) -> None:
             source_path=source,
             output=source.parent,
             verbosity=logging.INFO,
+            weaver="html",
             command='@@',
             permitList=[],
             tangler_line_numbers=False,
@@ -152,13 +149,9 @@ def main(source: Path) -> None:
             theWeaver=MyHTML(),
             webReader=pyweb.WebReader(),
         )
-    
-        w = pyweb.Web() 
-    
+        
         for action in pyweb.LoadAction(), pyweb.WeaveAction():
-            action.web = w
-            action.options = options
-            action()
+            action(options)
             logger.info(action.summary())
 
 if __name__ == "__main__":

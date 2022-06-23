@@ -4,9 +4,6 @@ build-backend = "setuptools.build_meta"
 
 [tool.tox]
 legacy_tox_ini = """
-# After 3.1 release, with the -o option in the bootstrap directory.
-# We can change this to *also* bootstrap the next release 
-# From the 3.1 release as part of the tox test suite.
 [tox]
 envlist = py310
 
@@ -17,6 +14,7 @@ deps =
 setenv = 
     PYTHONPATH = {toxinidir}/src
 commands_pre = 
+    python3 bootstrap/pyweb.py -o src src/pyweb.w
     python3 src/pyweb.py -o tests tests/pyweb_test.w 
 commands = 
     pytest
