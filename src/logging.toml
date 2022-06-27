@@ -19,7 +19,7 @@ style = "{"
 level = "DEBUG"
 
 [loggers.WebReader]
-level = "INFO"
+level = "DEBUG"
 
 [loggers.TanglerMake]
 level = "DEBUG"

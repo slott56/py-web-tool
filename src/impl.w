@@ -160,7 +160,7 @@ from dataclasses import dataclass, field
 import logging
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any, Optional, Literal, ClassVar
+from typing import Any, Optional, Literal, ClassVar, Union
 from weakref import ref, ReferenceType
 @}
 
@@ -194,7 +194,7 @@ class Web:
         # Named Chunks = Union of macro_iter and file_iter
         named_chunks = list(filter(lambda c: c.name is not None, self.chunks))
 
-        # Pass 2 -- locate the unabbreviated names
+        # Pass 2 -- locate the unabbreviated names in chunks and references to chunks
         self.chunk_map = {}
         for seq, c in enumerate(named_chunks, start=1):
             c.seq = seq
@@ -215,9 +215,15 @@ class Web:
             for name in c.def_names:
                 self.userid_map[name].append(c)
             if not c.path:
-                # Use ``@@d name`` chunks (reject ``@@o`` and text)
+                # Named ``@@d name`` chunks
+                c.initial = len(self.chunk_map[c.full_name]) == 0
                 self.chunk_map[c.full_name].append(c)
                 self.logger.debug(f"__post_init__ 3 {c.name=!r} -> {c.full_name=!r}")
+            else:
+                # Output ``@@o`` and anonymous chunks.
+                # Assume all @@o chunks are unique. If they're not, they overwrite each other.
+                # Also, there's not ``full_name`` for these chunks.
+                c.initial = True
                 
             # TODO: Accumulate all chunks that contribute to a named file...
 
@@ -368,12 +374,13 @@ class Chunk:
     commands: list["Command"] = field(default_factory=list)  #: Sequence of commands inside this chunk
     options: list[str] = field(default_factory=list)  #: Parsed options for @@d and @@o chunks.
     def_names: list[str] = field(default_factory=list)  #: Names defined after ``@@|`` in this chunk
+    initial: bool = False  #: Is this the first use of a given Chunk name?
     comment_start: str | None = None  #: If injecting location details, this is the prefix
     comment_end: str | None = None  #: If injecting location details, this is the suffix
 
     references: int = field(init=False, default=0)
     referencedBy: Optional["Chunk"] = field(init=False, default=None)
-    web: ReferenceType["Web"] = field(init=False)
+    web: ReferenceType["Web"] = field(init=False, repr=False)
     logger: logging.Logger = field(init=False, default=logging.getLogger("Chunk"))
 
     @@property
@@ -389,6 +396,9 @@ class Chunk:
     def typeid(cls) -> TypeId:
         return TypeId(cls)
 
+    @@property
+    def location(self) -> tuple[str, int]:
+        return self.commands[0].location
 
 class OutputChunk(Chunk):
     @@property
@@ -452,7 +462,7 @@ class TextCommand:
     text: str  #: The text
     location: tuple[str, int]  #: The (filename, line number)
     
-    web: ReferenceType["Web"] = field(init=False)
+    web: ReferenceType["Web"] = field(init=False, repr=False)
     logger: logging.Logger = field(init=False, default=logging.getLogger("TextCommand"))
     definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
 
@@ -482,7 +492,7 @@ class CodeCommand:
     text: str  #: The code
     location: tuple[str, int]
     
-    web: ReferenceType["Web"] = field(init=False)
+    web: ReferenceType["Web"] = field(init=False, repr=False)
     logger: logging.Logger = field(init=False, default=logging.getLogger("CodeCommand"))
     definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
 
@@ -514,7 +524,7 @@ class ReferenceCommand:
     name: str  #: The name provided
     location: tuple[str, int]
     
-    web: ReferenceType["Web"] = field(init=False)
+    web: ReferenceType["Web"] = field(init=False, repr=False)
     definition: bool = field(init=False, default=False)
     logger: logging.Logger = field(init=False, default=logging.getLogger("ReferenceCommand"))
 
@@ -563,7 +573,7 @@ class ReferenceCommand:
 class FileXrefCommand:
     location: tuple[str, int]
 
-    web: ReferenceType["Web"] = field(init=False)
+    web: ReferenceType["Web"] = field(init=False, repr=False)
     logger: logging.Logger = field(init=False, default=logging.getLogger("FileXrefCommand"))
     definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
 
@@ -586,7 +596,7 @@ class FileXrefCommand:
 class MacroXrefCommand:
     location: tuple[str, int]
 
-    web: ReferenceType["Web"] = field(init=False)
+    web: ReferenceType["Web"] = field(init=False, repr=False)
     logger: logging.Logger = field(init=False, default=logging.getLogger("MacroXrefCommand"))
     definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
 
@@ -609,7 +619,7 @@ class MacroXrefCommand:
 class UserIdXrefCommand:
     location: tuple[str, int]
 
-    web: ReferenceType["Web"] = field(init=False)
+    web: ReferenceType["Web"] = field(init=False, repr=False)
     logger: logging.Logger = field(init=False, default=logging.getLogger("UserIdXrefCommand"))
     definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
 
@@ -627,6 +637,16 @@ class UserIdXrefCommand:
 
     def indent(self) -> int:
         return 0
+@}
+
+We can define a union of these various data classes 
+to act as an abstract superclass for type hints.
+
+@d Command class hierarchy...
+@{
+Command = Union[TextCommand, CodeCommand, ReferenceCommand,
+    FileXrefCommand, MacroXrefCommand, UserIdXrefCommand
+    ]
 @}
 
 Emitters
@@ -671,39 +691,61 @@ class Emitter(abc.ABC):
 
 @d Weaver Subclass...
 @{
-@<RST Templates -- these are the default templates@>
+@<Debug Templates -- these display debugging information@>
+
+@<RST Templates -- the default weave output@>
+
+@<HTML Templates -- emit HTML weave output@> 
+
+@<LaTeX Templates -- emit LaTeX weave output@> 
+
+@<Common base template -- this is used for ALL weaving@>
 
 class Weaver(Emitter):
+    template_map = {
+        "debug": {"default": debug_weaver_template, "overrides": ""},
+        "rst": {"default": rst_weaver_template, "overrides": rst_overrides_template},
+        "html": {"default": html_weaver_template, "overrides": html_overrides_template},
+        "tex": {"default": latex_weaver_template, "overrides": ""},
+    }
+        
+    quote_rules = {
+        "rst": rst_quote_rules,
+        "html": html_quote_rules,
+        "tex": latex_quote_rules,
+        "debug": debug_quote_rules,
+    }
+
     def __init__(self, output: Path = Path.cwd()) -> None:
         super().__init__(output)
-        # TODO: Track down all markup-specific templates
-        # HTML weaver, LaTeX weaver 
-        self.env = Environment(
-            loader=DictLoader(
-                {
-                    'rst_weaver': rst_weaver_template,
-                    'rst_overrides': rst_overrides_template,
-                    'base_weaver': base_weaver_template_2,
-                }
-            ),
-            autoescape=select_autoescape()
-        )
         # Summary
         self.linesWritten = 0
         
     def set_markup(self, markup: str = "rst") -> "Weaver":
-        self.env.filters |= {"quote_rules": quote_rules[markup]}
         self.markup = markup
         return self
         
     def emit(self, web: Web) -> None:
         self.target_path = (self.output / web.web_path.name).with_suffix(f".{self.markup}")
         self.logger.info("Weaving %s using %s markup", self.target_path, self.markup)
-        template = self.env.get_template("base_weaver")
         with self.target_path.open('w') as target_file:
-            for text in template.generate(markup="rst_weaver", overrides="rst_overrides", web=web):
+            for text in self.generate_text(web):
                 self.linesWritten += text.count("\n")
                 target_file.write(text)
+                
+    def generate_text(self, web: Web) -> Iterator[str]:
+        self.env = Environment(
+            loader=DictLoader(
+                self.template_map[self.markup] |
+                {'base_weaver': base_template,}
+            ),
+            autoescape=select_autoescape()
+        )
+        self.env.filters |= {
+            "quote_rules": self.quote_rules[self.markup]
+        }
+        template = self.env.get_template("base_weaver")
+        yield from template.generate(web=web)
 @}
 
 @d Quoting rule definitions...
@@ -726,18 +768,98 @@ def html_quote_rules(text: str) -> str:
         ("&", "&amp;"),  # Must be first
         ("<", "&lt;"),
         (">", "&gt;"),
-        ('"', "&quot;"),
+        ('"', "&quot;"),  # Only applies inside tags...
     ]
     clean = text
     for from_, to_ in quoted_chars:
         clean = clean.replace(from_, to_)
     return clean
 
-quote_rules = {
-    "rst": rst_quote_rules,
-    "html": html_quote_rules,
-}
+def latex_quote_rules(text: str) -> str:
+    quoted_strings = [
+        ("\\end{Verbatim}", "\\end\\,{Verbatim}"),  # Allow \end{Verbatim} in a Verbatim context
+        ("\\{", "\\\\,{"), # Prevent unexpected commands in Verbatim
+        ("$", "\\$"), # Prevent unexpected math in Verbatim
+    ]
+    clean = text
+    for from_, to_ in quoted_strings:
+        clean = clean.replace(from_, to_)
+    return clean
+
+def debug_quote_rules(text: str) -> str:
+    return repr(text)
 @}
+
+The objective is to have a generic "weaver" template which includes three levels
+of template definition:
+
+1. Defaults
+2. Configured overrides from ``pyweb.toml``
+3. Document overrides from the ``.w`` file in ``@@t name @@{...@@}`` commands.
+
+This means there is a two-step binding between document and macros.
+
+1. The base weaver document should import three generic template definitions:
+
+    ``{%- from 'markup' import * %}``
+
+    ``{%- from 'configured' import * %}``
+
+    ``{%- from 'document' import * %}``
+
+2. These names map (*somehow*) to specific templates based on markup language.
+    ``markup`` -> ``rst/markup``, etc.
+    
+This allows us to provide all templates and make a final binding
+at weave time. We can use a prefix loader with a given prefix.
+Some kind of "import rst/markup as markup" would be ideal. 
+
+Jinja, however, doesn't seem to support this the same way Python does.
+There's no ``import as`` construct allowing very late binding.
+ 
+The alternative is to 
+create the environment very late in the process, once we have all the information
+available. We can then pick the templates to put into a DictLoader to support
+the standard weaving structure.
+
+@d Debug Templates...
+@{
+debug_weaver_template = dedent("""\
+    {%- macro text(command) -%}
+    text: {{command}}
+    {%- endmacro -%}
+    
+    {%- macro begin_code(chunk) %}
+    begin_code: {{chunk}}
+    {%- endmacro -%}
+    
+    {%- macro code(command) %}
+    code: {{command}}
+    {%- endmacro -%}
+    
+    {%- macro ref(id) -%}
+    ref: {{id}}
+    {%- endmacro -%}
+    
+    {%- macro end_code(chunk) %}
+    end_code: {{chunk}}
+    {% endmacro -%}
+    
+    {%- macro file_xref(command) -%}
+    file_xref {{command.files}}
+    {%- endmacro -%}
+    
+    {%- macro macro_xref(command) -%}
+    macro_xref {{command.macros}}
+    {%- endmacro -%}
+
+    {%- macro userid_xref(command) -%}
+    userid_xref {{command.userids}}
+    {%- endmacro -%}
+    """)
+@}
+
+The RST Templates produce ReStructuredText for the various web commands.
 
 @d RST Templates...
 @{
@@ -747,20 +869,18 @@ rst_weaver_template = dedent("""\
     {%- endmacro -%}
     
     {%- macro begin_code(chunk) %}
-    ..  _`{{chunk.full_name}} ({{chunk.seq}})`:
-    ..  rubric:: {{chunk.name}} ({{chunk.seq}}) =
+    ..  _`{{chunk.full_name or chunk.name}} ({{chunk.seq}})`:
+    ..  rubric:: {{chunk.full_name or chunk.name}} ({{chunk.seq}}) {% if chunk.initial %}={% else %}+={% endif %}
     ..  parsed-literal::
         :class: code
     {% endmacro -%}
     
-    {% macro code(command) %}
-        {% for line in command.lines -%}
-        {{line | quote_rules}}
-        {% endfor -%}
-    {% endmacro -%}
+    {%- macro code(command) %}
+        {{command.text | quote_rules}}
+    {%- endmacro -%}
     
-    {% macro ref(id) -%}
-    \N{RIGHTWARDS ARROW}\ `{{id.full_name}} ({{id.seq}})`_
+    {%- macro ref(id) %}
+        \N{RIGHTWARDS ARROW}\ `{{id.full_name}} ({{id.seq}})`_
     {%- endmacro -%}
     
     {%- macro end_code(chunk) %}
@@ -768,59 +888,184 @@ rst_weaver_template = dedent("""\
     
     ..  class:: small
     
-        \N{END OF PROOF} *{{chunk.full_name}} ({{chunk.seq}})*
+        \N{END OF PROOF} *{{chunk.full_name or chunk.name}} ({{chunk.seq}})*
         
     {% endmacro -%}
     
-    {% macro file_xref(command) -%}
+    {%- macro file_xref(command) -%}
     {% for file in command.files -%}
     :{{file.name}}:
-        {{ref(file)}}
+        \N{RIGHTWARDS ARROW}\ `{{file.name}} ({{file.seq}})`_
     {%- endfor %}
     {%- endmacro -%}
     
-    {% macro macro_xref(command) -%}
+    {%- macro macro_xref(command) -%}
     {% for macro in command.macros -%}
     :{{macro.full_name}}:
-        {% for d in macro.def_list -%}{{ref(d)}}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
+        {% for d in macro.def_list -%}\N{RIGHTWARDS ARROW}\ `{{d.full_name or d.name}} ({{d.seq}})`_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
         
     {% endfor %}
     {%- endmacro -%}
 
-    {% macro userid_xref(command) -%}
+    {%- macro userid_xref(command) -%}
     {% for userid in command.userids -%}
     :{{userid.userid}}:
-        {% for r in userid.ref_list -%}{{ref(r)}}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
+        {% for r in userid.ref_list -%}\N{RIGHTWARDS ARROW}\ `{{r.full_name or r.name}} ({{r.seq}})`_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
         
     {% endfor %}
     {%- endmacro -%}
-    """
-)
+    """)
 
-rst_overrides_template = dedent("""
-""")
+rst_overrides_template = dedent("""\
+    """)
+@}
 
-base_weaver_template_2 = dedent("""\
-    {%- from 'rst_weaver' import text, begin_code, code, end_code, file_xref, macro_xref, userid_xref, ref, ref_list -%}{#- default macros from rst_weaver -#}
-    {#- from 'rst_overrides' import *the names* -#}{#- customized macros from WEB document -#}
+The HTML templates use a relatively simple markup, avoiding any CSS names.
+A slightly more flexible approach might be to name specific CSS styles, and provide
+generic definitions for those styles. This would make it easier to
+tailor HTML output via CSS changes, avoiding any HTML modifications.
+
+@d HTML Templates...
+@{
+html_weaver_template = dedent("""\
+    {%- macro text(command) -%}
+    {{command.text}}
+    {%- endmacro -%}
+    
+    {%- macro begin_code(chunk) %}
+    <a name="pyweb_{{chunk.seq}}"></a>
+    <!--line number {{chunk.location}}-->
+    <p><em>{{chunk.full_name or chunk.name}} ({{chunk.seq}})</em> {% if chunk.initial %}={% else %}+={% endif %}</p>
+    <pre><code>
+    {%- endmacro -%}
+    
+    {%- macro code(command) -%}
+    {{command.text | quote_rules}}
+    {%- endmacro -%}
+    
+    {%- macro ref(id) %}
+    &rarr;<a href="#pyweb_{{id.seq}}"><em>{{id.full_name}} ({{id.seq}})</em></a>
+    {% endmacro -%}
+    
+    {%- macro end_code(chunk) %}
+    </code></pre>
+    <p>&#8718; <em>{{chunk.full_name or chunk.name}} ({{chunk.seq}})</em>.
+    </p> 
+    {% endmacro -%}
+    
+    {%- macro file_xref(command) %}
+    <dl>
+    {% for file in command.files -%}
+      <dt>{{file.name}}</dt><dd>{{ref(file)}}</dd>
+    {%- endfor %}
+    </dl>
+    {% endmacro -%}
+    
+    {%- macro macro_xref(command) %}
+    <dl>
+    {% for macro in command.macros -%}
+      <dt>{{macro.full_name}}<dt>
+      <dd>{% for d in macro.def_list -%}{{ref(d)}}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}</dd>
+    {% endfor %}
+    </dl>
+    {% endmacro -%}
+
+    {%- macro userid_xref(command) %}
+    <dl>
+    {% for userid in command.userids -%}
+      <dt>{{userid.userid}}</dt>
+      <dd>{% for r in userid.ref_list -%}{{ref(r)}}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}</dd>
+    {% endfor %}
+    </dl>
+    {% endmacro -%}
+    """)
+
+html_overrides_template = dedent("""\
+    """)
+
+@}
+
+The LaTEX templates use a markup focused in the ``verbatim`` environment.
+Common alternatives include ``listings`` and ``minted``.
+
+@d LaTeX Templates...
+@{
+latex_weaver_template = dedent("""\
+    {%- macro text(command) -%}
+    {{command.text}}
+    {%- endmacro -%}
+    
+    {%- macro begin_code(chunk) %}
+    \\label{pyweb-{{chunk.seq}}}
+    \\begin{flushleft}
+    \\textit{Code example {{chunk.full_name or chunk.name}} ({{chunk.seq}})}
+    \\begin{Verbatim}[commandchars=\\\\\\{\\},codes={\\catcode`$$=3\\catcode`^=7},frame=single]
+    {%- endmacro -%}
+    
+    {%- macro code(command) -%}
+    {{command.text | quote_rules}}
+    {%- endmacro -%}
+    
+    {%- macro ref(id) %}
+    $$\\triangleright$$ Code Example {{id.full_name}} ({{id.seq}})
+    {% endmacro -%}
+    
+    {%- macro end_code(chunk) %}
+    \\end{Verbatim}
+    \\end{flushleft}
+    {% endmacro -%}
+    
+    {%- macro file_xref(command) %}
+    \\begin{itemize}
+    {% for file in command.files -%}
+      \\item {{file.name}}: {{ref(file)}}
+    {%- endfor %}
+    \\end{itemize}
+    {% endmacro -%}
+    
+    {%- macro macro_xref(command) %}
+    \\begin{itemize}
+    {% for macro in command.macros -%}
+      \\item {{macro.full_name}} \\\\
+            {% for d in macro.def_list -%}{{ref(d)}}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
+    {% endfor %}
+    \\end{itemize}
+    {% endmacro -%}
+
+    {%- macro userid_xref(command) %}
+    \\begin{itemize}
+    {% for userid in command.userids -%}
+      \\item {{userid.userid}} \\\\
+            {% for r in userid.ref_list -%}{{ref(r)}}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
+    {% endfor %}
+    \\end{itemize}
+    {% endmacro -%}
+    """)
+@}
+
+@d Common base template...
+@{
+base_template = dedent("""\
+    {%- from 'default' import text, begin_code, code, end_code, file_xref, macro_xref, userid_xref, ref, ref_list -%}{#- default macros from rst_weaver -#}
+    {#- from 'overrides' import *the names* -#}{#- customized macros from WEB document -#}
     {% for chunk in web.chunks -%}
         {%- if chunk.typeid.OutputChunk or chunk.typeid.NamedChunk -%}
             {{begin_code(chunk)}}
-            {% for command in chunk.commands -%}
+            {%- for command in chunk.commands -%}
                 {%- if command.typeid.CodeCommand %}{{code(command)}}
                 {%- elif command.typeid.ReferenceCommand %}{{ref(command)}}
                 {%- endif -%}
-            {% endfor %}
+            {%- endfor -%}
             {{end_code(chunk)}}
         {%- elif chunk.typeid.Chunk -%}
-            {% for command in chunk.commands -%}
+            {%- for command in chunk.commands -%}
                 {%- if command.typeid.TextCommand %}{{text(command)}}
-                {%- elif command.typeid.ReferenceCommand %}{{text(command)}}
+                {%- elif command.typeid.ReferenceCommand %}{{ref(command)}}
                 {%- elif command.typeid.FileXrefCommand %}{{file_xref(command)}}
                 {%- elif command.typeid.MacroXrefCommand %}{{macro_xref(command)}}
                 {%- elif command.typeid.UserIdXrefCommand %}{{userid_xref(command)}}
-                {% endif -%}
-            {%- endfor %}
+                {%- endif -%}
+            {%- endfor -%}
         {%- endif -%}
     {%- endfor %}
 """)
@@ -1234,7 +1479,8 @@ class WebReader:
     filePath: Path  #: Input Path 
     _source: TextIO  #: Input file
     tokenizer: Tokenizer  #: The tokenizer used to find commands
-    content: list[Chunk]  #: the processing context -- a sequence of Chunk instances.
+    content: list[Chunk]  #: The sequence of Chunk instances being built
+    text_command: type[Command]
 
     def __init__(self, parent: Optional["WebReader"] = None) -> None:
         self.logger = logging.getLogger(self.__class__.__qualname__)
@@ -1315,11 +1561,11 @@ def handleCommand(self, token: str) -> bool:
         case self.cmdpipe:
             @<assign user identifiers to the current chunk@>
         case self.cmdf:
-            self.content[-1].commands.append(FileXrefCommand(self.tokenizer.lineNumber))
+            self.content[-1].commands.append(FileXrefCommand(self.location()))
         case self.cmdm:
-            self.content[-1].commands.append(MacroXrefCommand(self.tokenizer.lineNumber))
+            self.content[-1].commands.append(MacroXrefCommand(self.location()))
         case self.cmdu:
-            self.content[-1].commands.append(UserIdXrefCommand(self.tokenizer.lineNumber))
+            self.content[-1].commands.append(UserIdXrefCommand(self.location()))
         case self.cmdlangl:
             @<add a reference command to the current chunk@>
         case self.cmdlexpr:
@@ -1359,7 +1605,8 @@ newChunk = OutputChunk(
 )
 newChunk.filePath = self.filePath
 self.content.append(newChunk)
-self.content[-1].commands.append(CodeCommand("", self.location()))
+self.text_command = CodeCommand
+# self.content[-1].commands.append(CodeCommand("", self.location()))
 # capture an OutputChunk up to @@}
 @}
 
@@ -1405,7 +1652,8 @@ else:
 
 if newChunk:
     self.content.append(newChunk)
-self.content[-1].commands.append(CodeCommand("", self.location()))
+self.text_command = CodeCommand
+# self.content[-1].commands.append(CodeCommand("", self.location()))
 # capture a NamedChunk up to @@} or @@]
 @}
 
@@ -1478,6 +1726,7 @@ For the base ``Chunk`` class, this would be false, but for all other subclasses 
 @{
 # Start a new context for text or commands *after* this command.
 self.content.append(Chunk())
+self.text_command = TextCommand
 @}
 
 User identifiers occur after a ``@@|`` command inside a ``NamedChunk``.
@@ -1511,7 +1760,7 @@ tokens from the input, the middle token is the referenced name.
 # get the name, introduce into the named Chunk dictionary
 name = next(self.tokenizer).strip()
 closing = self.expect({self.cmdrangl})
-self.content[-1].commands.append(ReferenceCommand(name, self.tokenizer.lineNumber))
+self.content[-1].commands.append(ReferenceCommand(name, self.location()))
 self.logger.debug("Reading %r %r", name, closing)
 @}
 
@@ -1524,7 +1773,7 @@ There are two alternative semantics for an embedded expression.
 -   **Deferred Execution**.  This requires definition of a new subclass of ``Command``, 
     ``ExpressionCommand``, and appends it into the current ``Chunk``.  At weave and
     tangle time, this expression is evaluated.  The insert might look something like this:
-    ``aChunk.append(ExpressionCommand(expression, self.tokenizer.lineNumber))``.
+    ``aChunk.append(ExpressionCommand(expression, self.location()))``.
 
 -   **Immediate Execution**.  This simply creates a context and evaluates
     the Python expression.  The output from the expression becomes a ``TextCommand``, and
@@ -1580,7 +1829,8 @@ except Exception as exc:
     self.logger.error('Failure to process %r: result is %r', expression, exc)
     self.errors += 1
     result = f"@@({expression!r}: Error {exc!r}@@)"
-self.content[-1].commands.append(TextCommand(result, self.tokenizer.lineNumber))
+cls = self.text_command
+self.content[-1].commands.append(cls(result, self.location()))
 @}
 
 A double command sequence (``'@@@@'``, when the command is an ``'@@'``) has the
@@ -1595,7 +1845,8 @@ largely seamless.
 
 @d double at-sign...
 @{
-self.content[-1].commands.append(TextCommand(self.command, self.tokenizer.lineNumber))
+cls = self.text_command
+self.content[-1].commands.append(cls(self.command, self.location()))
 @}
 
 The ``expect()`` method examines the 
@@ -1652,11 +1903,12 @@ is that it's always loading a single top-level web.
 @d WebReader load...
 @{
 def load(self, filepath: Path, source: TextIO | None = None) -> list[Chunk]:
-    """A flat list of chunks can be made into a Web. 
-    Or. It can be used to extend a web because of a ``@@i`` command.
+    """Returns a flat list of chunks to be made into a Web. 
+    Also used to expand ``@@i`` included files.
     """
     self.filePath = filepath
     self.base_path = self.filePath.parent
+    self.text_command = TextCommand
 
     if source:
         self._source = source
@@ -1667,6 +1919,7 @@ def load(self, filepath: Path, source: TextIO | None = None) -> list[Chunk]:
     return self.content
 
 def parse_source(self) -> None:
+    """Builds a sequence of Chunks."""
     self.tokenizer = Tokenizer(self._source, self.command)
     self.totalFiles += 1
 
@@ -1679,13 +1932,21 @@ def parse_source(self) -> None:
                 continue
             else:
                 self.logger.error('Unknown @@-command in input: %r near %r', token, self.location())
-                self.content[-1].commands.append(TextCommand(token, self.tokenizer.lineNumber))
+                cls = self.text_command
+                self.content[-1].commands.append(cls(token, self.location()))
         elif token:
             # Accumulate a non-empty block of text in the current chunk.
-            self.content[-1].commands.append(TextCommand(token, self.tokenizer.lineNumber))
+            # Output Chunk and Named Chunk should have CodeCommand 
+            # Chunk should have TextCommand.
+            cls = self.text_command
+            self.content[-1].commands.append(cls(token, self.location()))
         else:
             # Whitespace
             pass
+    self.logger.debug("parse_source: [")
+    for c in self.content:
+        self.logger.debug("  %r", c)
+    self.logger.debug("]")
 @| load parse
 @}
 
@@ -2767,7 +3028,7 @@ log_config = {
     # For specific debugging support...
     'loggers': {
         'Weaver': {'level': logging.DEBUG},
-        'WebReader': {'level': logging.INFO},
+        'WebReader': {'level': logging.DEBUG},
         'TanglerMake': {'level': logging.DEBUG},
         'Web': {'level': logging.DEBUG},
     },
@@ -2798,7 +3059,7 @@ style = "{"
 level = "DEBUG"
 
 [loggers.WebReader]
-level = "INFO"
+level = "DEBUG"
 
 [loggers.TanglerMake]
 level = "DEBUG"

@@ -1514,29 +1514,29 @@ It could be a set of related functions, but we've bound them into a class.</p>
 into the order most convenient for the final implementation.</p>
 <p class="rubric" id="target-1">Base Class Definitions (1) =</p>
 <pre class="code literal-block">
-→Error class - defines the errors raised (<a class="reference internal" href="#target-21">21</a>)
+→Error class - defines the errors raised (<a class="reference internal" href="#target-26">26</a>)
 
-→Command class hierarchy - used to describe individual commands (<a class="reference internal" href="#target-6">6</a>)
+→Command class hierarchy - used to describe individual commands (<a class="reference internal" href="#target-6">6</a>), →(<a class="reference internal" href="#target-7">7</a>)
 
 →Chunk class hierarchy - used to describe input chunks (<a class="reference internal" href="#target-4">4</a>)
 
 →Web class - describes the overall &quot;web&quot; of chunks (<a class="reference internal" href="#target-3">3</a>)
 
-→Tokenizer class - breaks input into tokens (<a class="reference internal" href="#target-39">39</a>)
+→Tokenizer class - breaks input into tokens (<a class="reference internal" href="#target-44">44</a>)
 
-→Option Parser class - locates optional values on commands (<a class="reference internal" href="#target-41">41</a>), →(<a class="reference internal" href="#target-42">42</a>), →(<a class="reference internal" href="#target-43">43</a>)
+→Option Parser class - locates optional values on commands (<a class="reference internal" href="#target-46">46</a>), →(<a class="reference internal" href="#target-47">47</a>), →(<a class="reference internal" href="#target-48">48</a>)
 
-→WebReader class - parses the input file, building the Web structure (<a class="reference internal" href="#target-22">22</a>)
+→WebReader class - parses the input file, building the Web structure (<a class="reference internal" href="#target-27">27</a>)
 
-→Reference class hierarchy - strategies for weaving references to a chunk (<a class="reference internal" href="#target-18">18</a>), →(<a class="reference internal" href="#target-19">19</a>), →(<a class="reference internal" href="#target-20">20</a>)
+→Reference class hierarchy - strategies for weaving references to a chunk (<a class="reference internal" href="#target-23">23</a>), →(<a class="reference internal" href="#target-24">24</a>), →(<a class="reference internal" href="#target-25">25</a>)
 
-→Emitter class hierarchy - used to control output files (<a class="reference internal" href="#target-7">7</a>)
+→Emitter class hierarchy - used to control output files (<a class="reference internal" href="#target-8">8</a>)
 
-→Action class hierarchy - used to describe actions of the application (<a class="reference internal" href="#target-44">44</a>)
+→Action class hierarchy - used to describe actions of the application (<a class="reference internal" href="#target-49">49</a>)
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Base Class Definitions (1)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-60">60</a>)</p>
+<p class="small">◊ <em>Base Class Definitions (1)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-65">65</a>)</p>
 </blockquote>
 <p>The above order is reasonably helpful for Python and minimizes forward
 references. The <tt class="docutils literal">Chunk</tt>, <tt class="docutils literal">Command</tt>, and <tt class="docutils literal">Web</tt> instances do have a circular relationship.</p>
@@ -1605,12 +1605,12 @@ from dataclasses import dataclass, field
 import logging
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any, Optional, Literal, ClassVar
+from typing import Any, Optional, Literal, ClassVar, Union
 from weakref import ref, ReferenceType
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Imports (2)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-60">60</a>)</p>
+<p class="small">◊ <em>Imports (2)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-65">65</a>)</p>
 </blockquote>
 <p class="rubric" id="target-3">Web class - describes the overall &quot;web&quot; of chunks (3) =</p>
 <pre class="code literal-block">
@@ -1642,7 +1642,7 @@ class Web:
         # Named Chunks = Union of macro_iter and file_iter
         named_chunks = list(filter(lambda c: c.name is not None, self.chunks))
 
-        # Pass 2 -- locate the unabbreviated names
+        # Pass 2 -- locate the unabbreviated names in chunks and references to chunks
         self.chunk_map = {}
         for seq, c in enumerate(named_chunks, start=1):
             c.seq = seq
@@ -1663,9 +1663,15 @@ class Web:
             for name in c.def_names:
                 self.userid_map[name].append(c)
             if not c.path:
-                # Use ``&#64;d name`` chunks (reject ``&#64;o`` and text)
+                # Named ``&#64;d name`` chunks
+                c.initial = len(self.chunk_map[c.full_name]) == 0
                 self.chunk_map[c.full_name].append(c)
                 self.logger.debug(f&quot;__post_init__ 3 {c.name=!r} -&gt; {c.full_name=!r}&quot;)
+            else:
+                # Output ``&#64;o`` and anonymous chunks.
+                # Assume all &#64;o chunks are unique. If they're not, they overwrite each other.
+                # Also, there's not ``full_name`` for these chunks.
+                c.initial = True
 
             # TODO: Accumulate all chunks that contribute to a named file...
 
@@ -1816,12 +1822,13 @@ class Chunk:
     commands: list[&quot;Command&quot;] = field(default_factory=list)  #: Sequence of commands inside this chunk
     options: list[str] = field(default_factory=list)  #: Parsed options for &#64;d and &#64;o chunks.
     def_names: list[str] = field(default_factory=list)  #: Names defined after ``&#64;|`` in this chunk
+    initial: bool = False  #: Is this the first use of a given Chunk name?
     comment_start: str | None = None  #: If injecting location details, this is the prefix
     comment_end: str | None = None  #: If injecting location details, this is the suffix
 
     references: int = field(init=False, default=0)
     referencedBy: Optional[&quot;Chunk&quot;] = field(init=False, default=None)
-    web: ReferenceType[&quot;Web&quot;] = field(init=False)
+    web: ReferenceType[&quot;Web&quot;] = field(init=False, repr=False)
     logger: logging.Logger = field(init=False, default=logging.getLogger(&quot;Chunk&quot;))
 
     &#64;property
@@ -1837,6 +1844,9 @@ class Chunk:
     def typeid(cls) -&gt; TypeId:
         return TypeId(cls)
 
+    &#64;property
+    def location(self) -&gt; tuple[str, int]:
+        return self.commands[0].location
 
 class OutputChunk(Chunk):
     &#64;property
@@ -1898,7 +1908,7 @@ class TextCommand:
     text: str  #: The text
     location: tuple[str, int]  #: The (filename, line number)
 
-    web: ReferenceType[&quot;Web&quot;] = field(init=False)
+    web: ReferenceType[&quot;Web&quot;] = field(init=False, repr=False)
     logger: logging.Logger = field(init=False, default=logging.getLogger(&quot;TextCommand&quot;))
     definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
 
@@ -1928,7 +1938,7 @@ class CodeCommand:
     text: str  #: The code
     location: tuple[str, int]
 
-    web: ReferenceType[&quot;Web&quot;] = field(init=False)
+    web: ReferenceType[&quot;Web&quot;] = field(init=False, repr=False)
     logger: logging.Logger = field(init=False, default=logging.getLogger(&quot;CodeCommand&quot;))
     definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
 
@@ -1960,7 +1970,7 @@ class ReferenceCommand:
     name: str  #: The name provided
     location: tuple[str, int]
 
-    web: ReferenceType[&quot;Web&quot;] = field(init=False)
+    web: ReferenceType[&quot;Web&quot;] = field(init=False, repr=False)
     definition: bool = field(init=False, default=False)
     logger: logging.Logger = field(init=False, default=logging.getLogger(&quot;ReferenceCommand&quot;))
 
@@ -2009,7 +2019,7 @@ class ReferenceCommand:
 class FileXrefCommand:
     location: tuple[str, int]
 
-    web: ReferenceType[&quot;Web&quot;] = field(init=False)
+    web: ReferenceType[&quot;Web&quot;] = field(init=False, repr=False)
     logger: logging.Logger = field(init=False, default=logging.getLogger(&quot;FileXrefCommand&quot;))
     definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
 
@@ -2032,7 +2042,7 @@ class FileXrefCommand:
 class MacroXrefCommand:
     location: tuple[str, int]
 
-    web: ReferenceType[&quot;Web&quot;] = field(init=False)
+    web: ReferenceType[&quot;Web&quot;] = field(init=False, repr=False)
     logger: logging.Logger = field(init=False, default=logging.getLogger(&quot;MacroXrefCommand&quot;))
     definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
 
@@ -2055,7 +2065,7 @@ class MacroXrefCommand:
 class UserIdXrefCommand:
     location: tuple[str, int]
 
-    web: ReferenceType[&quot;Web&quot;] = field(init=False)
+    web: ReferenceType[&quot;Web&quot;] = field(init=False, repr=False)
     logger: logging.Logger = field(init=False, default=logging.getLogger(&quot;UserIdXrefCommand&quot;))
     definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
 
@@ -2078,29 +2088,41 @@ class UserIdXrefCommand:
 <blockquote>
 <p class="small">◊ <em>Command class hierarchy - used to describe individual commands (6)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
 </blockquote>
+<p>We can define a union of these various data classes
+to act as an abstract superclass for type hints.</p>
+<p class="rubric" id="target-7">Command class hierarchy - used to describe individual commands (7) +=</p>
+<pre class="code literal-block">
+Command = Union[TextCommand, CodeCommand, ReferenceCommand,
+    FileXrefCommand, MacroXrefCommand, UserIdXrefCommand
+    ]
+</pre>
+<!--  -->
+<blockquote>
+<p class="small">◊ <em>Command class hierarchy - used to describe individual commands (7)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
+</blockquote>
 </div>
 <div class="section" id="emitters">
 <h2><a class="toc-backref" href="#toc-entry-38">Emitters</a></h2>
 <p>An <tt class="docutils literal">Emitter</tt> instance is responsible for control of an output file format.
 This includes the necessary file naming, opening, writing and closing operations.
 It also includes providing the correct markup for the file type.</p>
-<p class="rubric" id="target-7">Emitter class hierarchy - used to control output files (7) =</p>
+<p class="rubric" id="target-8">Emitter class hierarchy - used to control output files (8) =</p>
 <pre class="code literal-block">
-→Emitter Superclass (<a class="reference internal" href="#target-9">9</a>)
+→Emitter Superclass (<a class="reference internal" href="#target-10">10</a>)
 
-→Quoting rule definitions -- functions used by templates (<a class="reference internal" href="#target-11">11</a>)
+→Quoting rule definitions -- functions used by templates (<a class="reference internal" href="#target-12">12</a>)
 
-→Weaver Subclass -- Uses Jinja templates to weave documentation (<a class="reference internal" href="#target-10">10</a>)
+→Weaver Subclass -- Uses Jinja templates to weave documentation (<a class="reference internal" href="#target-11">11</a>)
 
-→Tangler Subclass -- emits the output files (<a class="reference internal" href="#target-13">13</a>)
+→Tangler Subclass -- emits the output files (<a class="reference internal" href="#target-18">18</a>)
 
-→TanglerMake Subclass -- extends Tangler to avoid touching files that didn't change (<a class="reference internal" href="#target-17">17</a>)
+→TanglerMake Subclass -- extends Tangler to avoid touching files that didn't change (<a class="reference internal" href="#target-22">22</a>)
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Emitter class hierarchy - used to control output files (7)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
+<p class="small">◊ <em>Emitter class hierarchy - used to control output files (8)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
 </blockquote>
-<p class="rubric" id="target-8">Imports (8) +=</p>
+<p class="rubric" id="target-9">Imports (9) +=</p>
 <pre class="code literal-block">
 import abc
 from textwrap import dedent
@@ -2108,9 +2130,9 @@ from jinja2 import Environment, DictLoader, select_autoescape
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Imports (8)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-60">60</a>)</p>
+<p class="small">◊ <em>Imports (9)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-65">65</a>)</p>
 </blockquote>
-<p class="rubric" id="target-9">Emitter Superclass (9) =</p>
+<p class="rubric" id="target-10">Emitter Superclass (10) =</p>
 <pre class="code literal-block">
 class Emitter(abc.ABC):
     def __init__(self, output: Path):
@@ -2124,49 +2146,71 @@ class Emitter(abc.ABC):
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Emitter Superclass (9)</em>. Used by: Emitter class hierarchy... (<a class="reference internal" href="#target-7">7</a>)</p>
+<p class="small">◊ <em>Emitter Superclass (10)</em>. Used by: Emitter class hierarchy... (<a class="reference internal" href="#target-8">8</a>)</p>
 </blockquote>
-<p class="rubric" id="target-10">Weaver Subclass -- Uses Jinja templates to weave documentation (10) =</p>
+<p class="rubric" id="target-11">Weaver Subclass -- Uses Jinja templates to weave documentation (11) =</p>
 <pre class="code literal-block">
-→RST Templates -- these are the default templates (<a class="reference internal" href="#target-12">12</a>)
+→Debug Templates -- these display debugging information (<a class="reference internal" href="#target-13">13</a>)
+
+→RST Templates -- the default weave output (<a class="reference internal" href="#target-14">14</a>)
+
+→HTML Templates -- emit HTML weave output (<a class="reference internal" href="#target-15">15</a>)
+
+→LaTeX Templates -- emit LaTeX weave output (<a class="reference internal" href="#target-16">16</a>)
+
+→Common base template -- this is used for ALL weaving (<a class="reference internal" href="#target-17">17</a>)
 
 class Weaver(Emitter):
+    template_map = {
+        &quot;debug&quot;: {&quot;default&quot;: debug_weaver_template, &quot;overrides&quot;: &quot;&quot;},
+        &quot;rst&quot;: {&quot;default&quot;: rst_weaver_template, &quot;overrides&quot;: rst_overrides_template},
+        &quot;html&quot;: {&quot;default&quot;: html_weaver_template, &quot;overrides&quot;: html_overrides_template},
+        &quot;tex&quot;: {&quot;default&quot;: latex_weaver_template, &quot;overrides&quot;: &quot;&quot;},
+    }
+
+    quote_rules = {
+        &quot;rst&quot;: rst_quote_rules,
+        &quot;html&quot;: html_quote_rules,
+        &quot;tex&quot;: latex_quote_rules,
+        &quot;debug&quot;: debug_quote_rules,
+    }
+
     def __init__(self, output: Path = Path.cwd()) -&gt; None:
         super().__init__(output)
-        # TODO: Track down all markup-specific templates
-        # HTML weaver, LaTeX weaver
-        self.env = Environment(
-            loader=DictLoader(
-                {
-                    'rst_weaver': rst_weaver_template,
-                    'rst_overrides': rst_overrides_template,
-                    'base_weaver': base_weaver_template_2,
-                }
-            ),
-            autoescape=select_autoescape()
-        )
         # Summary
         self.linesWritten = 0
 
     def set_markup(self, markup: str = &quot;rst&quot;) -&gt; &quot;Weaver&quot;:
-        self.env.filters |= {&quot;quote_rules&quot;: quote_rules[markup]}
         self.markup = markup
         return self
 
     def emit(self, web: Web) -&gt; None:
         self.target_path = (self.output / web.web_path.name).with_suffix(f&quot;.{self.markup}&quot;)
         self.logger.info(&quot;Weaving %s using %s markup&quot;, self.target_path, self.markup)
-        template = self.env.get_template(&quot;base_weaver&quot;)
         with self.target_path.open('w') as target_file:
-            for text in template.generate(markup=&quot;rst_weaver&quot;, overrides=&quot;rst_overrides&quot;, web=web):
+            for text in self.generate_text(web):
                 self.linesWritten += text.count(&quot;\n&quot;)
                 target_file.write(text)
+
+    def generate_text(self, web: Web) -&gt; Iterator[str]:
+        self.env = Environment(
+            loader=DictLoader(
+                self.template_map[self.markup] |
+                {'base_weaver': base_template,}
+            ),
+            autoescape=select_autoescape()
+        )
+        self.env.filters |= {
+            &quot;quote_rules&quot;: self.quote_rules[self.markup]
+        }
+        template = self.env.get_template(&quot;base_weaver&quot;)
+        yield from template.generate(web=web)
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Weaver Subclass -- Uses Jinja templates to weave documentation (10)</em>. Used by: Emitter class hierarchy... (<a class="reference internal" href="#target-7">7</a>)</p>
+<p class="small">◊ <em>Weaver Subclass -- Uses Jinja templates to weave documentation (11)</em>. Used by: Emitter class hierarchy... (<a class="reference internal" href="#target-8">8</a>)</p>
 </blockquote>
-<p class="rubric" id="target-11">Quoting rule definitions -- functions used by templates (11) =</p>
+<p class="rubric" id="target-12">Quoting rule definitions -- functions used by templates (12) =</p>
 <pre class="code literal-block">
 def rst_quote_rules(text: str) -&gt; str:
     quoted_chars = [
@@ -2186,23 +2230,105 @@ def html_quote_rules(text: str) -&gt; str:
         (&quot;&amp;&quot;, &quot;&amp;amp;&quot;),  # Must be first
         (&quot;&lt;&quot;, &quot;&amp;lt;&quot;),
         (&quot;&gt;&quot;, &quot;&amp;gt;&quot;),
-        ('&quot;', &quot;&amp;quot;&quot;),
+        ('&quot;', &quot;&amp;quot;&quot;),  # Only applies inside tags...
     ]
     clean = text
     for from_, to_ in quoted_chars:
         clean = clean.replace(from_, to_)
     return clean
 
-quote_rules = {
-    &quot;rst&quot;: rst_quote_rules,
-    &quot;html&quot;: html_quote_rules,
-}
+def latex_quote_rules(text: str) -&gt; str:
+    quoted_strings = [
+        (&quot;\\end{Verbatim}&quot;, &quot;\\end\\,{Verbatim}&quot;),  # Allow \end{Verbatim} in a Verbatim context
+        (&quot;\\{&quot;, &quot;\\\\,{&quot;), # Prevent unexpected commands in Verbatim
+        (&quot;$&quot;, &quot;\\$&quot;), # Prevent unexpected math in Verbatim
+    ]
+    clean = text
+    for from_, to_ in quoted_strings:
+        clean = clean.replace(from_, to_)
+    return clean
+
+def debug_quote_rules(text: str) -&gt; str:
+    return repr(text)
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Quoting rule definitions -- functions used by templates (11)</em>. Used by: Emitter class hierarchy... (<a class="reference internal" href="#target-7">7</a>)</p>
+<p class="small">◊ <em>Quoting rule definitions -- functions used by templates (12)</em>. Used by: Emitter class hierarchy... (<a class="reference internal" href="#target-8">8</a>)</p>
 </blockquote>
-<p class="rubric" id="target-12">RST Templates -- these are the default templates (12) =</p>
+<p>The objective is to have a generic &quot;weaver&quot; template which includes three levels
+of template definition:</p>
+<ol class="arabic simple">
+<li>Defaults</li>
+<li>Configured overrides from <tt class="docutils literal">pyweb.toml</tt></li>
+<li>Document overrides from the <tt class="docutils literal">.w</tt> file in <tt class="docutils literal">&#64;t name <span class="pre">&#64;{...&#64;}</span></tt> commands.</li>
+</ol>
+<p>This means there is a two-step binding between document and macros.</p>
+<ol class="arabic">
+<li><p class="first">The base weaver document should import three generic template definitions:</p>
+<blockquote>
+<p><tt class="docutils literal">{%- from 'markup' import * %}</tt></p>
+<p><tt class="docutils literal">{%- from 'configured' import * %}</tt></p>
+<p><tt class="docutils literal">{%- from 'document' import * %}</tt></p>
+</blockquote>
+</li>
+<li><dl class="first docutils">
+<dt>These names map (<em>somehow</em>) to specific templates based on markup language.</dt>
+<dd><p class="first last"><tt class="docutils literal">markup</tt> -&gt; <tt class="docutils literal">rst/markup</tt>, etc.</p>
+</dd>
+</dl>
+</li>
+</ol>
+<p>This allows us to provide all templates and make a final binding
+at weave time. We can use a prefix loader with a given prefix.
+Some kind of &quot;import rst/markup as markup&quot; would be ideal.</p>
+<p>Jinja, however, doesn't seem to support this the same way Python does.
+There's no <tt class="docutils literal">import as</tt> construct allowing very late binding.</p>
+<p>The alternative is to
+create the environment very late in the process, once we have all the information
+available. We can then pick the templates to put into a DictLoader to support
+the standard weaving structure.</p>
+<p class="rubric" id="target-13">Debug Templates -- these display debugging information (13) =</p>
+<pre class="code literal-block">
+debug_weaver_template = dedent(&quot;&quot;&quot;\
+    {%- macro text(command) -%}
+    text: {{command}}
+    {%- endmacro -%}
+
+    {%- macro begin_code(chunk) %}
+    begin_code: {{chunk}}
+    {%- endmacro -%}
+
+    {%- macro code(command) %}
+    code: {{command}}
+    {%- endmacro -%}
+
+    {%- macro ref(id) -%}
+    ref: {{id}}
+    {%- endmacro -%}
+
+    {%- macro end_code(chunk) %}
+    end_code: {{chunk}}
+    {% endmacro -%}
+
+    {%- macro file_xref(command) -%}
+    file_xref {{command.files}}
+    {%- endmacro -%}
+
+    {%- macro macro_xref(command) -%}
+    macro_xref {{command.macros}}
+    {%- endmacro -%}
+
+    {%- macro userid_xref(command) -%}
+    userid_xref {{command.userids}}
+    {%- endmacro -%}
+    &quot;&quot;&quot;)
+</pre>
+<!--  -->
+<blockquote>
+<p class="small">◊ <em>Debug Templates -- these display debugging information (13)</em>. Used by: Weaver Subclass... (<a class="reference internal" href="#target-11">11</a>)</p>
+</blockquote>
+<p>The RST Templates produce ReStructuredText for the various web commands.</p>
+<p class="rubric" id="target-14">RST Templates -- the default weave output (14) =</p>
 <pre class="code literal-block">
 rst_weaver_template = dedent(&quot;&quot;&quot;\
     {%- macro text(command) -%}
@@ -2210,20 +2336,18 @@ rst_weaver_template = dedent(&quot;&quot;&quot;\
     {%- endmacro -%}
 
     {%- macro begin_code(chunk) %}
-    ..  _`{{chunk.full_name}} ({{chunk.seq}})`:
-    ..  rubric:: {{chunk.name}} ({{chunk.seq}}) =
+    ..  _`{{chunk.full_name or chunk.name}} ({{chunk.seq}})`:
+    ..  rubric:: {{chunk.full_name or chunk.name}} ({{chunk.seq}}) {% if chunk.initial %}={% else %}+={% endif %}
     ..  parsed-literal::
         :class: code
     {% endmacro -%}
 
-    {% macro code(command) %}
-        {% for line in command.lines -%}
-        {{line | quote_rules}}
-        {% endfor -%}
-    {% endmacro -%}
+    {%- macro code(command) %}
+        {{command.text | quote_rules}}
+    {%- endmacro -%}
 
-    {% macro ref(id) -%}
-    \N{RIGHTWARDS ARROW}\ `{{id.full_name}} ({{id.seq}})`_
+    {%- macro ref(id) %}
+        \N{RIGHTWARDS ARROW}\ `{{id.full_name}} ({{id.seq}})`_
     {%- endmacro -%}
 
     {%- macro end_code(chunk) %}
@@ -2231,66 +2355,197 @@ rst_weaver_template = dedent(&quot;&quot;&quot;\
 
     ..  class:: small
 
-        \N{END OF PROOF} *{{chunk.full_name}} ({{chunk.seq}})*
+        \N{END OF PROOF} *{{chunk.full_name or chunk.name}} ({{chunk.seq}})*
 
     {% endmacro -%}
 
-    {% macro file_xref(command) -%}
+    {%- macro file_xref(command) -%}
     {% for file in command.files -%}
     :{{file.name}}:
-        {{ref(file)}}
+        \N{RIGHTWARDS ARROW}\ `{{file.name}} ({{file.seq}})`_
     {%- endfor %}
     {%- endmacro -%}
 
-    {% macro macro_xref(command) -%}
+    {%- macro macro_xref(command) -%}
     {% for macro in command.macros -%}
     :{{macro.full_name}}:
-        {% for d in macro.def_list -%}{{ref(d)}}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
+        {% for d in macro.def_list -%}\N{RIGHTWARDS ARROW}\ `{{d.full_name or d.name}} ({{d.seq}})`_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
 
     {% endfor %}
     {%- endmacro -%}
 
-    {% macro userid_xref(command) -%}
+    {%- macro userid_xref(command) -%}
     {% for userid in command.userids -%}
     :{{userid.userid}}:
-        {% for r in userid.ref_list -%}{{ref(r)}}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
+        {% for r in userid.ref_list -%}\N{RIGHTWARDS ARROW}\ `{{r.full_name or r.name}} ({{r.seq}})`_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
 
     {% endfor %}
     {%- endmacro -%}
-    &quot;&quot;&quot;
-)
+    &quot;&quot;&quot;)
 
-rst_overrides_template = dedent(&quot;&quot;&quot;
-&quot;&quot;&quot;)
+rst_overrides_template = dedent(&quot;&quot;&quot;\
+    &quot;&quot;&quot;)
+</pre>
+<!--  -->
+<blockquote>
+<p class="small">◊ <em>RST Templates -- the default weave output (14)</em>. Used by: Weaver Subclass... (<a class="reference internal" href="#target-11">11</a>)</p>
+</blockquote>
+<p>The HTML templates use a relatively simple markup, avoiding any CSS names.
+A slightly more flexible approach might be to name specific CSS styles, and provide
+generic definitions for those styles. This would make it easier to
+tailor HTML output via CSS changes, avoiding any HTML modifications.</p>
+<p class="rubric" id="target-15">HTML Templates -- emit HTML weave output (15) =</p>
+<pre class="code literal-block">
+html_weaver_template = dedent(&quot;&quot;&quot;\
+    {%- macro text(command) -%}
+    {{command.text}}
+    {%- endmacro -%}
 
-base_weaver_template_2 = dedent(&quot;&quot;&quot;\
-    {%- from 'rst_weaver' import text, begin_code, code, end_code, file_xref, macro_xref, userid_xref, ref, ref_list -%}{#- default macros from rst_weaver -#}
-    {#- from 'rst_overrides' import *the names* -#}{#- customized macros from WEB document -#}
+    {%- macro begin_code(chunk) %}
+    &lt;a name=&quot;pyweb_{{chunk.seq}}&quot;&gt;&lt;/a&gt;
+    &lt;!--line number {{chunk.location}}--&gt;
+    &lt;p&gt;&lt;em&gt;{{chunk.full_name or chunk.name}} ({{chunk.seq}})&lt;/em&gt; {% if chunk.initial %}={% else %}+={% endif %}&lt;/p&gt;
+    &lt;pre&gt;&lt;code&gt;
+    {%- endmacro -%}
+
+    {%- macro code(command) -%}
+    {{command.text | quote_rules}}
+    {%- endmacro -%}
+
+    {%- macro ref(id) %}
+    &amp;rarr;&lt;a href=&quot;#pyweb_{{id.seq}}&quot;&gt;&lt;em&gt;{{id.full_name}} ({{id.seq}})&lt;/em&gt;&lt;/a&gt;
+    {% endmacro -%}
+
+    {%- macro end_code(chunk) %}
+    &lt;/code&gt;&lt;/pre&gt;
+    &lt;p&gt;&amp;#8718; &lt;em&gt;{{chunk.full_name or chunk.name}} ({{chunk.seq}})&lt;/em&gt;.
+    &lt;/p&gt;
+    {% endmacro -%}
+
+    {%- macro file_xref(command) %}
+    &lt;dl&gt;
+    {% for file in command.files -%}
+      &lt;dt&gt;{{file.name}}&lt;/dt&gt;&lt;dd&gt;{{ref(file)}}&lt;/dd&gt;
+    {%- endfor %}
+    &lt;/dl&gt;
+    {% endmacro -%}
+
+    {%- macro macro_xref(command) %}
+    &lt;dl&gt;
+    {% for macro in command.macros -%}
+      &lt;dt&gt;{{macro.full_name}}&lt;dt&gt;
+      &lt;dd&gt;{% for d in macro.def_list -%}{{ref(d)}}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}&lt;/dd&gt;
+    {% endfor %}
+    &lt;/dl&gt;
+    {% endmacro -%}
+
+    {%- macro userid_xref(command) %}
+    &lt;dl&gt;
+    {% for userid in command.userids -%}
+      &lt;dt&gt;{{userid.userid}}&lt;/dt&gt;
+      &lt;dd&gt;{% for r in userid.ref_list -%}{{ref(r)}}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}&lt;/dd&gt;
+    {% endfor %}
+    &lt;/dl&gt;
+    {% endmacro -%}
+    &quot;&quot;&quot;)
+
+html_overrides_template = dedent(&quot;&quot;&quot;\
+    &quot;&quot;&quot;)
+</pre>
+<!--  -->
+<blockquote>
+<p class="small">◊ <em>HTML Templates -- emit HTML weave output (15)</em>. Used by: Weaver Subclass... (<a class="reference internal" href="#target-11">11</a>)</p>
+</blockquote>
+<p>The LaTEX templates use a markup focused in the <tt class="docutils literal">verbatim</tt> environment.
+Common alternatives include <tt class="docutils literal">listings</tt> and <tt class="docutils literal">minted</tt>.</p>
+<p class="rubric" id="target-16">LaTeX Templates -- emit LaTeX weave output (16) =</p>
+<pre class="code literal-block">
+latex_weaver_template = dedent(&quot;&quot;&quot;\
+    {%- macro text(command) -%}
+    {{command.text}}
+    {%- endmacro -%}
+
+    {%- macro begin_code(chunk) %}
+    \\label{pyweb-{{chunk.seq}}}
+    \\begin{flushleft}
+    \\textit{Code example {{chunk.full_name or chunk.name}} ({{chunk.seq}})}
+    \\begin{Verbatim}[commandchars=\\\\\\{\\},codes={\\catcode`$$=3\\catcode`^=7},frame=single]
+    {%- endmacro -%}
+
+    {%- macro code(command) -%}
+    {{command.text | quote_rules}}
+    {%- endmacro -%}
+
+    {%- macro ref(id) %}
+    $$\\triangleright$$ Code Example {{id.full_name}} ({{id.seq}})
+    {% endmacro -%}
+
+    {%- macro end_code(chunk) %}
+    \\end{Verbatim}
+    \\end{flushleft}
+    {% endmacro -%}
+
+    {%- macro file_xref(command) %}
+    \\begin{itemize}
+    {% for file in command.files -%}
+      \\item {{file.name}}: {{ref(file)}}
+    {%- endfor %}
+    \\end{itemize}
+    {% endmacro -%}
+
+    {%- macro macro_xref(command) %}
+    \\begin{itemize}
+    {% for macro in command.macros -%}
+      \\item {{macro.full_name}} \\\\
+            {% for d in macro.def_list -%}{{ref(d)}}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
+    {% endfor %}
+    \\end{itemize}
+    {% endmacro -%}
+
+    {%- macro userid_xref(command) %}
+    \\begin{itemize}
+    {% for userid in command.userids -%}
+      \\item {{userid.userid}} \\\\
+            {% for r in userid.ref_list -%}{{ref(r)}}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
+    {% endfor %}
+    \\end{itemize}
+    {% endmacro -%}
+    &quot;&quot;&quot;)
+</pre>
+<!--  -->
+<blockquote>
+<p class="small">◊ <em>LaTeX Templates -- emit LaTeX weave output (16)</em>. Used by: Weaver Subclass... (<a class="reference internal" href="#target-11">11</a>)</p>
+</blockquote>
+<p class="rubric" id="target-17">Common base template -- this is used for ALL weaving (17) =</p>
+<pre class="code literal-block">
+base_template = dedent(&quot;&quot;&quot;\
+    {%- from 'default' import text, begin_code, code, end_code, file_xref, macro_xref, userid_xref, ref, ref_list -%}{#- default macros from rst_weaver -#}
+    {#- from 'overrides' import *the names* -#}{#- customized macros from WEB document -#}
     {% for chunk in web.chunks -%}
         {%- if chunk.typeid.OutputChunk or chunk.typeid.NamedChunk -%}
             {{begin_code(chunk)}}
-            {% for command in chunk.commands -%}
+            {%- for command in chunk.commands -%}
                 {%- if command.typeid.CodeCommand %}{{code(command)}}
                 {%- elif command.typeid.ReferenceCommand %}{{ref(command)}}
                 {%- endif -%}
-            {% endfor %}
+            {%- endfor -%}
             {{end_code(chunk)}}
         {%- elif chunk.typeid.Chunk -%}
-            {% for command in chunk.commands -%}
+            {%- for command in chunk.commands -%}
                 {%- if command.typeid.TextCommand %}{{text(command)}}
-                {%- elif command.typeid.ReferenceCommand %}{{text(command)}}
+                {%- elif command.typeid.ReferenceCommand %}{{ref(command)}}
                 {%- elif command.typeid.FileXrefCommand %}{{file_xref(command)}}
                 {%- elif command.typeid.MacroXrefCommand %}{{macro_xref(command)}}
                 {%- elif command.typeid.UserIdXrefCommand %}{{userid_xref(command)}}
-                {% endif -%}
-            {%- endfor %}
+                {%- endif -%}
+            {%- endfor -%}
         {%- endif -%}
     {%- endfor %}
 &quot;&quot;&quot;)
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>RST Templates -- these are the default templates (12)</em>. Used by: Weaver Subclass... (<a class="reference internal" href="#target-10">10</a>)</p>
+<p class="small">◊ <em>Common base template -- this is used for ALL weaving (17)</em>. Used by: Weaver Subclass... (<a class="reference internal" href="#target-11">11</a>)</p>
 </blockquote>
 <p><strong>TODO:</strong> Need to handle the case where an output chunk
 has multiple definitions.</p>
@@ -2326,7 +2581,7 @@ has multiple definitions.</p>
 <p>The following definition may not support the first alternative.
 The <tt class="docutils literal">Web</tt> needs to create a mapping from file name to all chunks that
 create the file.</p>
-<p class="rubric" id="target-13">Tangler Subclass -- emits the output files (13) =</p>
+<p class="rubric" id="target-18">Tangler Subclass -- emits the output files (18) =</p>
 <pre class="code literal-block">
 class Tangler(Emitter):
     code_indent = 0  #: Initial indent
@@ -2354,15 +2609,15 @@ class Tangler(Emitter):
             for command in file_chunk.commands:
                 command.tangle(self, target)
 
-    →Emitter write a block of code with proper indents (<a class="reference internal" href="#target-14">14</a>)
+    →Emitter write a block of code with proper indents (<a class="reference internal" href="#target-19">19</a>)
 
-    →Emitter indent control: set, clear and reset (<a class="reference internal" href="#target-15">15</a>)
+    →Emitter indent control: set, clear and reset (<a class="reference internal" href="#target-20">20</a>)
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Tangler Subclass -- emits the output files (13)</em>. Used by: Emitter class hierarchy... (<a class="reference internal" href="#target-7">7</a>)</p>
+<p class="small">◊ <em>Tangler Subclass -- emits the output files (18)</em>. Used by: Emitter class hierarchy... (<a class="reference internal" href="#target-8">8</a>)</p>
 </blockquote>
-<p class="rubric" id="target-14">Emitter write a block of code with proper indents (14) =</p>
+<p class="rubric" id="target-19">Emitter write a block of code with proper indents (19) =</p>
 <pre class="code literal-block">
 def codeBlock(self, target: TextIO, text: str) -&gt; None:
     &quot;&quot;&quot;Indented write of text in a ``CodeCommand``.
@@ -2391,7 +2646,7 @@ def codeBlock(self, target: TextIO, text: str) -&gt; None:
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Emitter write a block of code with proper indents (14)</em>. Used by: Tangler Subclass... (<a class="reference internal" href="#target-13">13</a>)</p>
+<p class="small">◊ <em>Emitter write a block of code with proper indents (19)</em>. Used by: Tangler Subclass... (<a class="reference internal" href="#target-18">18</a>)</p>
 </blockquote>
 <p>The <tt class="docutils literal">setIndent()</tt> pushes a fixed indent instead adding an increment.</p>
 <p>The <tt class="docutils literal">clrIndent()</tt> method discards the most recent indent from the context stack.
@@ -2399,7 +2654,7 @@ This is used when finished
 tangling a source chunk.  This restores the indent to the prevailing indent.</p>
 <p>The <tt class="docutils literal">resetIndent()</tt> method removes all indent context information and resets the indent
 to a default.</p>
-<p class="rubric" id="target-15">Emitter indent control: set, clear and reset (15) =</p>
+<p class="rubric" id="target-20">Emitter indent control: set, clear and reset (20) =</p>
 <pre class="code literal-block">
 def addIndent(self, increment: int) -&gt; None:
     self.lastIndent = self.context[-1]+increment
@@ -2426,10 +2681,10 @@ def resetIndent(self, indent: int = 0) -&gt; None:
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Emitter indent control: set, clear and reset (15)</em>. Used by: Tangler Subclass... (<a class="reference internal" href="#target-13">13</a>)</p>
+<p class="small">◊ <em>Emitter indent control: set, clear and reset (20)</em>. Used by: Tangler Subclass... (<a class="reference internal" href="#target-18">18</a>)</p>
 </blockquote>
 <p>An extension that only updates a file if the content has changed.</p>
-<p class="rubric" id="target-16">Imports (16) +=</p>
+<p class="rubric" id="target-21">Imports (21) +=</p>
 <pre class="code literal-block">
 import filecmp
 import tempfile
@@ -2437,9 +2692,9 @@ import os
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Imports (16)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-60">60</a>)</p>
+<p class="small">◊ <em>Imports (21)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-65">65</a>)</p>
 </blockquote>
-<p class="rubric" id="target-17">TanglerMake Subclass -- extends Tangler to avoid touching files that didn't change (17) =</p>
+<p class="rubric" id="target-22">TanglerMake Subclass -- extends Tangler to avoid touching files that didn't change (22) =</p>
 <pre class="code literal-block">
 class TanglerMake(Tangler):
     def emit_file(self, web: Web, file_chunk: Chunk) -&gt; None:
@@ -2473,7 +2728,7 @@ class TanglerMake(Tangler):
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>TanglerMake Subclass -- extends Tangler to avoid touching files that didn't change (17)</em>. Used by: Emitter class hierarchy... (<a class="reference internal" href="#target-7">7</a>)</p>
+<p class="small">◊ <em>TanglerMake Subclass -- extends Tangler to avoid touching files that didn't change (22)</em>. Used by: Emitter class hierarchy... (<a class="reference internal" href="#target-8">8</a>)</p>
 </blockquote>
 </div>
 <div class="section" id="reference-strategy">
@@ -2489,7 +2744,7 @@ algorithm, we assure that:</p>
 <h3><a class="toc-backref" href="#toc-entry-40">Reference Superclass</a></h3>
 <p>The superclass is an abstract class that defines the interface for
 this object.</p>
-<p class="rubric" id="target-18">Reference class hierarchy - strategies for weaving references to a chunk (18) =</p>
+<p class="rubric" id="target-23">Reference class hierarchy - strategies for weaving references to a chunk (23) =</p>
 <pre class="code literal-block">
 class Reference(abc.ABC):
     def __init__(self) -&gt; None:
@@ -2502,14 +2757,14 @@ class Reference(abc.ABC):
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Reference class hierarchy - strategies for weaving references to a chunk (18)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
+<p class="small">◊ <em>Reference class hierarchy - strategies for weaving references to a chunk (23)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
 </blockquote>
 </div>
 <div class="section" id="simplereference-class">
 <h3><a class="toc-backref" href="#toc-entry-41">SimpleReference Class</a></h3>
 <p>The SimpleReference subclass does the simplest version of resolution. It returns
 the <tt class="docutils literal">Chunks</tt> referenced.</p>
-<p class="rubric" id="target-19">Reference class hierarchy - strategies for weaving references to a chunk (19) +=</p>
+<p class="rubric" id="target-24">Reference class hierarchy - strategies for weaving references to a chunk (24) +=</p>
 <pre class="code literal-block">
 class SimpleReference(Reference):
     def chunkReferencedBy(self, aChunk: Chunk) -&gt; list[Chunk]:
@@ -2518,7 +2773,7 @@ class SimpleReference(Reference):
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Reference class hierarchy - strategies for weaving references to a chunk (19)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
+<p class="small">◊ <em>Reference class hierarchy - strategies for weaving references to a chunk (24)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
 </blockquote>
 </div>
 <div class="section" id="transitivereference-class">
@@ -2527,7 +2782,7 @@ class SimpleReference(Reference):
 references to this Chunk.</p>
 <p>This requires walking through the <tt class="docutils literal">Web</tt> to locate &quot;parents&quot; of each referenced
 <tt class="docutils literal">Chunk</tt>.</p>
-<p class="rubric" id="target-20">Reference class hierarchy - strategies for weaving references to a chunk (20) +=</p>
+<p class="rubric" id="target-25">Reference class hierarchy - strategies for weaving references to a chunk (25) +=</p>
 <pre class="code literal-block">
 class TransitiveReference(Reference):
     def chunkReferencedBy(self, aChunk: Chunk) -&gt; list[Chunk]:
@@ -2546,7 +2801,7 @@ class TransitiveReference(Reference):
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Reference class hierarchy - strategies for weaving references to a chunk (20)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
+<p class="small">◊ <em>Reference class hierarchy - strategies for weaving references to a chunk (25)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
 </blockquote>
 </div>
 </div>
@@ -2578,13 +2833,13 @@ except Exception as w:
 application-specific
 exceptions from other Python exceptions.  It does no additional processing,
 but merely creates a distinct class to facilitate writing <tt class="docutils literal">except</tt> statements.</p>
-<p class="rubric" id="target-21">Error class - defines the errors raised (21) =</p>
+<p class="rubric" id="target-26">Error class - defines the errors raised (26) =</p>
 <pre class="code literal-block">
 class Error(Exception): pass
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Error class - defines the errors raised (21)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
+<p class="small">◊ <em>Error class - defines the errors raised (26)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
 </blockquote>
 </div>
 <div class="section" id="the-webreader-class">
@@ -2663,7 +2918,7 @@ when <tt class="docutils literal">load()</tt> is called.</td>
 </tr>
 </tbody>
 </table>
-<p class="rubric" id="target-22">WebReader class - parses the input file, building the Web structure (22) =</p>
+<p class="rubric" id="target-27">WebReader class - parses the input file, building the Web structure (27) =</p>
 <pre class="code literal-block">
 class WebReader:
     &quot;&quot;&quot;Parse an input file, creating Chunks and Commands.&quot;&quot;&quot;
@@ -2690,7 +2945,8 @@ class WebReader:
     filePath: Path  #: Input Path
     _source: TextIO  #: Input file
     tokenizer: Tokenizer  #: The tokenizer used to find commands
-    content: list[Chunk]  #: the processing context -- a sequence of Chunk instances.
+    content: list[Chunk]  #: The sequence of Chunk instances being built
+    text_command: type[Command]
 
     def __init__(self, parent: Optional[&quot;WebReader&quot;] = None) -&gt; None:
         self.logger = logging.getLogger(self.__class__.__qualname__)
@@ -2709,20 +2965,20 @@ class WebReader:
         self.totalFiles = 0
         self.errors = 0
 
-        →WebReader command literals (<a class="reference internal" href="#target-37">37</a>)
+        →WebReader command literals (<a class="reference internal" href="#target-42">42</a>)
 
     def __str__(self) -&gt; str:
         return self.__class__.__name__
 
-    →WebReader location in the input stream (<a class="reference internal" href="#target-34">34</a>)
+    →WebReader location in the input stream (<a class="reference internal" href="#target-39">39</a>)
 
-    →WebReader load the web (<a class="reference internal" href="#target-36">36</a>)
+    →WebReader load the web (<a class="reference internal" href="#target-41">41</a>)
 
-    →WebReader handle a command string (<a class="reference internal" href="#target-23">23</a>), →(<a class="reference internal" href="#target-33">33</a>)
+    →WebReader handle a command string (<a class="reference internal" href="#target-28">28</a>), →(<a class="reference internal" href="#target-38">38</a>)
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>WebReader class - parses the input file, building the Web structure (22)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
+<p class="small">◊ <em>WebReader class - parses the input file, building the Web structure (27)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
 </blockquote>
 <p>The reader maintains a context into which constructs are added.
 The <tt class="docutils literal">Web</tt> contains <tt class="docutils literal">Chunk</tt> instances in <tt class="docutils literal">self.web.chunks</tt>.
@@ -2751,34 +3007,34 @@ then the subclass can process it;</li>
 then return <tt class="docutils literal">False</tt>.  Either a subclass will handle it, or the default activity taken
 by <tt class="docutils literal">load()</tt> is to treat the command as a syntax error.</li>
 </ol>
-<p class="rubric" id="target-23">WebReader handle a command string (23) =</p>
+<p class="rubric" id="target-28">WebReader handle a command string (28) =</p>
 <pre class="code literal-block">
 def handleCommand(self, token: str) -&gt; bool:
     self.logger.debug(&quot;Reading %r&quot;, token)
 
     match token[:2]:
         case self.cmdo:
-            →start an OutputChunk, adding it to the web (<a class="reference internal" href="#target-24">24</a>)
+            →start an OutputChunk, adding it to the web (<a class="reference internal" href="#target-29">29</a>)
         case self.cmdd:
-            →start a NamedChunk or NamedDocumentChunk, adding it to the web (<a class="reference internal" href="#target-25">25</a>)
+            →start a NamedChunk or NamedDocumentChunk, adding it to the web (<a class="reference internal" href="#target-30">30</a>)
         case self.cmdi:
-            →include another file (<a class="reference internal" href="#target-26">26</a>)
+            →include another file (<a class="reference internal" href="#target-31">31</a>)
         case self.cmdrcurl | self.cmdrbrak:
-            →finish a chunk, start a new Chunk adding it to the web (<a class="reference internal" href="#target-27">27</a>)
+            →finish a chunk, start a new Chunk adding it to the web (<a class="reference internal" href="#target-32">32</a>)
         case self.cmdpipe:
-            →assign user identifiers to the current chunk (<a class="reference internal" href="#target-28">28</a>)
+            →assign user identifiers to the current chunk (<a class="reference internal" href="#target-33">33</a>)
         case self.cmdf:
-            self.content[-1].commands.append(FileXrefCommand(self.tokenizer.lineNumber))
+            self.content[-1].commands.append(FileXrefCommand(self.location()))
         case self.cmdm:
-            self.content[-1].commands.append(MacroXrefCommand(self.tokenizer.lineNumber))
+            self.content[-1].commands.append(MacroXrefCommand(self.location()))
         case self.cmdu:
-            self.content[-1].commands.append(UserIdXrefCommand(self.tokenizer.lineNumber))
+            self.content[-1].commands.append(UserIdXrefCommand(self.location()))
         case self.cmdlangl:
-            →add a reference command to the current chunk (<a class="reference internal" href="#target-29">29</a>)
+            →add a reference command to the current chunk (<a class="reference internal" href="#target-34">34</a>)
         case self.cmdlexpr:
-            →add an expression command to the current chunk (<a class="reference internal" href="#target-31">31</a>)
+            →add an expression command to the current chunk (<a class="reference internal" href="#target-36">36</a>)
         case self.cmdcmd:
-            →double at-sign replacement, append this character to previous TextCommand (<a class="reference internal" href="#target-32">32</a>)
+            →double at-sign replacement, append this character to previous TextCommand (<a class="reference internal" href="#target-37">37</a>)
         case self.cmdlcurl | self.cmdlbrak:
             # These should have been consumed as part of &#64;o and &#64;d parsing
             self.logger.error(&quot;Extra %r (possibly missing chunk name) near %r&quot;, token, self.location())
@@ -2789,7 +3045,7 @@ def handleCommand(self, token: str) -&gt; bool:
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>WebReader handle a command string (23)</em>. Used by: WebReader class... (<a class="reference internal" href="#target-22">22</a>)</p>
+<p class="small">◊ <em>WebReader handle a command string (28)</em>. Used by: WebReader class... (<a class="reference internal" href="#target-27">27</a>)</p>
 </blockquote>
 <p>An output chunk has the form <tt class="docutils literal">&#64;o</tt> <em>name</em> <tt class="docutils literal">&#64;{</tt> <em>content</em> <tt class="docutils literal">&#64;}</tt>.
 We use the first two tokens to name the <tt class="docutils literal">OutputChunk</tt>.  We expect
@@ -2798,7 +3054,7 @@ to this chunk while waiting for the final <tt class="docutils literal">&#64;}</t
 <p>We'll use an <tt class="docutils literal">OptionParser</tt> to locate the optional parameters.  This will then let
 us build an appropriate instance of <tt class="docutils literal">OutputChunk</tt>.</p>
 <p>With some small additional changes, we could use <tt class="docutils literal"><span class="pre">OutputChunk(**options)</span></tt>.</p>
-<p class="rubric" id="target-24">start an OutputChunk, adding it to the web (24) =</p>
+<p class="rubric" id="target-29">start an OutputChunk, adding it to the web (29) =</p>
 <pre class="code literal-block">
 args = next(self.tokenizer)
 self.expect({self.cmdlcurl})
@@ -2810,12 +3066,13 @@ newChunk = OutputChunk(
 )
 newChunk.filePath = self.filePath
 self.content.append(newChunk)
-self.content[-1].commands.append(CodeCommand(&quot;&quot;, self.location()))
+self.text_command = CodeCommand
+# self.content[-1].commands.append(CodeCommand(&quot;&quot;, self.location()))
 # capture an OutputChunk up to &#64;}
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>start an OutputChunk, adding it to the web (24)</em>. Used by: WebReader handle a command... (<a class="reference internal" href="#target-23">23</a>)</p>
+<p class="small">◊ <em>start an OutputChunk, adding it to the web (29)</em>. Used by: WebReader handle a command... (<a class="reference internal" href="#target-28">28</a>)</p>
 </blockquote>
 <p>A named chunk has the form <tt class="docutils literal">&#64;d</tt> <em>name</em> <tt class="docutils literal">&#64;{</tt> <em>content</em> <tt class="docutils literal">&#64;}</tt> for
 code and <tt class="docutils literal">&#64;d</tt> <em>name</em> <tt class="docutils literal">&#64;[</tt> <em>content</em> <tt class="docutils literal">&#64;]</tt> for document source.
@@ -2831,7 +3088,7 @@ end the chunk.</p>
 <p>If <tt class="docutils literal"><span class="pre">`&quot;-indent&quot;</span></tt> is in options, this is the default.
 If both are in the options, we should provide a warning.</p>
 <p><strong>TODO:</strong> Add a warning for conflicting options.</p>
-<p class="rubric" id="target-25">start a NamedChunk or NamedDocumentChunk, adding it to the web (25) =</p>
+<p class="rubric" id="target-30">start a NamedChunk or NamedDocumentChunk, adding it to the web (30) =</p>
 <pre class="code literal-block">
 args = next(self.tokenizer)
 brack = self.expect({self.cmdlcurl, self.cmdlbrak})
@@ -2853,12 +3110,13 @@ else:
 
 if newChunk:
     self.content.append(newChunk)
-self.content[-1].commands.append(CodeCommand(&quot;&quot;, self.location()))
+self.text_command = CodeCommand
+# self.content[-1].commands.append(CodeCommand(&quot;&quot;, self.location()))
 # capture a NamedChunk up to &#64;} or &#64;]
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>start a NamedChunk or NamedDocumentChunk, adding it to the web (25)</em>. Used by: WebReader handle a command... (<a class="reference internal" href="#target-23">23</a>)</p>
+<p class="small">◊ <em>start a NamedChunk or NamedDocumentChunk, adding it to the web (30)</em>. Used by: WebReader handle a command... (<a class="reference internal" href="#target-28">28</a>)</p>
 </blockquote>
 <p>An import command has the unusual form of <tt class="docutils literal">&#64;i</tt> <em>name</em>, with no trailing
 separator.  When we encounter the <tt class="docutils literal">&#64;i</tt> token, the next token will start with the
@@ -2883,7 +3141,7 @@ ignoring a missing test output file, named in an <tt class="docutils literal">&#
 The application can then be run to create the missing test output file.
 After this, a second use of the <strong>py-web-tool</strong>
 can weave the test output file into a final, complete document.</p>
-<p class="rubric" id="target-26">include another file (26) =</p>
+<p class="rubric" id="target-31">include another file (31) =</p>
 <pre class="code literal-block">
 incPath = Path(next(self.tokenizer).strip())
 try:
@@ -2910,7 +3168,7 @@ self.content.append(Chunk())
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>include another file (26)</em>. Used by: WebReader handle a command... (<a class="reference internal" href="#target-23">23</a>)</p>
+<p class="small">◊ <em>include another file (31)</em>. Used by: WebReader handle a command... (<a class="reference internal" href="#target-28">28</a>)</p>
 </blockquote>
 <p>When a <tt class="docutils literal">&#64;}</tt> or <tt class="docutils literal">&#64;]</tt> are found, this finishes a named chunk.  The next
 text is therefore part of an anonymous chunk.</p>
@@ -2920,14 +3178,15 @@ To do this, an attribute would be
 needed for each <tt class="docutils literal">Chunk</tt> subclass that indicated if a trailing bracket was necessary.
 For the base <tt class="docutils literal">Chunk</tt> class, this would be false, but for all other subclasses of
 <tt class="docutils literal">Chunk</tt>, this would be true.</p>
-<p class="rubric" id="target-27">finish a chunk, start a new Chunk adding it to the web (27) =</p>
+<p class="rubric" id="target-32">finish a chunk, start a new Chunk adding it to the web (32) =</p>
 <pre class="code literal-block">
 # Start a new context for text or commands *after* this command.
 self.content.append(Chunk())
+self.text_command = TextCommand
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>finish a chunk, start a new Chunk adding it to the web (27)</em>. Used by: WebReader handle a command... (<a class="reference internal" href="#target-23">23</a>)</p>
+<p class="small">◊ <em>finish a chunk, start a new Chunk adding it to the web (32)</em>. Used by: WebReader handle a command... (<a class="reference internal" href="#target-28">28</a>)</p>
 </blockquote>
 <p>User identifiers occur after a <tt class="docutils literal">&#64;|</tt> command inside a <tt class="docutils literal">NamedChunk</tt>.</p>
 <p>Note that no check is made to assure that the previous <tt class="docutils literal">Chunk</tt> was indeed a named
@@ -2938,7 +3197,7 @@ For the base <tt class="docutils literal">Chunk</tt> class, this would be false,
 <tt class="docutils literal">OutputChunk</tt> class, this would be true.</p>
 <p>User identifiers are name references at the end of a NamedChunk
 These are accumulated and expanded by <tt class="docutils literal">&#64;u</tt> reference</p>
-<p class="rubric" id="target-28">assign user identifiers to the current chunk (28) =</p>
+<p class="rubric" id="target-33">assign user identifiers to the current chunk (33) =</p>
 <pre class="code literal-block">
 try:
     names = next(self.tokenizer).strip().split()
@@ -2950,21 +3209,21 @@ except AttributeError:
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>assign user identifiers to the current chunk (28)</em>. Used by: WebReader handle a command... (<a class="reference internal" href="#target-23">23</a>)</p>
+<p class="small">◊ <em>assign user identifiers to the current chunk (33)</em>. Used by: WebReader handle a command... (<a class="reference internal" href="#target-28">28</a>)</p>
 </blockquote>
 <p>A reference command has the form <tt class="docutils literal">&#64;&lt;</tt><em>name</em><tt class="docutils literal">&#64;&gt;</tt>.  We accept three
 tokens from the input, the middle token is the referenced name.</p>
-<p class="rubric" id="target-29">add a reference command to the current chunk (29) =</p>
+<p class="rubric" id="target-34">add a reference command to the current chunk (34) =</p>
 <pre class="code literal-block">
 # get the name, introduce into the named Chunk dictionary
 name = next(self.tokenizer).strip()
 closing = self.expect({self.cmdrangl})
-self.content[-1].commands.append(ReferenceCommand(name, self.tokenizer.lineNumber))
+self.content[-1].commands.append(ReferenceCommand(name, self.location()))
 self.logger.debug(&quot;Reading %r %r&quot;, name, closing)
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>add a reference command to the current chunk (29)</em>. Used by: WebReader handle a command... (<a class="reference internal" href="#target-23">23</a>)</p>
+<p class="small">◊ <em>add a reference command to the current chunk (34)</em>. Used by: WebReader handle a command... (<a class="reference internal" href="#target-28">28</a>)</p>
 </blockquote>
 <p>An expression command has the form <tt class="docutils literal">&#64;(</tt><em>Python Expression</em><tt class="docutils literal">&#64;)</tt>.
 We accept three
@@ -2974,7 +3233,7 @@ tokens from the input, the middle token is the expression.</p>
 <li><strong>Deferred Execution</strong>.  This requires definition of a new subclass of <tt class="docutils literal">Command</tt>,
 <tt class="docutils literal">ExpressionCommand</tt>, and appends it into the current <tt class="docutils literal">Chunk</tt>.  At weave and
 tangle time, this expression is evaluated.  The insert might look something like this:
-<tt class="docutils literal">aChunk.append(ExpressionCommand(expression, self.tokenizer.lineNumber))</tt>.</li>
+<tt class="docutils literal">aChunk.append(ExpressionCommand(expression, <span class="pre">self.location()))</span></tt>.</li>
 <li><strong>Immediate Execution</strong>.  This simply creates a context and evaluates
 the Python expression.  The output from the expression becomes a <tt class="docutils literal">TextCommand</tt>, and
 is append to the current <tt class="docutils literal">Chunk</tt>.</li>
@@ -2983,7 +3242,7 @@ is append to the current <tt class="docutils literal">Chunk</tt>.</li>
 to the current chunk's text.</p>
 <p>We provide elements of the <tt class="docutils literal">os</tt> module.  We provide <tt class="docutils literal">os.path</tt> library.
 An <tt class="docutils literal">os.getcwd()</tt> could be changed to <tt class="docutils literal"><span class="pre">os.path.realpath('.')</span></tt>.</p>
-<p class="rubric" id="target-30">Imports (30) +=</p>
+<p class="rubric" id="target-35">Imports (35) +=</p>
 <pre class="code literal-block">
 import builtins
 import sys
@@ -2991,9 +3250,9 @@ import platform
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Imports (30)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-60">60</a>)</p>
+<p class="small">◊ <em>Imports (35)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-65">65</a>)</p>
 </blockquote>
-<p class="rubric" id="target-31">add an expression command to the current chunk (31) =</p>
+<p class="rubric" id="target-36">add an expression command to the current chunk (36) =</p>
 <pre class="code literal-block">
 # get the Python expression, create the expression result
 expression = next(self.tokenizer)
@@ -3029,11 +3288,12 @@ except Exception as exc:
     self.logger.error('Failure to process %r: result is %r', expression, exc)
     self.errors += 1
     result = f&quot;&#64;({expression!r}: Error {exc!r}&#64;)&quot;
-self.content[-1].commands.append(TextCommand(result, self.tokenizer.lineNumber))
+cls = self.text_command
+self.content[-1].commands.append(cls(result, self.location()))
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>add an expression command to the current chunk (31)</em>. Used by: WebReader handle a command... (<a class="reference internal" href="#target-23">23</a>)</p>
+<p class="small">◊ <em>add an expression command to the current chunk (36)</em>. Used by: WebReader handle a command... (<a class="reference internal" href="#target-28">28</a>)</p>
 </blockquote>
 <p>A double command sequence (<tt class="docutils literal"><span class="pre">'&#64;&#64;'</span></tt>, when the command is an <tt class="docutils literal">'&#64;'</tt>) has the
 usual meaning of <tt class="docutils literal">'&#64;'</tt> in the input stream.  We do this via
@@ -3043,19 +3303,20 @@ create a new, empty <tt class="docutils literal">TextCommand</tt>.</p>
 <p>We replace with '&#64;' here and now! This is put this at the end of the previous chunk.
 And we make sure the next chunk will be appended to this so that it's
 largely seamless.</p>
-<p class="rubric" id="target-32">double at-sign replacement, append this character to previous TextCommand (32) =</p>
+<p class="rubric" id="target-37">double at-sign replacement, append this character to previous TextCommand (37) =</p>
 <pre class="code literal-block">
-self.content[-1].commands.append(TextCommand(self.command, self.tokenizer.lineNumber))
+cls = self.text_command
+self.content[-1].commands.append(cls(self.command, self.location()))
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>double at-sign replacement, append this character to previous TextCommand (32)</em>. Used by: WebReader handle a command... (<a class="reference internal" href="#target-23">23</a>)</p>
+<p class="small">◊ <em>double at-sign replacement, append this character to previous TextCommand (37)</em>. Used by: WebReader handle a command... (<a class="reference internal" href="#target-28">28</a>)</p>
 </blockquote>
 <p>The <tt class="docutils literal">expect()</tt> method examines the
 next token to see if it is the expected item. <tt class="docutils literal">'\n'</tt> are absorbed.
 If this is not found, a standard type of error message is raised.
 This is used by <tt class="docutils literal">handleCommand()</tt>.</p>
-<p class="rubric" id="target-33">WebReader handle a command string (33) +=</p>
+<p class="rubric" id="target-38">WebReader handle a command string (38) +=</p>
 <pre class="code literal-block">
 def expect(self, tokens: set[str]) -&gt; str | None:
     &quot;&quot;&quot;Compare next token with expectation, quietly skipping whitespace (i.e., ``\n``).&quot;&quot;&quot;
@@ -3076,19 +3337,19 @@ def expect(self, tokens: set[str]) -&gt; str | None:
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>WebReader handle a command string (33)</em>. Used by: WebReader class... (<a class="reference internal" href="#target-22">22</a>)</p>
+<p class="small">◊ <em>WebReader handle a command string (38)</em>. Used by: WebReader class... (<a class="reference internal" href="#target-27">27</a>)</p>
 </blockquote>
 <p>The <tt class="docutils literal">location()</tt> provides the file name and line number.
 This allows error messages as well as tangled or woven output
 to correctly reference the original input files.</p>
-<p class="rubric" id="target-34">WebReader location in the input stream (34) =</p>
+<p class="rubric" id="target-39">WebReader location in the input stream (39) =</p>
 <pre class="code literal-block">
 def location(self) -&gt; tuple[str, int]:
     return (str(self.filePath), self.tokenizer.lineNumber+1)
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>WebReader location in the input stream (34)</em>. Used by: WebReader class... (<a class="reference internal" href="#target-22">22</a>)</p>
+<p class="small">◊ <em>WebReader location in the input stream (39)</em>. Used by: WebReader class... (<a class="reference internal" href="#target-27">27</a>)</p>
 </blockquote>
 <p>The <tt class="docutils literal">load()</tt> method reads the entire input file as a sequence
 of tokens, split up by the <tt class="docutils literal">Tokenizer</tt>.  Each token that appears
@@ -3098,22 +3359,23 @@ and placed in the <tt class="docutils literal">Web</tt>.  If <tt class="docutils
 was unknown, and we write a warning but treat it as text.</p>
 <p>The <tt class="docutils literal">load()</tt> method is used recursively to handle the <tt class="docutils literal">&#64;i</tt> command. The issue
 is that it's always loading a single top-level web.</p>
-<p class="rubric" id="target-35">Imports (35) +=</p>
+<p class="rubric" id="target-40">Imports (40) +=</p>
 <pre class="code literal-block">
 from typing import TextIO
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Imports (35)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-60">60</a>)</p>
+<p class="small">◊ <em>Imports (40)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-65">65</a>)</p>
 </blockquote>
-<p class="rubric" id="target-36">WebReader load the web (36) =</p>
+<p class="rubric" id="target-41">WebReader load the web (41) =</p>
 <pre class="code literal-block">
 def load(self, filepath: Path, source: TextIO | None = None) -&gt; list[Chunk]:
-    &quot;&quot;&quot;A flat list of chunks can be made into a Web.
-    Or. It can be used to extend a web because of a ``&#64;i`` command.
+    &quot;&quot;&quot;Returns a flat list of chunks to be made into a Web.
+    Also used to expand ``&#64;i`` included files.
     &quot;&quot;&quot;
     self.filePath = filepath
     self.base_path = self.filePath.parent
+    self.text_command = TextCommand
 
     if source:
         self._source = source
@@ -3124,6 +3386,7 @@ def load(self, filepath: Path, source: TextIO | None = None) -&gt; list[Chunk]:
     return self.content
 
 def parse_source(self) -&gt; None:
+    &quot;&quot;&quot;Builds a sequence of Chunks.&quot;&quot;&quot;
     self.tokenizer = Tokenizer(self._source, self.command)
     self.totalFiles += 1
 
@@ -3136,24 +3399,32 @@ def parse_source(self) -&gt; None:
                 continue
             else:
                 self.logger.error('Unknown &#64;-command in input: %r near %r', token, self.location())
-                self.content[-1].commands.append(TextCommand(token, self.tokenizer.lineNumber))
+                cls = self.text_command
+                self.content[-1].commands.append(cls(token, self.location()))
         elif token:
             # Accumulate a non-empty block of text in the current chunk.
-            self.content[-1].commands.append(TextCommand(token, self.tokenizer.lineNumber))
+            # Output Chunk and Named Chunk should have CodeCommand
+            # Chunk should have TextCommand.
+            cls = self.text_command
+            self.content[-1].commands.append(cls(token, self.location()))
         else:
             # Whitespace
             pass
+    self.logger.debug(&quot;parse_source: [&quot;)
+    for c in self.content:
+        self.logger.debug(&quot;  %r&quot;, c)
+    self.logger.debug(&quot;]&quot;)
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>WebReader load the web (36)</em>. Used by: WebReader class... (<a class="reference internal" href="#target-22">22</a>)</p>
+<p class="small">◊ <em>WebReader load the web (41)</em>. Used by: WebReader class... (<a class="reference internal" href="#target-27">27</a>)</p>
 </blockquote>
 <p>The command character can be changed to permit
 some flexibility when working with languages that make extensive
 use of the <tt class="docutils literal">&#64;</tt> symbol, i.e., PERL.
 The initialization of the <tt class="docutils literal">WebReader</tt> is based on the selected
 command character.</p>
-<p class="rubric" id="target-37">WebReader command literals (37) =</p>
+<p class="rubric" id="target-42">WebReader command literals (42) =</p>
 <pre class="code literal-block">
 # Structural (&quot;major&quot;) commands
 self.cmdo = self.command+'o'
@@ -3179,7 +3450,7 @@ self.cmdu = self.command+'u'
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>WebReader command literals (37)</em>. Used by: WebReader class... (<a class="reference internal" href="#target-22">22</a>)</p>
+<p class="small">◊ <em>WebReader command literals (42)</em>. Used by: WebReader class... (<a class="reference internal" href="#target-27">27</a>)</p>
 </blockquote>
 <div class="section" id="the-tokenizer-class">
 <h3><a class="toc-backref" href="#toc-entry-45">The Tokenizer Class</a></h3>
@@ -3211,16 +3482,16 @@ a line number. Also, we can tangle extract comments into a file to reveal source
 <p>Since the tokenizer is a proper iterator, we can use <tt class="docutils literal">tokens = iter(Tokenizer(source))</tt>
 and <tt class="docutils literal">next(tokens)</tt> to step through the sequence of tokens until we raise a <tt class="docutils literal">StopIteration</tt>
 exception.</p>
-<p class="rubric" id="target-38">Imports (38) +=</p>
+<p class="rubric" id="target-43">Imports (43) +=</p>
 <pre class="code literal-block">
 import re
 from collections.abc import Iterator, Iterable
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Imports (38)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-60">60</a>)</p>
+<p class="small">◊ <em>Imports (43)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-65">65</a>)</p>
 </blockquote>
-<p class="rubric" id="target-39">Tokenizer class - breaks input into tokens (39) =</p>
+<p class="rubric" id="target-44">Tokenizer class - breaks input into tokens (44) =</p>
 <pre class="code literal-block">
 class Tokenizer(Iterator[str]):
     def __init__(self, stream: TextIO, command_char: str='&#64;') -&gt; None:
@@ -3239,7 +3510,7 @@ class Tokenizer(Iterator[str]):
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Tokenizer class - breaks input into tokens (39)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
+<p class="small">◊ <em>Tokenizer class - breaks input into tokens (44)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
 </blockquote>
 </div>
 <div class="section" id="the-option-parser-class">
@@ -3261,13 +3532,13 @@ used in the case of a Python &quot;&quot;&quot; string that would be ruined by i
 </ul>
 <p>To handle this, we have a separate lexical scanner and parser for these
 two commands.</p>
-<p class="rubric" id="target-40">Imports (40) +=</p>
+<p class="rubric" id="target-45">Imports (45) +=</p>
 <pre class="code literal-block">
 import shlex
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Imports (40)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-60">60</a>)</p>
+<p class="small">◊ <em>Imports (45)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-65">65</a>)</p>
 </blockquote>
 <p>Here's how we can define an option.</p>
 <pre class="literal-block">
@@ -3280,15 +3551,15 @@ OptionParser(
     )
 </pre>
 <p>The idea is to parallel <tt class="docutils literal">argparse.add_argument()</tt> syntax.</p>
-<p class="rubric" id="target-41">Option Parser class - locates optional values on commands (41) =</p>
+<p class="rubric" id="target-46">Option Parser class - locates optional values on commands (46) =</p>
 <pre class="code literal-block">
 class ParseError(Exception): pass
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Option Parser class - locates optional values on commands (41)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
+<p class="small">◊ <em>Option Parser class - locates optional values on commands (46)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
 </blockquote>
-<p class="rubric" id="target-42">Option Parser class - locates optional values on commands (42) +=</p>
+<p class="rubric" id="target-47">Option Parser class - locates optional values on commands (47) +=</p>
 <pre class="code literal-block">
 class OptionDef:
     def __init__(self, name: str, **kw: Any) -&gt; None:
@@ -3297,12 +3568,12 @@ class OptionDef:
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Option Parser class - locates optional values on commands (42)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
+<p class="small">◊ <em>Option Parser class - locates optional values on commands (47)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
 </blockquote>
 <p>The parser breaks the text into words using <tt class="docutils literal">shelex</tt> rules.
 It then steps through the words, accumulating the options and the
 final argument value.</p>
-<p class="rubric" id="target-43">Option Parser class - locates optional values on commands (43) +=</p>
+<p class="rubric" id="target-48">Option Parser class - locates optional values on commands (48) +=</p>
 <pre class="code literal-block">
 class OptionParser:
     def __init__(self, *arg_defs: Any) -&gt; None:
@@ -3356,7 +3627,7 @@ class OptionParser:
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Option Parser class - locates optional values on commands (43)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
+<p class="small">◊ <em>Option Parser class - locates optional values on commands (48)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
 </blockquote>
 <p>In principle, we step through the trailers based on <tt class="docutils literal">nargs</tt> counts.
 Since we only ever have the one trailer, we can skate by without checking the number of args.</p>
@@ -3408,17 +3679,17 @@ forest of <tt class="docutils literal">if</tt>-statements to determine precisely
 <p>Each action has the potential to update the state of the overall
 application.   A partner with this command hierarchy is the Application class
 that defines the application options, inputs and results.</p>
-<p class="rubric" id="target-44">Action class hierarchy - used to describe actions of the application (44) =</p>
+<p class="rubric" id="target-49">Action class hierarchy - used to describe actions of the application (49) =</p>
 <pre class="code literal-block">
-→Action superclass has common features of all actions (<a class="reference internal" href="#target-45">45</a>)
-→ActionSequence subclass that holds a sequence of other actions (<a class="reference internal" href="#target-48">48</a>)
-→WeaveAction subclass initiates the weave action (<a class="reference internal" href="#target-51">51</a>)
-→TangleAction subclass initiates the tangle action (<a class="reference internal" href="#target-54">54</a>)
-→LoadAction subclass loads the document web (<a class="reference internal" href="#target-57">57</a>)
+→Action superclass has common features of all actions (<a class="reference internal" href="#target-50">50</a>)
+→ActionSequence subclass that holds a sequence of other actions (<a class="reference internal" href="#target-53">53</a>)
+→WeaveAction subclass initiates the weave action (<a class="reference internal" href="#target-56">56</a>)
+→TangleAction subclass initiates the tangle action (<a class="reference internal" href="#target-59">59</a>)
+→LoadAction subclass loads the document web (<a class="reference internal" href="#target-62">62</a>)
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Action class hierarchy - used to describe actions of the application (44)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
+<p class="small">◊ <em>Action class hierarchy - used to describe actions of the application (49)</em>. Used by: Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)</p>
 </blockquote>
 <div class="section" id="action-class">
 <h3><a class="toc-backref" href="#toc-entry-48">Action Class</a></h3>
@@ -3455,7 +3726,7 @@ A LoadAction will update this with the <tt class="docutils literal">Web</tt> obj
 <dt>!start:</dt>
 <dd>The time at which the action started.</dd>
 </dl>
-<p class="rubric" id="target-45">Action superclass has common features of all actions (45) =</p>
+<p class="rubric" id="target-50">Action superclass has common features of all actions (50) =</p>
 <pre class="code literal-block">
 class Action:
     &quot;&quot;&quot;An action performed by pyWeb.&quot;&quot;&quot;
@@ -3469,18 +3740,18 @@ class Action:
     def __str__(self) -&gt; str:
         return f&quot;{self.name!s} [{self.web!s}]&quot;
 
-    →Action call method actually does the real work (<a class="reference internal" href="#target-46">46</a>)
+    →Action call method actually does the real work (<a class="reference internal" href="#target-51">51</a>)
 
-    →Action final summary of what was done (<a class="reference internal" href="#target-47">47</a>)
+    →Action final summary of what was done (<a class="reference internal" href="#target-52">52</a>)
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Action superclass has common features of all actions (45)</em>. Used by: Action class hierarchy... (<a class="reference internal" href="#target-44">44</a>)</p>
+<p class="small">◊ <em>Action superclass has common features of all actions (50)</em>. Used by: Action class hierarchy... (<a class="reference internal" href="#target-49">49</a>)</p>
 </blockquote>
 <p>The <tt class="docutils literal">__call__()</tt> method does the real work of the action.
 For the superclass, it merely logs a message.  This is overridden
 by a subclass.</p>
-<p class="rubric" id="target-46">Action call method actually does the real work (46) =</p>
+<p class="rubric" id="target-51">Action call method actually does the real work (51) =</p>
 <pre class="code literal-block">
 def __call__(self, options: argparse.Namespace) -&gt; None:
     self.logger.info(&quot;Starting %s&quot;, self.name)
@@ -3489,11 +3760,11 @@ def __call__(self, options: argparse.Namespace) -&gt; None:
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Action call method actually does the real work (46)</em>. Used by: Action superclass... (<a class="reference internal" href="#target-45">45</a>)</p>
+<p class="small">◊ <em>Action call method actually does the real work (51)</em>. Used by: Action superclass... (<a class="reference internal" href="#target-50">50</a>)</p>
 </blockquote>
 <p>The <tt class="docutils literal">summary()</tt> method returns some basic processing
 statistics for this action.</p>
-<p class="rubric" id="target-47">Action final summary of what was done (47) =</p>
+<p class="rubric" id="target-52">Action final summary of what was done (52) =</p>
 <pre class="code literal-block">
 def duration(self) -&gt; float:
     &quot;&quot;&quot;Return duration of the action.&quot;&quot;&quot;
@@ -3504,7 +3775,7 @@ def summary(self) -&gt; str:
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Action final summary of what was done (47)</em>. Used by: Action superclass... (<a class="reference internal" href="#target-45">45</a>)</p>
+<p class="small">◊ <em>Action final summary of what was done (52)</em>. Used by: Action superclass... (<a class="reference internal" href="#target-50">50</a>)</p>
 </blockquote>
 </div>
 <div class="section" id="actionsequence-class">
@@ -3518,7 +3789,7 @@ the three standard actions available; it generally is the default, &quot;do ever
 action.</p>
 <p>This class overrides the <tt class="docutils literal">perform()</tt> method of the superclass.  It also adds
 an <tt class="docutils literal">append()</tt> method that is used to construct the sequence of actions.</p>
-<p class="rubric" id="target-48">ActionSequence subclass that holds a sequence of other actions (48) =</p>
+<p class="rubric" id="target-53">ActionSequence subclass that holds a sequence of other actions (53) =</p>
 <pre class="code literal-block">
 class ActionSequence(Action):
     &quot;&quot;&quot;An action composed of a sequence of other actions.&quot;&quot;&quot;
@@ -3530,19 +3801,19 @@ class ActionSequence(Action):
     def __str__(self) -&gt; str:
         return &quot;; &quot;.join([str(x) for x in self.opSequence])
 
-    →ActionSequence call method delegates the sequence of ations (<a class="reference internal" href="#target-49">49</a>)
+    →ActionSequence call method delegates the sequence of ations (<a class="reference internal" href="#target-54">54</a>)
 
-    →ActionSequence summary summarizes each step (<a class="reference internal" href="#target-50">50</a>)
+    →ActionSequence summary summarizes each step (<a class="reference internal" href="#target-55">55</a>)
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>ActionSequence subclass that holds a sequence of other actions (48)</em>. Used by: Action class hierarchy... (<a class="reference internal" href="#target-44">44</a>)</p>
+<p class="small">◊ <em>ActionSequence subclass that holds a sequence of other actions (53)</em>. Used by: Action class hierarchy... (<a class="reference internal" href="#target-49">49</a>)</p>
 </blockquote>
 <p>Since the macro <tt class="docutils literal">__call__()</tt> method delegates to other Actions,
 it is possible to short-cut argument processing by using the Python
 <tt class="docutils literal">*args</tt> construct to accept all arguments and pass them to each
 sub-action.</p>
-<p class="rubric" id="target-49">ActionSequence call method delegates the sequence of ations (49) =</p>
+<p class="rubric" id="target-54">ActionSequence call method delegates the sequence of ations (54) =</p>
 <pre class="code literal-block">
 def __call__(self, options: argparse.Namespace) -&gt; None:
     super().__call__(options)
@@ -3551,18 +3822,18 @@ def __call__(self, options: argparse.Namespace) -&gt; None:
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>ActionSequence call method delegates the sequence of ations (49)</em>. Used by: ActionSequence subclass... (<a class="reference internal" href="#target-48">48</a>)</p>
+<p class="small">◊ <em>ActionSequence call method delegates the sequence of ations (54)</em>. Used by: ActionSequence subclass... (<a class="reference internal" href="#target-53">53</a>)</p>
 </blockquote>
 <p>The <tt class="docutils literal">summary()</tt> method returns some basic processing
 statistics for each step of this action.</p>
-<p class="rubric" id="target-50">ActionSequence summary summarizes each step (50) =</p>
+<p class="rubric" id="target-55">ActionSequence summary summarizes each step (55) =</p>
 <pre class="code literal-block">
 def summary(self) -&gt; str:
     return &quot;, &quot;.join([o.summary() for o in self.opSequence])
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>ActionSequence summary summarizes each step (50)</em>. Used by: ActionSequence subclass... (<a class="reference internal" href="#target-48">48</a>)</p>
+<p class="small">◊ <em>ActionSequence summary summarizes each step (55)</em>. Used by: ActionSequence subclass... (<a class="reference internal" href="#target-53">53</a>)</p>
 </blockquote>
 </div>
 <div class="section" id="weaveaction-class">
@@ -3575,7 +3846,7 @@ are examined and a weaver is selected.</p>
 <p>This class overrides the <tt class="docutils literal">__call__()</tt> method of the superclass.</p>
 <p>If the options include <tt class="docutils literal">theWeaver</tt>, that <tt class="docutils literal">Weaver</tt> instance will be used.
 Otherwise, the <tt class="docutils literal">web.language()</tt> method function is used to guess what weaver to use.</p>
-<p class="rubric" id="target-51">WeaveAction subclass initiates the weave action (51) =</p>
+<p class="rubric" id="target-56">WeaveAction subclass initiates the weave action (56) =</p>
 <pre class="code literal-block">
 class WeaveAction(Action):
     &quot;&quot;&quot;Weave the final document.&quot;&quot;&quot;
@@ -3585,20 +3856,20 @@ class WeaveAction(Action):
     def __str__(self) -&gt; str:
         return f&quot;{self.name!s} [{self.web!s}, {self.options.theWeaver!s}]&quot;
 
-    →WeaveAction call method to pick the language (<a class="reference internal" href="#target-52">52</a>)
+    →WeaveAction call method to pick the language (<a class="reference internal" href="#target-57">57</a>)
 
-    →WeaveAction summary of language choice (<a class="reference internal" href="#target-53">53</a>)
+    →WeaveAction summary of language choice (<a class="reference internal" href="#target-58">58</a>)
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>WeaveAction subclass initiates the weave action (51)</em>. Used by: Action class hierarchy... (<a class="reference internal" href="#target-44">44</a>)</p>
+<p class="small">◊ <em>WeaveAction subclass initiates the weave action (56)</em>. Used by: Action class hierarchy... (<a class="reference internal" href="#target-49">49</a>)</p>
 </blockquote>
 <p>The language is picked just prior to weaving.  It is either (1) the language
 specified on the command line, or, (2) if no language was specified, a language
 is selected based on the first few characters of the input.</p>
 <p>Weaving can only raise an exception when there is a reference to a chunk that
 is never defined.</p>
-<p class="rubric" id="target-52">WeaveAction call method to pick the language (52) =</p>
+<p class="rubric" id="target-57">WeaveAction call method to pick the language (57) =</p>
 <pre class="code literal-block">
 def __call__(self, options: argparse.Namespace) -&gt; None:
     super().__call__(options)
@@ -3618,11 +3889,11 @@ def __call__(self, options: argparse.Namespace) -&gt; None:
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>WeaveAction call method to pick the language (52)</em>. Used by: WeaveAction subclass... (<a class="reference internal" href="#target-51">51</a>)</p>
+<p class="small">◊ <em>WeaveAction call method to pick the language (57)</em>. Used by: WeaveAction subclass... (<a class="reference internal" href="#target-56">56</a>)</p>
 </blockquote>
 <p>The <tt class="docutils literal">summary()</tt> method returns some basic processing
 statistics for the weave action.</p>
-<p class="rubric" id="target-53">WeaveAction summary of language choice (53) =</p>
+<p class="rubric" id="target-58">WeaveAction summary of language choice (58) =</p>
 <pre class="code literal-block">
 def summary(self) -&gt; str:
     if self.options.theWeaver and self.options.theWeaver.linesWritten &gt; 0:
@@ -3633,7 +3904,7 @@ def summary(self) -&gt; str:
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>WeaveAction summary of language choice (53)</em>. Used by: WeaveAction subclass... (<a class="reference internal" href="#target-51">51</a>)</p>
+<p class="small">◊ <em>WeaveAction summary of language choice (58)</em>. Used by: WeaveAction subclass... (<a class="reference internal" href="#target-56">56</a>)</p>
 </blockquote>
 </div>
 <div class="section" id="tangleaction-class">
@@ -3645,25 +3916,25 @@ specified on the command line, this instance is used.  Otherwise, the first few 
 are examined and a weaver is selected.</p>
 <p>This class overrides the <tt class="docutils literal">__call__()</tt> method of the superclass.</p>
 <p>The options <strong>must</strong> include <tt class="docutils literal">theTangler</tt>, with the <tt class="docutils literal">Tangler</tt> instance to be used.</p>
-<p class="rubric" id="target-54">TangleAction subclass initiates the tangle action (54) =</p>
+<p class="rubric" id="target-59">TangleAction subclass initiates the tangle action (59) =</p>
 <pre class="code literal-block">
 class TangleAction(Action):
     &quot;&quot;&quot;Tangle source files.&quot;&quot;&quot;
     def __init__(self) -&gt; None:
         super().__init__(&quot;Tangle&quot;)
 
-    →TangleAction call method does tangling of the output files (<a class="reference internal" href="#target-55">55</a>)
+    →TangleAction call method does tangling of the output files (<a class="reference internal" href="#target-60">60</a>)
 
-    →TangleAction summary method provides total lines tangled (<a class="reference internal" href="#target-56">56</a>)
+    →TangleAction summary method provides total lines tangled (<a class="reference internal" href="#target-61">61</a>)
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>TangleAction subclass initiates the tangle action (54)</em>. Used by: Action class hierarchy... (<a class="reference internal" href="#target-44">44</a>)</p>
+<p class="small">◊ <em>TangleAction subclass initiates the tangle action (59)</em>. Used by: Action class hierarchy... (<a class="reference internal" href="#target-49">49</a>)</p>
 </blockquote>
 <p>Tangling can only raise an exception when a cross reference request (<tt class="docutils literal">&#64;f</tt>, <tt class="docutils literal">&#64;m</tt> or <tt class="docutils literal">&#64;u</tt>)
 occurs in a program code chunk.  Program code chunks are defined
 with any of <tt class="docutils literal">&#64;d</tt> or <tt class="docutils literal">&#64;o</tt>  and use <tt class="docutils literal">&#64;{</tt> <tt class="docutils literal">&#64;}</tt> brackets.</p>
-<p class="rubric" id="target-55">TangleAction call method does tangling of the output files (55) =</p>
+<p class="rubric" id="target-60">TangleAction call method does tangling of the output files (60) =</p>
 <pre class="code literal-block">
 def __call__(self, options: argparse.Namespace) -&gt; None:
     super().__call__(options)
@@ -3677,11 +3948,11 @@ def __call__(self, options: argparse.Namespace) -&gt; None:
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>TangleAction call method does tangling of the output files (55)</em>. Used by: TangleAction subclass... (<a class="reference internal" href="#target-54">54</a>)</p>
+<p class="small">◊ <em>TangleAction call method does tangling of the output files (60)</em>. Used by: TangleAction subclass... (<a class="reference internal" href="#target-59">59</a>)</p>
 </blockquote>
 <p>The <tt class="docutils literal">summary()</tt> method returns some basic processing
 statistics for the tangle action.</p>
-<p class="rubric" id="target-56">TangleAction summary method provides total lines tangled (56) =</p>
+<p class="rubric" id="target-61">TangleAction summary method provides total lines tangled (61) =</p>
 <pre class="code literal-block">
 def summary(self) -&gt; str:
     if self.options.theTangler and self.options.theTangler.linesWritten &gt; 0:
@@ -3692,7 +3963,7 @@ def summary(self) -&gt; str:
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>TangleAction summary method provides total lines tangled (56)</em>. Used by: TangleAction subclass... (<a class="reference internal" href="#target-54">54</a>)</p>
+<p class="small">◊ <em>TangleAction summary method provides total lines tangled (61)</em>. Used by: TangleAction subclass... (<a class="reference internal" href="#target-59">59</a>)</p>
 </blockquote>
 </div>
 <div class="section" id="loadaction-class">
@@ -3703,7 +3974,7 @@ uses the application's <tt class="docutils literal">webReader</tt> to actually d
 this class is part of any of the weave, tangle and &quot;do everything&quot; action.</p>
 <p>This class overrides the <tt class="docutils literal">__call__()</tt> method of the superclass.</p>
 <p>The options <strong>must</strong> include <tt class="docutils literal">webReader</tt>, with the <tt class="docutils literal">WebReader</tt> instance to be used.</p>
-<p class="rubric" id="target-57">LoadAction subclass loads the document web (57) =</p>
+<p class="rubric" id="target-62">LoadAction subclass loads the document web (62) =</p>
 <pre class="code literal-block">
 class LoadAction(Action):
     &quot;&quot;&quot;Load the source web.&quot;&quot;&quot;
@@ -3713,13 +3984,13 @@ class LoadAction(Action):
     def __str__(self) -&gt; str:
         return f&quot;Load [{self.webReader!s}, {self.options.web!s}]&quot;
 
-    →LoadAction call method loads the input files (<a class="reference internal" href="#target-58">58</a>)
+    →LoadAction call method loads the input files (<a class="reference internal" href="#target-63">63</a>)
 
-    →LoadAction summary provides lines read (<a class="reference internal" href="#target-59">59</a>)
+    →LoadAction summary provides lines read (<a class="reference internal" href="#target-64">64</a>)
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>LoadAction subclass loads the document web (57)</em>. Used by: Action class hierarchy... (<a class="reference internal" href="#target-44">44</a>)</p>
+<p class="small">◊ <em>LoadAction subclass loads the document web (62)</em>. Used by: Action class hierarchy... (<a class="reference internal" href="#target-49">49</a>)</p>
 </blockquote>
 <p>Trying to load the web involves two steps, either of which can raise
 exceptions due to incorrect inputs.</p>
@@ -3736,7 +4007,7 @@ syntax errors as well as OS errors.<ul>
 <li>The <tt class="docutils literal">Web</tt> class <tt class="docutils literal">createUsedBy()</tt> method can raise an exception when a
 chunk reference cannot be resolved to a named chunk.</li>
 </ol>
-<p class="rubric" id="target-58">LoadAction call method loads the input files (58) =</p>
+<p class="rubric" id="target-63">LoadAction call method loads the input files (63) =</p>
 <pre class="code literal-block">
 def __call__(self, options: argparse.Namespace) -&gt; None:
     super().__call__(options)
@@ -3766,11 +4037,11 @@ def __call__(self, options: argparse.Namespace) -&gt; None:
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>LoadAction call method loads the input files (58)</em>. Used by: LoadAction subclass... (<a class="reference internal" href="#target-57">57</a>)</p>
+<p class="small">◊ <em>LoadAction call method loads the input files (63)</em>. Used by: LoadAction subclass... (<a class="reference internal" href="#target-62">62</a>)</p>
 </blockquote>
 <p>The <tt class="docutils literal">summary()</tt> method returns some basic processing
 statistics for the load action.</p>
-<p class="rubric" id="target-59">LoadAction summary provides lines read (59) =</p>
+<p class="rubric" id="target-64">LoadAction summary provides lines read (64) =</p>
 <pre class="code literal-block">
 def summary(self) -&gt; str:
     return (
@@ -3779,25 +4050,25 @@ def summary(self) -&gt; str:
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>LoadAction summary provides lines read (59)</em>. Used by: LoadAction subclass... (<a class="reference internal" href="#target-57">57</a>)</p>
+<p class="small">◊ <em>LoadAction summary provides lines read (64)</em>. Used by: LoadAction subclass... (<a class="reference internal" href="#target-62">62</a>)</p>
 </blockquote>
 </div>
 </div>
 <div class="section" id="pyweb-module-file">
 <h2><a class="toc-backref" href="#toc-entry-53"><strong>pyWeb</strong> Module File</a></h2>
 <p>The <strong>pyWeb</strong> application file is shown below:</p>
-<p class="rubric" id="target-60">pyweb.py (60) =</p>
+<p class="rubric" id="target-65">pyweb.py (65) =</p>
 <pre class="code literal-block">
-→Overheads (<a class="reference internal" href="#target-62">62</a>), →(<a class="reference internal" href="#target-63">63</a>), →(<a class="reference internal" href="#target-64">64</a>)
-→Imports (<a class="reference internal" href="#target-2">2</a>), →(<a class="reference internal" href="#target-8">8</a>), →(<a class="reference internal" href="#target-16">16</a>), →(<a class="reference internal" href="#target-30">30</a>), →(<a class="reference internal" href="#target-35">35</a>), →(<a class="reference internal" href="#target-38">38</a>), →(<a class="reference internal" href="#target-40">40</a>), →(<a class="reference internal" href="#target-61">61</a>), →(<a class="reference internal" href="#target-65">65</a>), →(<a class="reference internal" href="#target-70">70</a>)
+→Overheads (<a class="reference internal" href="#target-67">67</a>), →(<a class="reference internal" href="#target-68">68</a>), →(<a class="reference internal" href="#target-69">69</a>)
+→Imports (<a class="reference internal" href="#target-2">2</a>), →(<a class="reference internal" href="#target-9">9</a>), →(<a class="reference internal" href="#target-21">21</a>), →(<a class="reference internal" href="#target-35">35</a>), →(<a class="reference internal" href="#target-40">40</a>), →(<a class="reference internal" href="#target-43">43</a>), →(<a class="reference internal" href="#target-45">45</a>), →(<a class="reference internal" href="#target-66">66</a>), →(<a class="reference internal" href="#target-70">70</a>), →(<a class="reference internal" href="#target-75">75</a>)
 →Base Class Definitions (<a class="reference internal" href="#target-1">1</a>)
-→Application Class (<a class="reference internal" href="#target-66">66</a>)
-→Logging Setup (<a class="reference internal" href="#target-71">71</a>), →(<a class="reference internal" href="#target-72">72</a>)
-→Interface Functions (<a class="reference internal" href="#target-74">74</a>)
+→Application Class (<a class="reference internal" href="#target-71">71</a>)
+→Logging Setup (<a class="reference internal" href="#target-76">76</a>), →(<a class="reference internal" href="#target-77">77</a>)
+→Interface Functions (<a class="reference internal" href="#target-79">79</a>)
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>pyweb.py (60)</em>.</p>
+<p class="small">◊ <em>pyweb.py (65)</em>.</p>
 </blockquote>
 <p>The <a class="reference internal" href="#overheads">Overheads</a> are described below, they include things like:</p>
 <ul class="simple">
@@ -3827,7 +4098,7 @@ as well as log messages.</li>
 <li>The <tt class="docutils literal">datetime</tt> module is used to format times, phasing out use of <tt class="docutils literal">time</tt>.</li>
 <li>The <tt class="docutils literal">types</tt> module is used to get at <tt class="docutils literal">SimpleNamespace</tt> for configuration.</li>
 </ul>
-<p class="rubric" id="target-61">Imports (61) +=</p>
+<p class="rubric" id="target-66">Imports (66) +=</p>
 <pre class="code literal-block">
 import os
 import time
@@ -3836,7 +4107,7 @@ import types
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Imports (61)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-60">60</a>)</p>
+<p class="small">◊ <em>Imports (66)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-65">65</a>)</p>
 </blockquote>
 <p>Note that <tt class="docutils literal">os.path</tt>, <tt class="docutils literal">time</tt>, <tt class="docutils literal">datetime</tt> and <tt class="docutils literal">platform`</tt>
 are provided in the expression context.</p>
@@ -3849,19 +4120,19 @@ The shell reads the first line of a file; when it finds the <tt class="docutils 
 escape, the remainder of the line is taken as the path to the binary program
 that should be run.  The shell runs this binary, providing the
 file as standard input.</p>
-<p class="rubric" id="target-62">Overheads (62) =</p>
+<p class="rubric" id="target-67">Overheads (67) =</p>
 <pre class="code literal-block">
 #!/usr/bin/env python
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Overheads (62)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-60">60</a>)</p>
+<p class="small">◊ <em>Overheads (67)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-65">65</a>)</p>
 </blockquote>
 <p>A Python <tt class="docutils literal">__doc__</tt> string provides a standard vehicle for documenting
 the module or the application program.  The usual style is to provide
 a one-sentence summary on the first line.  This is followed by more
 detailed usage information.</p>
-<p class="rubric" id="target-63">Overheads (63) +=</p>
+<p class="rubric" id="target-68">Overheads (68) +=</p>
 <pre class="code literal-block">
 &quot;&quot;&quot;py-web-tool Literate Programming.
 
@@ -3873,25 +4144,25 @@ and tangles source files for any programming language.
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Overheads (63)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-60">60</a>)</p>
+<p class="small">◊ <em>Overheads (68)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-65">65</a>)</p>
 </blockquote>
 <p>The keyword cruft is a standard way of placing version control information into
 a Python module so it is preserved.  See PEP (Python Enhancement Proposal) #8 for information
 on recommended styles.</p>
 <p>We also sneak in a &quot;DO NOT EDIT&quot; warning that belongs in all generated application
 source files.</p>
-<p class="rubric" id="target-64">Overheads (64) +=</p>
+<p class="rubric" id="target-69">Overheads (69) +=</p>
 <pre class="code literal-block">
 __version__ = &quot;&quot;&quot;3.2&quot;&quot;&quot;
 
 ### DO NOT EDIT THIS FILE!
 ### It was created by /Users/slott/Documents/Projects/py-web-tool/bootstrap/pyweb.py, __version__='3.1'.
-### From source pyweb.w modified Sat Jun 18 11:04:10 2022.
+### From source pyweb.w modified Sat Jun 18 10:04:10 2022.
 ### In working directory '/Users/slott/Documents/Projects/py-web-tool/src'.
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Overheads (64)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-60">60</a>)</p>
+<p class="small">◊ <em>Overheads (69)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-65">65</a>)</p>
 </blockquote>
 </div>
 </div>
@@ -3930,27 +4201,27 @@ calls the <tt class="docutils literal">parseArgs()</tt> and <tt class="docutils 
 expected default behavior for this module when it is used as the main program.</p>
 <p>The configuration can be either a <tt class="docutils literal">types.SimpleNamespace</tt> or an
 <tt class="docutils literal">argparse.Namespace</tt> instance.</p>
-<p class="rubric" id="target-65">Imports (65) +=</p>
+<p class="rubric" id="target-70">Imports (70) +=</p>
 <pre class="code literal-block">
 import argparse
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Imports (65)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-60">60</a>)</p>
+<p class="small">◊ <em>Imports (70)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-65">65</a>)</p>
 </blockquote>
-<p class="rubric" id="target-66">Application Class (66) =</p>
+<p class="rubric" id="target-71">Application Class (71) =</p>
 <pre class="code literal-block">
 class Application:
     def __init__(self) -&gt; None:
         self.logger = logging.getLogger(self.__class__.__qualname__)
-        →Application default options (<a class="reference internal" href="#target-67">67</a>)
+        →Application default options (<a class="reference internal" href="#target-72">72</a>)
 
-    →Application parse command line (<a class="reference internal" href="#target-68">68</a>)
-    →Application class process all files (<a class="reference internal" href="#target-69">69</a>)
+    →Application parse command line (<a class="reference internal" href="#target-73">73</a>)
+    →Application class process all files (<a class="reference internal" href="#target-74">74</a>)
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Application Class (66)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-60">60</a>)</p>
+<p class="small">◊ <em>Application Class (71)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-65">65</a>)</p>
 </blockquote>
 <p>The first part of parsing the command line is
 setting default values that apply when parameters are omitted.
@@ -4015,7 +4286,7 @@ to create the output files.</td>
 </tr>
 </tbody>
 </table>
-<p class="rubric" id="target-67">Application default options (67) =</p>
+<p class="rubric" id="target-72">Application default options (72) =</p>
 <pre class="code literal-block">
 self.defaults = argparse.Namespace(
     verbosity=logging.INFO,
@@ -4040,14 +4311,14 @@ self.theAction = ActionSequence(&quot;load, tangle and weave&quot;, [self.loadOp
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Application default options (67)</em>. Used by: Application Class... (<a class="reference internal" href="#target-66">66</a>)</p>
+<p class="small">◊ <em>Application default options (72)</em>. Used by: Application Class... (<a class="reference internal" href="#target-71">71</a>)</p>
 </blockquote>
 <p>The algorithm for parsing the command line parameters uses the built in
 <tt class="docutils literal">argparse</tt> module.  We have to build a parser, define the options,
 and the parse the command-line arguments, updating the default namespace.</p>
 <p>We further expand on the arguments. This transforms simple strings into object
 instances.</p>
-<p class="rubric" id="target-68">Application parse command line (68) =</p>
+<p class="rubric" id="target-73">Application parse command line (73) =</p>
 <pre class="code literal-block">
 def parseArgs(self, argv: list[str]) -&gt; argparse.Namespace:
     p = argparse.ArgumentParser()
@@ -4095,7 +4366,7 @@ def expand(self, config: argparse.Namespace) -&gt; argparse.Namespace:
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Application parse command line (68)</em>. Used by: Application Class... (<a class="reference internal" href="#target-66">66</a>)</p>
+<p class="small">◊ <em>Application parse command line (73)</em>. Used by: Application Class... (<a class="reference internal" href="#target-71">71</a>)</p>
 </blockquote>
 <p>The <tt class="docutils literal">process()</tt> function uses the current <tt class="docutils literal">Application</tt> settings
 to process each file as follows:</p>
@@ -4115,7 +4386,7 @@ a summary message is produced, to clarify the state of
 the output files, and the exception is reraised.
 The re-raising is done so that all exceptions are handled by the
 outermost main program.</p>
-<p class="rubric" id="target-69">Application class process all files (69) =</p>
+<p class="rubric" id="target-74">Application class process all files (74) =</p>
 <pre class="code literal-block">
 def process(self, config: argparse.Namespace) -&gt; None:
     root = logging.getLogger()
@@ -4141,7 +4412,7 @@ def process(self, config: argparse.Namespace) -&gt; None:
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Application class process all files (69)</em>. Used by: Application Class... (<a class="reference internal" href="#target-66">66</a>)</p>
+<p class="small">◊ <em>Application class process all files (74)</em>. Used by: Application Class... (<a class="reference internal" href="#target-71">71</a>)</p>
 </blockquote>
 </div>
 <div class="section" id="logging-setup">
@@ -4149,21 +4420,21 @@ def process(self, config: argparse.Namespace) -&gt; None:
 <p>We'll create a logging context manager. This allows us to wrap the <tt class="docutils literal">main()</tt>
 function in an explicit <tt class="docutils literal">with</tt> statement that assures that logging is
 configured and cleaned up politely.</p>
-<p class="rubric" id="target-70">Imports (70) +=</p>
+<p class="rubric" id="target-75">Imports (75) +=</p>
 <pre class="code literal-block">
 import logging
 import logging.config
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Imports (70)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-60">60</a>)</p>
+<p class="small">◊ <em>Imports (75)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-65">65</a>)</p>
 </blockquote>
 <p>This has two configuration approaches. If a positional argument is given,
 that dictionary is used for <tt class="docutils literal">logging.config.dictConfig</tt>. Otherwise,
 keyword arguments are provided to <tt class="docutils literal">logging.basicConfig</tt>.</p>
 <p>A subclass might properly load a dictionary
 encoded in YAML and use that with <tt class="docutils literal">logging.config.dictConfig</tt>.</p>
-<p class="rubric" id="target-71">Logging Setup (71) =</p>
+<p class="rubric" id="target-76">Logging Setup (76) =</p>
 <pre class="code literal-block">
 class Logger:
     def __init__(self, dict_config: dict[str, Any] | None = None, **kw_config: Any) -&gt; None:
@@ -4183,13 +4454,13 @@ class Logger:
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Logging Setup (71)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-60">60</a>)</p>
+<p class="small">◊ <em>Logging Setup (76)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-65">65</a>)</p>
 </blockquote>
 <p>Here's a sample logging setup. This creates a simple console handler and
 a formatter that matches the <tt class="docutils literal">basicConfig</tt> formatter.</p>
 <p>It defines the root logger plus two overrides for class loggers that might be
 used to gather additional information.</p>
-<p class="rubric" id="target-72">Logging Setup (72) +=</p>
+<p class="rubric" id="target-77">Logging Setup (77) +=</p>
 <pre class="code literal-block">
 log_config = {
     'version': 1,
@@ -4214,7 +4485,7 @@ log_config = {
     # For specific debugging support...
     'loggers': {
         'Weaver': {'level': logging.DEBUG},
-        'WebReader': {'level': logging.INFO},
+        'WebReader': {'level': logging.DEBUG},
         'TanglerMake': {'level': logging.DEBUG},
         'Web': {'level': logging.DEBUG},
     },
@@ -4222,10 +4493,10 @@ log_config = {
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Logging Setup (72)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-60">60</a>)</p>
+<p class="small">◊ <em>Logging Setup (77)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-65">65</a>)</p>
 </blockquote>
 <p>This seems a bit verbose. The following configuration file might be better.</p>
-<p class="rubric" id="target-73">logging.toml (73) =</p>
+<p class="rubric" id="target-78">logging.toml (78) =</p>
 <pre class="code literal-block">
 version = 1
 disable_existing_loggers = false
@@ -4247,7 +4518,7 @@ style = &quot;{&quot;
 level = &quot;DEBUG&quot;
 
 [loggers.WebReader]
-level = &quot;INFO&quot;
+level = &quot;DEBUG&quot;
 
 [loggers.TanglerMake]
 level = &quot;DEBUG&quot;
@@ -4281,9 +4552,9 @@ as a weaver template configuration file.
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>logging.toml (73)</em>.</p>
+<p class="small">◊ <em>logging.toml (78)</em>.</p>
 </blockquote>
-<p class="rubric" id="target-74">Interface Functions (74) =</p>
+<p class="rubric" id="target-79">Interface Functions (79) =</p>
 <pre class="code literal-block">
 def main(argv: list[str] = sys.argv[1:]) -&gt; None:
     a = Application()
@@ -4296,7 +4567,7 @@ if __name__ == &quot;__main__&quot;:
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>Interface Functions (74)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-60">60</a>)</p>
+<p class="small">◊ <em>Interface Functions (79)</em>. Used by: pyweb.py (<a class="reference internal" href="#target-65">65</a>)</p>
 </blockquote>
 <p>This can be extended by doing something like the following.</p>
 <ol class="arabic simple">
@@ -4355,7 +4626,7 @@ parsing command-line options.</li>
 Set the web, set the options, execute the callable action, and write
 a summary.</li>
 </ol>
-<p class="rubric" id="target-75">tangle.py (75) =</p>
+<p class="rubric" id="target-80">tangle.py (80) =</p>
 <pre class="code literal-block">
 #!/usr/bin/env python3
 &quot;&quot;&quot;Sample tangle.py script.&quot;&quot;&quot;
@@ -4389,7 +4660,7 @@ if __name__ == &quot;__main__&quot;:
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>tangle.py (75)</em>.</p>
+<p class="small">◊ <em>tangle.py (80)</em>.</p>
 </blockquote>
 </div>
 <div class="section" id="weave-py-script">
@@ -4397,19 +4668,19 @@ if __name__ == &quot;__main__&quot;:
 <p>This script shows a simple version of Weaving.  This shows how
 to define a customized set of templates for a different markup language.</p>
 <p>A customized weaver generally has three parts.</p>
-<p class="rubric" id="target-76">weave.py (76) =</p>
+<p class="rubric" id="target-81">weave.py (81) =</p>
 <pre class="code literal-block">
-→weave.py overheads for correct operation of a script (<a class="reference internal" href="#target-77">77</a>)
+→weave.py overheads for correct operation of a script (<a class="reference internal" href="#target-82">82</a>)
 
-→weave.py custom weaver definition to customize the Weaver being used (<a class="reference internal" href="#target-78">78</a>)
+→weave.py custom weaver definition to customize the Weaver being used (<a class="reference internal" href="#target-83">83</a>)
 
-→weaver.py processing: load and weave the document (<a class="reference internal" href="#target-79">79</a>)
+→weaver.py processing: load and weave the document (<a class="reference internal" href="#target-84">84</a>)
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>weave.py (76)</em>.</p>
+<p class="small">◊ <em>weave.py (81)</em>.</p>
 </blockquote>
-<p class="rubric" id="target-77">weave.py overheads for correct operation of a script (77) =</p>
+<p class="rubric" id="target-82">weave.py overheads for correct operation of a script (82) =</p>
 <pre class="code literal-block">
 #!/usr/bin/env python3
 &quot;&quot;&quot;Sample weave.py script.&quot;&quot;&quot;
@@ -4421,58 +4692,27 @@ import pyweb
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>weave.py overheads for correct operation of a script (77)</em>. Used by: weave.py (<a class="reference internal" href="#target-76">76</a>)</p>
+<p class="small">◊ <em>weave.py overheads for correct operation of a script (82)</em>. Used by: weave.py (<a class="reference internal" href="#target-81">81</a>)</p>
 </blockquote>
-<p class="rubric" id="target-78">weave.py custom weaver definition to customize the Weaver being used (78) =</p>
+<p>To override templates, a class
+needs to provide a text definition of
+the Jinja <tt class="docutils literal">{% macro %}</tt> definitions.
+This is used to update the superclass
+<tt class="docutils literal">template_map</tt>.</p>
+<p>Something like the following:</p>
+<pre class="literal-block">
+self.template_map['html']['overrides'] = my_templates
+</pre>
+<p class="rubric" id="target-83">weave.py custom weaver definition to customize the Weaver being used (83) =</p>
 <pre class="code literal-block">
 class MyHTML(pyweb.Weaver):
-    &quot;&quot;&quot;HTML formatting templates.&quot;&quot;&quot;
-    extension = &quot;.html&quot;
-
-    cb_template = string.Template(&quot;&quot;&quot;&lt;a name=&quot;pyweb${seq}&quot;&gt;&lt;/a&gt;
-    &lt;!--line number ${lineNumber}--&gt;
-    &lt;p&gt;&lt;em&gt;${fullName}&lt;/em&gt; (${seq})&amp;nbsp;${concat}&lt;/p&gt;
-    &lt;pre&gt;&lt;code&gt;\n&quot;&quot;&quot;)
-
-    ce_template = string.Template(&quot;&quot;&quot;
-    &lt;/code&gt;&lt;/pre&gt;
-    &lt;p&gt;&amp;loz; &lt;em&gt;${fullName}&lt;/em&gt; (${seq}).
-    ${references}
-    &lt;/p&gt;\n&quot;&quot;&quot;)
-
-    fb_template = string.Template(&quot;&quot;&quot;&lt;a name=&quot;pyweb${seq}&quot;&gt;&lt;/a&gt;
-    &lt;!--line number ${lineNumber}--&gt;
-    &lt;p&gt;``${fullName}`` (${seq})&amp;nbsp;${concat}&lt;/p&gt;
-    &lt;pre&gt;&lt;code&gt;\n&quot;&quot;&quot;) # Prevent indent
-
-    fe_template = string.Template( &quot;&quot;&quot;&lt;/code&gt;&lt;/pre&gt;
-    &lt;p&gt;&amp;loz; ``${fullName}`` (${seq}).
-    ${references}
-    &lt;/p&gt;\n&quot;&quot;&quot;)
-
-    ref_item_template = string.Template(
-    '&lt;a href=&quot;#pyweb${seq}&quot;&gt;&lt;em&gt;${fullName}&lt;/em&gt;&amp;nbsp;(${seq})&lt;/a&gt;'
-    )
-
-    ref_template = string.Template('  Used by ${refList}.' )
-
-    refto_name_template = string.Template(
-    '&lt;a href=&quot;#pyweb${seq}&quot;&gt;&amp;rarr;&lt;em&gt;${fullName}&lt;/em&gt;&amp;nbsp;(${seq})&lt;/a&gt;'
-    )
-    refto_seq_template = string.Template('&lt;a href=&quot;#pyweb${seq}&quot;&gt;(${seq})&lt;/a&gt;')
-
-    xref_head_template = string.Template(&quot;&lt;dl&gt;\n&quot;)
-    xref_foot_template = string.Template(&quot;&lt;/dl&gt;\n&quot;)
-    xref_item_template = string.Template(&quot;&lt;dt&gt;${fullName}&lt;/dt&gt;&lt;dd&gt;${refList}&lt;/dd&gt;\n&quot;)
-
-    name_def_template = string.Template('&lt;a href=&quot;#pyweb${seq}&quot;&gt;&lt;b&gt;&amp;bull;${seq}&lt;/b&gt;&lt;/a&gt;')
-    name_ref_template = string.Template('&lt;a href=&quot;#pyweb${seq}&quot;&gt;${seq}&lt;/a&gt;')
+    pass
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>weave.py custom weaver definition to customize the Weaver being used (78)</em>. Used by: weave.py (<a class="reference internal" href="#target-76">76</a>)</p>
+<p class="small">◊ <em>weave.py custom weaver definition to customize the Weaver being used (83)</em>. Used by: weave.py (<a class="reference internal" href="#target-81">81</a>)</p>
 </blockquote>
-<p class="rubric" id="target-79">weaver.py processing: load and weave the document (79) =</p>
+<p class="rubric" id="target-84">weaver.py processing: load and weave the document (84) =</p>
 <pre class="code literal-block">
 def main(source: Path) -&gt; None:
     with pyweb.Logger(pyweb.log_config):
@@ -4500,7 +4740,7 @@ if __name__ == &quot;__main__&quot;:
 </pre>
 <!--  -->
 <blockquote>
-<p class="small">◊ <em>weaver.py processing: load and weave the document (79)</em>. Used by: weave.py (<a class="reference internal" href="#target-76">76</a>)</p>
+<p class="small">◊ <em>weaver.py processing: load and weave the document (84)</em>. Used by: weave.py (<a class="reference internal" href="#target-81">81</a>)</p>
 </blockquote>
 <!-- py-web-tool/src/todo.w -->
 </div>
@@ -4681,13 +4921,13 @@ of the ReferenceCommand.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">logging.toml:</th><td class="field-body">→(<a class="reference internal" href="#target-73">73</a>)</td>
+<tr class="field"><th class="field-name">logging.toml:</th><td class="field-body">→(<a class="reference internal" href="#target-78">78</a>)</td>
 </tr>
-<tr class="field"><th class="field-name">pyweb.py:</th><td class="field-body">→(<a class="reference internal" href="#target-60">60</a>)</td>
+<tr class="field"><th class="field-name">pyweb.py:</th><td class="field-body">→(<a class="reference internal" href="#target-65">65</a>)</td>
 </tr>
-<tr class="field"><th class="field-name">tangle.py:</th><td class="field-body">→(<a class="reference internal" href="#target-75">75</a>)</td>
+<tr class="field"><th class="field-name">tangle.py:</th><td class="field-body">→(<a class="reference internal" href="#target-80">80</a>)</td>
 </tr>
-<tr class="field"><th class="field-name">weave.py:</th><td class="field-body">→(<a class="reference internal" href="#target-76">76</a>)</td>
+<tr class="field"><th class="field-name">weave.py:</th><td class="field-body">→(<a class="reference internal" href="#target-81">81</a>)</td>
 </tr>
 </tbody>
 </table>
@@ -4699,37 +4939,37 @@ of the ReferenceCommand.</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field"><th class="field-name" colspan="2">Action call method actually does the real work:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-46">46</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-51">51</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Action class hierarchy - used to describe actions of the application:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-44">44</a>)</td>
-</tr>
-<tr class="field"><th class="field-name" colspan="2">Action final summary of what was done:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-47">47</a>)</td>
-</tr>
-<tr class="field"><th class="field-name" colspan="2">Action superclass has common features of all actions:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-45">45</a>)</td>
-</tr>
-<tr class="field"><th class="field-name" colspan="2">ActionSequence call method delegates the sequence of ations:</th></tr>
 <tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-49">49</a>)</td>
 </tr>
-<tr class="field"><th class="field-name" colspan="2">ActionSequence subclass that holds a sequence of other actions:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-48">48</a>)</td>
+<tr class="field"><th class="field-name" colspan="2">Action final summary of what was done:</th></tr>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-52">52</a>)</td>
 </tr>
-<tr class="field"><th class="field-name" colspan="2">ActionSequence summary summarizes each step:</th></tr>
+<tr class="field"><th class="field-name" colspan="2">Action superclass has common features of all actions:</th></tr>
 <tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-50">50</a>)</td>
 </tr>
+<tr class="field"><th class="field-name" colspan="2">ActionSequence call method delegates the sequence of ations:</th></tr>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-54">54</a>)</td>
+</tr>
+<tr class="field"><th class="field-name" colspan="2">ActionSequence subclass that holds a sequence of other actions:</th></tr>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-53">53</a>)</td>
+</tr>
+<tr class="field"><th class="field-name" colspan="2">ActionSequence summary summarizes each step:</th></tr>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-55">55</a>)</td>
+</tr>
 <tr class="field"><th class="field-name" colspan="2">Application Class:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-66">66</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-71">71</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Application class process all files:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-69">69</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-74">74</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Application default options:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-67">67</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-72">72</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Application parse command line:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-68">68</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-73">73</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Base Class Definitions:</th></tr>
 <tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-1">1</a>)</td>
@@ -4738,138 +4978,150 @@ of the ReferenceCommand.</li>
 <tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-4">4</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Command class hierarchy - used to describe individual commands:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-6">6</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-6">6</a>) →(<a class="reference internal" href="#target-7">7</a>)</td>
+</tr>
+<tr class="field"><th class="field-name" colspan="2">Common base template -- this is used for ALL weaving:</th></tr>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-17">17</a>)</td>
+</tr>
+<tr class="field"><th class="field-name" colspan="2">Debug Templates -- these display debugging information:</th></tr>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-13">13</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Emitter Superclass:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-9">9</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-10">10</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Emitter class hierarchy - used to control output files:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-7">7</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-8">8</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Emitter indent control:</th></tr>
 <tr class="field"><td>&nbsp;</td><td class="field-body">set, clear and reset:
-→(<a class="reference internal" href="#target-15">15</a>)</td>
+→(<a class="reference internal" href="#target-20">20</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Emitter write a block of code with proper indents:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-14">14</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-19">19</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Error class - defines the errors raised:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-21">21</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-26">26</a>)</td>
 </tr>
-<tr class="field"><th class="field-name">Imports:</th><td class="field-body">→(<a class="reference internal" href="#target-2">2</a>) →(<a class="reference internal" href="#target-8">8</a>) →(<a class="reference internal" href="#target-16">16</a>) →(<a class="reference internal" href="#target-30">30</a>) →(<a class="reference internal" href="#target-35">35</a>) →(<a class="reference internal" href="#target-38">38</a>) →(<a class="reference internal" href="#target-40">40</a>) →(<a class="reference internal" href="#target-61">61</a>) →(<a class="reference internal" href="#target-65">65</a>) →(<a class="reference internal" href="#target-70">70</a>)</td>
+<tr class="field"><th class="field-name" colspan="2">HTML Templates -- emit HTML weave output:</th></tr>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-15">15</a>)</td>
+</tr>
+<tr class="field"><th class="field-name">Imports:</th><td class="field-body">→(<a class="reference internal" href="#target-2">2</a>) →(<a class="reference internal" href="#target-9">9</a>) →(<a class="reference internal" href="#target-21">21</a>) →(<a class="reference internal" href="#target-35">35</a>) →(<a class="reference internal" href="#target-40">40</a>) →(<a class="reference internal" href="#target-43">43</a>) →(<a class="reference internal" href="#target-45">45</a>) →(<a class="reference internal" href="#target-66">66</a>) →(<a class="reference internal" href="#target-70">70</a>) →(<a class="reference internal" href="#target-75">75</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Interface Functions:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-74">74</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-79">79</a>)</td>
+</tr>
+<tr class="field"><th class="field-name" colspan="2">LaTeX Templates -- emit LaTeX weave output:</th></tr>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-16">16</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">LoadAction call method loads the input files:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-58">58</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-63">63</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">LoadAction subclass loads the document web:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-57">57</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-62">62</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">LoadAction summary provides lines read:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-59">59</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-64">64</a>)</td>
 </tr>
-<tr class="field"><th class="field-name">Logging Setup:</th><td class="field-body">→(<a class="reference internal" href="#target-71">71</a>) →(<a class="reference internal" href="#target-72">72</a>)</td>
+<tr class="field"><th class="field-name">Logging Setup:</th><td class="field-body">→(<a class="reference internal" href="#target-76">76</a>) →(<a class="reference internal" href="#target-77">77</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Option Parser class - locates optional values on commands:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-41">41</a>) →(<a class="reference internal" href="#target-42">42</a>) →(<a class="reference internal" href="#target-43">43</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-46">46</a>) →(<a class="reference internal" href="#target-47">47</a>) →(<a class="reference internal" href="#target-48">48</a>)</td>
 </tr>
-<tr class="field"><th class="field-name">Overheads:</th><td class="field-body">→(<a class="reference internal" href="#target-62">62</a>) →(<a class="reference internal" href="#target-63">63</a>) →(<a class="reference internal" href="#target-64">64</a>)</td>
+<tr class="field"><th class="field-name">Overheads:</th><td class="field-body">→(<a class="reference internal" href="#target-67">67</a>) →(<a class="reference internal" href="#target-68">68</a>) →(<a class="reference internal" href="#target-69">69</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Quoting rule definitions -- functions used by templates:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-11">11</a>)</td>
-</tr>
-<tr class="field"><th class="field-name" colspan="2">RST Templates -- these are the default templates:</th></tr>
 <tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-12">12</a>)</td>
 </tr>
+<tr class="field"><th class="field-name" colspan="2">RST Templates -- the default weave output:</th></tr>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-14">14</a>)</td>
+</tr>
 <tr class="field"><th class="field-name" colspan="2">Reference class hierarchy - strategies for weaving references to a chunk:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-18">18</a>) →(<a class="reference internal" href="#target-19">19</a>) →(<a class="reference internal" href="#target-20">20</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-23">23</a>) →(<a class="reference internal" href="#target-24">24</a>) →(<a class="reference internal" href="#target-25">25</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">TangleAction call method does tangling of the output files:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-55">55</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-60">60</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">TangleAction subclass initiates the tangle action:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-54">54</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-59">59</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">TangleAction summary method provides total lines tangled:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-56">56</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-61">61</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Tangler Subclass -- emits the output files:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-13">13</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-18">18</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">TanglerMake Subclass -- extends Tangler to avoid touching files that didn't change:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-17">17</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-22">22</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">The TypeId Helper:</th></tr>
 <tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-5">5</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Tokenizer class - breaks input into tokens:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-39">39</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-44">44</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">WeaveAction call method to pick the language:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-52">52</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-57">57</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">WeaveAction subclass initiates the weave action:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-51">51</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-56">56</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">WeaveAction summary of language choice:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-53">53</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-58">58</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Weaver Subclass -- Uses Jinja templates to weave documentation:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-10">10</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-11">11</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Web class - describes the overall &quot;web&quot; of chunks:</th></tr>
 <tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-3">3</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">WebReader class - parses the input file, building the Web structure:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-22">22</a>)</td>
-</tr>
-<tr class="field"><th class="field-name" colspan="2">WebReader command literals:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-37">37</a>)</td>
-</tr>
-<tr class="field"><th class="field-name" colspan="2">WebReader handle a command string:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-23">23</a>) →(<a class="reference internal" href="#target-33">33</a>)</td>
-</tr>
-<tr class="field"><th class="field-name" colspan="2">WebReader load the web:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-36">36</a>)</td>
-</tr>
-<tr class="field"><th class="field-name" colspan="2">WebReader location in the input stream:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-34">34</a>)</td>
-</tr>
-<tr class="field"><th class="field-name" colspan="2">add a reference command to the current chunk:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-29">29</a>)</td>
-</tr>
-<tr class="field"><th class="field-name" colspan="2">add an expression command to the current chunk:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-31">31</a>)</td>
-</tr>
-<tr class="field"><th class="field-name" colspan="2">assign user identifiers to the current chunk:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-28">28</a>)</td>
-</tr>
-<tr class="field"><th class="field-name" colspan="2">double at-sign replacement, append this character to previous TextCommand:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-32">32</a>)</td>
-</tr>
-<tr class="field"><th class="field-name" colspan="2">finish a chunk, start a new Chunk adding it to the web:</th></tr>
 <tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-27">27</a>)</td>
 </tr>
+<tr class="field"><th class="field-name" colspan="2">WebReader command literals:</th></tr>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-42">42</a>)</td>
+</tr>
+<tr class="field"><th class="field-name" colspan="2">WebReader handle a command string:</th></tr>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-28">28</a>) →(<a class="reference internal" href="#target-38">38</a>)</td>
+</tr>
+<tr class="field"><th class="field-name" colspan="2">WebReader load the web:</th></tr>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-41">41</a>)</td>
+</tr>
+<tr class="field"><th class="field-name" colspan="2">WebReader location in the input stream:</th></tr>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-39">39</a>)</td>
+</tr>
+<tr class="field"><th class="field-name" colspan="2">add a reference command to the current chunk:</th></tr>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-34">34</a>)</td>
+</tr>
+<tr class="field"><th class="field-name" colspan="2">add an expression command to the current chunk:</th></tr>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-36">36</a>)</td>
+</tr>
+<tr class="field"><th class="field-name" colspan="2">assign user identifiers to the current chunk:</th></tr>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-33">33</a>)</td>
+</tr>
+<tr class="field"><th class="field-name" colspan="2">double at-sign replacement, append this character to previous TextCommand:</th></tr>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-37">37</a>)</td>
+</tr>
+<tr class="field"><th class="field-name" colspan="2">finish a chunk, start a new Chunk adding it to the web:</th></tr>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-32">32</a>)</td>
+</tr>
 <tr class="field"><th class="field-name" colspan="2">include another file:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-26">26</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-31">31</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">start a NamedChunk or NamedDocumentChunk, adding it to the web:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-25">25</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-30">30</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">start an OutputChunk, adding it to the web:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-24">24</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-29">29</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">weave.py custom weaver definition to customize the Weaver being used:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-78">78</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-83">83</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">weave.py overheads for correct operation of a script:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-77">77</a>)</td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→(<a class="reference internal" href="#target-82">82</a>)</td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">weaver.py processing:</th></tr>
 <tr class="field"><td>&nbsp;</td><td class="field-body">load and weave the document:
-→(<a class="reference internal" href="#target-79">79</a>)</td>
+→(<a class="reference internal" href="#target-84">84</a>)</td>
 </tr>
 </tbody>
 </table>
@@ -4880,103 +5132,103 @@ of the ReferenceCommand.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Action:</th><td class="field-body">[<a class="reference internal" href="#target-45">45</a>] <a class="reference internal" href="#target-48">48</a> <a class="reference internal" href="#target-51">51</a> <a class="reference internal" href="#target-54">54</a> <a class="reference internal" href="#target-57">57</a></td>
+<tr class="field"><th class="field-name">Action:</th><td class="field-body">[<a class="reference internal" href="#target-50">50</a>] <a class="reference internal" href="#target-53">53</a> <a class="reference internal" href="#target-56">56</a> <a class="reference internal" href="#target-59">59</a> <a class="reference internal" href="#target-62">62</a></td>
 </tr>
-<tr class="field"><th class="field-name">ActionSequence:</th><td class="field-body">[<a class="reference internal" href="#target-48">48</a>] <a class="reference internal" href="#target-67">67</a></td>
+<tr class="field"><th class="field-name">ActionSequence:</th><td class="field-body">[<a class="reference internal" href="#target-53">53</a>] <a class="reference internal" href="#target-72">72</a></td>
 </tr>
-<tr class="field"><th class="field-name">Application:</th><td class="field-body">[<a class="reference internal" href="#target-66">66</a>] <a class="reference internal" href="#target-73">73</a> <a class="reference internal" href="#target-74">74</a></td>
+<tr class="field"><th class="field-name">Application:</th><td class="field-body">[<a class="reference internal" href="#target-71">71</a>] <a class="reference internal" href="#target-78">78</a> <a class="reference internal" href="#target-79">79</a></td>
 </tr>
-<tr class="field"><th class="field-name">Chunk:</th><td class="field-body"><a class="reference internal" href="#target-3">3</a> [<a class="reference internal" href="#target-4">4</a>] <a class="reference internal" href="#target-6">6</a> <a class="reference internal" href="#target-12">12</a> <a class="reference internal" href="#target-13">13</a> <a class="reference internal" href="#target-17">17</a> <a class="reference internal" href="#target-18">18</a> <a class="reference internal" href="#target-19">19</a> <a class="reference internal" href="#target-20">20</a> <a class="reference internal" href="#target-22">22</a> <a class="reference internal" href="#target-26">26</a> <a class="reference internal" href="#target-27">27</a> <a class="reference internal" href="#target-29">29</a> <a class="reference internal" href="#target-36">36</a></td>
+<tr class="field"><th class="field-name">Chunk:</th><td class="field-body"><a class="reference internal" href="#target-3">3</a> [<a class="reference internal" href="#target-4">4</a>] <a class="reference internal" href="#target-6">6</a> <a class="reference internal" href="#target-17">17</a> <a class="reference internal" href="#target-18">18</a> <a class="reference internal" href="#target-22">22</a> <a class="reference internal" href="#target-23">23</a> <a class="reference internal" href="#target-24">24</a> <a class="reference internal" href="#target-25">25</a> <a class="reference internal" href="#target-27">27</a> <a class="reference internal" href="#target-31">31</a> <a class="reference internal" href="#target-32">32</a> <a class="reference internal" href="#target-34">34</a> <a class="reference internal" href="#target-41">41</a></td>
 </tr>
-<tr class="field"><th class="field-name">Error:</th><td class="field-body"><a class="reference internal" href="#target-3">3</a> <a class="reference internal" href="#target-6">6</a> [<a class="reference internal" href="#target-21">21</a>] <a class="reference internal" href="#target-25">25</a> <a class="reference internal" href="#target-26">26</a> <a class="reference internal" href="#target-31">31</a> <a class="reference internal" href="#target-43">43</a> <a class="reference internal" href="#target-52">52</a> <a class="reference internal" href="#target-55">55</a> <a class="reference internal" href="#target-58">58</a> <a class="reference internal" href="#target-68">68</a></td>
+<tr class="field"><th class="field-name">Error:</th><td class="field-body"><a class="reference internal" href="#target-3">3</a> <a class="reference internal" href="#target-6">6</a> [<a class="reference internal" href="#target-26">26</a>] <a class="reference internal" href="#target-30">30</a> <a class="reference internal" href="#target-31">31</a> <a class="reference internal" href="#target-36">36</a> <a class="reference internal" href="#target-48">48</a> <a class="reference internal" href="#target-57">57</a> <a class="reference internal" href="#target-60">60</a> <a class="reference internal" href="#target-63">63</a> <a class="reference internal" href="#target-73">73</a></td>
 </tr>
-<tr class="field"><th class="field-name">LoadAction:</th><td class="field-body">[<a class="reference internal" href="#target-57">57</a>] <a class="reference internal" href="#target-67">67</a> <a class="reference internal" href="#target-75">75</a> <a class="reference internal" href="#target-79">79</a></td>
+<tr class="field"><th class="field-name">LoadAction:</th><td class="field-body">[<a class="reference internal" href="#target-62">62</a>] <a class="reference internal" href="#target-72">72</a> <a class="reference internal" href="#target-80">80</a> <a class="reference internal" href="#target-84">84</a></td>
 </tr>
-<tr class="field"><th class="field-name">NamedChunk:</th><td class="field-body"><a class="reference internal" href="#target-3">3</a> [<a class="reference internal" href="#target-4">4</a>] <a class="reference internal" href="#target-6">6</a> <a class="reference internal" href="#target-12">12</a> <a class="reference internal" href="#target-25">25</a></td>
+<tr class="field"><th class="field-name">NamedChunk:</th><td class="field-body"><a class="reference internal" href="#target-3">3</a> [<a class="reference internal" href="#target-4">4</a>] <a class="reference internal" href="#target-6">6</a> <a class="reference internal" href="#target-17">17</a> <a class="reference internal" href="#target-30">30</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">NamedDocumentChunk:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">[<a class="reference internal" href="#target-4">4</a>] <a class="reference internal" href="#target-6">6</a> <a class="reference internal" href="#target-25">25</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">[<a class="reference internal" href="#target-4">4</a>] <a class="reference internal" href="#target-6">6</a> <a class="reference internal" href="#target-30">30</a></td>
 </tr>
-<tr class="field"><th class="field-name">OutputChunk:</th><td class="field-body"><a class="reference internal" href="#target-3">3</a> [<a class="reference internal" href="#target-4">4</a>] <a class="reference internal" href="#target-12">12</a> <a class="reference internal" href="#target-24">24</a></td>
+<tr class="field"><th class="field-name">OutputChunk:</th><td class="field-body"><a class="reference internal" href="#target-3">3</a> [<a class="reference internal" href="#target-4">4</a>] <a class="reference internal" href="#target-17">17</a> <a class="reference internal" href="#target-29">29</a></td>
 </tr>
-<tr class="field"><th class="field-name">TangleAction:</th><td class="field-body">[<a class="reference internal" href="#target-54">54</a>] <a class="reference internal" href="#target-67">67</a> <a class="reference internal" href="#target-75">75</a></td>
+<tr class="field"><th class="field-name">TangleAction:</th><td class="field-body">[<a class="reference internal" href="#target-59">59</a>] <a class="reference internal" href="#target-72">72</a> <a class="reference internal" href="#target-80">80</a></td>
 </tr>
-<tr class="field"><th class="field-name">Tokenizer:</th><td class="field-body"><a class="reference internal" href="#target-22">22</a> <a class="reference internal" href="#target-36">36</a> [<a class="reference internal" href="#target-39">39</a>]</td>
+<tr class="field"><th class="field-name">Tokenizer:</th><td class="field-body"><a class="reference internal" href="#target-27">27</a> <a class="reference internal" href="#target-41">41</a> [<a class="reference internal" href="#target-44">44</a>]</td>
 </tr>
 <tr class="field"><th class="field-name">TypeId:</th><td class="field-body"><a class="reference internal" href="#target-4">4</a> [<a class="reference internal" href="#target-5">5</a>] <a class="reference internal" href="#target-6">6</a></td>
 </tr>
-<tr class="field"><th class="field-name">WeaveAction:</th><td class="field-body">[<a class="reference internal" href="#target-51">51</a>] <a class="reference internal" href="#target-67">67</a> <a class="reference internal" href="#target-79">79</a></td>
+<tr class="field"><th class="field-name">WeaveAction:</th><td class="field-body">[<a class="reference internal" href="#target-56">56</a>] <a class="reference internal" href="#target-72">72</a> <a class="reference internal" href="#target-84">84</a></td>
 </tr>
-<tr class="field"><th class="field-name">Web:</th><td class="field-body">[<a class="reference internal" href="#target-3">3</a>] <a class="reference internal" href="#target-4">4</a> <a class="reference internal" href="#target-6">6</a> <a class="reference internal" href="#target-9">9</a> <a class="reference internal" href="#target-10">10</a> <a class="reference internal" href="#target-13">13</a> <a class="reference internal" href="#target-17">17</a> <a class="reference internal" href="#target-36">36</a> <a class="reference internal" href="#target-58">58</a> <a class="reference internal" href="#target-72">72</a></td>
+<tr class="field"><th class="field-name">Web:</th><td class="field-body">[<a class="reference internal" href="#target-3">3</a>] <a class="reference internal" href="#target-4">4</a> <a class="reference internal" href="#target-6">6</a> <a class="reference internal" href="#target-10">10</a> <a class="reference internal" href="#target-11">11</a> <a class="reference internal" href="#target-18">18</a> <a class="reference internal" href="#target-22">22</a> <a class="reference internal" href="#target-41">41</a> <a class="reference internal" href="#target-63">63</a> <a class="reference internal" href="#target-77">77</a></td>
 </tr>
-<tr class="field"><th class="field-name">WebReader:</th><td class="field-body">[<a class="reference internal" href="#target-22">22</a>] <a class="reference internal" href="#target-26">26</a> <a class="reference internal" href="#target-68">68</a> <a class="reference internal" href="#target-72">72</a> <a class="reference internal" href="#target-73">73</a> <a class="reference internal" href="#target-75">75</a> <a class="reference internal" href="#target-79">79</a></td>
+<tr class="field"><th class="field-name">WebReader:</th><td class="field-body">[<a class="reference internal" href="#target-27">27</a>] <a class="reference internal" href="#target-31">31</a> <a class="reference internal" href="#target-73">73</a> <a class="reference internal" href="#target-77">77</a> <a class="reference internal" href="#target-78">78</a> <a class="reference internal" href="#target-80">80</a> <a class="reference internal" href="#target-84">84</a></td>
 </tr>
-<tr class="field"><th class="field-name">__version__:</th><td class="field-body"><a class="reference internal" href="#target-31">31</a> [<a class="reference internal" href="#target-64">64</a>] <a class="reference internal" href="#target-68">68</a></td>
+<tr class="field"><th class="field-name">__version__:</th><td class="field-body"><a class="reference internal" href="#target-36">36</a> [<a class="reference internal" href="#target-69">69</a>] <a class="reference internal" href="#target-73">73</a></td>
 </tr>
-<tr class="field"><th class="field-name">addIndent:</th><td class="field-body"><a class="reference internal" href="#target-6">6</a> [<a class="reference internal" href="#target-15">15</a>]</td>
+<tr class="field"><th class="field-name">addIndent:</th><td class="field-body"><a class="reference internal" href="#target-6">6</a> [<a class="reference internal" href="#target-20">20</a>]</td>
 </tr>
-<tr class="field"><th class="field-name">argparse:</th><td class="field-body"><a class="reference internal" href="#target-45">45</a> <a class="reference internal" href="#target-46">46</a> <a class="reference internal" href="#target-49">49</a> <a class="reference internal" href="#target-52">52</a> <a class="reference internal" href="#target-55">55</a> <a class="reference internal" href="#target-58">58</a> [<a class="reference internal" href="#target-65">65</a>] <a class="reference internal" href="#target-67">67</a> <a class="reference internal" href="#target-68">68</a> <a class="reference internal" href="#target-69">69</a> <a class="reference internal" href="#target-75">75</a> <a class="reference internal" href="#target-77">77</a> <a class="reference internal" href="#target-79">79</a></td>
+<tr class="field"><th class="field-name">argparse:</th><td class="field-body"><a class="reference internal" href="#target-50">50</a> <a class="reference internal" href="#target-51">51</a> <a class="reference internal" href="#target-54">54</a> <a class="reference internal" href="#target-57">57</a> <a class="reference internal" href="#target-60">60</a> <a class="reference internal" href="#target-63">63</a> [<a class="reference internal" href="#target-70">70</a>] <a class="reference internal" href="#target-72">72</a> <a class="reference internal" href="#target-73">73</a> <a class="reference internal" href="#target-74">74</a> <a class="reference internal" href="#target-80">80</a> <a class="reference internal" href="#target-82">82</a> <a class="reference internal" href="#target-84">84</a></td>
 </tr>
-<tr class="field"><th class="field-name">builtins:</th><td class="field-body">[<a class="reference internal" href="#target-30">30</a>] <a class="reference internal" href="#target-31">31</a></td>
+<tr class="field"><th class="field-name">builtins:</th><td class="field-body">[<a class="reference internal" href="#target-35">35</a>] <a class="reference internal" href="#target-36">36</a></td>
 </tr>
-<tr class="field"><th class="field-name">clrIndent:</th><td class="field-body"><a class="reference internal" href="#target-6">6</a> [<a class="reference internal" href="#target-15">15</a>]</td>
+<tr class="field"><th class="field-name">clrIndent:</th><td class="field-body"><a class="reference internal" href="#target-6">6</a> [<a class="reference internal" href="#target-20">20</a>]</td>
 </tr>
-<tr class="field"><th class="field-name">codeBlock:</th><td class="field-body"><a class="reference internal" href="#target-6">6</a> [<a class="reference internal" href="#target-14">14</a>]</td>
+<tr class="field"><th class="field-name">codeBlock:</th><td class="field-body"><a class="reference internal" href="#target-6">6</a> [<a class="reference internal" href="#target-19">19</a>]</td>
 </tr>
-<tr class="field"><th class="field-name">datetime:</th><td class="field-body"><a class="reference internal" href="#target-31">31</a> [<a class="reference internal" href="#target-61">61</a>]</td>
+<tr class="field"><th class="field-name">datetime:</th><td class="field-body"><a class="reference internal" href="#target-36">36</a> [<a class="reference internal" href="#target-66">66</a>]</td>
 </tr>
-<tr class="field"><th class="field-name">duration:</th><td class="field-body">[<a class="reference internal" href="#target-47">47</a>] <a class="reference internal" href="#target-53">53</a> <a class="reference internal" href="#target-56">56</a> <a class="reference internal" href="#target-59">59</a></td>
+<tr class="field"><th class="field-name">duration:</th><td class="field-body">[<a class="reference internal" href="#target-52">52</a>] <a class="reference internal" href="#target-58">58</a> <a class="reference internal" href="#target-61">61</a> <a class="reference internal" href="#target-64">64</a></td>
 </tr>
-<tr class="field"><th class="field-name">expand:</th><td class="field-body">[<a class="reference internal" href="#target-68">68</a>]</td>
+<tr class="field"><th class="field-name">expand:</th><td class="field-body"><a class="reference internal" href="#target-41">41</a> [<a class="reference internal" href="#target-73">73</a>]</td>
 </tr>
-<tr class="field"><th class="field-name">expect:</th><td class="field-body"><a class="reference internal" href="#target-24">24</a> <a class="reference internal" href="#target-25">25</a> <a class="reference internal" href="#target-29">29</a> <a class="reference internal" href="#target-31">31</a> [<a class="reference internal" href="#target-33">33</a>]</td>
+<tr class="field"><th class="field-name">expect:</th><td class="field-body"><a class="reference internal" href="#target-29">29</a> <a class="reference internal" href="#target-30">30</a> <a class="reference internal" href="#target-34">34</a> <a class="reference internal" href="#target-36">36</a> [<a class="reference internal" href="#target-38">38</a>]</td>
 </tr>
-<tr class="field"><th class="field-name">handleCommand:</th><td class="field-body">[<a class="reference internal" href="#target-23">23</a>] <a class="reference internal" href="#target-36">36</a></td>
+<tr class="field"><th class="field-name">handleCommand:</th><td class="field-body">[<a class="reference internal" href="#target-28">28</a>] <a class="reference internal" href="#target-41">41</a></td>
 </tr>
-<tr class="field"><th class="field-name">load:</th><td class="field-body"><a class="reference internal" href="#target-26">26</a> [<a class="reference internal" href="#target-36">36</a>] <a class="reference internal" href="#target-58">58</a> <a class="reference internal" href="#target-67">67</a> <a class="reference internal" href="#target-73">73</a></td>
+<tr class="field"><th class="field-name">load:</th><td class="field-body"><a class="reference internal" href="#target-31">31</a> [<a class="reference internal" href="#target-41">41</a>] <a class="reference internal" href="#target-63">63</a> <a class="reference internal" href="#target-72">72</a> <a class="reference internal" href="#target-78">78</a></td>
 </tr>
-<tr class="field"><th class="field-name">location:</th><td class="field-body"><a class="reference internal" href="#target-4">4</a> <a class="reference internal" href="#target-6">6</a> <a class="reference internal" href="#target-23">23</a> <a class="reference internal" href="#target-24">24</a> <a class="reference internal" href="#target-25">25</a> <a class="reference internal" href="#target-28">28</a> <a class="reference internal" href="#target-31">31</a> <a class="reference internal" href="#target-33">33</a> [<a class="reference internal" href="#target-34">34</a>] <a class="reference internal" href="#target-36">36</a></td>
+<tr class="field"><th class="field-name">location:</th><td class="field-body"><a class="reference internal" href="#target-4">4</a> <a class="reference internal" href="#target-6">6</a> <a class="reference internal" href="#target-15">15</a> <a class="reference internal" href="#target-28">28</a> <a class="reference internal" href="#target-29">29</a> <a class="reference internal" href="#target-30">30</a> <a class="reference internal" href="#target-33">33</a> <a class="reference internal" href="#target-34">34</a> <a class="reference internal" href="#target-36">36</a> <a class="reference internal" href="#target-37">37</a> <a class="reference internal" href="#target-38">38</a> [<a class="reference internal" href="#target-39">39</a>] <a class="reference internal" href="#target-41">41</a></td>
 </tr>
-<tr class="field"><th class="field-name">logging:</th><td class="field-body"><a class="reference internal" href="#target-2">2</a> <a class="reference internal" href="#target-3">3</a> <a class="reference internal" href="#target-4">4</a> <a class="reference internal" href="#target-6">6</a> <a class="reference internal" href="#target-9">9</a> <a class="reference internal" href="#target-18">18</a> <a class="reference internal" href="#target-22">22</a> <a class="reference internal" href="#target-45">45</a> <a class="reference internal" href="#target-66">66</a> <a class="reference internal" href="#target-67">67</a> <a class="reference internal" href="#target-68">68</a> <a class="reference internal" href="#target-69">69</a> [<a class="reference internal" href="#target-70">70</a>] <a class="reference internal" href="#target-71">71</a> <a class="reference internal" href="#target-72">72</a> <a class="reference internal" href="#target-73">73</a> <a class="reference internal" href="#target-75">75</a> <a class="reference internal" href="#target-77">77</a> <a class="reference internal" href="#target-79">79</a></td>
+<tr class="field"><th class="field-name">logging:</th><td class="field-body"><a class="reference internal" href="#target-2">2</a> <a class="reference internal" href="#target-3">3</a> <a class="reference internal" href="#target-4">4</a> <a class="reference internal" href="#target-6">6</a> <a class="reference internal" href="#target-10">10</a> <a class="reference internal" href="#target-23">23</a> <a class="reference internal" href="#target-27">27</a> <a class="reference internal" href="#target-50">50</a> <a class="reference internal" href="#target-71">71</a> <a class="reference internal" href="#target-72">72</a> <a class="reference internal" href="#target-73">73</a> <a class="reference internal" href="#target-74">74</a> [<a class="reference internal" href="#target-75">75</a>] <a class="reference internal" href="#target-76">76</a> <a class="reference internal" href="#target-77">77</a> <a class="reference internal" href="#target-78">78</a> <a class="reference internal" href="#target-80">80</a> <a class="reference internal" href="#target-82">82</a> <a class="reference internal" href="#target-84">84</a></td>
 </tr>
-<tr class="field"><th class="field-name">logging.config:</th><td class="field-body">[<a class="reference internal" href="#target-70">70</a>] <a class="reference internal" href="#target-71">71</a></td>
+<tr class="field"><th class="field-name">logging.config:</th><td class="field-body">[<a class="reference internal" href="#target-75">75</a>] <a class="reference internal" href="#target-76">76</a></td>
 </tr>
-<tr class="field"><th class="field-name">main:</th><td class="field-body"><a class="reference internal" href="#target-73">73</a> [<a class="reference internal" href="#target-74">74</a>] <a class="reference internal" href="#target-75">75</a> <a class="reference internal" href="#target-79">79</a></td>
+<tr class="field"><th class="field-name">main:</th><td class="field-body"><a class="reference internal" href="#target-78">78</a> [<a class="reference internal" href="#target-79">79</a>] <a class="reference internal" href="#target-80">80</a> <a class="reference internal" href="#target-84">84</a></td>
 </tr>
-<tr class="field"><th class="field-name">os:</th><td class="field-body"><a class="reference internal" href="#target-16">16</a> <a class="reference internal" href="#target-17">17</a> <a class="reference internal" href="#target-31">31</a> [<a class="reference internal" href="#target-61">61</a>]</td>
+<tr class="field"><th class="field-name">os:</th><td class="field-body"><a class="reference internal" href="#target-21">21</a> <a class="reference internal" href="#target-22">22</a> <a class="reference internal" href="#target-36">36</a> [<a class="reference internal" href="#target-66">66</a>]</td>
 </tr>
-<tr class="field"><th class="field-name">parse:</th><td class="field-body"><a class="reference internal" href="#target-24">24</a> <a class="reference internal" href="#target-25">25</a> [<a class="reference internal" href="#target-36">36</a>] <a class="reference internal" href="#target-43">43</a> <a class="reference internal" href="#target-73">73</a></td>
+<tr class="field"><th class="field-name">parse:</th><td class="field-body"><a class="reference internal" href="#target-29">29</a> <a class="reference internal" href="#target-30">30</a> [<a class="reference internal" href="#target-41">41</a>] <a class="reference internal" href="#target-48">48</a> <a class="reference internal" href="#target-78">78</a></td>
 </tr>
-<tr class="field"><th class="field-name">parseArgs:</th><td class="field-body">[<a class="reference internal" href="#target-68">68</a>] <a class="reference internal" href="#target-74">74</a></td>
+<tr class="field"><th class="field-name">parseArgs:</th><td class="field-body">[<a class="reference internal" href="#target-73">73</a>] <a class="reference internal" href="#target-79">79</a></td>
 </tr>
-<tr class="field"><th class="field-name">perform:</th><td class="field-body">[<a class="reference internal" href="#target-58">58</a>]</td>
+<tr class="field"><th class="field-name">perform:</th><td class="field-body">[<a class="reference internal" href="#target-63">63</a>]</td>
 </tr>
-<tr class="field"><th class="field-name">platform:</th><td class="field-body">[<a class="reference internal" href="#target-30">30</a>] <a class="reference internal" href="#target-31">31</a></td>
+<tr class="field"><th class="field-name">platform:</th><td class="field-body">[<a class="reference internal" href="#target-35">35</a>] <a class="reference internal" href="#target-36">36</a></td>
 </tr>
-<tr class="field"><th class="field-name">process:</th><td class="field-body"><a class="reference internal" href="#target-31">31</a> [<a class="reference internal" href="#target-69">69</a>] <a class="reference internal" href="#target-73">73</a> <a class="reference internal" href="#target-74">74</a></td>
+<tr class="field"><th class="field-name">process:</th><td class="field-body"><a class="reference internal" href="#target-36">36</a> [<a class="reference internal" href="#target-74">74</a>] <a class="reference internal" href="#target-78">78</a> <a class="reference internal" href="#target-79">79</a></td>
 </tr>
-<tr class="field"><th class="field-name">re:</th><td class="field-body"><a class="reference internal" href="#target-3">3</a> [<a class="reference internal" href="#target-38">38</a>] <a class="reference internal" href="#target-39">39</a></td>
+<tr class="field"><th class="field-name">re:</th><td class="field-body"><a class="reference internal" href="#target-3">3</a> [<a class="reference internal" href="#target-43">43</a>] <a class="reference internal" href="#target-44">44</a></td>
 </tr>
-<tr class="field"><th class="field-name">resetIndent:</th><td class="field-body"><a class="reference internal" href="#target-13">13</a> [<a class="reference internal" href="#target-15">15</a>]</td>
+<tr class="field"><th class="field-name">resetIndent:</th><td class="field-body"><a class="reference internal" href="#target-18">18</a> [<a class="reference internal" href="#target-20">20</a>]</td>
 </tr>
-<tr class="field"><th class="field-name">setIndent:</th><td class="field-body">[<a class="reference internal" href="#target-15">15</a>]</td>
+<tr class="field"><th class="field-name">setIndent:</th><td class="field-body">[<a class="reference internal" href="#target-20">20</a>]</td>
 </tr>
-<tr class="field"><th class="field-name">shlex:</th><td class="field-body">[<a class="reference internal" href="#target-40">40</a>] <a class="reference internal" href="#target-43">43</a></td>
+<tr class="field"><th class="field-name">shlex:</th><td class="field-body">[<a class="reference internal" href="#target-45">45</a>] <a class="reference internal" href="#target-48">48</a></td>
 </tr>
-<tr class="field"><th class="field-name">summary:</th><td class="field-body"><a class="reference internal" href="#target-47">47</a> <a class="reference internal" href="#target-50">50</a> <a class="reference internal" href="#target-53">53</a> <a class="reference internal" href="#target-56">56</a> [<a class="reference internal" href="#target-59">59</a>] <a class="reference internal" href="#target-69">69</a> <a class="reference internal" href="#target-75">75</a> <a class="reference internal" href="#target-79">79</a></td>
+<tr class="field"><th class="field-name">summary:</th><td class="field-body"><a class="reference internal" href="#target-52">52</a> <a class="reference internal" href="#target-55">55</a> <a class="reference internal" href="#target-58">58</a> <a class="reference internal" href="#target-61">61</a> [<a class="reference internal" href="#target-64">64</a>] <a class="reference internal" href="#target-74">74</a> <a class="reference internal" href="#target-80">80</a> <a class="reference internal" href="#target-84">84</a></td>
 </tr>
-<tr class="field"><th class="field-name">sys:</th><td class="field-body">[<a class="reference internal" href="#target-30">30</a>] <a class="reference internal" href="#target-31">31</a> <a class="reference internal" href="#target-72">72</a> <a class="reference internal" href="#target-73">73</a> <a class="reference internal" href="#target-74">74</a></td>
+<tr class="field"><th class="field-name">sys:</th><td class="field-body">[<a class="reference internal" href="#target-35">35</a>] <a class="reference internal" href="#target-36">36</a> <a class="reference internal" href="#target-77">77</a> <a class="reference internal" href="#target-78">78</a> <a class="reference internal" href="#target-79">79</a></td>
 </tr>
-<tr class="field"><th class="field-name">time:</th><td class="field-body"><a class="reference internal" href="#target-31">31</a> <a class="reference internal" href="#target-46">46</a> <a class="reference internal" href="#target-47">47</a> [<a class="reference internal" href="#target-61">61</a>]</td>
+<tr class="field"><th class="field-name">time:</th><td class="field-body"><a class="reference internal" href="#target-36">36</a> <a class="reference internal" href="#target-51">51</a> <a class="reference internal" href="#target-52">52</a> [<a class="reference internal" href="#target-66">66</a>]</td>
 </tr>
-<tr class="field"><th class="field-name">types:</th><td class="field-body"><a class="reference internal" href="#target-2">2</a> <a class="reference internal" href="#target-31">31</a> [<a class="reference internal" href="#target-61">61</a>]</td>
+<tr class="field"><th class="field-name">types:</th><td class="field-body"><a class="reference internal" href="#target-2">2</a> <a class="reference internal" href="#target-36">36</a> [<a class="reference internal" href="#target-66">66</a>]</td>
 </tr>
 </tbody>
 </table>
 <hr class="docutils" />
 <blockquote class="small">
-Created by /Users/slott/Documents/Projects/py-web-tool/bootstrap/pyweb.py at Thu Jun 23 15:30:45 2022.</blockquote>
-<p class="small">Source pyweb.w modified Sat Jun 18 11:04:10 2022.</p>
+Created by /Users/slott/Documents/Projects/py-web-tool/bootstrap/pyweb.py at Mon Jun 27 11:46:42 2022.</blockquote>
+<p class="small">Source pyweb.w modified Sat Jun 18 10:04:10 2022.</p>
 <blockquote class="small">
 <p>pyweb.__version__ '3.1'.</p>
 <p>Working directory '/Users/slott/Documents/Projects/py-web-tool/src'.</p>

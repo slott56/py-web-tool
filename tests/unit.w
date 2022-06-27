@@ -17,9 +17,7 @@ We'll decompose these into several hierarchies.
         class LaTeX(Weaver):  
         
         class HTML(Weaver):  
-        
-        class HTMLShort(HTML):  
-        
+                
         class Tangler(Emitter):  
         
         class TanglerMake(Tangler):  
@@ -122,7 +120,6 @@ precisely follows the document structure.
 @<Unit Test of Weaver subclass of Emitter@>
 @<Unit Test of LaTeX subclass of Emitter@>
 @<Unit Test of HTML subclass of Emitter@>
-@<Unit Test of HTMLShort subclass of Emitter@>
 @<Unit Test of Tangler subclass of Emitter@>
 @<Unit Test of TanglerMake subclass of Emitter@>
 @}
@@ -205,7 +202,7 @@ def mock_web() -> pyweb.Web:
         web_path=Path("TestWeaver.w"),
         chunks=[
             Mock(
-                name="mock chunk",
+                name="mock Chunk",
                 typeid=pyweb.TypeId(pyweb.Chunk),
                 commands=[
                     Mock(
@@ -242,30 +239,40 @@ def mock_web() -> pyweb.Web:
                 ],
             ),
             Mock(
-                name="mock output chunk",
+                name="mock OutputChunk",
                 typeid=pyweb.TypeId(pyweb.OutputChunk),
                 seq=42,
                 full_name="sample.out",
                 commands=[
                     Mock(
                         typeid=pyweb.TypeId(pyweb.CodeCommand),
-                        lines=["|char| `code` *em* _em_"],
+                        text="|char| `code` *em* _em_",
                         tangle=Mock(side_effect=tangle_method),
+                    ),
+                    Mock(
+                        typeid=pyweb.TypeId(pyweb.CodeCommand),
+                        text="\n",
+                        tangle=Mock(),
                     ),
                     mock_ref,
                 ],
                 def_names = ["some_name"],
             ),
             Mock(
-                name="mock named chunk",
+                name="mock NamedChunk",
                 typeid=pyweb.TypeId(pyweb.NamedChunk),
                 seq=42,
                 full_name="named chunk",
                 commands=[
                     Mock(
                         typeid=pyweb.TypeId(pyweb.CodeCommand),
-                        lines=["|char| `code` *em* _em_"],
-                    )
+                        text="|char| `code` *em* _em_",
+                    ),
+                    Mock(
+                        typeid=pyweb.TypeId(pyweb.CodeCommand),
+                        text="\n",
+                        tangle=Mock(),
+                    ),
                 ],
                 def_names = ["another_name"]
             ),
@@ -319,16 +326,15 @@ class TestWeaver(unittest.TestCase):
              '    →\\ `named chunk (2)`_\n'
              '\n'
              '\n'
-            '            \n'
             '..  _`sample.out (42)`:\n'
             '..  rubric:: sample.out (42) =\n'
             '..  parsed-literal::\n'
             '    :class: code\n'
             '\n'
-            '        \n'
             '    \\|char\\| \\`code\\` \\*em\\* \\_em\\_\n'
+            '    \n'
+            '\n'
             '    →\\ `named chunk (42)`_\n'
-            '        \n'
             '..\n'
             '\n'
             '..  class:: small\n'
@@ -337,14 +343,13 @@ class TestWeaver(unittest.TestCase):
             '\n'
             '\n'
             '..  _`named chunk (42)`:\n'
-            '..  rubric:: named... (42) =\n'
+            '..  rubric:: named chunk (42) =\n'
             '..  parsed-literal::\n'
             '    :class: code\n'
             '\n'
-            '        \n'
             '    \\|char\\| \\`code\\` \\*em\\* \\_em\\_\n'
             '    \n'
-            '        \n'
+            '\n'
             '..\n'
             '\n'
             '..  class:: small\n'
@@ -362,17 +367,17 @@ through pyweb and looking at the results.
 We'll examine a few features of the LaTeX templates.
 
 @d Unit Test of LaTeX... @{ 
-@@unittest.skip("Depends on LaTeX templates.")
 class TestLaTeX(unittest.TestCase):
     def setUp(self) -> None:
-        self.weaver = pyweb.LaTeX()
+        self.weaver = pyweb.Weaver()
+        self.weaver.set_markup("tex")
         self.weaver.reference_style = pyweb.SimpleReference() 
         self.filepath = Path("testweaver") 
         self.aFileChunk = MockChunk("File", 123, ("sample.w", 456))
         self.aFileChunk.referencedBy = [ ]
         self.aChunk = MockChunk("Chunk", 314, ("sample.w", 789))
         self.aChunk.referencedBy = [self.aFileChunk,]
-        self.aChunk.references.return_value=[(self.aFileChunk.name, self.aFileChunk.seq)]
+        self.aChunk.references = [(self.aFileChunk.name, self.aFileChunk.seq)]
 
     def tearDown(self) -> None:
         try:
@@ -381,42 +386,37 @@ class TestLaTeX(unittest.TestCase):
             pass
             
     def test_weaver_functions_latex(self) -> None:
-        result = self.weaver.quote("\\end{Verbatim}")
+        result = pyweb.latex_quote_rules("\\end{Verbatim}")
         self.assertEqual("\\end\\,{Verbatim}", result)
-        result = self.weaver.references(self.aChunk)
-        expected = textwrap.indent(
-            textwrap.dedent("""
-                \\footnotesize
-                Used by:
-                \\begin{list}{}{}
-                    
-                \\item Code example File (123) (Sect. \\ref{pyweb123}, p. \\pageref{pyweb123})
-                
-                \\end{list}
-                \\normalsize
-            """), 
-        '    ')
-        self.assertEqual(rstrip_lines(expected), rstrip_lines(result))
-        result = self.weaver.referenceTo("Chunk", 314)
-        self.assertEqual("$\\triangleright$ Code Example Chunk (314)", result)
-        self.assertEqual(self.aFileChunk.mock_calls, [])
-        self.assertEqual(self.aChunk.mock_calls, [call.references(self.weaver)])
+        web = Mock(chunks=[self.aChunk])
+        result = list(self.weaver.generate_text(web))
+        expected = [
+            '\n'
+            '\\label{pyweb-314}\n'
+            '\\begin{flushleft}\n'
+            '\\textit{Code example Chunk (314)}\n'
+            '\\begin{Verbatim}[commandchars=\\\\\\{\\},codes={\\catcode`$$=3\\catcode`^=7},frame=single]',
+            '\n'
+            '\\end{Verbatim}\n'
+            '\\end{flushleft}\n'
+        ]
+        self.assertEqual(expected, result)
 @}
 
 We'll examine a few features of the HTML templates.
 
 @d Unit Test of HTML subclass... @{ 
-@@unittest.skip("Depends on HTML templates.")
 class TestHTML(unittest.TestCase):
     def setUp(self) -> None:
-        self.weaver = pyweb.HTML( )
+        self.weaver = pyweb.Weaver( )
+        self.weaver.set_markup("html")
         self.weaver.reference_style = pyweb.SimpleReference() 
         self.filepath = Path("testweaver") 
         self.aFileChunk = MockChunk("File", 123, ("sample.w", 456))
         self.aFileChunk.referencedBy = []
         self.aChunk = MockChunk("Chunk", 314, ("sample.w", 789))
         self.aChunk.referencedBy = [self.aFileChunk,]
-        self.aChunk.references.return_value=[(self.aFileChunk.name, self.aFileChunk.seq)]
+        self.aChunk.references = [(self.aFileChunk.name, self.aFileChunk.seq)]
 
     def tearDown(self) -> None:
         try:
@@ -425,22 +425,24 @@ class TestHTML(unittest.TestCase):
             pass
             
     def test_weaver_functions_html(self) -> None:
-        result = self.weaver.quote("a < b && c > d")
+        result = pyweb.html_quote_rules("a < b && c > d")
         self.assertEqual("a &lt; b &amp;&amp; c &gt; d", result)
-        result = self.weaver.references(self.aChunk)
-        self.assertEqual('  Used by <a href="#pyweb123"><em>File</em>&nbsp;(123)</a>.', result)
-        result = self.weaver.referenceTo("Chunk", 314)
-        self.assertEqual('<a href="#pyweb314">&rarr;<em>Chunk</em> (314)</a>', result)
-        self.assertEqual(self.aFileChunk.mock_calls, [])
-        self.assertEqual(self.aChunk.mock_calls, [call.references(self.weaver)])
+        web = Mock(chunks=[self.aChunk])
+        result = list(self.weaver.generate_text(web))
+        expected = [
+            '\n'
+            '<a name="pyweb_314"></a>\n'
+            "<!--line number ('sample.w', 789)-->\n"
+            '<p><em>Chunk (314)</em> =</p>\n'
+            '<pre><code>',
+             '\n'
+             '</code></pre>\n'
+             '<p>&#8718; <em>Chunk (314)</em>.\n'
+             '</p> \n'
+        ]
+        self.assertEqual(expected, result)
 
 @}
-
-The unique feature of the ``HTMLShort`` class is a template change.
-
-    **TODO:** Test ``HTMLShort``.
-
-@d Unit Test of HTMLShort subclass... @{# TODO: Finish this@}
 
 A Tangler emits the various named source files in proper format for the desired
 compiler and language.
@@ -527,6 +529,7 @@ class TestTanglerMake(unittest.TestCase):
             'Mocked Tangle Output\n'
         )
         self.assertEqual(expected, tangled)
+        
         
     def test_same_should_leave(self) -> None:
         self.tangler.emit(self.web)
