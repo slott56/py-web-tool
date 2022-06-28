@@ -1236,16 +1236,11 @@ the structure and meaning of a ``.w`` source file.
     :class: code
 
     
-→\ `Command class hierarchy -- used to describe individual commands (6)`_
+    →\ `Command class hierarchy -- used to describe individual commands (6)`_    
     
-
+    →\ `Chunk class hierarchy -- used to describe input chunks (4)`_    
     
-→\ `Chunk class hierarchy -- used to describe input chunks (4)`_
-    
-
-    
-→\ `Web class -- describes the overall "web" of chunks (3)`_
-    
+    →\ `Web class -- describes the overall "web" of chunks (3)`_    
 
 ..
 
@@ -1329,29 +1324,14 @@ and, consequently, chunk references.
 ..  parsed-literal::
     :class: code
 
-    from collections import defaultdict
-    
-
-    from collections.abc import Iterator
-    
-
-    from dataclasses import dataclass, field
-    
-
-    import logging
-    
-
-    from pathlib import Path
-    
-
-    from types import SimpleNamespace
-    
-
-    from typing import Any, Optional, Literal, ClassVar, Union
-    
-
-    from weakref import ref, ReferenceType
-    
+    from collections import defaultdict    
+    from collections.abc import Iterator    
+    from dataclasses import dataclass, field    
+    import logging    
+    from pathlib import Path    
+    from types import SimpleNamespace    
+    from typing import Any, Optional, Literal, ClassVar, Union    
+    from weakref import ref, ReferenceType    
 
 ..
 
@@ -1368,538 +1348,177 @@ and, consequently, chunk references.
     :class: code
 
     
-
-    @
-    dataclass
+    @    dataclass    
+    class Web:    
+        chunks: list["Chunk"]  #: The source sequence of chunks.    
     
-
-    class Web:
+        # The \`\`    @    d\`\` chunk names and locations where they're defined.    
+        chunk\_map: dict[str, list["Chunk"]] = field(init=False)    
+            
+        # The \`\`    @    \|\`\` defined names and chunks with which they're associated.    
+        userid\_map: defaultdict[str, list["Chunk"]] = field(init=False)    
+            
+        logger: logging.Logger = field(init=False, default=logging.getLogger("Web"))    
     
-
-        chunks: list["Chunk"]  #: The source sequence of chunks.
-    
-
-    
-
-        # The \`\`
-    @
-    d\`\` chunk names and locations where they're defined.
-    
-
-        chunk\_map: dict[str, list["Chunk"]] = field(init=False)
-    
-
-        
-    
-
-        # The \`\`
-    @
-    \|\`\` defined names and chunks with which they're associated.
-    
-
-        userid\_map: defaultdict[str, list["Chunk"]] = field(init=False)
-    
-
-        
-    
-
-        logger: logging.Logger = field(init=False, default=logging.getLogger("Web"))
-    
-
-    
-
-        strict\_match: ClassVar[bool] = True  #: Don't permit ... names without a definition.
-    
-
-        
-    
-
-        def \_\_post\_init\_\_(self) -> None:
-    
-
-            """
-    
-
-            Populate weak references throughout the web to make full\_name properties work.
-    
-
-            Then. Locate all macro definitions and userid references. 
-    
-
-            """
-    
-
-            # Pass 1 -- set all Chunk and Command back references.
-    
-
-            for c in self.chunks:
-    
-
-                c.web = ref(self)
-    
-
-                for cmd in c.commands:
-    
-
-                    cmd.web = ref(self)
-    
-
-                    
-    
-
-            # Named Chunks = Union of macro\_iter and file\_iter
-    
-
-            named\_chunks = list(filter(lambda c: c.name is not None, self.chunks))
-    
-
-    
-
-            # Pass 2 -- locate the unabbreviated names in chunks and references to chunks
-    
-
-            self.chunk\_map = {}
-    
-
-            for seq, c in enumerate(named\_chunks, start=1):
-    
-
-                c.seq = seq
-    
-
-                if not c.path:
-    
-
-                    # Use \`\`
-    @
-    d name\`\` chunks (reject \`\`
-    @
-    o\`\` and text)
-    
-
-                    if not c.name.endswith('...'):
-    
-
-                        self.logger.debug(f"\_\_post\_init\_\_ 2a {c.name=!r}")
-    
-
-                        self.chunk\_map.setdefault(c.name, [])
-    
-
-                for cmd in c.commands:
-    
-
-                    # Find \`\`
-    @
-    < name 
-    @
-    >\`\` in \`\`
-    @
-    d name\`\` chunks or \`\`
-    @
-    o\`\` chunks 
-    
-
-                    if cmd.typeid.ReferenceCommand and not cmd.name.endswith('...'):
-    
-
-                        self.logger.debug(f"\_\_post\_init\_\_ 2b {cmd.name=!r}")
-    
-
-                        self.chunk\_map.setdefault(cmd.name, [])
-    
-
+        strict\_match: ClassVar[bool] = True  #: Don't permit ... names without a definition.    
+            
+        def \_\_post\_init\_\_(self) -> None:    
+            """    
+            Populate weak references throughout the web to make full\_name properties work.    
+            Then. Locate all macro definitions and userid references.     
+            """    
+            # Pass 1 -- set all Chunk and Command back references.    
+            for c in self.chunks:    
+                c.web = ref(self)    
+                for cmd in c.commands:    
+                    cmd.web = ref(self)    
                         
+            # Named Chunks = Union of macro\_iter and file\_iter    
+            named\_chunks = list(filter(lambda c: c.name is not None, self.chunks))    
     
-
-            # Pass 3 -- accumulate chunk lists, output lists, and name definition lists
+            # Pass 2 -- locate the unabbreviated names in chunks and references to chunks    
+            self.chunk\_map = {}    
+            for seq, c in enumerate(named\_chunks, start=1):    
+                c.seq = seq    
+                if not c.path:    
+                    # Use \`\`    @    d name\`\` chunks (reject \`\`    @    o\`\` and text)    
+                    if not c.name.endswith('...'):    
+                        self.logger.debug(f"\_\_post\_init\_\_ 2a {c.name=!r}")    
+                        self.chunk\_map.setdefault(c.name, [])    
+                for cmd in c.commands:    
+                    # Find \`\`    @    < name     @    >\`\` in \`\`    @    d name\`\` chunks or \`\`    @    o\`\` chunks     
+                    if cmd.typeid.ReferenceCommand and not cmd.name.endswith('...'):    
+                        self.logger.debug(f"\_\_post\_init\_\_ 2b {cmd.name=!r}")    
+                        self.chunk\_map.setdefault(cmd.name, [])    
+                            
+            # Pass 3 -- accumulate chunk lists, output lists, and name definition lists    
+            self.userid\_map = defaultdict(list)    
+            for c in named\_chunks:    
+                for name in c.def\_names:    
+                    self.userid\_map[name].append(c)    
+                if not c.path:    
+                    # Named \`\`    @    d name\`\` chunks    
+                    c.initial = len(self.chunk\_map[c.full\_name]) == 0    
+                    self.chunk\_map[c.full\_name].append(c)    
+                    self.logger.debug(f"\_\_post\_init\_\_ 3 {c.name=!r} -> {c.full\_name=!r}")    
+                else:    
+                    # Output \`\`    @    o\`\` and anonymous chunks.    
+                    # Assume all     @    o chunks are unique. If they're not, they overwrite each other.    
+                    # Also, there's not \`\`full\_name\`\` for these chunks.    
+                    c.initial = True    
+                        
+                # TODO: Accumulate all chunks that contribute to a named file...    
     
-
-            self.userid\_map = defaultdict(list)
-    
-
-            for c in named\_chunks:
-    
-
-                for name in c.def\_names:
-    
-
-                    self.userid\_map[name].append(c)
-    
-
-                if not c.path:
-    
-
-                    # Named \`\`
-    @
-    d name\`\` chunks
-    
-
-                    c.initial = len(self.chunk\_map[c.full\_name]) == 0
-    
-
-                    self.chunk\_map[c.full\_name].append(c)
-    
-
-                    self.logger.debug(f"\_\_post\_init\_\_ 3 {c.name=!r} -> {c.full\_name=!r}")
-    
-
-                else:
-    
-
-                    # Output \`\`
-    @
-    o\`\` and anonymous chunks.
-    
-
-                    # Assume all 
-    @
-    o chunks are unique. If they're not, they overwrite each other.
-    
-
-                    # Also, there's not \`\`full\_name\`\` for these chunks.
-    
-
-                    c.initial = True
-    
-
+            # Pass 4 -- set referencedBy a command in a chunk.    
+            # NOTE: Assuming single references \*only\*    
+            # We should raise an exception when updating a non-None referencedBy value.    
+            # Or incrementing ref\_chunk.references > 1.    
+            for c in named\_chunks:    
+                for cmd in c.commands:    
+                    if cmd.typeid.ReferenceCommand:    
+                        ref\_to\_list = self.resolve\_chunk(cmd.name)    
+                        for ref\_chunk in ref\_to\_list:    
+                            ref\_chunk.referencedBy = c    
+                            ref\_chunk.references += 1    
                     
-    
-
-                # TODO: Accumulate all chunks that contribute to a named file...
-    
-
-    
-
-            # Pass 4 -- set referencedBy a command in a chunk.
-    
-
-            # NOTE: Assuming single references \*only\*
-    
-
-            # We should raise an exception when updating a non-None referencedBy value.
-    
-
-            # Or incrementing ref\_chunk.references > 1.
-    
-
-            for c in named\_chunks:
-    
-
-                for cmd in c.commands:
-    
-
-                    if cmd.typeid.ReferenceCommand:
-    
-
-                        ref\_to\_list = self.resolve\_chunk(cmd.name)
-    
-
-                        for ref\_chunk in ref\_to\_list:
-    
-
-                            ref\_chunk.referencedBy = c
-    
-
-                            ref\_chunk.references += 1
-    
-
+        def \_\_repr\_\_(self) -> str:    
+            NL = ",\\n"    
+            return (    
+                f"{self.\_\_class\_\_.\_\_name\_\_}("    
+                f"{NL.join(repr(c) for c in self.chunks)}"    
+                f")"    
+            )    
                 
-    
-
-        def \_\_repr\_\_(self) -> str:
-    
-
-            NL = ",\\n"
-    
-
-            return (
-    
-
-                f"{self.\_\_class\_\_.\_\_name\_\_}("
-    
-
-                f"{NL.join(repr(c) for c in self.chunks)}"
-    
-
-                f")"
-    
-
-            )
-    
-
-            
-    
-
-        def resolve\_name(self, target: str) -> str:
-    
-
-            """Map short names to full names, if possible."""
-    
-
-            if target in self.chunk\_map:
-    
-
-                # self.logger.debug(f"resolve\_name {target=} in self.chunk\_map")
-    
-
-                return target
-    
-
-            elif target.endswith('...'):
-    
-
-                # The ... is equivalent to regular expression .\*
-    
-
-                matches = list(
-    
-
-                    c\_name
-    
-
-                    for c\_name in self.chunk\_map
-    
-
-                    if c\_name.startswith(target[:-3])
-    
-
-                )
-    
-
-                # self.logger.debug(f"resolve\_name {target=} {matches=} in self.chunk\_map")
-    
-
-                match matches:
-    
-
-                    case []:
-    
-
-                        if self.strict\_match:
-    
-
-                            raise Error(f"No full name for {target!r}")
-    
-
-                        else:
-    
-
-                            self.logger.warning(f"resolve\_name {target=} unknown")
-    
-
-                            self.chunk\_map[target] = []
-    
-
-                            return target
-    
-
-                    case [head]:
-    
-
-                        return head
-    
-
-                    case [head, \*tail]:
-    
-
-                        message = f"Ambiguous abbreviation {target!r}, matches {[head] + tail!r}"
-    
-
-                        raise Error(message)
-    
-
-            else:
-    
-
-                self.logger.warning(f"resolve\_name {target=} unknown")
-    
-
-                self.chunk\_map[target] = []
-    
-
-                return target
-    
-
-    
-
-        def resolve\_chunk(self, target: str) -> list["Chunk"]:
-    
-
-            """Map name (short or full) to the defining sequence of chunks."""
-    
-
-            full\_name = self.resolve\_name(target)
-    
-
-            chunk\_list = self.chunk\_map[full\_name]
-    
-
-            self.logger.debug(f"resolve\_chunk {target=!r} -> {full\_name=!r} -> {chunk\_list=}")
-    
-
-            return chunk\_list
-    
-
-    
-
-        def file\_iter(self) -> Iterator[SimpleNamespace]:
-    
-
-            return filter(lambda c: c.typeid.OutputChunk, self.chunks)
-    
-
-    
-
-        def macro\_iter(self) -> Iterator[SimpleNamespace]:
-    
-
-            return filter(lambda c: c.typeid.NamedChunk, self.chunks)
-    
-
-    
-
-        def userid\_iter(self) -> Iterator[SimpleNamespace]:
-    
-
-            yield from (SimpleNamespace(def\_name=n, chunk=c) for c in self.file\_iter() for n in c.def\_names)
-    
-
-            yield from (SimpleNamespace(def\_name=n, chunk=c) for c in self.macro\_iter() for n in c.def\_names)
-    
-
-    
-
-        
-    @
-    property
-    
-
-        def files(self) -> list["OutputChunk"]:
-    
-
-            return list(self.file\_iter())
-    
-
-    
-
-        
-    @
-    property
-    
-
-        def macros(self) -> list[SimpleNamespace]:
-    
-
-            """
-    
-
-            The chunk\_map has the list of Chunks that comprise a macro definition.
-    
-
-            We separate those to make it slightly easier to format the first definition.
-    
-
-            """
-    
-
-            first\_list = (
-    
-
-                (self.chunk\_map[name][0], self.chunk\_map[name])
-    
-
-                for name in sorted(self.chunk\_map)
-    
-
-                if self.chunk\_map[name]
-    
-
-            )
-    
-
-            macro\_list = list(
-    
-
-                SimpleNamespace(name=first\_def.name, full\_name=first\_def.full\_name, seq=first\_def.seq, def\_list=def\_list)
-    
-
-                for first\_def, def\_list in first\_list
-    
-
-            )
-    
-
-            # print(f"macros: {defs}")
-    
-
-            return macro\_list
-    
-
-    
-
-        
-    @
-    property
-    
-
-        def userids(self) -> list[SimpleNamespace]:
-    
-
-            userid\_list = list(
-    
-
-                SimpleNamespace(userid=userid, ref\_list=self.userid\_map[userid])
-    
-
-                for userid in sorted(self.userid\_map)
-    
-
-            )
-    
-
-            # print(f"userids: {userid\_list}")
-    
-
-            return userid\_list
-    
-
+        def resolve\_name(self, target: str) -> str:    
+            """Map short names to full names, if possible."""    
+            if target in self.chunk\_map:    
+                # self.logger.debug(f"resolve\_name {target=} in self.chunk\_map")    
+                return target    
+            elif target.endswith('...'):    
+                # The ... is equivalent to regular expression .\*    
+                matches = list(    
+                    c\_name    
+                    for c\_name in self.chunk\_map    
+                    if c\_name.startswith(target[:-3])    
+                )    
+                # self.logger.debug(f"resolve\_name {target=} {matches=} in self.chunk\_map")    
+                match matches:    
+                    case []:    
+                        if self.strict\_match:    
+                            raise Error(f"No full name for {target!r}")    
+                        else:    
+                            self.logger.warning(f"resolve\_name {target=} unknown")    
+                            self.chunk\_map[target] = []    
+                            return target    
+                    case [head]:    
+                        return head    
+                    case [head, \*tail]:    
+                        message = f"Ambiguous abbreviation {target!r}, matches {[head] + tail!r}"    
+                        raise Error(message)    
+            else:    
+                self.logger.warning(f"resolve\_name {target=} unknown")    
+                self.chunk\_map[target] = []    
+                return target    
+    
+        def resolve\_chunk(self, target: str) -> list["Chunk"]:    
+            """Map name (short or full) to the defining sequence of chunks."""    
+            full\_name = self.resolve\_name(target)    
+            chunk\_list = self.chunk\_map[full\_name]    
+            self.logger.debug(f"resolve\_chunk {target=!r} -> {full\_name=!r} -> {chunk\_list=}")    
+            return chunk\_list    
+    
+        def file\_iter(self) -> Iterator[SimpleNamespace]:    
+            return filter(lambda c: c.typeid.OutputChunk, self.chunks)    
+    
+        def macro\_iter(self) -> Iterator[SimpleNamespace]:    
+            return filter(lambda c: c.typeid.NamedChunk, self.chunks)    
+    
+        def userid\_iter(self) -> Iterator[SimpleNamespace]:    
+            yield from (SimpleNamespace(def\_name=n, chunk=c) for c in self.file\_iter() for n in c.def\_names)    
+            yield from (SimpleNamespace(def\_name=n, chunk=c) for c in self.macro\_iter() for n in c.def\_names)    
+    
+            @    property    
+        def files(self) -> list["OutputChunk"]:    
+            return list(self.file\_iter())    
+    
+            @    property    
+        def macros(self) -> list[SimpleNamespace]:    
+            """    
+            The chunk\_map has the list of Chunks that comprise a macro definition.    
+            We separate those to make it slightly easier to format the first definition.    
+            """    
+            first\_list = (    
+                (self.chunk\_map[name][0], self.chunk\_map[name])    
+                for name in sorted(self.chunk\_map)    
+                if self.chunk\_map[name]    
+            )    
+            macro\_list = list(    
+                SimpleNamespace(name=first\_def.name, full\_name=first\_def.full\_name, seq=first\_def.seq, def\_list=def\_list)    
+                for first\_def, def\_list in first\_list    
+            )    
+            # print(f"macros: {defs}")    
+            return macro\_list    
+    
+            @    property    
+        def userids(self) -> list[SimpleNamespace]:    
+            userid\_list = list(    
+                SimpleNamespace(userid=userid, ref\_list=self.userid\_map[userid])    
+                for userid in sorted(self.userid\_map)    
+            )    
+            # print(f"userids: {userid\_list}")    
+            return userid\_list    
+                    
+        def no\_reference(self) -> list[Chunk]:    
+            return list(filter(lambda c: c.name and not c.path and c.references == 0, self.chunks))    
                 
-    
-
-        def no\_reference(self) -> list[Chunk]:
-    
-
-            return list(filter(lambda c: c.name and not c.path and c.references == 0, self.chunks))
-    
-
-            
-    
-
-        def multi\_reference(self) -> list[Chunk]:
-    
-
-            return list(filter(lambda c: c.name and not c.path and c.references > 1, self.chunks))
-    
-
-            
-    
-
-        def no\_definition(self) -> list[str]:
-    
-
-            commands = (
-    
-
-                cmd for c in self.chunks for cmd in c.commands
-    
-
-            )
-    
-
-            return list(filter(lambda cmd: not cmd.definition, commands))
-    
-
+        def multi\_reference(self) -> list[Chunk]:    
+            return list(filter(lambda c: c.name and not c.path and c.references > 1, self.chunks))    
+                
+        def no\_definition(self) -> list[str]:    
+            commands = (    
+                cmd for c in self.chunks for cmd in c.commands    
+            )    
+            return list(filter(lambda cmd: not cmd.definition, commands))    
     
 
 ..
@@ -1926,217 +1545,71 @@ A chunk can be woven or tangled to create output.
     :class: code
 
     
-→\ `The TypeId Helper (5)`_
+    →\ `The TypeId Helper (5)`_    
+    
+    @    dataclass    
+    class Chunk:    
+        """Superclass for OutputChunk, NamedChunk, NamedDocumentChunk.    
+    
+        Chunk is the anonymous text context.     
+            The Text, Ref, and the various XREF commands can \*only\* appear here.    
+            A REF must be do a \`\`    @    d name     @    [...    @    ]\`\` NamedDocumentChunk, which is expanded, not linked.    
+    
+        OutputChunk is the \`\`    @    o\`\` context.     
+            The Code and Ref commands appear here.    
+            This is tangled to a file.    
+    
+        NamedChunk is the \`\`    @    d\`\` context.     
+            The Code and Ref commands appear here.    
+            This is tangled where referenced.    
+        """    
+        name: str \| None = None  #: Short name of the chunk    
+        seq: int \| None = None  #: Unique sequence number of chunk in the WEB    
+        commands: list["Command"] = field(default\_factory=list)  #: Sequence of commands inside this chunk    
+        options: list[str] = field(default\_factory=list)  #: Parsed options for     @    d and     @    o chunks.    
+        def\_names: list[str] = field(default\_factory=list)  #: Names defined after \`\`    @    \|\`\` in this chunk    
+        initial: bool = False  #: Is this the first use of a given Chunk name?    
+        comment\_start: str \| None = None  #: If injecting location details, this is the prefix    
+        comment\_end: str \| None = None  #: If injecting location details, this is the suffix    
+    
+        references: int = field(init=False, default=0)    
+        referencedBy: Optional["Chunk"] = field(init=False, default=None)    
+        web: ReferenceType["Web"] = field(init=False, repr=False)    
+        logger: logging.Logger = field(init=False, default=logging.getLogger("Chunk"))    
+    
+            @    property    
+        def full\_name(self) -> str \| None:    
+            return self.web().resolve\_name(self.name)    
+    
+            @    property    
+        def path(self) -> Path \| None:    
+            return None    
+    
+            @    classmethod    
+            @    property    
+        def typeid(cls) -> TypeId:    
+            return TypeId(cls)    
+    
+            @    property    
+        def location(self) -> tuple[str, int]:    
+            return self.commands[0].location    
+    
+    class OutputChunk(Chunk):    
+            @    property    
+        def path(self) -> Path \| None:    
+            return Path(self.name)    
+    
+            @    property    
+        def full\_name(self) -> str \| None:    
+            return None    
+    
+    class NamedChunk(Chunk):     
+        pass    
+    
+    
+    class NamedDocumentChunk(Chunk):     
+        pass    
     
-
-    
-
-    @
-    dataclass
-    
-
-    class Chunk:
-    
-
-        """Superclass for OutputChunk, NamedChunk, NamedDocumentChunk.
-    
-
-    
-
-        Chunk is the anonymous text context. 
-    
-
-            The Text, Ref, and the various XREF commands can \*only\* appear here.
-    
-
-            A REF must be do a \`\`
-    @
-    d name 
-    @
-    [...
-    @
-    ]\`\` NamedDocumentChunk, which is expanded, not linked.
-    
-
-    
-
-        OutputChunk is the \`\`
-    @
-    o\`\` context. 
-    
-
-            The Code and Ref commands appear here.
-    
-
-            This is tangled to a file.
-    
-
-    
-
-        NamedChunk is the \`\`
-    @
-    d\`\` context. 
-    
-
-            The Code and Ref commands appear here.
-    
-
-            This is tangled where referenced.
-    
-
-        """
-    
-
-        name: str \| None = None  #: Short name of the chunk
-    
-
-        seq: int \| None = None  #: Unique sequence number of chunk in the WEB
-    
-
-        commands: list["Command"] = field(default\_factory=list)  #: Sequence of commands inside this chunk
-    
-
-        options: list[str] = field(default\_factory=list)  #: Parsed options for 
-    @
-    d and 
-    @
-    o chunks.
-    
-
-        def\_names: list[str] = field(default\_factory=list)  #: Names defined after \`\`
-    @
-    \|\`\` in this chunk
-    
-
-        initial: bool = False  #: Is this the first use of a given Chunk name?
-    
-
-        comment\_start: str \| None = None  #: If injecting location details, this is the prefix
-    
-
-        comment\_end: str \| None = None  #: If injecting location details, this is the suffix
-    
-
-    
-
-        references: int = field(init=False, default=0)
-    
-
-        referencedBy: Optional["Chunk"] = field(init=False, default=None)
-    
-
-        web: ReferenceType["Web"] = field(init=False, repr=False)
-    
-
-        logger: logging.Logger = field(init=False, default=logging.getLogger("Chunk"))
-    
-
-    
-
-        
-    @
-    property
-    
-
-        def full\_name(self) -> str \| None:
-    
-
-            return self.web().resolve\_name(self.name)
-    
-
-    
-
-        
-    @
-    property
-    
-
-        def path(self) -> Path \| None:
-    
-
-            return None
-    
-
-    
-
-        
-    @
-    classmethod
-    
-
-        
-    @
-    property
-    
-
-        def typeid(cls) -> TypeId:
-    
-
-            return TypeId(cls)
-    
-
-    
-
-        
-    @
-    property
-    
-
-        def location(self) -> tuple[str, int]:
-    
-
-            return self.commands[0].location
-    
-
-    
-
-    class OutputChunk(Chunk):
-    
-
-        
-    @
-    property
-    
-
-        def path(self) -> Path \| None:
-    
-
-            return Path(self.name)
-    
-
-    
-
-        
-    @
-    property
-    
-
-        def full\_name(self) -> str \| None:
-    
-
-            return None
-    
-
-    
-
-    class NamedChunk(Chunk): 
-    
-
-        pass
-    
-
-    
-
-    
-
-    class NamedDocumentChunk(Chunk): 
-    
-
-        pass
-    
-
-    
-
     
 
 ..
@@ -2160,36 +1633,16 @@ and works well with Jinja templates.
     :class: code
 
     
-
-    class TypeId:
+    class TypeId:    
+        """    
+        This makes the given class name into an attribute with a     
+        True value. Any other attribute reference will return False.    
+        """    
+        def \_\_init\_\_(self, member\_of: type[Any]) -> None:    
+            self.my\_class = member\_of.\_\_name\_\_    
     
-
-        """
-    
-
-        This makes the given class name into an attribute with a 
-    
-
-        True value. Any other attribute reference will return False.
-    
-
-        """
-    
-
-        def \_\_init\_\_(self, member\_of: type[Any]) -> None:
-    
-
-            self.my\_class = member\_of.\_\_name\_\_
-    
-
-    
-
-        def \_\_getattr\_\_(self, item: str) -> bool:
-    
-
-            return item == self.my\_class
-    
-
+        def \_\_getattr\_\_(self, item: str) -> bool:    
+            return item == self.my\_class    
     
 
 ..
@@ -2221,561 +1674,187 @@ of commands.
     :class: code
 
     
-
     
-
-    @
-    dataclass
-    
-
-    class TextCommand:
-    
-
-        text: str  #: The text
-    
-
-        location: tuple[str, int]  #: The (filename, line number)
-    
-
-        
-    
-
-        web: ReferenceType["Web"] = field(init=False, repr=False)
-    
-
-        logger: logging.Logger = field(init=False, default=logging.getLogger("TextCommand"))
-    
-
-        definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
-    
-
-    
-
-        
-    @
-    classmethod
-    
-
-        
-    @
-    property
-    
-
-        def typeid(cls) -> "TypeId":
-    
-
-            return TypeId(cls)
-    
-
-    
-
-        def indent(self) -> int:
-    
-
-            if self.text.endswith('\\n'):
-    
-
-                self.logger.debug(f"indent = 0")
-    
-
-                return 0
-    
-
-            try:
-    
-
-                last\_line = self.text.splitlines()[-1]
-    
-
-                self.logger.debug(f"indent = {len(last\_line)}")
-    
-
-                return len(last\_line)
-    
-
-            except IndexError:
-    
-
-                self.logger.debug(f"indent (with no text) = 0")
-    
-
-                return 0
-    
-
+    @    dataclass    
+    class TextCommand:    
+        text: str  #: The text    
+        location: tuple[str, int]  #: The (filename, line number)    
             
+        web: ReferenceType["Web"] = field(init=False, repr=False)    
+        logger: logging.Logger = field(init=False, default=logging.getLogger("TextCommand"))    
+        definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand    
     
-
-        def tangle(self, aTangler: "Tangler", target: TextIO) -> None:
+            @    classmethod    
+            @    property    
+        def typeid(cls) -> "TypeId":    
+            return TypeId(cls)    
     
-
-            self.logger.debug(f"tangle {self.text=!r}")
+        def indent(self) -> int:    
+            if self.text.endswith('\\n'):    
+                self.logger.debug(f"indent = 0")    
+                return 0    
+            try:    
+                last\_line = self.text.splitlines()[-1]    
+                self.logger.debug(f"indent = {len(last\_line)}")    
+                return len(last\_line)    
+            except IndexError:    
+                self.logger.debug(f"indent (with no text) = 0")    
+                return 0    
+                
+        def tangle(self, aTangler: "Tangler", target: TextIO) -> None:    
+            self.logger.debug(f"tangle {self.text=!r}")    
+            aTangler.codeBlock(target, self.text)    
     
-
-            aTangler.codeBlock(target, self.text)
-    
-
-    
-
-    @
-    dataclass
-    
-
-    class CodeCommand:
-    
-
-        text: str  #: The code
-    
-
-        location: tuple[str, int]
-    
-
-        
-    
-
-        web: ReferenceType["Web"] = field(init=False, repr=False)
-    
-
-        logger: logging.Logger = field(init=False, default=logging.getLogger("CodeCommand"))
-    
-
-        definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
-    
-
-    
-
-        
-    @
-    classmethod
-    
-
-        
-    @
-    property
-    
-
-        def typeid(cls) -> "TypeId":
-    
-
-            return TypeId(cls)
-    
-
+    @    dataclass    
+    class CodeCommand:    
+        text: str  #: The code    
+        location: tuple[str, int]    
             
-    
-
-        def indent(self) -> int:
-    
-
-            if self.text.endswith('\\n'):
-    
-
-                return 0
-    
-
-            try:
-    
-
-                last\_line = self.text.splitlines()[-1]
-    
-
-                return len(last\_line)
-    
-
-            except IndexError:
-    
-
-                return 0
-    
-
-    
-
-        def tangle(self, aTangler: "Tangler", target: TextIO) -> None:
-    
-
-            self.logger.debug(f"tangle {self.text=!r}")
-    
-
-            aTangler.codeBlock(target, self.text)
-    
-
-    
-
-    
-
-    @
-    dataclass
-    
-
-    class ReferenceCommand:
-    
-
-        """
-    
-
-        Reference to a \`\`NamedChunk\`\` in code.
-    
-
-        On text, however, it expands to the text of a \`\`NamedDocumentChunk\`\`.
-    
-
-        """
-    
-
-        name: str  #: The name provided
-    
-
-        location: tuple[str, int]
-    
-
-        
-    
-
-        web: ReferenceType["Web"] = field(init=False, repr=False)
-    
-
-        definition: bool = field(init=False, default=False)
-    
-
-        logger: logging.Logger = field(init=False, default=logging.getLogger("ReferenceCommand"))
-    
-
-    
-
-        
-    @
-    property
-    
-
-        def text(self) -> str:
-    
-
-            return self.web().get\_text(self.full\_name)
-    
-
-        
-    
-
-        
-    @
-    property
-    
-
-        def full\_name(self) -> str:
-    
-
-            return self.web().resolve\_name(self.name)
-    
-
-    
-
-        
-    @
-    property
-    
-
-        def seq(self) -> str:
-    
-
-            return self.web().resolve\_chunk(self.name)[0].seq
-    
-
-    
-
-        
-    @
-    classmethod
-    
-
-        
-    @
-    property
-    
-
-        def typeid(cls) -> "TypeId":
-    
-
-            return TypeId(cls)
-    
-
-    
-
-        def tangle(self, aTangler: "Tangler", target: TextIO) -> None:
-    
-
-            """Expand this reference.
-    
-
-            The starting position is the indentation for all \*\*subsequent\*\* lines.
-    
-
-            Provide tangler.lastIndent back to the tangler. 
-    
-
-            """
-    
-
-            self.logger.debug(f"tangle reference to {self.name=}, {aTangler.lastIndent=}")
-    
-
-            chunk\_list = self.web().resolve\_chunk(self.name)
-    
-
-            if len(chunk\_list) == 0:
-    
-
-                message = f"Attempt to tangle an undefined Chunk, {self.name!r}"
-    
-
-                self.logger.error(message)
-    
-
-                raise Error(message) 
-    
-
-            self.definition = True
-    
-
-            aTangler.addIndent(aTangler.lastIndent)
-    
-
-    
-
-            for chunk in chunk\_list:
-    
-
-                # TODO: if chunk.options includes '-indent': do an addIndent before tangling.
-    
-
-                for command in chunk.commands:
-    
-
-                    command.tangle(aTangler, target)
-    
-
-                    
-    
-
-            aTangler.clrIndent()
-    
-
+        web: ReferenceType["Web"] = field(init=False, repr=False)    
+        logger: logging.Logger = field(init=False, default=logging.getLogger("CodeCommand"))    
+        definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand    
+    
+            @    classmethod    
+            @    property    
+        def typeid(cls) -> "TypeId":    
+            return TypeId(cls)    
+                
+        def indent(self) -> int:    
+            if self.text.endswith('\\n'):    
+                return 0    
+            try:    
+                last\_line = self.text.splitlines()[-1]    
+                return len(last\_line)    
+            except IndexError:    
+                return 0    
+    
+        def tangle(self, aTangler: "Tangler", target: TextIO) -> None:    
+            self.logger.debug(f"tangle {self.text=!r}")    
+            aTangler.codeBlock(target, self.text)    
+    
+    
+    @    dataclass    
+    class ReferenceCommand:    
+        """    
+        Reference to a \`\`NamedChunk\`\` in code.    
+        On text, however, it expands to the text of a \`\`NamedDocumentChunk\`\`.    
+        """    
+        name: str  #: The name provided    
+        location: tuple[str, int]    
             
-    
-
-        def indent(self) -> int \| None:
-    
-
-            return None
-    
-
-    
-
-    @
-    dataclass
-    
-
-    class FileXrefCommand:
-    
-
-        location: tuple[str, int]
-    
-
-    
-
-        web: ReferenceType["Web"] = field(init=False, repr=False)
-    
-
-        logger: logging.Logger = field(init=False, default=logging.getLogger("FileXrefCommand"))
-    
-
-        definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
-    
-
-    
-
-        
-    @
-    property
-    
-
-        def files(self):
-    
-
-            return self.web().files
-    
-
-    
-
-        
-    @
-    classmethod
-    
-
-        
-    @
-    property
-    
-
-        def typeid(cls) -> "TypeId":
-    
-
-            return TypeId(cls)
-    
-
-    
-
-        def tangle(self, aTangler: "Tangler", target: TextIO) -> None:
-    
-
-            raise Error('Illegal tangling of a cross reference command.')
-    
-
-    
-
-        def indent(self) -> int:
-    
-
-            return 0
-    
-
-    
-
-    @
-    dataclass
-    
-
-    class MacroXrefCommand:
-    
-
-        location: tuple[str, int]
-    
-
-    
-
-        web: ReferenceType["Web"] = field(init=False, repr=False)
-    
-
-        logger: logging.Logger = field(init=False, default=logging.getLogger("MacroXrefCommand"))
-    
-
-        definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
-    
-
-    
-
-        
-    @
-    property
-    
-
-        def macros(self):
-    
-
-            return self.web().macros
-    
-
-    
-
-        
-    @
-    classmethod
-    
-
-        
-    @
-    property
-    
-
-        def typeid(cls) -> "TypeId":
-    
-
-            return TypeId(cls)
-    
-
-    
-
-        def tangle(self, aTangler: "Tangler", target: TextIO) -> None:
-    
-
-            raise Error('Illegal tangling of a cross reference command.')
-    
-
-    
-
-        def indent(self) -> int:
-    
-
-            return 0
-    
-
-    
-
-    @
-    dataclass
-    
-
-    class UserIdXrefCommand:
-    
-
-        location: tuple[str, int]
-    
-
-    
-
-        web: ReferenceType["Web"] = field(init=False, repr=False)
-    
-
-        logger: logging.Logger = field(init=False, default=logging.getLogger("UserIdXrefCommand"))
-    
-
-        definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
-    
-
-    
-
-        
-    @
-    property
-    
-
-        def userids(self) -> list[str]:
-    
-
-            return self.web().userids
-    
-
-    
-
-        
-    @
-    classmethod
-    
-
-        
-    @
-    property
-    
-
-        def typeid(cls) -> "TypeId":
-    
-
-            return TypeId(cls)
-    
-
+        web: ReferenceType["Web"] = field(init=False, repr=False)    
+        definition: bool = field(init=False, default=False)    
+        logger: logging.Logger = field(init=False, default=logging.getLogger("ReferenceCommand"))    
+    
+            @    property    
+        def text(self) -> str:    
+            return self.web().get\_text(self.full\_name)    
             
+            @    property    
+        def full\_name(self) -> str:    
+            return self.web().resolve\_name(self.name)    
     
-
-        def tangle(self, aTangler: "Tangler", target: TextIO) -> None:
+            @    property    
+        def seq(self) -> str:    
+            return self.web().resolve\_chunk(self.name)[0].seq    
     
-
-            raise Error('Illegal tangling of a cross reference command.')
+            @    classmethod    
+            @    property    
+        def typeid(cls) -> "TypeId":    
+            return TypeId(cls)    
     
-
+        def tangle(self, aTangler: "Tangler", target: TextIO) -> None:    
+            """Expand this reference.    
+            The starting position is the indentation for all \*\*subsequent\*\* lines.    
+            Provide tangler.lastIndent back to the tangler.     
+            """    
+            self.logger.debug(f"tangle reference to {self.name=}, {aTangler.lastIndent=}")    
+            chunk\_list = self.web().resolve\_chunk(self.name)    
+            if len(chunk\_list) == 0:    
+                message = f"Attempt to tangle an undefined Chunk, {self.name!r}"    
+                self.logger.error(message)    
+                raise Error(message)     
+            self.definition = True    
+            aTangler.addIndent(aTangler.lastIndent)    
     
-
-        def indent(self) -> int:
+            for chunk in chunk\_list:    
+                # TODO: if chunk.options includes '-indent': do an addIndent before tangling.    
+                for command in chunk.commands:    
+                    command.tangle(aTangler, target)    
+                        
+            aTangler.clrIndent()    
+                
+        def indent(self) -> int \| None:    
+            return None    
     
-
-            return 0
+    @    dataclass    
+    class FileXrefCommand:    
+        location: tuple[str, int]    
     
+        web: ReferenceType["Web"] = field(init=False, repr=False)    
+        logger: logging.Logger = field(init=False, default=logging.getLogger("FileXrefCommand"))    
+        definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand    
+    
+            @    property    
+        def files(self):    
+            return self.web().files    
+    
+            @    classmethod    
+            @    property    
+        def typeid(cls) -> "TypeId":    
+            return TypeId(cls)    
+    
+        def tangle(self, aTangler: "Tangler", target: TextIO) -> None:    
+            raise Error('Illegal tangling of a cross reference command.')    
+    
+        def indent(self) -> int:    
+            return 0    
+    
+    @    dataclass    
+    class MacroXrefCommand:    
+        location: tuple[str, int]    
+    
+        web: ReferenceType["Web"] = field(init=False, repr=False)    
+        logger: logging.Logger = field(init=False, default=logging.getLogger("MacroXrefCommand"))    
+        definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand    
+    
+            @    property    
+        def macros(self):    
+            return self.web().macros    
+    
+            @    classmethod    
+            @    property    
+        def typeid(cls) -> "TypeId":    
+            return TypeId(cls)    
+    
+        def tangle(self, aTangler: "Tangler", target: TextIO) -> None:    
+            raise Error('Illegal tangling of a cross reference command.')    
+    
+        def indent(self) -> int:    
+            return 0    
+    
+    @    dataclass    
+    class UserIdXrefCommand:    
+        location: tuple[str, int]    
+    
+        web: ReferenceType["Web"] = field(init=False, repr=False)    
+        logger: logging.Logger = field(init=False, default=logging.getLogger("UserIdXrefCommand"))    
+        definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand    
+    
+            @    property    
+        def userids(self) -> list[str]:    
+            return self.web().userids    
+    
+            @    classmethod    
+            @    property    
+        def typeid(cls) -> "TypeId":    
+            return TypeId(cls)    
+                
+        def tangle(self, aTangler: "Tangler", target: TextIO) -> None:    
+            raise Error('Illegal tangling of a cross reference command.')    
+    
+        def indent(self) -> int:    
+            return 0    
 
 ..
 
@@ -2795,15 +1874,9 @@ to act as an abstract superclass for type hints.
     :class: code
 
     
-
-    Command = Union[TextCommand, CodeCommand, ReferenceCommand,
-    
-
-        FileXrefCommand, MacroXrefCommand, UserIdXrefCommand
-    
-
-        ]
-    
+    Command = Union[TextCommand, CodeCommand, ReferenceCommand,    
+        FileXrefCommand, MacroXrefCommand, UserIdXrefCommand    
+        ]    
 
 ..
 
@@ -2825,13 +1898,9 @@ The ``Emitter`` class hierarchy writes the output files.
     :class: code
 
     
-→\ `Reference class hierarchy - strategies for weaving references to a chunk (24)`_
-     
+    →\ `Reference class hierarchy - strategies for weaving references to a chunk (24)`_         
     
-
-    
-→\ `Emitter class hierarchy - used to control output files (9)`_
-    
+    →\ `Emitter class hierarchy - used to control output files (9)`_    
 
 ..
 
@@ -2853,26 +1922,15 @@ It also includes providing the correct markup for the file type.
     :class: code
 
     
-→\ `Emitter Superclass (11)`_
+    →\ `Emitter Superclass (11)`_    
     
-
+    →\ `Quoting rule definitions -- functions used by templates (13)`_         
     
-→\ `Quoting rule definitions -- functions used by templates (13)`_
-     
+    →\ `Weaver Subclass -- Uses Jinja templates to weave documentation (12)`_    
     
-
+    →\ `Tangler Subclass -- emits the output files (19)`_         
     
-→\ `Weaver Subclass -- Uses Jinja templates to weave documentation (12)`_
-    
-
-    
-→\ `Tangler Subclass -- emits the output files (19)`_
-     
-    
-
-    
-→\ `TanglerMake Subclass -- extends Tangler to avoid touching files that didn't change (23)`_
-    
+    →\ `TanglerMake Subclass -- extends Tangler to avoid touching files that didn't change (23)`_    
 
 ..
 
@@ -2888,14 +1946,9 @@ It also includes providing the correct markup for the file type.
 ..  parsed-literal::
     :class: code
 
-    import abc
-    
-
-    from textwrap import dedent
-    
-
-    from jinja2 import Environment, DictLoader, select\_autoescape
-    
+    import abc    
+    from textwrap import dedent    
+    from jinja2 import Environment, DictLoader, select\_autoescape    
 
 ..
 
@@ -2912,35 +1965,15 @@ It also includes providing the correct markup for the file type.
     :class: code
 
     
-
-    class Emitter(abc.ABC):
-    
-
-        def \_\_init\_\_(self, output: Path): 
-    
-
-            self.logger = logging.getLogger(self.\_\_class\_\_.\_\_qualname\_\_)
-    
-
-            self.log\_indent = logging.getLogger("indent." + self.\_\_class\_\_.\_\_qualname\_\_)
-    
-
-            self.output = output
-    
-
-        
-    
-
-        
-    @
-    abc.abstractmethod
-    
-
-        def emit(self, web: Web) -> None:
-    
-
-            pass
-    
+    class Emitter(abc.ABC):    
+        def \_\_init\_\_(self, output: Path):     
+            self.logger = logging.getLogger(self.\_\_class\_\_.\_\_qualname\_\_)    
+            self.log\_indent = logging.getLogger("indent." + self.\_\_class\_\_.\_\_qualname\_\_)    
+            self.output = output    
+            
+            @    abc.abstractmethod    
+        def emit(self, web: Web) -> None:    
+            pass    
 
 ..
 
@@ -2959,162 +1992,61 @@ The Weaver is a **Facade** that wraps Jinja template processing.
     :class: code
 
     
-→\ `Debug Templates -- these display debugging information (14)`_
+    →\ `Debug Templates -- these display debugging information (14)`_    
     
-
+    →\ `RST Templates -- the default weave output (15)`_    
     
-→\ `RST Templates -- the default weave output (15)`_
+    →\ `HTML Templates -- emit HTML weave output (16)`_         
     
-
+    →\ `LaTeX Templates -- emit LaTeX weave output (17)`_         
     
-→\ `HTML Templates -- emit HTML weave output (16)`_
-     
+    →\ `Common base template -- this is used for ALL weaving (18)`_    
     
-
+    class Weaver(Emitter):    
+        template\_map = {    
+            "debug": {"default": debug\_weaver\_template, "overrides": ""},    
+            "rst": {"default": rst\_weaver\_template, "overrides": rst\_overrides\_template},    
+            "html": {"default": html\_weaver\_template, "overrides": html\_overrides\_template},    
+            "tex": {"default": latex\_weaver\_template, "overrides": ""},    
+        }    
+                
+        quote\_rules = {    
+            "rst": rst\_quote\_rules,    
+            "html": html\_quote\_rules,    
+            "tex": latex\_quote\_rules,    
+            "debug": debug\_quote\_rules,    
+        }    
     
-→\ `LaTeX Templates -- emit LaTeX weave output (17)`_
-     
-    
-
-    
-→\ `Common base template -- this is used for ALL weaving (18)`_
-    
-
-    
-
-    class Weaver(Emitter):
-    
-
-        template\_map = {
-    
-
-            "debug": {"default": debug\_weaver\_template, "overrides": ""},
-    
-
-            "rst": {"default": rst\_weaver\_template, "overrides": rst\_overrides\_template},
-    
-
-            "html": {"default": html\_weaver\_template, "overrides": html\_overrides\_template},
-    
-
-            "tex": {"default": latex\_weaver\_template, "overrides": ""},
-    
-
-        }
-    
-
-            
-    
-
-        quote\_rules = {
-    
-
-            "rst": rst\_quote\_rules,
-    
-
-            "html": html\_quote\_rules,
-    
-
-            "tex": latex\_quote\_rules,
-    
-
-            "debug": debug\_quote\_rules,
-    
-
-        }
-    
-
-    
-
-        def \_\_init\_\_(self, output: Path = Path.cwd()) -> None:
-    
-
-            super().\_\_init\_\_(output)
-    
-
-            # Summary
-    
-
-            self.linesWritten = 0
-    
-
-            
-    
-
-        def set\_markup(self, markup: str = "rst") -> "Weaver":
-    
-
-            self.markup = markup
-    
-
-            return self
-    
-
-            
-    
-
-        def emit(self, web: Web) -> None:
-    
-
-            self.target\_path = (self.output / web.web\_path.name).with\_suffix(f".{self.markup}")
-    
-
-            self.logger.info("Weaving %s using %s markup", self.target\_path, self.markup)
-    
-
-            with self.target\_path.open('w') as target\_file:
-    
-
-                for text in self.generate\_text(web):
-    
-
-                    self.linesWritten += text.count("\\n")
-    
-
-                    target\_file.write(text)
-    
-
-                    
-    
-
-        def generate\_text(self, web: Web) -> Iterator[str]:
-    
-
-            self.env = Environment(
-    
-
-                loader=DictLoader(
-    
-
-                    self.template\_map[self.markup] \|
-    
-
-                    {'base\_weaver': base\_template,}
-    
-
-                ),
-    
-
-                autoescape=select\_autoescape()
-    
-
-            )
-    
-
-            self.env.filters \|= {
-    
-
-                "quote\_rules": self.quote\_rules[self.markup]
-    
-
-            }
-    
-
-            template = self.env.get\_template("base\_weaver")
-    
-
-            yield from template.generate(web=web)
-    
+        def \_\_init\_\_(self, output: Path = Path.cwd()) -> None:    
+            super().\_\_init\_\_(output)    
+            # Summary    
+            self.linesWritten = 0    
+                
+        def set\_markup(self, markup: str = "rst") -> "Weaver":    
+            self.markup = markup    
+            return self    
+                
+        def emit(self, web: Web) -> None:    
+            self.target\_path = (self.output / web.web\_path.name).with\_suffix(f".{self.markup}")    
+            self.logger.info("Weaving %s using %s markup", self.target\_path, self.markup)    
+            with self.target\_path.open('w') as target\_file:    
+                for text in self.generate\_text(web):    
+                    self.linesWritten += text.count("\\n")    
+                    target\_file.write(text)    
+                        
+        def generate\_text(self, web: Web) -> Iterator[str]:    
+            self.env = Environment(    
+                loader=DictLoader(    
+                    self.template\_map[self.markup] \|    
+                    {'base\_weaver': base\_template,}    
+                ),    
+                autoescape=select\_autoescape()    
+            )    
+            self.env.filters \|= {    
+                "quote\_rules": self.quote\_rules[self.markup]    
+            }    
+            template = self.env.get\_template("base\_weaver")    
+            yield from template.generate(web=web)    
 
 ..
 
@@ -3136,117 +2068,44 @@ proper presentation in the code sample sections.
     :class: code
 
     
-
-    def rst\_quote\_rules(text: str) -> str:
+    def rst\_quote\_rules(text: str) -> str:    
+        quoted\_chars = [    
+            ('\\\\', r'\\\\'), # Must be first.    
+            ('\`', r'\\\`'),    
+            ('\_', r'\\\_'),     
+            ('\*', r'\\\*'),    
+            ('\|', r'\\\|'),    
+        ]    
+        clean = text    
+        for from\_, to\_ in quoted\_chars:    
+            clean = clean.replace(from\_, to\_)    
+        return clean    
     
-
-        quoted\_chars = [
+    def html\_quote\_rules(text: str) -> str:    
+        quoted\_chars = [    
+            ("&", "&amp;"),  # Must be first    
+            ("<", "&lt;"),    
+            (">", "&gt;"),    
+            ('"', "&quot;"),  # Only applies inside tags...    
+        ]    
+        clean = text    
+        for from\_, to\_ in quoted\_chars:    
+            clean = clean.replace(from\_, to\_)    
+        return clean    
     
-
-            ('\\\\', r'\\\\'), # Must be first.
+    def latex\_quote\_rules(text: str) -> str:    
+        quoted\_strings = [    
+            ("\\\\end{Verbatim}", "\\\\end\\\\,{Verbatim}"),  # Allow \\end{Verbatim} in a Verbatim context    
+            ("\\\\{", "\\\\\\\\,{"), # Prevent unexpected commands in Verbatim    
+            ("$", "\\\\$"), # Prevent unexpected math in Verbatim    
+        ]    
+        clean = text    
+        for from\_, to\_ in quoted\_strings:    
+            clean = clean.replace(from\_, to\_)    
+        return clean    
     
-
-            ('\`', r'\\\`'),
-    
-
-            ('\_', r'\\\_'), 
-    
-
-            ('\*', r'\\\*'),
-    
-
-            ('\|', r'\\\|'),
-    
-
-        ]
-    
-
-        clean = text
-    
-
-        for from\_, to\_ in quoted\_chars:
-    
-
-            clean = clean.replace(from\_, to\_)
-    
-
-        return clean
-    
-
-    
-
-    def html\_quote\_rules(text: str) -> str:
-    
-
-        quoted\_chars = [
-    
-
-            ("&", "&amp;"),  # Must be first
-    
-
-            ("<", "&lt;"),
-    
-
-            (">", "&gt;"),
-    
-
-            ('"', "&quot;"),  # Only applies inside tags...
-    
-
-        ]
-    
-
-        clean = text
-    
-
-        for from\_, to\_ in quoted\_chars:
-    
-
-            clean = clean.replace(from\_, to\_)
-    
-
-        return clean
-    
-
-    
-
-    def latex\_quote\_rules(text: str) -> str:
-    
-
-        quoted\_strings = [
-    
-
-            ("\\\\end{Verbatim}", "\\\\end\\\\,{Verbatim}"),  # Allow \\end{Verbatim} in a Verbatim context
-    
-
-            ("\\\\{", "\\\\\\\\,{"), # Prevent unexpected commands in Verbatim
-    
-
-            ("$", "\\\\$"), # Prevent unexpected math in Verbatim
-    
-
-        ]
-    
-
-        clean = text
-    
-
-        for from\_, to\_ in quoted\_strings:
-    
-
-            clean = clean.replace(from\_, to\_)
-    
-
-        return clean
-    
-
-    
-
-    def debug\_quote\_rules(text: str) -> str:
-    
-
-        return repr(text)
-    
+    def debug\_quote\_rules(text: str) -> str:    
+        return repr(text)    
 
 ..
 
@@ -3295,104 +2154,39 @@ the standard weaving structure.
     :class: code
 
     
-
-    debug\_weaver\_template = dedent("""\\
+    debug\_weaver\_template = dedent("""\\    
+        {%- macro text(command) -%}    
+        text: {{command}}    
+        {%- endmacro -%}    
+            
+        {%- macro begin\_code(chunk) %}    
+        begin\_code: {{chunk}}    
+        {%- endmacro -%}    
+            
+        {%- macro code(command) %}    
+        code: {{command}}    
+        {%- endmacro -%}    
+            
+        {%- macro ref(id) %}    
+        ref: {{id}}    
+        {%- endmacro -%}    
+            
+        {%- macro end\_code(chunk) %}    
+        end\_code: {{chunk}}    
+        {% endmacro -%}    
+            
+        {%- macro file\_xref(command) -%}    
+        file\_xref {{command.files}}    
+        {%- endmacro -%}    
+            
+        {%- macro macro\_xref(command) -%}    
+        macro\_xref {{command.macros}}    
+        {%- endmacro -%}    
     
-
-        {%- macro text(command) -%}
-    
-
-        text: {{command}}
-    
-
-        {%- endmacro -%}
-    
-
-        
-    
-
-        {%- macro begin\_code(chunk) %}
-    
-
-        begin\_code: {{chunk}}
-    
-
-        {%- endmacro -%}
-    
-
-        
-    
-
-        {%- macro code(command) %}
-    
-
-        code: {{command}}
-    
-
-        {%- endmacro -%}
-    
-
-        
-    
-
-        {%- macro ref(id) %}
-    
-
-        ref: {{id}}
-    
-
-        {%- endmacro -%}
-    
-
-        
-    
-
-        {%- macro end\_code(chunk) %}
-    
-
-        end\_code: {{chunk}}
-    
-
-        {% endmacro -%}
-    
-
-        
-    
-
-        {%- macro file\_xref(command) -%}
-    
-
-        file\_xref {{command.files}}
-    
-
-        {%- endmacro -%}
-    
-
-        
-    
-
-        {%- macro macro\_xref(command) -%}
-    
-
-        macro\_xref {{command.macros}}
-    
-
-        {%- endmacro -%}
-    
-
-    
-
-        {%- macro userid\_xref(command) -%}
-    
-
-        userid\_xref {{command.userids}}
-    
-
-        {%- endmacro -%}
-    
-
-        """)
-    
+        {%- macro userid\_xref(command) -%}    
+        userid\_xref {{command.userids}}    
+        {%- endmacro -%}    
+        """)    
 
 ..
 
@@ -3411,169 +2205,58 @@ The RST Templates produce ReStructuredText for the various web commands.
     :class: code
 
     
-
-    rst\_weaver\_template = dedent("""\\
-    
-
-        {%- macro text(command) -%}
-    
-
-        {{command.text}}
-    
-
-        {%- endmacro -%}
-    
-
-        
-    
-
-        {%- macro begin\_code(chunk) %}
-    
-
-        ..  \_\`{{chunk.full\_name or chunk.name}} ({{chunk.seq}})\`:
-    
-
-        ..  rubric:: {{chunk.full\_name or chunk.name}} ({{chunk.seq}}) {% if chunk.initial %}={% else %}+={% endif %}
-    
-
-        ..  parsed-literal::
-    
-
-            :class: code
-    
-
-        {% endmacro -%}
-    
-
-        
-    
-
-        {%- macro code(command) %}
-    
-
-            {{command.text \| quote\_rules}}
-    
-
-        {%- endmacro -%}
-    
-
-        
-    
-
-        {%- macro ref(id) %}
-    
-
-            \\N{RIGHTWARDS ARROW}\\ \`{{id.full\_name}} ({{id.seq}})\`\_
-    
-
-        {%- endmacro -%}
-    
-
-        
-    
-
-        {%- macro end\_code(chunk) %}
-    
-
-        ..
-    
-
-        
-    
-
-        ..  class:: small
-    
-
-        
-    
-
-            \\N{END OF PROOF} \*{{chunk.full\_name or chunk.name}} ({{chunk.seq}})\*
-    
-
+    rst\_weaver\_template = dedent("""\\    
+        {%- macro text(command) -%}    
+        {{command.text}}    
+        {%- endmacro -%}    
             
-    
-
-        {% endmacro -%}
-    
-
-        
-    
-
-        {%- macro file\_xref(command) -%}
-    
-
-        {% for file in command.files -%}
-    
-
-        :{{file.name}}:
-    
-
-            \\N{RIGHTWARDS ARROW}\\ \`{{file.name}} ({{file.seq}})\`\_
-    
-
-        {%- endfor %}
-    
-
-        {%- endmacro -%}
-    
-
-        
-    
-
-        {%- macro macro\_xref(command) -%}
-    
-
-        {% for macro in command.macros -%}
-    
-
-        :{{macro.full\_name}}:
-    
-
-            {% for d in macro.def\_list -%}\\N{RIGHTWARDS ARROW}\\ \`{{d.full\_name or d.name}} ({{d.seq}})\`\_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
-    
-
+        {%- macro begin\_code(chunk) %}    
+        ..  \_\`{{chunk.full\_name or chunk.name}} ({{chunk.seq}})\`:    
+        ..  rubric:: {{chunk.full\_name or chunk.name}} ({{chunk.seq}}) {% if chunk.initial %}={% else %}+={% endif %}    
+        ..  parsed-literal::    
+            :class: code    
+                
+        {% endmacro -%}    
             
-    
-
-        {% endfor %}
-    
-
-        {%- endmacro -%}
-    
-
-    
-
-        {%- macro userid\_xref(command) -%}
-    
-
-        {% for userid in command.userids -%}
-    
-
-        :{{userid.userid}}:
-    
-
-            {% for r in userid.ref\_list -%}\\N{RIGHTWARDS ARROW}\\ \`{{r.full\_name or r.name}} ({{r.seq}})\`\_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
-    
-
+        {%- macro code(command) %}    {{command.text \| quote\_rules}}{%- endmacro -%}    
             
+        {%- macro ref(id) %}    \\N{RIGHTWARDS ARROW}\\ \`{{id.full\_name}} ({{id.seq}})\`\_{%- endmacro -%}    
+            
+        {%- macro end\_code(chunk) %}    
+        ..    
+            
+        ..  class:: small    
+            
+            \\N{END OF PROOF} \*{{chunk.full\_name or chunk.name}} ({{chunk.seq}})\*    
+                
+        {% endmacro -%}    
+            
+        {%- macro file\_xref(command) -%}    
+        {% for file in command.files -%}    
+        :{{file.name}}:    
+            \\N{RIGHTWARDS ARROW}\\ \`{{file.name}} ({{file.seq}})\`\_    
+        {%- endfor %}    
+        {%- endmacro -%}    
+            
+        {%- macro macro\_xref(command) -%}    
+        {% for macro in command.macros -%}    
+        :{{macro.full\_name}}:    
+            {% for d in macro.def\_list -%}\\N{RIGHTWARDS ARROW}\\ \`{{d.full\_name or d.name}} ({{d.seq}})\`\_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}    
+                
+        {% endfor %}    
+        {%- endmacro -%}    
     
-
-        {% endfor %}
+        {%- macro userid\_xref(command) -%}    
+        {% for userid in command.userids -%}    
+        :{{userid.userid}}:    
+            {% for r in userid.ref\_list -%}\\N{RIGHTWARDS ARROW}\\ \`{{r.full\_name or r.name}} ({{r.seq}})\`\_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}    
+                
+        {% endfor %}    
+        {%- endmacro -%}    
+        """)    
     
-
-        {%- endmacro -%}
-    
-
-        """)
-    
-
-    
-
-    rst\_overrides\_template = dedent("""\\
-    
-
-        """)
-    
+    rst\_overrides\_template = dedent("""\\    
+        """)    
 
 ..
 
@@ -3595,169 +2278,57 @@ tailor HTML output via CSS changes, avoiding any HTML modifications.
     :class: code
 
     
-
-    html\_weaver\_template = dedent("""\\
+    html\_weaver\_template = dedent("""\\    
+        {%- macro text(command) -%}    
+        {{command.text}}    
+        {%- endmacro -%}    
+            
+        {%- macro begin\_code(chunk) %}    
+        <a name="pyweb\_{{chunk.seq}}"></a>    
+        <!--line number {{chunk.location}}-->    
+        <p><em>{{chunk.full\_name or chunk.name}} ({{chunk.seq}})</em> {% if chunk.initial %}={% else %}+={% endif %}</p>    
+        <pre><code>    
+        {%- endmacro -%}    
+            
+        {%- macro code(command) -%}{{command.text \| quote\_rules}}{%- endmacro -%}    
+            
+        {%- macro ref(id) %}&rarr;<a href="#pyweb\_{{id.seq}}"><em>{{id.full\_name}} ({{id.seq}})</em></a>{% endmacro -%}    
+            
+        {%- macro end\_code(chunk) %}    
+        </code></pre>    
+        <p>&#8718; <em>{{chunk.full\_name or chunk.name}} ({{chunk.seq}})</em>.    
+        </p>     
+        {% endmacro -%}    
+            
+        {%- macro file\_xref(command) %}    
+        <dl>    
+        {% for file in command.files -%}    
+          <dt>{{file.name}}</dt><dd>{{ref(file)}}</dd>    
+        {%- endfor %}    
+        </dl>    
+        {% endmacro -%}    
+            
+        {%- macro macro\_xref(command) %}    
+        <dl>    
+        {% for macro in command.macros -%}    
+          <dt>{{macro.full\_name}}<dt>    
+          <dd>{% for d in macro.def\_list -%}{{ref(d)}}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}</dd>    
+        {% endfor %}    
+        </dl>    
+        {% endmacro -%}    
     
-
-        {%- macro text(command) -%}
+        {%- macro userid\_xref(command) %}    
+        <dl>    
+        {% for userid in command.userids -%}    
+          <dt>{{userid.userid}}</dt>    
+          <dd>{% for r in userid.ref\_list -%}{{ref(r)}}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}</dd>    
+        {% endfor %}    
+        </dl>    
+        {% endmacro -%}    
+        """)    
     
-
-        {{command.text}}
-    
-
-        {%- endmacro -%}
-    
-
-        
-    
-
-        {%- macro begin\_code(chunk) %}
-    
-
-        <a name="pyweb\_{{chunk.seq}}"></a>
-    
-
-        <!--line number {{chunk.location}}-->
-    
-
-        <p><em>{{chunk.full\_name or chunk.name}} ({{chunk.seq}})</em> {% if chunk.initial %}={% else %}+={% endif %}</p>
-    
-
-        <pre><code>
-    
-
-        {%- endmacro -%}
-    
-
-        
-    
-
-        {%- macro code(command) -%}
-    
-
-        {{command.text \| quote\_rules}}
-    
-
-        {%- endmacro -%}
-    
-
-        
-    
-
-        {%- macro ref(id) %}
-    
-
-        &rarr;<a href="#pyweb\_{{id.seq}}"><em>{{id.full\_name}} ({{id.seq}})</em></a>
-    
-
-        {% endmacro -%}
-    
-
-        
-    
-
-        {%- macro end\_code(chunk) %}
-    
-
-        </code></pre>
-    
-
-        <p>&#8718; <em>{{chunk.full\_name or chunk.name}} ({{chunk.seq}})</em>.
-    
-
-        </p> 
-    
-
-        {% endmacro -%}
-    
-
-        
-    
-
-        {%- macro file\_xref(command) %}
-    
-
-        <dl>
-    
-
-        {% for file in command.files -%}
-    
-
-          <dt>{{file.name}}</dt><dd>{{ref(file)}}</dd>
-    
-
-        {%- endfor %}
-    
-
-        </dl>
-    
-
-        {% endmacro -%}
-    
-
-        
-    
-
-        {%- macro macro\_xref(command) %}
-    
-
-        <dl>
-    
-
-        {% for macro in command.macros -%}
-    
-
-          <dt>{{macro.full\_name}}<dt>
-    
-
-          <dd>{% for d in macro.def\_list -%}{{ref(d)}}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}</dd>
-    
-
-        {% endfor %}
-    
-
-        </dl>
-    
-
-        {% endmacro -%}
-    
-
-    
-
-        {%- macro userid\_xref(command) %}
-    
-
-        <dl>
-    
-
-        {% for userid in command.userids -%}
-    
-
-          <dt>{{userid.userid}}</dt>
-    
-
-          <dd>{% for r in userid.ref\_list -%}{{ref(r)}}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}</dd>
-    
-
-        {% endfor %}
-    
-
-        </dl>
-    
-
-        {% endmacro -%}
-    
-
-        """)
-    
-
-    
-
-    html\_overrides\_template = dedent("""\\
-    
-
-        """)
-    
+    html\_overrides\_template = dedent("""\\    
+        """)    
 
 ..
 
@@ -3777,158 +2348,53 @@ Common alternatives include ``listings`` and ``minted``.
     :class: code
 
     
-
-    latex\_weaver\_template = dedent("""\\
+    latex\_weaver\_template = dedent("""\\    
+        {%- macro text(command) -%}    
+        {{command.text}}    
+        {%- endmacro -%}    
+            
+        {%- macro begin\_code(chunk) %}    
+        \\\\label{pyweb-{{chunk.seq}}}    
+        \\\\begin{flushleft}    
+        \\\\textit{Code example {{chunk.full\_name or chunk.name}} ({{chunk.seq}})}    
+        \\\\begin{Verbatim}[commandchars=\\\\\\\\\\\\{\\\\},codes={\\\\catcode\`$$=3\\\\catcode\`^=7},frame=single]    
+        {%- endmacro -%}    
+            
+        {%- macro code(command) -%}{{command.text \| quote\_rules}}{%- endmacro -%}    
+            
+        {%- macro ref(id) %}$$\\\\rightarrow$$ Code Example {{id.full\_name}} ({{id.seq}}){% endmacro -%}    
+            
+        {%- macro end\_code(chunk) %}    
+        \\\\end{Verbatim}    
+        \\\\end{flushleft}    
+        {% endmacro -%}    
+            
+        {%- macro file\_xref(command) %}    
+        \\\\begin{itemize}    
+        {% for file in command.files -%}    
+          \\\\item {{file.name}}: {{ref(file)}}    
+        {%- endfor %}    
+        \\\\end{itemize}    
+        {% endmacro -%}    
+            
+        {%- macro macro\_xref(command) %}    
+        \\\\begin{itemize}    
+        {% for macro in command.macros -%}    
+          \\\\item {{macro.full\_name}} \\\\\\\\    
+                {% for d in macro.def\_list -%}{{ref(d)}}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}    
+        {% endfor %}    
+        \\\\end{itemize}    
+        {% endmacro -%}    
     
-
-        {%- macro text(command) -%}
-    
-
-        {{command.text}}
-    
-
-        {%- endmacro -%}
-    
-
-        
-    
-
-        {%- macro begin\_code(chunk) %}
-    
-
-        \\\\label{pyweb-{{chunk.seq}}}
-    
-
-        \\\\begin{flushleft}
-    
-
-        \\\\textit{Code example {{chunk.full\_name or chunk.name}} ({{chunk.seq}})}
-    
-
-        \\\\begin{Verbatim}[commandchars=\\\\\\\\\\\\{\\\\},codes={\\\\catcode\`$$=3\\\\catcode\`^=7},frame=single]
-    
-
-        {%- endmacro -%}
-    
-
-        
-    
-
-        {%- macro code(command) -%}
-    
-
-        {{command.text \| quote\_rules}}
-    
-
-        {%- endmacro -%}
-    
-
-        
-    
-
-        {%- macro ref(id) %}
-    
-
-        $$\\\\triangleright$$ Code Example {{id.full\_name}} ({{id.seq}})
-    
-
-        {% endmacro -%}
-    
-
-        
-    
-
-        {%- macro end\_code(chunk) %}
-    
-
-        \\\\end{Verbatim}
-    
-
-        \\\\end{flushleft}
-    
-
-        {% endmacro -%}
-    
-
-        
-    
-
-        {%- macro file\_xref(command) %}
-    
-
-        \\\\begin{itemize}
-    
-
-        {% for file in command.files -%}
-    
-
-          \\\\item {{file.name}}: {{ref(file)}}
-    
-
-        {%- endfor %}
-    
-
-        \\\\end{itemize}
-    
-
-        {% endmacro -%}
-    
-
-        
-    
-
-        {%- macro macro\_xref(command) %}
-    
-
-        \\\\begin{itemize}
-    
-
-        {% for macro in command.macros -%}
-    
-
-          \\\\item {{macro.full\_name}} \\\\\\\\
-    
-
-                {% for d in macro.def\_list -%}{{ref(d)}}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
-    
-
-        {% endfor %}
-    
-
-        \\\\end{itemize}
-    
-
-        {% endmacro -%}
-    
-
-    
-
-        {%- macro userid\_xref(command) %}
-    
-
-        \\\\begin{itemize}
-    
-
-        {% for userid in command.userids -%}
-    
-
-          \\\\item {{userid.userid}} \\\\\\\\
-    
-
-                {% for r in userid.ref\_list -%}{{ref(r)}}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
-    
-
-        {% endfor %}
-    
-
-        \\\\end{itemize}
-    
-
-        {% endmacro -%}
-    
-
-        """)
-    
+        {%- macro userid\_xref(command) %}    
+        \\\\begin{itemize}    
+        {% for userid in command.userids -%}    
+          \\\\item {{userid.userid}} \\\\\\\\    
+                {% for r in userid.ref\_list -%}{{ref(r)}}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}    
+        {% endfor %}    
+        \\\\end{itemize}    
+        {% endmacro -%}    
+        """)    
 
 ..
 
@@ -3945,78 +2411,30 @@ Common alternatives include ``listings`` and ``minted``.
     :class: code
 
     
-
-    base\_template = dedent("""\\
-    
-
-        {%- from 'default' import text, begin\_code, code, end\_code, file\_xref, macro\_xref, userid\_xref, ref, ref\_list -%}{#- default macros from rst\_weaver -#}
-    
-
-        {#- from 'overrides' import \*the names\* -#}{#- customized macros from WEB document -#}
-    
-
-        {% for chunk in web.chunks -%}
-    
-
-            {%- if chunk.typeid.OutputChunk or chunk.typeid.NamedChunk -%}
-    
-
-                {{begin\_code(chunk)}}
-    
-
-                {%- for command in chunk.commands -%}
-    
-
-                    {%- if command.typeid.CodeCommand -%}{{code(command)}}
-    
-
-                    {%- elif command.typeid.ReferenceCommand -%}{{ref(command)}}
-    
-
-                    {%- endif -%}
-    
-
-                {%- endfor -%}
-    
-
-                {{end\_code(chunk)}}
-    
-
-            {%- elif chunk.typeid.Chunk -%}
-    
-
-                {%- for command in chunk.commands -%}
-    
-
-                    {%- if command.typeid.TextCommand %}{{text(command)}}
-    
-
-                    {%- elif command.typeid.ReferenceCommand %}{{ref(command)}}
-    
-
-                    {%- elif command.typeid.FileXrefCommand %}{{file\_xref(command)}}
-    
-
-                    {%- elif command.typeid.MacroXrefCommand %}{{macro\_xref(command)}}
-    
-
-                    {%- elif command.typeid.UserIdXrefCommand %}{{userid\_xref(command)}}
-    
-
-                    {%- endif -%}
-    
-
-                {%- endfor -%}
-    
-
-            {%- endif -%}
-    
-
-        {%- endfor %}
-    
-
-    """)
-    
+    base\_template = dedent("""\\    
+        {%- from 'default' import text, begin\_code, code, end\_code, file\_xref, macro\_xref, userid\_xref, ref, ref\_list -%}{#- default macros from rst\_weaver -#}    
+        {#- from 'overrides' import \*the names\* -#}{#- customized macros from WEB document -#}    
+        {% for chunk in web.chunks -%}    
+            {%- if chunk.typeid.OutputChunk or chunk.typeid.NamedChunk -%}    
+                {{begin\_code(chunk)}}    
+                {%- for command in chunk.commands -%}    
+                    {%- if command.typeid.CodeCommand -%}{{code(command)}}    
+                    {%- elif command.typeid.ReferenceCommand -%}{{ref(command)}}    
+                    {%- endif -%}    
+                {%- endfor -%}    
+                {{end\_code(chunk)}}    
+            {%- elif chunk.typeid.Chunk -%}    
+                {%- for command in chunk.commands -%}    
+                    {%- if command.typeid.TextCommand %}{{text(command)}}    
+                    {%- elif command.typeid.ReferenceCommand %}{{ref(command)}}    
+                    {%- elif command.typeid.FileXrefCommand %}{{file\_xref(command)}}    
+                    {%- elif command.typeid.MacroXrefCommand %}{{macro\_xref(command)}}    
+                    {%- elif command.typeid.UserIdXrefCommand %}{{userid\_xref(command)}}    
+                    {%- endif -%}    
+                {%- endfor -%}    
+            {%- endif -%}    
+        {%- endfor %}    
+    """)    
 
 ..
 
@@ -4072,90 +2490,35 @@ to the additional parts of the definition.
     :class: code
 
     
-
-    class Tangler(Emitter):
+    class Tangler(Emitter):    
+        code\_indent = 0  #: Initial indent    
     
-
-        code\_indent = 0  #: Initial indent
+        def \_\_init\_\_(self, output: Path = Path.cwd()) -> None:    
+            super().\_\_init\_\_(output)    
+            self.context: list[int] = []    
+            self.resetIndent(self.code\_indent)  # Create context and initial lastIndent values    
+            # Summary    
+            self.linesWritten = 0    
+            self.totalFiles = 0    
+            self.totalLines = 0    
     
-
-    
-
-        def \_\_init\_\_(self, output: Path = Path.cwd()) -> None:
-    
-
-            super().\_\_init\_\_(output)
-    
-
-            self.context: list[int] = []
-    
-
-            self.resetIndent(self.code\_indent)  # Create context and initial lastIndent values
-    
-
-            # Summary
-    
-
-            self.linesWritten = 0
-    
-
-            self.totalFiles = 0
-    
-
-            self.totalLines = 0
-    
-
-    
-
-        def emit(self, web: Web) -> None:
-    
-
-            for file\_chunk in web.files:
-    
-
-                self.logger.info("Tangling %s", file\_chunk.name)
-    
-
-                self.emit\_file(web, file\_chunk)
-    
-
-                
-    
-
-        def emit\_file(self, web: Web, file\_chunk: Chunk) -> None:
-    
-
-            target\_path = self.output / file\_chunk.name
-    
-
-            self.logger.debug("Writing %s", target\_path)
-    
-
-            self.logger.debug("Chunk %r", file\_chunk)
-    
-
-            with target\_path.open("w") as target:
-    
-
-                # An initial command to provide indentations.
-    
-
-                for command in file\_chunk.commands:
-    
-
-                    command.tangle(self, target)
-    
-
+        def emit(self, web: Web) -> None:    
+            for file\_chunk in web.files:    
+                self.logger.info("Tangling %s", file\_chunk.name)    
+                self.emit\_file(web, file\_chunk)    
                     
+        def emit\_file(self, web: Web, file\_chunk: Chunk) -> None:    
+            target\_path = self.output / file\_chunk.name    
+            self.logger.debug("Writing %s", target\_path)    
+            self.logger.debug("Chunk %r", file\_chunk)    
+            with target\_path.open("w") as target:    
+                # An initial command to provide indentations.    
+                for command in file\_chunk.commands:    
+                    command.tangle(self, target)    
+                        
+            →\ `Emitter write a block of code with proper indents (20)`_    
     
-
-        →\ `Emitter write a block of code with proper indents (20)`_
-    
-
-    
-
-        →\ `Emitter indent control: set, clear and reset (21)`_
-    
+            →\ `Emitter indent control: set, clear and reset (21)`_    
 
 ..
 
@@ -4173,83 +2536,30 @@ to the additional parts of the definition.
     :class: code
 
     
-
-    def codeBlock(self, target: TextIO, text: str) -> None:
-    
-
-        """Indented write of text in a \`\`CodeCommand\`\`. 
-    
-
-        Counts lines and saves position to indent to when expanding \`\`
-    @
-    <...
-    @
-    >\`\` references.
-    
-
-        
-    
-
-        The \`\`lastIndent\`\` is the prevailing indent used in reference expansion.
-    
-
-        """
-    
-
-        indent = self.context[-1]
-    
-
-        if len(text) == 0:
-    
-
-            # Degenerate case of empty CodeText command
-    
-
-            pass
-    
-
-        elif text == '\\n':
-    
-
-            self.linesWritten += 1
-    
-
-            target.write(text)
-    
-
-            self.lastIndent = 0
-    
-
-            self.fragment = False  # Generally, also means lastIndent == 0
-    
-
-        else:
-    
-
-            if not self.fragment:
-    
-
-                # First thing after '\\n'
-    
-
-                target.write(indent\*' ')
-    
-
-                wrote = target.write(text)
-    
-
-                self.lastIndent = wrote
-    
-
-                self.fragment = True
-    
-
-            else:
-    
-
-                target.write(text)
-    
-
+    def codeBlock(self, target: TextIO, text: str) -> None:    
+        """Indented write of text in a \`\`CodeCommand\`\`.     
+        Counts lines and saves position to indent to when expanding \`\`    @    <...    @    >\`\` references.    
+            
+        The \`\`lastIndent\`\` is the prevailing indent used in reference expansion.    
+        """    
+        indent = self.context[-1]    
+        if len(text) == 0:    
+            # Degenerate case of empty CodeText command    
+            pass    
+        elif text == '\\n':    
+            self.linesWritten += 1    
+            target.write(text)    
+            self.lastIndent = 0    
+            self.fragment = False  # Generally, also means lastIndent == 0    
+        else:    
+            if not self.fragment:    
+                # First thing after '\\n'    
+                target.write(indent\*' ')    
+                wrote = target.write(text)    
+                self.lastIndent = wrote    
+                self.fragment = True    
+            else:    
+                target.write(text)    
     
 
 ..
@@ -4276,73 +2586,28 @@ to a default.
     :class: code
 
     
-
-    def addIndent(self, increment: int) -> None:
-    
-
-        self.lastIndent = self.context[-1]+increment
-    
-
-        self.context.append(self.lastIndent)
-    
-
-        self.log\_indent.debug("addIndent %d: %r", increment, self.context)
-    
-
-        
-    
-
-    def setIndent(self, indent: int) -> None:
-    
-
-        self.context.append(indent)
-    
-
-        self.lastIndent = self.context[-1]
-    
-
-        self.log\_indent.debug("setIndent %d: %r", indent, self.context)
-    
-
-        
-    
-
-    def clrIndent(self) -> None:
-    
-
-        if len(self.context) > 1:
-    
-
-            self.context.pop()
-    
-
-        self.lastIndent = self.context[-1]
-    
-
-        self.log\_indent.debug("clrIndent %r", self.context)
-    
-
-        
-    
-
-    def resetIndent(self, indent: int = 0) -> None:
-    
-
-        """Resets the indentation context."""
-    
-
-        self.lastIndent = indent
-    
-
-        self.context = [self.lastIndent]
-    
-
-        self.fragment = False  # Nothing written yet
-    
-
-        self.log\_indent.debug("resetIndent %d: %r", indent, self.context)
-    
-
+    def addIndent(self, increment: int) -> None:    
+        self.lastIndent = self.context[-1]+increment    
+        self.context.append(self.lastIndent)    
+        self.log\_indent.debug("addIndent %d: %r", increment, self.context)    
+            
+    def setIndent(self, indent: int) -> None:    
+        self.context.append(indent)    
+        self.lastIndent = self.context[-1]    
+        self.log\_indent.debug("setIndent %d: %r", indent, self.context)    
+            
+    def clrIndent(self) -> None:    
+        if len(self.context) > 1:    
+            self.context.pop()    
+        self.lastIndent = self.context[-1]    
+        self.log\_indent.debug("clrIndent %r", self.context)    
+            
+    def resetIndent(self, indent: int = 0) -> None:    
+        """Resets the indentation context."""    
+        self.lastIndent = indent    
+        self.context = [self.lastIndent]    
+        self.fragment = False  # Nothing written yet    
+        self.log\_indent.debug("resetIndent %d: %r", indent, self.context)    
     
 
 ..
@@ -4361,14 +2626,9 @@ An extension to the ``Tangler`` class that only updates a file if the content ha
 ..  parsed-literal::
     :class: code
 
-    import filecmp
-    
-
-    import tempfile
-    
-
-    import os
-    
+    import filecmp    
+    import tempfile    
+    import os    
 
 ..
 
@@ -4385,92 +2645,35 @@ An extension to the ``Tangler`` class that only updates a file if the content ha
     :class: code
 
     
-
-    class TanglerMake(Tangler):
+    class TanglerMake(Tangler):    
+        def emit\_file(self, web: Web, file\_chunk: Chunk) -> None:    
+            target\_path = self.output / file\_chunk.name    
+            self.logger.debug("Writing %s via a temp file", target\_path)    
+            self.logger.debug("Chunk %r", file\_chunk)    
     
-
-        def emit\_file(self, web: Web, file\_chunk: Chunk) -> None:
-    
-
-            target\_path = self.output / file\_chunk.name
-    
-
-            self.logger.debug("Writing %s via a temp file", target\_path)
-    
-
-            self.logger.debug("Chunk %r", file\_chunk)
-    
-
-    
-
-            fd, tempname = tempfile.mkstemp(dir=os.curdir)
-    
-
-            with os.fdopen(fd, "w") as target:
-    
-
-                for command in file\_chunk.commands:
-    
-
-                    command.tangle(self, target)
-    
-
+            fd, tempname = tempfile.mkstemp(dir=os.curdir)    
+            with os.fdopen(fd, "w") as target:    
+                for command in file\_chunk.commands:    
+                    command.tangle(self, target)    
+                        
+            try:    
+                same = filecmp.cmp(tempname, target\_path)    
+            except OSError as e:    
+                same = False  # Doesn't exist. (Could check for errno.ENOENT)    
                     
-    
-
-            try:
-    
-
-                same = filecmp.cmp(tempname, target\_path)
-    
-
-            except OSError as e:
-    
-
-                same = False  # Doesn't exist. (Could check for errno.ENOENT)
-    
-
-                
-    
-
-            if same:
-    
-
-                self.logger.info("Unchanged '%s'", target\_path)
-    
-
-                os.remove(tempname)
-    
-
-            else:
-    
-
-                # Windows requires the original file name be removed first.
-    
-
-                try: 
-    
-
-                    target\_path.unlink()
-    
-
-                except OSError as e:
-    
-
-                    pass  # Doesn't exist. (Could check for errno.ENOENT)
-    
-
-                target\_path.parent.mkdir(parents=True, exist\_ok=True)
-    
-
-                target\_path.hardlink\_to(tempname)
-    
-
-                os.remove(tempname)
-    
-
-                self.logger.info("Wrote %d lines to %s", self.linesWritten, target\_path)
-    
+            if same:    
+                self.logger.info("Unchanged '%s'", target\_path)    
+                os.remove(tempname)    
+            else:    
+                # Windows requires the original file name be removed first.    
+                try:     
+                    target\_path.unlink()    
+                except OSError as e:    
+                    pass  # Doesn't exist. (Could check for errno.ENOENT)    
+                target\_path.parent.mkdir(parents=True, exist\_ok=True)    
+                target\_path.hardlink\_to(tempname)    
+                os.remove(tempname)    
+                self.logger.info("Wrote %d lines to %s", self.linesWritten, target\_path)    
 
 ..
 
@@ -4501,32 +2704,14 @@ this object.
     :class: code
 
     
-
-    class Reference(abc.ABC):
-    
-
-        def \_\_init\_\_(self) -> None:
-    
-
-            self.logger = logging.getLogger(self.\_\_class\_\_.\_\_qualname\_\_)
-    
-
-            
-    
-
-        
-    @
-    abc.abstractmethod
-    
-
-        def chunkReferencedBy(self, aChunk: Chunk) -> list[Chunk]:
-    
-
-            """Return a list of Chunks."""
-    
-
-            ...
-    
+    class Reference(abc.ABC):    
+        def \_\_init\_\_(self) -> None:    
+            self.logger = logging.getLogger(self.\_\_class\_\_.\_\_qualname\_\_)    
+                
+            @    abc.abstractmethod    
+        def chunkReferencedBy(self, aChunk: Chunk) -> list[Chunk]:    
+            """Return a list of Chunks."""    
+            ...    
 
 ..
 
@@ -4547,18 +2732,10 @@ the ``Chunk`` instances referenced.
     :class: code
 
     
-
-    class SimpleReference(Reference):
-    
-
-        def chunkReferencedBy(self, aChunk: Chunk) -> list[Chunk]:
-    
-
-            refBy = [aChunk.referencedBy]
-    
-
-            return refBy
-    
+    class SimpleReference(Reference):    
+        def chunkReferencedBy(self, aChunk: Chunk) -> list[Chunk]:    
+            refBy = [aChunk.referencedBy]    
+            return refBy    
 
 ..
 
@@ -4581,50 +2758,20 @@ This requires walking through the ``Web`` to locate "parents" of each referenced
     :class: code
 
     
-
-    class TransitiveReference(Reference):
-    
-
-        def chunkReferencedBy(self, aChunk: Chunk) -> list[Chunk]:
-    
-
-            refBy = aChunk.referencedBy
-    
-
-            all\_refs = list(self.allParentsOf(refBy))
-    
-
-            self.logger.debug("References: %r(%d) %r", aChunk.name, aChunk.seq, all\_refs)
-    
-
-            return all\_refs
-    
-
-            
-    
-
-        
-    @
-    staticmethod
-    
-
-        def allParentsOf(chunk: Chunk \| None, depth: int = 0) -> Iterator[Chunk]:
-    
-
-            """Transitive closure of parents via recursive ascent.
-    
-
-            """
-    
-
-            if chunk:
-    
-
-                yield chunk
-    
-
-                yield from TransitiveReference.allParentsOf(chunk.referencedBy, depth+1)
-    
+    class TransitiveReference(Reference):    
+        def chunkReferencedBy(self, aChunk: Chunk) -> list[Chunk]:    
+            refBy = aChunk.referencedBy    
+            all\_refs = list(self.allParentsOf(refBy))    
+            self.logger.debug("References: %r(%d) %r", aChunk.name, aChunk.seq, all\_refs)    
+            return all\_refs    
+                
+            @    staticmethod    
+        def allParentsOf(chunk: Chunk \| None, depth: int = 0) -> Iterator[Chunk]:    
+            """Transitive closure of parents via recursive ascent.    
+            """    
+            if chunk:    
+                yield chunk    
+                yield from TransitiveReference.allParentsOf(chunk.referencedBy, depth+1)    
 
 ..
 
@@ -4645,16 +2792,11 @@ Input Parsing
     :class: code
 
     
-→\ `Tokenizer class - breaks input into tokens (45)`_
+    →\ `Tokenizer class - breaks input into tokens (45)`_    
     
-
+    →\ `Option Parser class - locates optional values on commands (47)`_    
     
-→\ `Option Parser class - locates optional values on commands (47)`_
-    
-
-    
-→\ `WebReader class - parses the input file, building the Web structure (28)`_
-    
+    →\ `WebReader class - parses the input file, building the Web structure (28)`_    
 
 ..
 
@@ -4757,169 +2899,61 @@ The class has the following attributes:
     :class: code
 
     
-
-    class WebReader:
+    class WebReader:    
+        """Parse an input file, creating Chunks and Commands."""    
     
-
-        """Parse an input file, creating Chunks and Commands."""
+        output\_option\_parser = OptionParser(    
+            OptionDef("-start", nargs=1, default=None),    
+            OptionDef("-end", nargs=1, default=""),    
+            OptionDef("argument", nargs='\*'),    
+        )    
     
-
-    
-
-        output\_option\_parser = OptionParser(
-    
-
-            OptionDef("-start", nargs=1, default=None),
-    
-
-            OptionDef("-end", nargs=1, default=""),
-    
-
-            OptionDef("argument", nargs='\*'),
-    
-
-        )
-    
-
-    
-
-        # TODO: Allow a numeric argument value in \`\`-indent\`\`
-    
-
-        definition\_option\_parser = OptionParser(
-    
-
-            OptionDef("-indent", nargs=0),
-    
-
-            OptionDef("-noindent", nargs=0),
-    
-
-            OptionDef("argument", nargs='\*'),
-    
-
-        )
-    
-
-        
-    
-
-        # Configuration
-    
-
-        command: str
-    
-
-        permitList: list[str]
-    
-
-        base\_path: Path
-    
-
-        
-    
-
-        # State of the reader
-    
-
-        filePath: Path  #: Input Path 
-    
-
-        \_source: TextIO  #: Input file
-    
-
-        tokenizer: Tokenizer  #: The tokenizer used to find commands
-    
-
-        content: list[Chunk]  #: The sequence of Chunk instances being built
-    
-
-        text\_command: type[Command]
-    
-
-    
-
-        def \_\_init\_\_(self, parent: Optional["WebReader"] = None) -> None:
-    
-
-            self.logger = logging.getLogger(self.\_\_class\_\_.\_\_qualname\_\_)
-    
-
-    
-
-            # Configuration comes from the parent or defaults if there is no parent.
-    
-
-            self.parent = parent
-    
-
-            if self.parent: 
-    
-
-                self.command = self.parent.command
-    
-
-                self.permitList = self.parent.permitList
-    
-
-            else: # Defaults until overridden
-    
-
-                self.command = '
-    @
-    '
-    
-
-                self.permitList = []
-    
-
-                        
-    
-
-            # Summary
-    
-
-            self.totalLines = 0
-    
-
-            self.totalFiles = 0
-    
-
-            self.errors = 0 
-    
-
+        # TODO: Allow a numeric argument value in \`\`-indent\`\`    
+        definition\_option\_parser = OptionParser(    
+            OptionDef("-indent", nargs=0),    
+            OptionDef("-noindent", nargs=0),    
+            OptionDef("argument", nargs='\*'),    
+        )    
             
-    
-
-            →\ `WebReader command literals (43)`_
-    
-
+        # Configuration    
+        command: str    
+        permitList: list[str]    
+        base\_path: Path    
             
+        # State of the reader    
+        filePath: Path  #: Input Path     
+        \_source: TextIO  #: Input file    
+        tokenizer: Tokenizer  #: The tokenizer used to find commands    
+        content: list[Chunk]  #: The sequence of Chunk instances being built    
+        text\_command: type[Command]    
     
-
-        def \_\_str\_\_(self) -> str:
+        def \_\_init\_\_(self, parent: Optional["WebReader"] = None) -> None:    
+            self.logger = logging.getLogger(self.\_\_class\_\_.\_\_qualname\_\_)    
     
-
-            return self.\_\_class\_\_.\_\_name\_\_
-    
-
+            # Configuration comes from the parent or defaults if there is no parent.    
+            self.parent = parent    
+            if self.parent:     
+                self.command = self.parent.command    
+                self.permitList = self.parent.permitList    
+            else: # Defaults until overridden    
+                self.command = '    @    '    
+                self.permitList = []    
+                            
+            # Summary    
+            self.totalLines = 0    
+            self.totalFiles = 0    
+            self.errors = 0     
+                
+                →\ `WebReader command literals (43)`_    
+                
+        def \_\_str\_\_(self) -> str:    
+            return self.\_\_class\_\_.\_\_name\_\_    
+                
+            →\ `WebReader location in the input stream (40)`_    
             
-    
-
-        →\ `WebReader location in the input stream (40)`_
-    
-
-        
-    
-
-        →\ `WebReader load the web (42)`_
-    
-
-        
-    
-
-        →\ `WebReader handle a command string (29)`_
-    
+            →\ `WebReader load the web (42)`_    
+            
+            →\ `WebReader handle a command string (29)`_    
 
 ..
 
@@ -4969,110 +3003,39 @@ A subclass can override ``handleCommand()`` to
     :class: code
 
     
-
-    def handleCommand(self, token: str) -> bool:
-    
-
-        self.logger.debug("Reading %r", token)
-    
-
-        
-    
-
-        match token[:2]:
-    
-
-            case self.cmdo:
-    
-
-                →\ `start an OutputChunk, adding it to the web (30)`_
-    
-
-            case self.cmdd:
-    
-
-                →\ `start a NamedChunk or NamedDocumentChunk, adding it to the web (31)`_
-    
-
-            case self.cmdi:
-    
-
-                →\ `include another file (32)`_
-    
-
-            case self.cmdrcurl \| self.cmdrbrak:
-    
-
-                →\ `finish a chunk, start a new Chunk adding it to the web (33)`_
-    
-
-            case self.cmdpipe:
-    
-
-                →\ `assign user identifiers to the current chunk (34)`_
-    
-
-            case self.cmdf:
-    
-
-                self.content[-1].commands.append(FileXrefCommand(self.location()))
-    
-
-            case self.cmdm:
-    
-
-                self.content[-1].commands.append(MacroXrefCommand(self.location()))
-    
-
-            case self.cmdu:
-    
-
-                self.content[-1].commands.append(UserIdXrefCommand(self.location()))
-    
-
-            case self.cmdlangl:
-    
-
-                →\ `add a reference command to the current chunk (35)`_
-    
-
-            case self.cmdlexpr:
-    
-
-                →\ `add an expression command to the current chunk (37)`_
-    
-
-            case self.cmdcmd:
-    
-
-                →\ `double at-sign replacement, append this character to previous TextCommand (38)`_
-    
-
-            case self.cmdlcurl \| self.cmdlbrak:
-    
-
-                # These should have been consumed as part of 
-    @
-    o and 
-    @
-    d parsing
-    
-
-                self.logger.error("Extra %r (possibly missing chunk name) near %r", token, self.location())
-    
-
-                self.errors += 1
-    
-
-            case \_:
-    
-
-                return False  # did not recogize the command
-    
-
-        return True  # did recognize the command
-    
-
+    def handleCommand(self, token: str) -> bool:    
+        self.logger.debug("Reading %r", token)    
+            
+        match token[:2]:    
+            case self.cmdo:    
+                    →\ `start an OutputChunk, adding it to the web (30)`_    
+            case self.cmdd:    
+                    →\ `start a NamedChunk or NamedDocumentChunk, adding it to the web (31)`_    
+            case self.cmdi:    
+                    →\ `include another file (32)`_    
+            case self.cmdrcurl \| self.cmdrbrak:    
+                    →\ `finish a chunk, start a new Chunk adding it to the web (33)`_    
+            case self.cmdpipe:    
+                    →\ `assign user identifiers to the current chunk (34)`_    
+            case self.cmdf:    
+                self.content[-1].commands.append(FileXrefCommand(self.location()))    
+            case self.cmdm:    
+                self.content[-1].commands.append(MacroXrefCommand(self.location()))    
+            case self.cmdu:    
+                self.content[-1].commands.append(UserIdXrefCommand(self.location()))    
+            case self.cmdlangl:    
+                    →\ `add a reference command to the current chunk (35)`_    
+            case self.cmdlexpr:    
+                    →\ `add an expression command to the current chunk (37)`_    
+            case self.cmdcmd:    
+                    →\ `double at-sign replacement, append this character to previous TextCommand (38)`_    
+            case self.cmdlcurl \| self.cmdlbrak:    
+                # These should have been consumed as part of     @    o and     @    d parsing    
+                self.logger.error("Extra %r (possibly missing chunk name) near %r", token, self.location())    
+                self.errors += 1    
+            case \_:    
+                return False  # did not recogize the command    
+        return True  # did recognize the command    
     
 
 ..
@@ -5101,47 +3064,19 @@ With some small additional changes, we could use ``OutputChunk(**options)``.
     :class: code
 
     
-
-    args = next(self.tokenizer)
-    
-
-    self.expect({self.cmdlcurl})
-    
-
-    options = self.output\_option\_parser.parse(args)
-    
-
-    newChunk = OutputChunk(
-    
-
-        name=' '.join(options['argument']),
-    
-
-        comment\_start=''.join(options.get('start', "# ")),
-    
-
-        comment\_end=''.join(options.get('end', "")),
-    
-
-    )
-    
-
-    newChunk.filePath = self.filePath
-    
-
-    self.content.append(newChunk)
-    
-
-    self.text\_command = CodeCommand
-    
-
-    # self.content[-1].commands.append(CodeCommand("", self.location()))
-    
-
-    # capture an OutputChunk up to 
-    @
-    }
-    
+    args = next(self.tokenizer)    
+    self.expect({self.cmdlcurl})    
+    options = self.output\_option\_parser.parse(args)    
+    newChunk = OutputChunk(    
+        name=' '.join(options['argument']),    
+        comment\_start=''.join(options.get('start', "# ")),    
+        comment\_end=''.join(options.get('end', "")),    
+    )    
+    newChunk.filePath = self.filePath    
+    self.content.append(newChunk)    
+    self.text\_command = CodeCommand    
+    # self.content[-1].commands.append(CodeCommand("", self.location()))    
+    # capture an OutputChunk up to     @    }    
 
 ..
 
@@ -5178,77 +3113,29 @@ If both are in the options, we should provide a warning.
     :class: code
 
     
-
-    args = next(self.tokenizer)
+    args = next(self.tokenizer)    
+    brack = self.expect({self.cmdlcurl, self.cmdlbrak})    
+    options = self.output\_option\_parser.parse(args)    
+    name = ' '.join(options['argument'])    
     
-
-    brack = self.expect({self.cmdlcurl, self.cmdlbrak})
+    if brack == self.cmdlbrak:    
+        newChunk = NamedDocumentChunk(name)    
+    elif brack == self.cmdlcurl:    
+        if '-noindent' in options:    
+            newChunk = NamedChunk\_Noindent(name)    
+        else:    
+            newChunk = NamedChunk(name)    
+    elif brack == None:    
+        newChunk = None    
+        pass # Error noted by expect()    
+    else:    
+        raise Error("Design Error")    
     
-
-    options = self.output\_option\_parser.parse(args)
-    
-
-    name = ' '.join(options['argument'])
-    
-
-    
-
-    if brack == self.cmdlbrak:
-    
-
-        newChunk = NamedDocumentChunk(name)
-    
-
-    elif brack == self.cmdlcurl:
-    
-
-        if '-noindent' in options:
-    
-
-            newChunk = NamedChunk\_Noindent(name)
-    
-
-        else:
-    
-
-            newChunk = NamedChunk(name)
-    
-
-    elif brack == None:
-    
-
-        newChunk = None
-    
-
-        pass # Error noted by expect()
-    
-
-    else:
-    
-
-        raise Error("Design Error")
-    
-
-    
-
-    if newChunk:
-    
-
-        self.content.append(newChunk)
-    
-
-    self.text\_command = CodeCommand
-    
-
-    # self.content[-1].commands.append(CodeCommand("", self.location()))
-    
-
-    # capture a NamedChunk up to 
-    @
-    } or 
-    @
-    ]
-    
+    if newChunk:    
+        self.content.append(newChunk)    
+    self.text\_command = CodeCommand    
+    # self.content[-1].commands.append(CodeCommand("", self.location()))    
+    # capture a NamedChunk up to     @    } or     @    ]    
 
 ..
 
@@ -5293,74 +3180,28 @@ can weave the test output file into a final, complete document.
     :class: code
 
     
-
-    incPath = Path(next(self.tokenizer).strip())
-    
-
-    try:
-    
-
-        include = WebReader(parent=self)
-    
-
-        if not incPath.is\_absolute():
-    
-
-            incPath = self.base\_path / incPath
-    
-
-        self.logger.info("Including '%s'", incPath)
-    
-
-        self.content.extend(include.load(incPath))
-    
-
-        self.totalLines += include.tokenizer.lineNumber
-    
-
-        self.totalFiles += include.totalFiles
-    
-
-        if include.errors:
-    
-
-            self.errors += include.errors
-    
-
-            self.logger.error("Errors in included file '%s', output is incomplete.", incPath)
-    
-
-    except Error as e:
-    
-
-        self.logger.error("Problems with included file '%s', output is incomplete.", incPath)
-    
-
-        self.errors += 1
-    
-
-    except IOError as e:
-    
-
-        self.logger.error("Problems finding included file '%s', output is incomplete.", incPath)
-    
-
-        # Discretionary -- sometimes we want to continue
-    
-
-        if self.cmdi in self.permitList: pass
-    
-
-        else: raise  # Seems heavy-handed, but, the file wasn't found!
-    
-
-    # Start a new context for text or commands \*after\* the \`\`
-    @
-    i\`\`.
-    
-
-    self.content.append(Chunk())
-    
+    incPath = Path(next(self.tokenizer).strip())    
+    try:    
+        include = WebReader(parent=self)    
+        if not incPath.is\_absolute():    
+            incPath = self.base\_path / incPath    
+        self.logger.info("Including '%s'", incPath)    
+        self.content.extend(include.load(incPath))    
+        self.totalLines += include.tokenizer.lineNumber    
+        self.totalFiles += include.totalFiles    
+        if include.errors:    
+            self.errors += include.errors    
+            self.logger.error("Errors in included file '%s', output is incomplete.", incPath)    
+    except Error as e:    
+        self.logger.error("Problems with included file '%s', output is incomplete.", incPath)    
+        self.errors += 1    
+    except IOError as e:    
+        self.logger.error("Problems finding included file '%s', output is incomplete.", incPath)    
+        # Discretionary -- sometimes we want to continue    
+        if self.cmdi in self.permitList: pass    
+        else: raise  # Seems heavy-handed, but, the file wasn't found!    
+    # Start a new context for text or commands \*after\* the \`\`    @    i\`\`.    
+    self.content.append(Chunk())    
 
 ..
 
@@ -5388,15 +3229,9 @@ For the base ``Chunk`` class, this would be false, but for all other subclasses 
     :class: code
 
     
-
-    # Start a new context for text or commands \*after\* this command.
-    
-
-    self.content.append(Chunk())
-    
-
-    self.text\_command = TextCommand
-    
+    # Start a new context for text or commands \*after\* this command.    
+    self.content.append(Chunk())    
+    self.text\_command = TextCommand    
 
 ..
 
@@ -5425,29 +3260,13 @@ These are accumulated and expanded by ``@u`` reference
     :class: code
 
     
-
-    try:
-    
-
-        names = next(self.tokenizer).strip().split()
-    
-
-        self.content[-1].def\_names.extend(names)
-    
-
-    except AttributeError:
-    
-
-        # Out of place 
-    @
-    \| user identifier command
-    
-
-        self.logger.error("Unexpected references near %r: %r", self.location(), token)
-    
-
-        self.errors += 1
-    
+    try:    
+        names = next(self.tokenizer).strip().split()    
+        self.content[-1].def\_names.extend(names)    
+    except AttributeError:    
+        # Out of place     @    \| user identifier command    
+        self.logger.error("Unexpected references near %r: %r", self.location(), token)    
+        self.errors += 1    
 
 ..
 
@@ -5467,21 +3286,11 @@ tokens from the input, the middle token is the referenced name.
     :class: code
 
     
-
-    # get the name, introduce into the named Chunk dictionary
-    
-
-    name = next(self.tokenizer).strip()
-    
-
-    closing = self.expect({self.cmdrangl})
-    
-
-    self.content[-1].commands.append(ReferenceCommand(name, self.location()))
-    
-
-    self.logger.debug("Reading %r %r", name, closing)
-    
+    # get the name, introduce into the named Chunk dictionary    
+    name = next(self.tokenizer).strip()    
+    closing = self.expect({self.cmdrangl})    
+    self.content[-1].commands.append(ReferenceCommand(name, self.location()))    
+    self.logger.debug("Reading %r %r", name, closing)    
 
 ..
 
@@ -5519,16 +3328,9 @@ An ``os.getcwd()`` could be changed to ``os.path.realpath('.')``.
     :class: code
 
     
-
-    import builtins
-    
-
-    import sys
-    
-
-    import platform
-    
-
+    import builtins    
+    import sys    
+    import platform    
     
 
 ..
@@ -5546,118 +3348,42 @@ An ``os.getcwd()`` could be changed to ``os.path.realpath('.')``.
     :class: code
 
     
-
-    # get the Python expression, create the expression result
-    
-
-    expression = next(self.tokenizer)
-    
-
-    self.expect({self.cmdrexpr})
-    
-
-    try:
-    
-
-        # Build Context
-    
-
-        # \*\*TODO:\*\* Parts of this are static.
-    
-
-        dangerous = {
-    
-
-            'breakpoint', 'compile', 'eval', 'exec', 'execfile', 'globals', 'help', 'input', 
-    
-
-            'memoryview', 'open', 'print', 'super', '\_\_import\_\_'
-    
-
-        }
-    
-
-        safe = types.SimpleNamespace(\*\*dict(
-    
-
-            (name, obj) 
-    
-
-            for name,obj in builtins.\_\_dict\_\_.items() 
-    
-
-            if name not in dangerous
-    
-
-        ))
-    
-
-        globals = dict(
-    
-
-            \_\_builtins\_\_=safe, 
-    
-
-            os=types.SimpleNamespace(path=os.path, getcwd=os.getcwd, name=os.name),
-    
-
-            time=time,
-    
-
-            datetime=datetime,
-    
-
-            platform=platform,
-    
-
-            theLocation=str(self.location()),
-    
-
-            theWebReader=self,
-    
-
-            theFile=self.filePath,
-    
-
-            thisApplication=sys.argv[0],
-    
-
-            \_\_version\_\_=\_\_version\_\_,  # Legacy compatibility. Deprecated.
-    
-
-            version=\_\_version\_\_,
-    
-
-            )
-    
-
-        # Evaluate
-    
-
-        result = str(eval(expression, globals))
-    
-
-    except Exception as exc:
-    
-
-        self.logger.error('Failure to process %r: result is %r', expression, exc)
-    
-
-        self.errors += 1
-    
-
-        result = f"
-    @
-    ({expression!r}: Error {exc!r}
-    @
-    )"
-    
-
-    cls = self.text\_command
-    
-
-    self.content[-1].commands.append(cls(result, self.location()))
-    
+    # get the Python expression, create the expression result    
+    expression = next(self.tokenizer)    
+    self.expect({self.cmdrexpr})    
+    try:    
+        # Build Context    
+        # \*\*TODO:\*\* Parts of this are static.    
+        dangerous = {    
+            'breakpoint', 'compile', 'eval', 'exec', 'execfile', 'globals', 'help', 'input',     
+            'memoryview', 'open', 'print', 'super', '\_\_import\_\_'    
+        }    
+        safe = types.SimpleNamespace(\*\*dict(    
+            (name, obj)     
+            for name,obj in builtins.\_\_dict\_\_.items()     
+            if name not in dangerous    
+        ))    
+        globals = dict(    
+            \_\_builtins\_\_=safe,     
+            os=types.SimpleNamespace(path=os.path, getcwd=os.getcwd, name=os.name),    
+            time=time,    
+            datetime=datetime,    
+            platform=platform,    
+            theLocation=str(self.location()),    
+            theWebReader=self,    
+            theFile=self.filePath,    
+            thisApplication=sys.argv[0],    
+            \_\_version\_\_=\_\_version\_\_,  # Legacy compatibility. Deprecated.    
+            version=\_\_version\_\_,    
+            )    
+        # Evaluate    
+        result = str(eval(expression, globals))    
+    except Exception as exc:    
+        self.logger.error('Failure to process %r: result is %r', expression, exc)    
+        self.errors += 1    
+        result = f"    @    ({expression!r}: Error {exc!r}    @    )"    
+    cls = self.text\_command    
+    self.content[-1].commands.append(cls(result, self.location()))    
 
 ..
 
@@ -5684,12 +3410,8 @@ largely seamless.
     :class: code
 
     
-
-    cls = self.text\_command
-    
-
-    self.content[-1].commands.append(cls(self.command, self.location()))
-    
+    cls = self.text\_command    
+    self.content[-1].commands.append(cls(self.command, self.location()))    
 
 ..
 
@@ -5711,55 +3433,22 @@ This is used by ``handleCommand()``.
     :class: code
 
     
-
-    def expect(self, tokens: set[str]) -> str \| None:
-    
-
-        """Compare next token with expectation, quietly skipping whitespace (i.e., \`\`\\n\`\`)."""
-    
-
-        try:
-    
-
-            t = next(self.tokenizer)
-    
-
-            while t == '\\n':
-    
-
-                t = next(self.tokenizer)
-    
-
-        except StopIteration:
-    
-
-            self.logger.error("At %r: end of input, %r not found", self.location(), tokens)
-    
-
-            self.errors += 1
-    
-
-            return None
-    
-
-        if t in tokens:
-    
-
-            return t
-    
-
-        else:
-    
-
-            self.logger.error("At %r: expected %r, found %r", self.location(), tokens, t)
-    
-
-            self.errors += 1
-    
-
-            return None
-    
-
+    def expect(self, tokens: set[str]) -> str \| None:    
+        """Compare next token with expectation, quietly skipping whitespace (i.e., \`\`\\n\`\`)."""    
+        try:    
+            t = next(self.tokenizer)    
+            while t == '\\n':    
+                t = next(self.tokenizer)    
+        except StopIteration:    
+            self.logger.error("At %r: end of input, %r not found", self.location(), tokens)    
+            self.errors += 1    
+            return None    
+        if t in tokens:    
+            return t    
+        else:    
+            self.logger.error("At %r: expected %r, found %r", self.location(), tokens, t)    
+            self.errors += 1    
+            return None    
     
 
 ..
@@ -5781,13 +3470,8 @@ to correctly reference the original input files.
     :class: code
 
     
-
-    def location(self) -> tuple[str, int]:
-    
-
-        return (str(self.filePath), self.tokenizer.lineNumber+1)
-    
-
+    def location(self) -> tuple[str, int]:    
+        return (str(self.filePath), self.tokenizer.lineNumber+1)    
     
 
 ..
@@ -5814,8 +3498,7 @@ is that it's always loading a single top-level web.
 ..  parsed-literal::
     :class: code
 
-    from typing import TextIO
-    
+    from typing import TextIO    
 
 ..
 
@@ -5832,142 +3515,51 @@ is that it's always loading a single top-level web.
     :class: code
 
     
-
-    def load(self, filepath: Path, source: TextIO \| None = None) -> list[Chunk]:
+    def load(self, filepath: Path, source: TextIO \| None = None) -> list[Chunk]:    
+        """Returns a flat list of chunks to be made into a Web.     
+        Also used to expand \`\`    @    i\`\` included files.    
+        """    
+        self.filePath = filepath    
+        self.base\_path = self.filePath.parent    
+        self.text\_command = TextCommand    
     
-
-        """Returns a flat list of chunks to be made into a Web. 
+        if source:    
+            self.\_source = source    
+            self.parse\_source()    
+        else:    
+            with self.filePath.open() as self.\_source:    
+                self.parse\_source()    
+        return self.content    
     
-
-        Also used to expand \`\`
-    @
-    i\`\` included files.
+    def parse\_source(self) -> None:    
+        """Builds a sequence of Chunks."""    
+        self.tokenizer = Tokenizer(self.\_source, self.command)    
+        self.totalFiles += 1    
     
-
-        """
+        # Initial anonymous chunk.    
+        self.content = [Chunk()]    
     
-
-        self.filePath = filepath
-    
-
-        self.base\_path = self.filePath.parent
-    
-
-        self.text\_command = TextCommand
-    
-
-    
-
-        if source:
-    
-
-            self.\_source = source
-    
-
-            self.parse\_source()
-    
-
-        else:
-    
-
-            with self.filePath.open() as self.\_source:
-    
-
-                self.parse\_source()
-    
-
-        return self.content
-    
-
-    
-
-    def parse\_source(self) -> None:
-    
-
-        """Builds a sequence of Chunks."""
-    
-
-        self.tokenizer = Tokenizer(self.\_source, self.command)
-    
-
-        self.totalFiles += 1
-    
-
-    
-
-        # Initial anonymous chunk.
-    
-
-        self.content = [Chunk()]
-    
-
-    
-
-        for token in self.tokenizer:
-    
-
-            if len(token) >= 2 and token.startswith(self.command):
-    
-
-                if self.handleCommand(token):
-    
-
-                    continue
-    
-
-                else:
-    
-
-                    self.logger.error('Unknown 
-    @
-    -command in input: %r near %r', token, self.location())
-    
-
-                    cls = self.text\_command
-    
-
-                    self.content[-1].commands.append(cls(token, self.location()))
-    
-
-            elif token:
-    
-
-                # Accumulate a non-empty block of text in the current chunk.
-    
-
-                # Output Chunk and Named Chunk should have CodeCommand 
-    
-
-                # Chunk should have TextCommand.
-    
-
-                cls = self.text\_command
-    
-
-                self.content[-1].commands.append(cls(token, self.location()))
-    
-
-            else:
-    
-
-                # Whitespace
-    
-
-                pass
-    
-
-        self.logger.debug("parse\_source: [")
-    
-
-        for c in self.content:
-    
-
-            self.logger.debug("  %r", c)
-    
-
-        self.logger.debug("]")
-    
-
+        for token in self.tokenizer:    
+            if len(token) >= 2 and token.startswith(self.command):    
+                if self.handleCommand(token):    
+                    continue    
+                else:    
+                    self.logger.error('Unknown     @    -command in input: %r near %r', token, self.location())    
+                    cls = self.text\_command    
+                    self.content[-1].commands.append(cls(token, self.location()))    
+            elif token:    
+                # Accumulate a non-empty block of text in the current chunk.    
+                # Output Chunk and Named Chunk should have CodeCommand     
+                # Chunk should have TextCommand.    
+                cls = self.text\_command    
+                self.content[-1].commands.append(cls(token, self.location()))    
+            else:    
+                # Whitespace    
+                pass    
+        self.logger.debug("parse\_source: [")    
+        for c in self.content:    
+            self.logger.debug("  %r", c)    
+        self.logger.debug("]")    
     
 
 ..
@@ -5992,67 +3584,27 @@ command character.
     :class: code
 
     
-
-    # Structural ("major") commands
+    # Structural ("major") commands    
+    self.cmdo = self.command+'o'    
+    self.cmdd = self.command+'d'    
+    self.cmdlcurl = self.command+'{'    
+    self.cmdrcurl = self.command+'}'    
+    self.cmdlbrak = self.command+'['    
+    self.cmdrbrak = self.command+']'    
+    self.cmdi = self.command+'i'    
     
-
-    self.cmdo = self.command+'o'
+    # Inline ("minor") commands    
+    self.cmdlangl = self.command+'<'    
+    self.cmdrangl = self.command+'>'    
+    self.cmdpipe = self.command+'\|'    
+    self.cmdlexpr = self.command+'('    
+    self.cmdrexpr = self.command+')'    
+    self.cmdcmd = self.command+self.command    
     
-
-    self.cmdd = self.command+'d'
-    
-
-    self.cmdlcurl = self.command+'{'
-    
-
-    self.cmdrcurl = self.command+'}'
-    
-
-    self.cmdlbrak = self.command+'['
-    
-
-    self.cmdrbrak = self.command+']'
-    
-
-    self.cmdi = self.command+'i'
-    
-
-    
-
-    # Inline ("minor") commands
-    
-
-    self.cmdlangl = self.command+'<'
-    
-
-    self.cmdrangl = self.command+'>'
-    
-
-    self.cmdpipe = self.command+'\|'
-    
-
-    self.cmdlexpr = self.command+'('
-    
-
-    self.cmdrexpr = self.command+')'
-    
-
-    self.cmdcmd = self.command+self.command
-    
-
-    
-
-    # Content "minor" commands
-    
-
-    self.cmdf = self.command+'f'
-    
-
-    self.cmdm = self.command+'m'
-    
-
-    self.cmdu = self.command+'u'
-    
+    # Content "minor" commands    
+    self.cmdf = self.command+'f'    
+    self.cmdm = self.command+'m'    
+    self.cmdu = self.command+'u'    
 
 ..
 
@@ -6109,13 +3661,8 @@ exception.
     :class: code
 
     
-
-    import re
-    
-
-    from collections.abc import Iterator, Iterable
-    
-
+    import re    
+    from collections.abc import Iterator, Iterable    
     
 
 ..
@@ -6133,51 +3680,20 @@ exception.
     :class: code
 
     
-
-    class Tokenizer(Iterator[str]):
-    
-
-        def \_\_init\_\_(self, stream: TextIO, command\_char: str='
-    @
-    ') -> None:
-    
-
-            self.command = command\_char
-    
-
-            self.parsePat = re.compile(f'({self.command}.\|\\\\n)')
-    
-
-            self.token\_iter = (t for t in self.parsePat.split(stream.read()) if len(t) != 0)
-    
-
-            self.lineNumber = 0
-    
-
-            
-    
-
-        def \_\_next\_\_(self) -> str:
-    
-
-            token = next(self.token\_iter)
-    
-
-            self.lineNumber += token.count('\\n')
-    
-
-            return token
-    
-
-            
-    
-
-        def \_\_iter\_\_(self) -> Iterator[str]:
-    
-
-            return self
-    
-
+    class Tokenizer(Iterator[str]):    
+        def \_\_init\_\_(self, stream: TextIO, command\_char: str='    @    ') -> None:    
+            self.command = command\_char    
+            self.parsePat = re.compile(f'({self.command}.\|\\\\n)')    
+            self.token\_iter = (t for t in self.parsePat.split(stream.read()) if len(t) != 0)    
+            self.lineNumber = 0    
+                
+        def \_\_next\_\_(self) -> str:    
+            token = next(self.token\_iter)    
+            self.lineNumber += token.count('\\n')    
+            return token    
+                
+        def \_\_iter\_\_(self) -> Iterator[str]:    
+            return self    
     
 
 ..
@@ -6218,10 +3734,7 @@ two commands.
     :class: code
 
     
-
-    import shlex
-    
-
+    import shlex    
     
 
 ..
@@ -6253,9 +3766,7 @@ The idea is to parallel ``argparse.add_argument()`` syntax.
     :class: code
 
     
-
-    class ParseError(Exception): pass
-    
+    class ParseError(Exception): pass    
 
 ..
 
@@ -6272,18 +3783,10 @@ The idea is to parallel ``argparse.add_argument()`` syntax.
     :class: code
 
     
-
-    class OptionDef:
-    
-
-        def \_\_init\_\_(self, name: str, \*\*kw: Any) -> None:
-    
-
-            self.name = name
-    
-
-            self.\_\_dict\_\_.update(kw)
-    
+    class OptionDef:    
+        def \_\_init\_\_(self, name: str, \*\*kw: Any) -> None:    
+            self.name = name    
+            self.\_\_dict\_\_.update(kw)    
 
 ..
 
@@ -6304,153 +3807,55 @@ final argument value.
     :class: code
 
     
-
-    class OptionParser:
-    
-
-        def \_\_init\_\_(self, \*arg\_defs: Any) -> None:
-    
-
-            self.args = dict((arg.name, arg) for arg in arg\_defs)
-    
-
-            self.trailers = [k for k in self.args.keys() if not k.startswith('-')]
-    
-
-            
-    
-
-        def parse(self, text: str) -> dict[str, list[str]]:
-    
-
-            try:
-    
-
-                word\_iter = iter(shlex.split(text))
-    
-
-            except ValueError as e:
-    
-
-                raise Error(f"Error parsing options in {text!r}")
-    
-
-            options = dict(self.\_group(word\_iter))
-    
-
-            return options
-    
-
-            
-    
-
-        def \_group(self, word\_iter: Iterator[str]) -> Iterator[tuple[str, list[str]]]:
-    
-
-            option: str \| None
-    
-
-            value: list[str]
-    
-
-            final: list[str]
-    
-
-            option, value, final = None, [], []
-    
-
-            for word in word\_iter:
-    
-
-                if word == '--':
-    
-
-                    if option:
-    
-
-                        yield option, value
-    
-
-                    try:
-    
-
-                        final = [next(word\_iter)] 
-    
-
-                    except StopIteration:
-    
-
-                        final = []  # Special case of '--' at the end.
-    
-
-                    break
-    
-
-                elif word.startswith('-'):
-    
-
-                    if word in self.args:
-    
-
-                        if option: 
-    
-
-                            yield option, value
-    
-
-                        option, value = word, []
-    
-
-                    else:
-    
-
-                        raise ParseError(f"Unknown option {word!r}")
-    
-
-                else:
-    
-
-                    if option:
-    
-
-                        if self.args[option].nargs == len(value):
-    
-
-                            yield option, value
-    
-
-                            final = [word]
-    
-
-                            break
-    
-
-                        else:                
-    
-
-                            value.append(word)
-    
-
-                    else:
-    
-
-                        final = [word]
-    
-
-                        break
-    
-
-            # In principle, we step through the trailers based on nargs counts.
-    
-
-            for word in word\_iter:
-    
-
-                final.append(word)
-    
-
-            yield self.trailers[0], final
-    
+    class OptionParser:    
+        def \_\_init\_\_(self, \*arg\_defs: Any) -> None:    
+            self.args = dict((arg.name, arg) for arg in arg\_defs)    
+            self.trailers = [k for k in self.args.keys() if not k.startswith('-')]    
+                
+        def parse(self, text: str) -> dict[str, list[str]]:    
+            try:    
+                word\_iter = iter(shlex.split(text))    
+            except ValueError as e:    
+                raise Error(f"Error parsing options in {text!r}")    
+            options = dict(self.\_group(word\_iter))    
+            return options    
+                
+        def \_group(self, word\_iter: Iterator[str]) -> Iterator[tuple[str, list[str]]]:    
+            option: str \| None    
+            value: list[str]    
+            final: list[str]    
+            option, value, final = None, [], []    
+            for word in word\_iter:    
+                if word == '--':    
+                    if option:    
+                        yield option, value    
+                    try:    
+                        final = [next(word\_iter)]     
+                    except StopIteration:    
+                        final = []  # Special case of '--' at the end.    
+                    break    
+                elif word.startswith('-'):    
+                    if word in self.args:    
+                        if option:     
+                            yield option, value    
+                        option, value = word, []    
+                    else:    
+                        raise ParseError(f"Unknown option {word!r}")    
+                else:    
+                    if option:    
+                        if self.args[option].nargs == len(value):    
+                            yield option, value    
+                            final = [word]    
+                            break    
+                        else:                    
+                            value.append(word)    
+                    else:    
+                        final = [word]    
+                        break    
+            # In principle, we step through the trailers based on nargs counts.    
+            for word in word\_iter:    
+                final.append(word)    
+            yield self.trailers[0], final    
 
 ..
 
@@ -6523,9 +3928,7 @@ but merely creates a distinct class to facilitate writing ``except`` statements.
     :class: code
 
     
-
-    class Error(Exception): pass
-    
+    class Error(Exception): pass    
 
 ..
 
@@ -6586,16 +3989,11 @@ that defines the application options, inputs and results.
     :class: code
 
     
-→\ `Action superclass has common features of all actions (52)`_
-    
-→\ `ActionSequence subclass that holds a sequence of other actions (55)`_
-    
-→\ `WeaveAction subclass initiates the weave action (58)`_
-    
-→\ `TangleAction subclass initiates the tangle action (61)`_
-    
-→\ `LoadAction subclass loads the document web (64)`_
-    
+    →\ `Action superclass has common features of all actions (52)`_    
+    →\ `ActionSequence subclass that holds a sequence of other actions (55)`_    
+    →\ `WeaveAction subclass initiates the weave action (58)`_    
+    →\ `TangleAction subclass initiates the tangle action (61)`_    
+    →\ `LoadAction subclass loads the document web (64)`_    
 
 ..
 
@@ -6649,52 +4047,21 @@ An ``Action`` has a number of common attributes.
     :class: code
 
     
-
-    class Action:
-    
-
-        """An action performed by pyWeb."""
-    
-
-        start: float
-    
-
-        options: argparse.Namespace
-    
-
-        
-    
-
-        def \_\_init\_\_(self, name: str) -> None:
-    
-
-            self.name = name
-    
-
-            self.logger = logging.getLogger(self.\_\_class\_\_.\_\_qualname\_\_)
-    
-
+    class Action:    
+        """An action performed by pyWeb."""    
+        start: float    
+        options: argparse.Namespace    
             
-    
-
-        def \_\_str\_\_(self) -> str:
-    
-
-            return f"{self.name!s} [{self.web!s}]"
-    
-
+        def \_\_init\_\_(self, name: str) -> None:    
+            self.name = name    
+            self.logger = logging.getLogger(self.\_\_class\_\_.\_\_qualname\_\_)    
+                
+        def \_\_str\_\_(self) -> str:    
+            return f"{self.name!s} [{self.web!s}]"    
+                
+            →\ `Action call method actually does the real work (53)`_    
             
-    
-
-        →\ `Action call method actually does the real work (53)`_
-    
-
-        
-    
-
-        →\ `Action final summary of what was done (54)`_
-    
-
+            →\ `Action final summary of what was done (54)`_    
     
 
 ..
@@ -6716,19 +4083,10 @@ by a subclass.
     :class: code
 
     
-
-    def \_\_call\_\_(self, options: argparse.Namespace) -> None:
-    
-
-        self.logger.info("Starting %s", self.name)
-    
-
-        self.options = options
-    
-
-        self.start = time.process\_time()
-    
-
+    def \_\_call\_\_(self, options: argparse.Namespace) -> None:    
+        self.logger.info("Starting %s", self.name)    
+        self.options = options    
+        self.start = time.process\_time()    
     
 
 ..
@@ -6749,25 +4107,12 @@ statistics for this action.
     :class: code
 
     
-
-    def duration(self) -> float:
-    
-
-        """Return duration of the action."""
-    
-
-        return (self.start and time.process\_time()-self.start) or 0
-    
-
-        
-    
-
-    def summary(self) -> str:
-    
-
-        return f"{self.name!s} in {self.duration():0.3f} sec."
-    
-
+    def duration(self) -> float:    
+        """Return duration of the action."""    
+        return (self.start and time.process\_time()-self.start) or 0    
+            
+    def summary(self) -> str:    
+        return f"{self.name!s} in {self.duration():0.3f} sec."    
     
 
 ..
@@ -6801,46 +4146,19 @@ an ``append()`` method that is used to construct the sequence of actions.
     :class: code
 
     
-
-    class ActionSequence(Action):
-    
-
-        """An action composed of a sequence of other actions."""
-    
-
-        def \_\_init\_\_(self, name: str, opSequence: list[Action] \| None = None) -> None:
-    
-
-            super().\_\_init\_\_(name)
-    
-
-            if opSequence: self.opSequence = opSequence
-    
-
-            else: self.opSequence = []
-    
-
-            
-    
-
-        def \_\_str\_\_(self) -> str:
-    
-
-            return "; ".join([str(x) for x in self.opSequence])
-    
-
-            
-    
-
-        →\ `ActionSequence call method delegates the sequence of ations (56)`_
-    
-
-            
-    
-
-        →\ `ActionSequence summary summarizes each step (57)`_
-    
-
+    class ActionSequence(Action):    
+        """An action composed of a sequence of other actions."""    
+        def \_\_init\_\_(self, name: str, opSequence: list[Action] \| None = None) -> None:    
+            super().\_\_init\_\_(name)    
+            if opSequence: self.opSequence = opSequence    
+            else: self.opSequence = []    
+                
+        def \_\_str\_\_(self) -> str:    
+            return "; ".join([str(x) for x in self.opSequence])    
+                
+            →\ `ActionSequence call method delegates the sequence of ations (56)`_    
+                
+            →\ `ActionSequence summary summarizes each step (57)`_    
     
 
 ..
@@ -6863,19 +4181,10 @@ sub-action.
     :class: code
 
     
-
-    def \_\_call\_\_(self, options: argparse.Namespace) -> None:
-    
-
-        super().\_\_call\_\_(options)
-    
-
-        for o in self.opSequence:
-    
-
-            o(self.options)
-    
-
+    def \_\_call\_\_(self, options: argparse.Namespace) -> None:    
+        super().\_\_call\_\_(options)    
+        for o in self.opSequence:    
+            o(self.options)    
     
 
 ..
@@ -6896,13 +4205,8 @@ statistics for each step of this action.
     :class: code
 
     
-
-    def summary(self) -> str:
-    
-
-        return ", ".join([o.summary() for o in self.opSequence])
-    
-
+    def summary(self) -> str:    
+        return ", ".join([o.summary() for o in self.opSequence])    
     
 
 ..
@@ -6934,39 +4238,17 @@ Otherwise, the ``web.language()`` method function is used to guess what weaver t
     :class: code
 
     
-
-    class WeaveAction(Action):
+    class WeaveAction(Action):    
+        """Weave the final document."""    
+        def \_\_init\_\_(self) -> None:    
+            super().\_\_init\_\_("Weave")    
+                
+        def \_\_str\_\_(self) -> str:    
+            return f"{self.name!s} [{self.web!s}, {self.options.theWeaver!s}]"    
     
-
-        """Weave the final document."""
-    
-
-        def \_\_init\_\_(self) -> None:
-    
-
-            super().\_\_init\_\_("Weave")
-    
-
+            →\ `WeaveAction call method to pick the language (59)`_    
             
-    
-
-        def \_\_str\_\_(self) -> str:
-    
-
-            return f"{self.name!s} [{self.web!s}, {self.options.theWeaver!s}]"
-    
-
-    
-
-        →\ `WeaveAction call method to pick the language (59)`_
-    
-
-        
-    
-
-        →\ `WeaveAction summary of language choice (60)`_
-    
-
+            →\ `WeaveAction summary of language choice (60)`_    
     
 
 ..
@@ -6991,52 +4273,21 @@ is never defined.
     :class: code
 
     
-
-    def \_\_call\_\_(self, options: argparse.Namespace) -> None:
-    
-
-        super().\_\_call\_\_(options)
-    
-
-        if not self.options.weaver: 
-    
-
-            # Examine first few chars of first chunk of web to determine language
-    
-
-            self.options.weaver = self.web.language() 
-    
-
-            self.logger.info("Using %s", self.options.theWeaver)
-    
-
-        self.options.theWeaver.reference\_style = self.options.reference\_style
-    
-
-        self.options.theWeaver.output = self.options.output
-    
-
-        try:
-    
-
-            self.options.theWeaver.set\_markup(self.options.weaver)
-    
-
-            self.options.theWeaver.emit(self.options.web)
-    
-
-            self.logger.info("Finished Normally")
-    
-
-        except Error as e:
-    
-
-            self.logger.error("Problems weaving document from %r (weave file is faulty).", self.options.web.web\_path)
-    
-
-            #raise
-    
-
+    def \_\_call\_\_(self, options: argparse.Namespace) -> None:    
+        super().\_\_call\_\_(options)    
+        if not self.options.weaver:     
+            # Examine first few chars of first chunk of web to determine language    
+            self.options.weaver = self.web.language()     
+            self.logger.info("Using %s", self.options.theWeaver)    
+        self.options.theWeaver.reference\_style = self.options.reference\_style    
+        self.options.theWeaver.output = self.options.output    
+        try:    
+            self.options.theWeaver.set\_markup(self.options.weaver)    
+            self.options.theWeaver.emit(self.options.web)    
+            self.logger.info("Finished Normally")    
+        except Error as e:    
+            self.logger.error("Problems weaving document from %r (weave file is faulty).", self.options.web.web\_path)    
+            #raise    
     
 
 ..
@@ -7058,25 +4309,12 @@ statistics for the weave action.
     :class: code
 
     
-
-    def summary(self) -> str:
-    
-
-        if self.options.theWeaver and self.options.theWeaver.linesWritten > 0:
-    
-
-            return (
-    
-
-                f"{self.name!s} {self.options.theWeaver.linesWritten:d} lines in {self.duration():0.3f} sec."
-    
-
-            )
-    
-
-        return f"did not {self.name!s}"
-    
-
+    def summary(self) -> str:    
+        if self.options.theWeaver and self.options.theWeaver.linesWritten > 0:    
+            return (    
+                f"{self.name!s} {self.options.theWeaver.linesWritten:d} lines in {self.duration():0.3f} sec."    
+            )    
+        return f"did not {self.name!s}"    
     
 
 ..
@@ -7107,31 +4345,14 @@ The options **must** include ``theTangler``, with the ``Tangler`` instance to be
     :class: code
 
     
-
-    class TangleAction(Action):
-    
-
-        """Tangle source files."""
-    
-
-        def \_\_init\_\_(self) -> None:
-    
-
-            super().\_\_init\_\_("Tangle")
-    
-
+    class TangleAction(Action):    
+        """Tangle source files."""    
+        def \_\_init\_\_(self) -> None:    
+            super().\_\_init\_\_("Tangle")    
+                
+            →\ `TangleAction call method does tangling of the output files (62)`_    
             
-    
-
-        →\ `TangleAction call method does tangling of the output files (62)`_
-    
-
-        
-    
-
-        →\ `TangleAction summary method provides total lines tangled (63)`_
-    
-
+            →\ `TangleAction summary method provides total lines tangled (63)`_    
     
 
 ..
@@ -7154,34 +4375,15 @@ with any of ``@d`` or ``@o``  and use ``@{`` ``@}`` brackets.
     :class: code
 
     
-
-    def \_\_call\_\_(self, options: argparse.Namespace) -> None:
-    
-
-        super().\_\_call\_\_(options)
-    
-
-        self.options.theTangler.include\_line\_numbers = self.options.tangler\_line\_numbers
-    
-
-        self.options.theTangler.output = self.options.output
-    
-
-        try:
-    
-
-            self.options.theTangler.emit(self.options.web)
-    
-
-        except Error as e:
-    
-
-            self.logger.error("Problems tangling outputs from %r (tangle files are faulty).", self.options.web.web\_path)
-    
-
-            #raise
-    
-
+    def \_\_call\_\_(self, options: argparse.Namespace) -> None:    
+        super().\_\_call\_\_(options)    
+        self.options.theTangler.include\_line\_numbers = self.options.tangler\_line\_numbers    
+        self.options.theTangler.output = self.options.output    
+        try:    
+            self.options.theTangler.emit(self.options.web)    
+        except Error as e:    
+            self.logger.error("Problems tangling outputs from %r (tangle files are faulty).", self.options.web.web\_path)    
+            #raise    
     
 
 ..
@@ -7202,25 +4404,12 @@ statistics for the tangle action.
     :class: code
 
     
-
-    def summary(self) -> str:
-    
-
-        if self.options.theTangler and self.options.theTangler.linesWritten > 0:
-    
-
-            return (
-    
-
-                f"{self.name!s} {self.options.theTangler.totalLines:d} lines in {self.duration():0.3f} sec."
-    
-
-            )
-    
-
-        return f"did not {self.name!r}"
-    
-
+    def summary(self) -> str:    
+        if self.options.theTangler and self.options.theTangler.linesWritten > 0:    
+            return (    
+                f"{self.name!s} {self.options.theTangler.totalLines:d} lines in {self.duration():0.3f} sec."    
+            )    
+        return f"did not {self.name!r}"    
     
 
 ..
@@ -7253,40 +4442,17 @@ The options **must** include ``webReader``, with the ``WebReader`` instance to b
     :class: code
 
     
-
-    class LoadAction(Action):
-    
-
-        """Load the source web."""
-    
-
-        def \_\_init\_\_(self) -> None:
-    
-
-            super().\_\_init\_\_("Load")
-    
-
+    class LoadAction(Action):    
+        """Load the source web."""    
+        def \_\_init\_\_(self) -> None:    
+            super().\_\_init\_\_("Load")    
+                
+        def \_\_str\_\_(self) -> str:    
+            return f"Load [{self.webReader!s}, {self.options.web!s}]"    
+                
+            →\ `LoadAction call method loads the input files (65)`_    
             
-    
-
-        def \_\_str\_\_(self) -> str:
-    
-
-            return f"Load [{self.webReader!s}, {self.options.web!s}]"
-    
-
-            
-    
-
-        →\ `LoadAction call method loads the input files (65)`_
-    
-
-        
-    
-
-        →\ `LoadAction summary provides lines read (66)`_
-    
-
+            →\ `LoadAction summary provides lines read (66)`_    
     
 
 ..
@@ -7323,81 +4489,31 @@ exceptions due to incorrect inputs.
     :class: code
 
     
-
-    def \_\_call\_\_(self, options: argparse.Namespace) -> None:
+    def \_\_call\_\_(self, options: argparse.Namespace) -> None:    
+        super().\_\_call\_\_(options)    
+        self.webReader = self.options.webReader    
+        self.webReader.command = self.options.command    
+        self.webReader.permitList = self.options.permitList    
+        self.logger.debug("Reader Class %s", self.webReader.\_\_class\_\_.\_\_name\_\_)    
     
-
-        super().\_\_call\_\_(options)
-    
-
-        self.webReader = self.options.webReader
-    
-
-        self.webReader.command = self.options.command
-    
-
-        self.webReader.permitList = self.options.permitList
-    
-
-        self.logger.debug("Reader Class %s", self.webReader.\_\_class\_\_.\_\_name\_\_)
-    
-
-    
-
-        error = f"Problems with source file {self.options.source\_path!r}, no output produced."
-    
-
-        try:
-    
-
-            chunks = self.webReader.load(self.options.source\_path)
-    
-
-            if self.webReader.errors != 0:
-    
-
-                raise Error("Syntax Errors in the Web")
-    
-
-            self.logger.debug("Read %d Chunks", len(chunks))
-    
-
-            self.options.web = Web(chunks)
-    
-
-            self.options.web.web\_path = self.options.source\_path
-    
-
-            self.logger.debug("Web contains %3d chunks", len(self.options.web.chunks))
-    
-
-            self.logger.debug("Web defines  %3d files", len(self.options.web.files))
-    
-
-            self.logger.debug("Web defines  %3d macros", len(self.options.web.macros))
-    
-
-            self.logger.debug("Web defines  %3d names", len(self.options.web.userids))
-    
-
-        except Error as e:
-    
-
-            self.logger.error(error)
-    
-
-            raise  # Could not be parsed or built.
-    
-
-        except IOError as e:
-    
-
-            self.logger.error(error)
-    
-
-            raise
-    
-
+        error = f"Problems with source file {self.options.source\_path!r}, no output produced."    
+        try:    
+            chunks = self.webReader.load(self.options.source\_path)    
+            if self.webReader.errors != 0:    
+                raise Error("Syntax Errors in the Web")    
+            self.logger.debug("Read %d Chunks", len(chunks))    
+            self.options.web = Web(chunks)    
+            self.options.web.web\_path = self.options.source\_path    
+            self.logger.debug("Web contains %3d chunks", len(self.options.web.chunks))    
+            self.logger.debug("Web defines  %3d files", len(self.options.web.files))    
+            self.logger.debug("Web defines  %3d macros", len(self.options.web.macros))    
+            self.logger.debug("Web defines  %3d names", len(self.options.web.userids))    
+        except Error as e:    
+            self.logger.error(error)    
+            raise  # Could not be parsed or built.    
+        except IOError as e:    
+            self.logger.error(error)    
+            raise    
     
 
 ..
@@ -7418,19 +4534,10 @@ statistics for the load action.
     :class: code
 
     
-
-    def summary(self) -> str:
-    
-
-        return (
-    
-
-            f"{self.name!s} {self.webReader.totalLines:d} lines from {self.webReader.totalFiles:d} files in {self.duration():0.3f} sec."
-    
-
-        )
-    
-
+    def summary(self) -> str:    
+        return (    
+            f"{self.name!s} {self.webReader.totalLines:d} lines from {self.webReader.totalFiles:d} files in {self.duration():0.3f} sec."    
+        )    
     
 
 ..
@@ -7497,9 +4604,7 @@ The configuration can be either a ``types.SimpleNamespace`` or an
 ..  parsed-literal::
     :class: code
 
-    import argparse
-    
-
+    import argparse    
     
 
 ..
@@ -7517,28 +4622,13 @@ The configuration can be either a ``types.SimpleNamespace`` or an
     :class: code
 
     
-
-    class Application:
-    
-
-        def \_\_init\_\_(self) -> None:
-    
-
-            self.logger = logging.getLogger(self.\_\_class\_\_.\_\_qualname\_\_)
-    
-
-            →\ `Application default options (69)`_
-    
-
-            
-    
-
-        →\ `Application parse command line (70)`_
-    
-
-        →\ `Application class process all files (71)`_
-    
-
+    class Application:    
+        def \_\_init\_\_(self) -> None:    
+            self.logger = logging.getLogger(self.\_\_class\_\_.\_\_qualname\_\_)    
+                →\ `Application default options (69)`_    
+                
+            →\ `Application parse command line (70)`_    
+            →\ `Application class process all files (71)`_    
     
 
 ..
@@ -7615,66 +4705,26 @@ namespace returned by ``parseArgs()``.
     :class: code
 
     
-
-    self.defaults = argparse.Namespace(
+    self.defaults = argparse.Namespace(    
+        verbosity=logging.INFO,    
+        command='    @    ',    
+        weaver='rst',     
+        skip='',  # Don't skip any steps    
+        permit='',  # Don't tolerate missing includes    
+        reference='s',  # Simple references    
+        tangler\_line\_numbers=False,    
+        output=Path.cwd(),    
+        )    
     
-
-        verbosity=logging.INFO,
+    # Primitive Actions    
+    self.loadOp = LoadAction()    
+    self.weaveOp = WeaveAction()    
+    self.tangleOp = TangleAction()    
     
-
-        command='
-    @
-    ',
-    
-
-        weaver='rst', 
-    
-
-        skip='',  # Don't skip any steps
-    
-
-        permit='',  # Don't tolerate missing includes
-    
-
-        reference='s',  # Simple references
-    
-
-        tangler\_line\_numbers=False,
-    
-
-        output=Path.cwd(),
-    
-
-        )
-    
-
-    
-
-    # Primitive Actions
-    
-
-    self.loadOp = LoadAction()
-    
-
-    self.weaveOp = WeaveAction()
-    
-
-    self.tangleOp = TangleAction()
-    
-
-    
-
-    # Composite Actions
-    
-
-    self.doWeave = ActionSequence("load and weave", [self.loadOp, self.weaveOp])
-    
-
-    self.doTangle = ActionSequence("load and tangle", [self.loadOp, self.tangleOp])
-    
-
-    self.theAction = ActionSequence("load, tangle and weave", [self.loadOp, self.tangleOp, self.weaveOp])
-    
+    # Composite Actions    
+    self.doWeave = ActionSequence("load and weave", [self.loadOp, self.weaveOp])    
+    self.doTangle = ActionSequence("load and tangle", [self.loadOp, self.tangleOp])    
+    self.theAction = ActionSequence("load, tangle and weave", [self.loadOp, self.tangleOp, self.weaveOp])    
 
 ..
 
@@ -7699,135 +4749,49 @@ instances.
     :class: code
 
     
-
-    def parseArgs(self, argv: list[str]) -> argparse.Namespace:
+    def parseArgs(self, argv: list[str]) -> argparse.Namespace:    
+        p = argparse.ArgumentParser()    
+        p.add\_argument("-v", "--verbose", dest="verbosity", action="store\_const", const=logging.INFO)    
+        p.add\_argument("-s", "--silent", dest="verbosity", action="store\_const", const=logging.WARN)    
+        p.add\_argument("-d", "--debug", dest="verbosity", action="store\_const", const=logging.DEBUG)    
+        p.add\_argument("-c", "--command", dest="command", action="store")    
+        p.add\_argument("-w", "--weaver", dest="weaver", action="store")    
+        p.add\_argument("-x", "--except", dest="skip", action="store", choices=('w', 't'))    
+        p.add\_argument("-p", "--permit", dest="permit", action="store")    
+        p.add\_argument("-r", "--reference", dest="reference", action="store", choices=('t', 's'))    
+        p.add\_argument("-n", "--linenumbers", dest="tangler\_line\_numbers", action="store\_true")    
+        p.add\_argument("-o", "--output", dest="output", action="store", type=Path)    
+        p.add\_argument("-V", "--Version", action='version', version=f"py-web-tool pyweb.py {\_\_version\_\_}")    
+        p.add\_argument("files", nargs='+', type=Path)    
+        config = p.parse\_args(argv, namespace=self.defaults)    
+        self.expand(config)    
+        return config    
+            
+    def expand(self, config: argparse.Namespace) -> argparse.Namespace:    
+        """Translate the argument values from simple text to useful objects.    
+        Weaver. Tangler. WebReader.    
+        """    
+        match config.reference:    
+            case 't':    
+                config.reference\_style = TransitiveReference()     
+            case 's':    
+                config.reference\_style = SimpleReference()    
+            case \_:    
+                raise Error("Improper configuration")    
     
-
-        p = argparse.ArgumentParser()
+        # Weaver & Tangler    
+        config.theWeaver = Weaver(config.output)    
+        config.theTangler = TanglerMake(config.output)    
+            
+        if config.permit:    
+            # save permitted errors, usual case is \`\`-pi\`\` to permit \`\`    @    i\`\` include errors    
+            config.permitList = [f'{config.command!s}{c!s}' for c in config.permit]    
+        else:    
+            config.permitList = []    
     
-
-        p.add\_argument("-v", "--verbose", dest="verbosity", action="store\_const", const=logging.INFO)
+        config.webReader = WebReader()    
     
-
-        p.add\_argument("-s", "--silent", dest="verbosity", action="store\_const", const=logging.WARN)
-    
-
-        p.add\_argument("-d", "--debug", dest="verbosity", action="store\_const", const=logging.DEBUG)
-    
-
-        p.add\_argument("-c", "--command", dest="command", action="store")
-    
-
-        p.add\_argument("-w", "--weaver", dest="weaver", action="store")
-    
-
-        p.add\_argument("-x", "--except", dest="skip", action="store", choices=('w', 't'))
-    
-
-        p.add\_argument("-p", "--permit", dest="permit", action="store")
-    
-
-        p.add\_argument("-r", "--reference", dest="reference", action="store", choices=('t', 's'))
-    
-
-        p.add\_argument("-n", "--linenumbers", dest="tangler\_line\_numbers", action="store\_true")
-    
-
-        p.add\_argument("-o", "--output", dest="output", action="store", type=Path)
-    
-
-        p.add\_argument("-V", "--Version", action='version', version=f"py-web-tool pyweb.py {\_\_version\_\_}")
-    
-
-        p.add\_argument("files", nargs='+', type=Path)
-    
-
-        config = p.parse\_args(argv, namespace=self.defaults)
-    
-
-        self.expand(config)
-    
-
-        return config
-    
-
-        
-    
-
-    def expand(self, config: argparse.Namespace) -> argparse.Namespace:
-    
-
-        """Translate the argument values from simple text to useful objects.
-    
-
-        Weaver. Tangler. WebReader.
-    
-
-        """
-    
-
-        match config.reference:
-    
-
-            case 't':
-    
-
-                config.reference\_style = TransitiveReference() 
-    
-
-            case 's':
-    
-
-                config.reference\_style = SimpleReference()
-    
-
-            case \_:
-    
-
-                raise Error("Improper configuration")
-    
-
-    
-
-        # Weaver & Tangler
-    
-
-        config.theWeaver = Weaver(config.output)
-    
-
-        config.theTangler = TanglerMake(config.output)
-    
-
-        
-    
-
-        if config.permit:
-    
-
-            # save permitted errors, usual case is \`\`-pi\`\` to permit \`\`
-    @
-    i\`\` include errors
-    
-
-            config.permitList = [f'{config.command!s}{c!s}' for c in config.permit]
-    
-
-        else:
-    
-
-            config.permitList = []
-    
-
-    
-
-        config.webReader = WebReader()
-    
-
-    
-
-        return config
-    
-
+        return config    
     
 
 ..
@@ -7867,69 +4831,27 @@ outermost main program.
     :class: code
 
     
-
-    def process(self, config: argparse.Namespace) -> None:
-    
-
-        root = logging.getLogger()
-    
-
-        root.setLevel(config.verbosity)
-    
-
-        self.logger.debug("Setting root log level to %r", logging.getLevelName(root.getEffectiveLevel()))
-    
-
-        
-    
-
-        if config.command:
-    
-
-            self.logger.debug("Command character %r", config.command)
-    
-
+    def process(self, config: argparse.Namespace) -> None:    
+        root = logging.getLogger()    
+        root.setLevel(config.verbosity)    
+        self.logger.debug("Setting root log level to %r", logging.getLevelName(root.getEffectiveLevel()))    
             
+        if config.command:    
+            self.logger.debug("Command character %r", config.command)    
+                
+        if config.skip:    
+            if config.skip.lower().startswith('w'):  # not weaving == tangling    
+                self.theAction = self.doTangle    
+            elif config.skip.lower().startswith('t'):  # not tangling == weaving    
+                self.theAction = self.doWeave    
+            else:    
+                raise Exception(f"Unknown -x option {config.skip!r}")    
     
-
-        if config.skip:
-    
-
-            if config.skip.lower().startswith('w'):  # not weaving == tangling
-    
-
-                self.theAction = self.doTangle
-    
-
-            elif config.skip.lower().startswith('t'):  # not tangling == weaving
-    
-
-                self.theAction = self.doWeave
-    
-
-            else:
-    
-
-                raise Exception(f"Unknown -x option {config.skip!r}")
-    
-
-    
-
-        for f in config.files:
-    
-
-            self.logger.info("%s %r", self.theAction.name, f)
-    
-
-            config.source\_path = f
-    
-
-            self.theAction(config)
-    
-
-            self.logger.info(self.theAction.summary())
-    
-
+        for f in config.files:    
+            self.logger.info("%s %r", self.theAction.name, f)    
+            config.source\_path = f    
+            self.theAction(config)    
+            self.logger.info(self.theAction.summary())    
     
 
 ..
@@ -7954,13 +4876,8 @@ configured and cleaned up politely.
     :class: code
 
     
-
-    import logging
-    
-
-    import logging.config
-    
-
+    import logging    
+    import logging.config    
     
 
 ..
@@ -7985,51 +4902,21 @@ encoded in YAML and use that with ``logging.config.dictConfig``.
     :class: code
 
     
-
-    class Logger:
-    
-
-        def \_\_init\_\_(self, dict\_config: dict[str, Any] \| None = None, \*\*kw\_config: Any) -> None:
-    
-
-            self.dict\_config = dict\_config
-    
-
-            self.kw\_config = kw\_config
-    
-
-            
-    
-
-        def \_\_enter\_\_(self) -> "Logger":
-    
-
-            if self.dict\_config:
-    
-
-                logging.config.dictConfig(self.dict\_config)
-    
-
-            else:
-    
-
-                logging.basicConfig(\*\*self.kw\_config)
-    
-
-            return self
-    
-
-            
-    
-
-        def \_\_exit\_\_(self, \*args: Any) -> Literal[False]:
-    
-
-            logging.shutdown()
-    
-
-            return False
-    
+    class Logger:    
+        def \_\_init\_\_(self, dict\_config: dict[str, Any] \| None = None, \*\*kw\_config: Any) -> None:    
+            self.dict\_config = dict\_config    
+            self.kw\_config = kw\_config    
+                
+        def \_\_enter\_\_(self) -> "Logger":    
+            if self.dict\_config:    
+                logging.config.dictConfig(self.dict\_config)    
+            else:    
+                logging.basicConfig(\*\*self.kw\_config)    
+            return self    
+                
+        def \_\_exit\_\_(self, \*args: Any) -> Literal[False]:    
+            logging.shutdown()    
+            return False    
 
 ..
 
@@ -8052,90 +4939,34 @@ used to gather additional information.
     :class: code
 
     
-
-    log\_config = {
-    
-
-        'version': 1,
-    
-
-        'disable\_existing\_loggers': False, # Allow pre-existing loggers to work.
-    
-
-        'style': '{',
-    
-
-        'handlers': {
-    
-
-            'console': {
-    
-
-                'class': 'logging.StreamHandler',
-    
-
-                'stream': 'ext://sys.stderr',
-    
-
-                'formatter': 'basic',
-    
-
-            },
-    
-
-        },
-    
-
-        'formatters': {
-    
-
-            'basic': {
-    
-
-                'format': "{levelname}:{name}:{message}",
-    
-
-                'style': "{",
-    
-
-            }
-    
-
-        },
-    
-
-        
-    
-
-        'root': {'handlers': ['console'], 'level': logging.INFO,},
-    
-
-        
-    
-
-        # For specific debugging support...
-    
-
-        'loggers': {
-    
-
-            'Weaver': {'level': logging.INFO},
-    
-
-            'WebReader': {'level': logging.INFO},
-    
-
-            'TanglerMake': {'level': logging.INFO},
-    
-
-            'Web': {'level': logging.INFO},
-    
-
-        },
-    
-
-    }
-    
+    log\_config = {    
+        'version': 1,    
+        'disable\_existing\_loggers': False, # Allow pre-existing loggers to work.    
+        'style': '{',    
+        'handlers': {    
+            'console': {    
+                'class': 'logging.StreamHandler',    
+                'stream': 'ext://sys.stderr',    
+                'formatter': 'basic',    
+            },    
+        },    
+        'formatters': {    
+            'basic': {    
+                'format': "{levelname}:{name}:{message}",    
+                'style': "{",    
+            }    
+        },    
+            
+        'root': {'handlers': ['console'], 'level': logging.INFO,},    
+            
+        # For specific debugging support...    
+        'loggers': {    
+            'Weaver': {'level': logging.INFO},    
+            'WebReader': {'level': logging.INFO},    
+            'TanglerMake': {'level': logging.INFO},    
+            'Web': {'level': logging.INFO},    
+        },    
+    }    
 
 ..
 
@@ -8154,75 +4985,31 @@ This seems a bit verbose. The following configuration file might be better.
     :class: code
 
     
-
-    version = 1
+    version = 1    
+    disable\_existing\_loggers = false    
     
-
-    disable\_existing\_loggers = false
+    [root]    
+    handlers = [ "console",]    
+    level = "INFO"    
     
-
+    [handlers.console]    
+    class = "logging.StreamHandler"    
+    stream = "ext://sys.stderr"    
+    formatter = "basic"    
     
-
-    [root]
+    [formatters.basic]    
+    format = "{levelname}:{name}:{message}"    
+    style = "{"    
     
-
-    handlers = [ "console",]
+    [loggers.Weaver]    
+    level = "INFO"    
     
-
-    level = "INFO"
+    [loggers.WebReader]    
+    level = "INFO"    
     
-
-    
-
-    [handlers.console]
-    
-
-    class = "logging.StreamHandler"
-    
-
-    stream = "ext://sys.stderr"
-    
-
-    formatter = "basic"
-    
-
-    
-
-    [formatters.basic]
-    
-
-    format = "{levelname}:{name}:{message}"
-    
-
-    style = "{"
-    
-
-    
-
-    [loggers.Weaver]
-    
-
-    level = "INFO"
-    
-
-    
-
-    [loggers.WebReader]
-    
-
-    level = "INFO"
-    
-
-    
-
-    [loggers.TanglerMake]
-    
-
-    level = "INFO"
-    
-
-    }
-    
+    [loggers.TanglerMake]    
+    level = "INFO"    
+    }    
 
 ..
 
@@ -8264,18 +5051,10 @@ as a weaver template configuration file.
     :class: code
 
     
-
-    def main(argv: list[str] = sys.argv[1:]) -> None:
-    
-
-        a = Application()
-    
-
-        config = a.parseArgs(argv)
-    
-
-        a.process(config)
-    
+    def main(argv: list[str] = sys.argv[1:]) -> None:    
+        a = Application()    
+        config = a.parseArgs(argv)    
+        a.process(config)    
 
 ..
 
@@ -8295,33 +5074,19 @@ The **pyWeb** application file is shown below:
 ..  rubric:: pyweb.py (77) =
 ..  parsed-literal::
     :class: code
-→\ `Overheads (79)`_
-    
-→\ `Imports (2)`_
-    
-→\ `Error class -- defines the errors raised (50)`_
-    
-→\ `Base Class Definitions (1)`_
-    
-→\ `Action class hierarchy -- used to describe actions of the application (51)`_
-    
-→\ `Application Class for overall CLI operation (68)`_
-    
-→\ `Logging Setup (73)`_
-    
-→\ `Interface Functions (76)`_
-    
 
+    →\ `Overheads (79)`_    
+    →\ `Imports (2)`_    
+    →\ `Error class -- defines the errors raised (50)`_    
+    →\ `Base Class Definitions (1)`_    
+    →\ `Action class hierarchy -- used to describe actions of the application (51)`_    
+    →\ `Application Class for overall CLI operation (68)`_    
+    →\ `Logging Setup (73)`_    
+    →\ `Interface Functions (76)`_    
     
-
-    if \_\_name\_\_ == "\_\_main\_\_":
-    
-
-        with Logger(log\_config):
-    
-
-            main()
-    
+    if \_\_name\_\_ == "\_\_main\_\_":    
+        with Logger(log\_config):    
+            main()    
 
 ..
 
@@ -8380,19 +5145,10 @@ closer to where they're referenced.
     :class: code
 
     
-
-    import os
-    
-
-    import time
-    
-
-    import datetime
-    
-
-    import types
-    
-
+    import os    
+    import time    
+    import datetime    
+    import types    
     
 
 ..
@@ -8423,8 +5179,7 @@ file as standard input.
 ..  parsed-literal::
     :class: code
 
-    #!/usr/bin/env python
-    
+    #!/usr/bin/env python    
 
 ..
 
@@ -8446,25 +5201,13 @@ detailed usage information.
 ..  parsed-literal::
     :class: code
 
-    """py-web-tool Literate Programming.
+    """py-web-tool Literate Programming.    
     
-
-    
-
-    Yet another simple literate programming tool derived from \*\*nuweb\*\*, 
-    
-
-    implemented entirely in Python.
-    
-
-    With a suitable configuration, this weaves documents with any markup language,
-    
-
-    and tangles source files for any programming language.
-    
-
-    """
-    
+    Yet another simple literate programming tool derived from \*\*nuweb\*\*,     
+    implemented entirely in Python.    
+    With a suitable configuration, this weaves documents with any markup language,    
+    and tangles source files for any programming language.    
+    """    
 
 ..
 
@@ -8488,32 +5231,12 @@ source files.
 ..  parsed-literal::
     :class: code
 
-    \_\_version\_\_ = """3.2"""
+    \_\_version\_\_ = """3.2"""    
     
-
-    
-
-    ### DO NOT EDIT THIS FILE!
-    
-
-    ### It was created by 
-    pyweb.py
-    , \_\_version\_\_='
-    3.2
-    '.
-    
-
-    ### From source 
-    impl.w
-     modified 
-    Tue Jun 28 12:33:07 2022
-    .
-    
-
-    ### In working directory '
-    /Users/slott/Documents/Projects/py-web-tool/src
-    '.
-    
+    ### DO NOT EDIT THIS FILE!    
+    ### It was created by     pyweb.py    , \_\_version\_\_='    3.2    '.    
+    ### From source     impl.w     modified     Tue Jun 28 13:48:39 2022    .    
+    ### In working directory '    /Users/slott/Documents/Projects/py-web-tool/src    '.    
 
 ..
 
@@ -8610,94 +5333,35 @@ Note the general flow of this top-level script.
 ..  parsed-literal::
     :class: code
 
-    #!/usr/bin/env python3
+    #!/usr/bin/env python3    
+    """Sample tangle.py script."""    
+    import argparse    
+    import logging    
+    from pathlib import Path    
+    import pyweb    
     
-
-    """Sample tangle.py script."""
+    def main(source: Path) -> None:    
+        with pyweb.Logger(pyweb.log\_config):    
+            logger = logging.getLogger(\_\_file\_\_)    
+            
+            options = argparse.Namespace(    
+                source\_path=source,    
+                output=source.parent,    
+                verbosity=logging.INFO,    
+                command='    @    ',    
+                permitList=['    @    i'],    
+                tangler\_line\_numbers=False,    
+                reference\_style=pyweb.SimpleReference(),    
+                theTangler=pyweb.TanglerMake(),    
+                webReader=pyweb.WebReader(),    
+            )    
+                    
+            for action in pyweb.LoadAction(), pyweb.TangleAction():    
+                action(options)    
+                logger.info(action.summary())    
     
-
-    import argparse
-    
-
-    import logging
-    
-
-    from pathlib import Path
-    
-
-    import pyweb
-    
-
-    
-
-    def main(source: Path) -> None:
-    
-
-        with pyweb.Logger(pyweb.log\_config):
-    
-
-            logger = logging.getLogger(\_\_file\_\_)
-    
-
-        
-    
-
-            options = argparse.Namespace(
-    
-
-                source\_path=source,
-    
-
-                output=source.parent,
-    
-
-                verbosity=logging.INFO,
-    
-
-                command='
-    @
-    ',
-    
-
-                permitList=['
-    @
-    i'],
-    
-
-                tangler\_line\_numbers=False,
-    
-
-                reference\_style=pyweb.SimpleReference(),
-    
-
-                theTangler=pyweb.TanglerMake(),
-    
-
-                webReader=pyweb.WebReader(),
-    
-
-            )
-    
-
-                
-    
-
-            for action in pyweb.LoadAction(), pyweb.TangleAction():
-    
-
-                action(options)
-    
-
-                logger.info(action.summary())
-    
-
-    
-
-    if \_\_name\_\_ == "\_\_main\_\_":
-    
-
-        main(Path("examples/test\_rst.w"))
-    
+    if \_\_name\_\_ == "\_\_main\_\_":    
+        main(Path("examples/test\_rst.w"))    
 
 ..
 
@@ -8721,16 +5385,12 @@ A customized weaver generally has three parts.
 ..  rubric:: weave.py (83) =
 ..  parsed-literal::
     :class: code
-→\ `weave.py overheads for correct operation of a script (84)`_
-    
 
+    →\ `weave.py overheads for correct operation of a script (84)`_    
     
-→\ `weave.py custom weaver definition to customize the Weaver being used (85)`_
+    →\ `weave.py custom weaver definition to customize the Weaver being used (85)`_    
     
-
-    
-→\ `weaver.py processing: load and weave the document (86)`_
-    
+    →\ `weaver.py processing: load and weave the document (86)`_    
 
 ..
 
@@ -8746,26 +5406,13 @@ A customized weaver generally has three parts.
 ..  parsed-literal::
     :class: code
 
-    #!/usr/bin/env python3
-    
-
-    """Sample weave.py script."""
-    
-
-    import argparse
-    
-
-    import logging
-    
-
-    import string
-    
-
-    from pathlib import Path
-    
-
-    import pyweb
-    
+    #!/usr/bin/env python3    
+    """Sample weave.py script."""    
+    import argparse    
+    import logging    
+    import string    
+    from pathlib import Path    
+    import pyweb    
 
 ..
 
@@ -8794,12 +5441,8 @@ Something like the following:
     :class: code
 
     
-
-    class MyHTML(pyweb.Weaver):
-    
-
-        pass
-    
+    class MyHTML(pyweb.Weaver):    
+        pass    
 
 ..
 
@@ -8816,76 +5459,29 @@ Something like the following:
     :class: code
 
     
-
-    def main(source: Path) -> None:
-    
-
-        with pyweb.Logger(pyweb.log\_config):
-    
-
-            logger = logging.getLogger(\_\_file\_\_)
-    
-
-        
-    
-
-            options = argparse.Namespace(
-    
-
-                source\_path=source,
-    
-
-                output=source.parent,
-    
-
-                verbosity=logging.INFO,
-    
-
-                weaver="html",
-    
-
-                command='
-    @
-    ',
-    
-
-                permitList=[],
-    
-
-                tangler\_line\_numbers=False,
-    
-
-                reference\_style=pyweb.SimpleReference(),
-    
-
-                theWeaver=MyHTML(),
-    
-
-                webReader=pyweb.WebReader(),
-    
-
-            )
-    
-
+    def main(source: Path) -> None:    
+        with pyweb.Logger(pyweb.log\_config):    
+            logger = logging.getLogger(\_\_file\_\_)    
             
+            options = argparse.Namespace(    
+                source\_path=source,    
+                output=source.parent,    
+                verbosity=logging.INFO,    
+                weaver="html",    
+                command='    @    ',    
+                permitList=[],    
+                tangler\_line\_numbers=False,    
+                reference\_style=pyweb.SimpleReference(),    
+                theWeaver=MyHTML(),    
+                webReader=pyweb.WebReader(),    
+            )    
+                
+            for action in pyweb.LoadAction(), pyweb.WeaveAction():    
+                action(options)    
+                logger.info(action.summary())    
     
-
-            for action in pyweb.LoadAction(), pyweb.WeaveAction():
-    
-
-                action(options)
-    
-
-                logger.info(action.summary())
-    
-
-    
-
-    if \_\_name\_\_ == "\_\_main\_\_":
-    
-
-        main(Path("examples/test\_rst.w"))
-    
+    if \_\_name\_\_ == "\_\_main\_\_":    
+        main(Path("examples/test\_rst.w"))    
 
 ..
 
@@ -9457,9 +6053,9 @@ User Identifiers
 
 ..	class:: small
 
-	Created by pyweb.py at Tue Jun 28 12:33:10 2022.
+	Created by pyweb.py at Tue Jun 28 13:51:00 2022.
 
-    Source pyweb.w modified Tue Jun 28 11:08:03 2022.
+    Source pyweb.w modified Tue Jun 28 13:51:00 2022.
 
 	pyweb.__version__ '3.2'.
 

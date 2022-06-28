@@ -59,9 +59,7 @@ test0_expected_html = """<html>
     <link rel="StyleSheet" href="pyweb.css" type="text/css" />
 </head>
 <body>
-
 &rarr;<a href="#pyweb_1"><em>some code (1)</em></a>
-
 
 
 <a name="pyweb_1"></a>

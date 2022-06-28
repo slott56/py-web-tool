@@ -1507,19 +1507,13 @@ data model for the source WEB of chunks.</p>
 <p>Here are some of the base classes that define
 the structure and meaning of a <tt class="docutils literal">.w</tt> source file.</p>
 <p class="rubric" id="base-class-definitions-1">Base Class Definitions (1) =</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">src/pyweb.rst</tt>, line 1235)</p>
-<p>Content block expected for the &quot;parsed-literal&quot; directive; none found.</p>
-<pre class="literal-block">
-..  parsed-literal::
-    :class: code
+<pre class="code literal-block">
+→<a class="reference internal" href="#command-class-hierarchy-used-to-describe-individual-commands-6">Command class hierarchy -- used to describe individual commands (6)</a>
 
+→<a class="reference internal" href="#chunk-class-hierarchy-used-to-describe-input-chunks-4">Chunk class hierarchy -- used to describe input chunks (4)</a>
 
+→<a class="reference internal" href="#web-class-describes-the-overall-web-of-chunks-3">Web class -- describes the overall &quot;web&quot; of chunks (3)</a>
 </pre>
-</div>
-<p>→<a class="reference internal" href="#command-class-hierarchy-used-to-describe-individual-commands-6">Command class hierarchy -- used to describe individual commands (6)</a></p>
-<p>→<a class="reference internal" href="#chunk-class-hierarchy-used-to-describe-input-chunks-4">Chunk class hierarchy -- used to describe input chunks (4)</a></p>
-<p>→<a class="reference internal" href="#web-class-describes-the-overall-web-of-chunks-3">Web class -- describes the overall &quot;web&quot; of chunks (3)</a></p>
 <!--  -->
 <p class="small">∎ <em>Base Class Definitions (1)</em></p>
 <p>The above order is reasonably helpful for Python and minimizes forward
@@ -1584,560 +1578,188 @@ and, consequently, chunk references.</p>
 <p class="rubric" id="imports-2">Imports (2) =</p>
 <pre class="code literal-block">
 from collections import defaultdict
-
-
 from collections.abc import Iterator
-
-
 from dataclasses import dataclass, field
-
-
 import logging
-
-
 from pathlib import Path
-
-
 from types import SimpleNamespace
-
-
 from typing import Any, Optional, Literal, ClassVar, Union
-
-
 from weakref import ref, ReferenceType
 </pre>
 <!--  -->
 <p class="small">∎ <em>Imports (2)</em></p>
 <p class="rubric" id="web-class-describes-the-overall-web-of-chunks-3">Web class -- describes the overall &quot;web&quot; of chunks (3) =</p>
 <pre class="code literal-block">
-&#64;
-dataclass
-
-
+&#64;    dataclass
 class Web:
-
-
     chunks: list[&quot;Chunk&quot;]  #: The source sequence of chunks.
 
-
-
-
-    # The ``
-&#64;
-d`` chunk names and locations where they're defined.
-
-
+    # The ``    &#64;    d`` chunk names and locations where they're defined.
     chunk_map: dict[str, list[&quot;Chunk&quot;]] = field(init=False)
 
-
-
-
-
-    # The ``
-&#64;
-|`` defined names and chunks with which they're associated.
-
-
+    # The ``    &#64;    |`` defined names and chunks with which they're associated.
     userid_map: defaultdict[str, list[&quot;Chunk&quot;]] = field(init=False)
-
-
-
-
 
     logger: logging.Logger = field(init=False, default=logging.getLogger(&quot;Web&quot;))
 
-
-
-
     strict_match: ClassVar[bool] = True  #: Don't permit ... names without a definition.
 
-
-
-
-
     def __post_init__(self) -&gt; None:
-
-
         &quot;&quot;&quot;
-
-
         Populate weak references throughout the web to make full_name properties work.
-
-
         Then. Locate all macro definitions and userid references.
-
-
         &quot;&quot;&quot;
-
-
         # Pass 1 -- set all Chunk and Command back references.
-
-
         for c in self.chunks:
-
-
             c.web = ref(self)
-
-
             for cmd in c.commands:
-
-
                 cmd.web = ref(self)
 
-
-
-
-
         # Named Chunks = Union of macro_iter and file_iter
-
-
         named_chunks = list(filter(lambda c: c.name is not None, self.chunks))
 
-
-
-
         # Pass 2 -- locate the unabbreviated names in chunks and references to chunks
-
-
         self.chunk_map = {}
-
-
         for seq, c in enumerate(named_chunks, start=1):
-
-
             c.seq = seq
-
-
             if not c.path:
-
-
-                # Use ``
-&#64;
-d name`` chunks (reject ``
-&#64;
-o`` and text)
-
-
+                # Use ``    &#64;    d name`` chunks (reject ``    &#64;    o`` and text)
                 if not c.name.endswith('...'):
-
-
                     self.logger.debug(f&quot;__post_init__ 2a {c.name=!r}&quot;)
-
-
                     self.chunk_map.setdefault(c.name, [])
-
-
             for cmd in c.commands:
-
-
-                # Find ``
-&#64;
-&lt; name
-&#64;
-&gt;`` in ``
-&#64;
-d name`` chunks or ``
-&#64;
-o`` chunks
-
-
+                # Find ``    &#64;    &lt; name     &#64;    &gt;`` in ``    &#64;    d name`` chunks or ``    &#64;    o`` chunks
                 if cmd.typeid.ReferenceCommand and not cmd.name.endswith('...'):
-
-
                     self.logger.debug(f&quot;__post_init__ 2b {cmd.name=!r}&quot;)
-
-
                     self.chunk_map.setdefault(cmd.name, [])
 
-
-
-
-
         # Pass 3 -- accumulate chunk lists, output lists, and name definition lists
-
-
         self.userid_map = defaultdict(list)
-
-
         for c in named_chunks:
-
-
             for name in c.def_names:
-
-
                 self.userid_map[name].append(c)
-
-
             if not c.path:
-
-
-                # Named ``
-&#64;
-d name`` chunks
-
-
+                # Named ``    &#64;    d name`` chunks
                 c.initial = len(self.chunk_map[c.full_name]) == 0
-
-
                 self.chunk_map[c.full_name].append(c)
-
-
                 self.logger.debug(f&quot;__post_init__ 3 {c.name=!r} -&gt; {c.full_name=!r}&quot;)
-
-
             else:
-
-
-                # Output ``
-&#64;
-o`` and anonymous chunks.
-
-
-                # Assume all
-&#64;
-o chunks are unique. If they're not, they overwrite each other.
-
-
+                # Output ``    &#64;    o`` and anonymous chunks.
+                # Assume all     &#64;    o chunks are unique. If they're not, they overwrite each other.
                 # Also, there's not ``full_name`` for these chunks.
-
-
                 c.initial = True
-
-
-
-
 
             # TODO: Accumulate all chunks that contribute to a named file...
 
-
-
-
         # Pass 4 -- set referencedBy a command in a chunk.
-
-
         # NOTE: Assuming single references *only*
-
-
         # We should raise an exception when updating a non-None referencedBy value.
-
-
         # Or incrementing ref_chunk.references &gt; 1.
-
-
         for c in named_chunks:
-
-
             for cmd in c.commands:
-
-
                 if cmd.typeid.ReferenceCommand:
-
-
                     ref_to_list = self.resolve_chunk(cmd.name)
-
-
                     for ref_chunk in ref_to_list:
-
-
                         ref_chunk.referencedBy = c
-
-
                         ref_chunk.references += 1
 
-
-
-
-
     def __repr__(self) -&gt; str:
-
-
         NL = &quot;,\n&quot;
-
-
         return (
-
-
             f&quot;{self.__class__.__name__}(&quot;
-
-
             f&quot;{NL.join(repr(c) for c in self.chunks)}&quot;
-
-
             f&quot;)&quot;
-
-
         )
-
-
-
-
 
     def resolve_name(self, target: str) -&gt; str:
-
-
         &quot;&quot;&quot;Map short names to full names, if possible.&quot;&quot;&quot;
-
-
         if target in self.chunk_map:
-
-
             # self.logger.debug(f&quot;resolve_name {target=} in self.chunk_map&quot;)
-
-
             return target
-
-
         elif target.endswith('...'):
-
-
             # The ... is equivalent to regular expression .*
-
-
             matches = list(
-
-
                 c_name
-
-
                 for c_name in self.chunk_map
-
-
                 if c_name.startswith(target[:-3])
-
-
             )
-
-
             # self.logger.debug(f&quot;resolve_name {target=} {matches=} in self.chunk_map&quot;)
-
-
             match matches:
-
-
                 case []:
-
-
                     if self.strict_match:
-
-
                         raise Error(f&quot;No full name for {target!r}&quot;)
-
-
                     else:
-
-
                         self.logger.warning(f&quot;resolve_name {target=} unknown&quot;)
-
-
                         self.chunk_map[target] = []
-
-
                         return target
-
-
                 case [head]:
-
-
                     return head
-
-
                 case [head, *tail]:
-
-
                     message = f&quot;Ambiguous abbreviation {target!r}, matches {[head] + tail!r}&quot;
-
-
                     raise Error(message)
-
-
         else:
-
-
             self.logger.warning(f&quot;resolve_name {target=} unknown&quot;)
-
-
             self.chunk_map[target] = []
-
-
             return target
-
-
-
 
     def resolve_chunk(self, target: str) -&gt; list[&quot;Chunk&quot;]:
-
-
         &quot;&quot;&quot;Map name (short or full) to the defining sequence of chunks.&quot;&quot;&quot;
-
-
         full_name = self.resolve_name(target)
-
-
         chunk_list = self.chunk_map[full_name]
-
-
         self.logger.debug(f&quot;resolve_chunk {target=!r} -&gt; {full_name=!r} -&gt; {chunk_list=}&quot;)
-
-
         return chunk_list
 
-
-
-
     def file_iter(self) -&gt; Iterator[SimpleNamespace]:
-
-
         return filter(lambda c: c.typeid.OutputChunk, self.chunks)
 
-
-
-
     def macro_iter(self) -&gt; Iterator[SimpleNamespace]:
-
-
         return filter(lambda c: c.typeid.NamedChunk, self.chunks)
 
-
-
-
     def userid_iter(self) -&gt; Iterator[SimpleNamespace]:
-
-
         yield from (SimpleNamespace(def_name=n, chunk=c) for c in self.file_iter() for n in c.def_names)
-
-
         yield from (SimpleNamespace(def_name=n, chunk=c) for c in self.macro_iter() for n in c.def_names)
 
-
-
-
-
-&#64;
-property
-
-
+        &#64;    property
     def files(self) -&gt; list[&quot;OutputChunk&quot;]:
-
-
         return list(self.file_iter())
 
-
-
-
-
-&#64;
-property
-
-
+        &#64;    property
     def macros(self) -&gt; list[SimpleNamespace]:
-
-
         &quot;&quot;&quot;
-
-
         The chunk_map has the list of Chunks that comprise a macro definition.
-
-
         We separate those to make it slightly easier to format the first definition.
-
-
         &quot;&quot;&quot;
-
-
         first_list = (
-
-
             (self.chunk_map[name][0], self.chunk_map[name])
-
-
             for name in sorted(self.chunk_map)
-
-
             if self.chunk_map[name]
-
-
         )
-
-
         macro_list = list(
-
-
             SimpleNamespace(name=first_def.name, full_name=first_def.full_name, seq=first_def.seq, def_list=def_list)
-
-
             for first_def, def_list in first_list
-
-
         )
-
-
         # print(f&quot;macros: {defs}&quot;)
-
-
         return macro_list
 
-
-
-
-
-&#64;
-property
-
-
+        &#64;    property
     def userids(self) -&gt; list[SimpleNamespace]:
-
-
         userid_list = list(
-
-
             SimpleNamespace(userid=userid, ref_list=self.userid_map[userid])
-
-
             for userid in sorted(self.userid_map)
-
-
         )
-
-
         # print(f&quot;userids: {userid_list}&quot;)
-
-
         return userid_list
 
-
-
-
-
     def no_reference(self) -&gt; list[Chunk]:
-
-
         return list(filter(lambda c: c.name and not c.path and c.references == 0, self.chunks))
 
-
-
-
-
     def multi_reference(self) -&gt; list[Chunk]:
-
-
         return list(filter(lambda c: c.name and not c.path and c.references &gt; 1, self.chunks))
 
-
-
-
-
     def no_definition(self) -&gt; list[str]:
-
-
         commands = (
-
-
             cmd for c in self.chunks for cmd in c.commands
-
-
         )
-
-
         return list(filter(lambda cmd: not cmd.definition, commands))
 </pre>
 <!--  -->
@@ -2150,143 +1772,72 @@ It's composed of individual Chunk instances.</p>
 <p>A <tt class="docutils literal">Chunk</tt> is a piece of the input file.  It is a collection of <tt class="docutils literal">Command</tt> instances.
 A chunk can be woven or tangled to create output.</p>
 <p class="rubric" id="chunk-class-hierarchy-used-to-describe-input-chunks-4">Chunk class hierarchy -- used to describe input chunks (4) =</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">src/pyweb.rst</tt>, line 1925)</p>
-<p>Content block expected for the &quot;parsed-literal&quot; directive; none found.</p>
-<pre class="literal-block">
-..  parsed-literal::
-    :class: code
+<pre class="code literal-block">
+→<a class="reference internal" href="#the-typeid-helper-5">The TypeId Helper (5)</a>
+
+&#64;    dataclass
+class Chunk:
+    &quot;&quot;&quot;Superclass for OutputChunk, NamedChunk, NamedDocumentChunk.
+
+    Chunk is the anonymous text context.
+        The Text, Ref, and the various XREF commands can *only* appear here.
+        A REF must be do a ``    &#64;    d name     &#64;    [...    &#64;    ]`` NamedDocumentChunk, which is expanded, not linked.
+
+    OutputChunk is the ``    &#64;    o`` context.
+        The Code and Ref commands appear here.
+        This is tangled to a file.
+
+    NamedChunk is the ``    &#64;    d`` context.
+        The Code and Ref commands appear here.
+        This is tangled where referenced.
+    &quot;&quot;&quot;
+    name: str | None = None  #: Short name of the chunk
+    seq: int | None = None  #: Unique sequence number of chunk in the WEB
+    commands: list[&quot;Command&quot;] = field(default_factory=list)  #: Sequence of commands inside this chunk
+    options: list[str] = field(default_factory=list)  #: Parsed options for     &#64;    d and     &#64;    o chunks.
+    def_names: list[str] = field(default_factory=list)  #: Names defined after ``    &#64;    |`` in this chunk
+    initial: bool = False  #: Is this the first use of a given Chunk name?
+    comment_start: str | None = None  #: If injecting location details, this is the prefix
+    comment_end: str | None = None  #: If injecting location details, this is the suffix
+
+    references: int = field(init=False, default=0)
+    referencedBy: Optional[&quot;Chunk&quot;] = field(init=False, default=None)
+    web: ReferenceType[&quot;Web&quot;] = field(init=False, repr=False)
+    logger: logging.Logger = field(init=False, default=logging.getLogger(&quot;Chunk&quot;))
+
+        &#64;    property
+    def full_name(self) -&gt; str | None:
+        return self.web().resolve_name(self.name)
+
+        &#64;    property
+    def path(self) -&gt; Path | None:
+        return None
+
+        &#64;    classmethod
+        &#64;    property
+    def typeid(cls) -&gt; TypeId:
+        return TypeId(cls)
+
+        &#64;    property
+    def location(self) -&gt; tuple[str, int]:
+        return self.commands[0].location
+
+class OutputChunk(Chunk):
+        &#64;    property
+    def path(self) -&gt; Path | None:
+        return Path(self.name)
+
+        &#64;    property
+    def full_name(self) -&gt; str | None:
+        return None
+
+class NamedChunk(Chunk):
+    pass
 
 
+class NamedDocumentChunk(Chunk):
+    pass
 </pre>
-</div>
-<p>→<a class="reference internal" href="#the-typeid-helper-5">The TypeId Helper (5)</a></p>
-<blockquote>
-<p>&#64;
-dataclass</p>
-<p>class Chunk:</p>
-<blockquote>
-<p>&quot;&quot;&quot;Superclass for OutputChunk, NamedChunk, NamedDocumentChunk.</p>
-<p>Chunk is the anonymous text context.</p>
-<blockquote>
-<p>The Text, Ref, and the various XREF commands can *only* appear here.</p>
-<p>A REF must be do a ``</p>
-</blockquote>
-</blockquote>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">src/pyweb.rst</tt>, line 1953)</p>
-Block quote ends without a blank line; unexpected unindent.</div>
-<p>&#64;
-d name
-&#64;
-[...
-&#64;
-]`` NamedDocumentChunk, which is expanded, not linked.</p>
-<blockquote>
-OutputChunk is the ``</blockquote>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">src/pyweb.rst</tt>, line 1964)</p>
-Block quote ends without a blank line; unexpected unindent.</div>
-<p>&#64;
-o`` context.</p>
-<blockquote>
-<blockquote>
-<p>The Code and Ref commands appear here.</p>
-<p>This is tangled to a file.</p>
-</blockquote>
-<p>NamedChunk is the ``</p>
-</blockquote>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">src/pyweb.rst</tt>, line 1977)</p>
-Block quote ends without a blank line; unexpected unindent.</div>
-<p>&#64;
-d`` context.</p>
-<blockquote>
-<blockquote>
-<p>The Code and Ref commands appear here.</p>
-<p>This is tangled where referenced.</p>
-</blockquote>
-<p>&quot;&quot;&quot;</p>
-<p>name: str | None = None  #: Short name of the chunk</p>
-<p>seq: int | None = None  #: Unique sequence number of chunk in the WEB</p>
-<p>commands: list[&quot;Command&quot;] = field(default_factory=list)  #: Sequence of commands inside this chunk</p>
-<p>options: list[str] = field(default_factory=list)  #: Parsed options for</p>
-</blockquote>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">src/pyweb.rst</tt>, line 2000)</p>
-Block quote ends without a blank line; unexpected unindent.</div>
-<p>&#64;
-d and
-&#64;
-o chunks.</p>
-<blockquote>
-def_names: list[str] = field(default_factory=list)  #: Names defined after ``</blockquote>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">src/pyweb.rst</tt>, line 2007)</p>
-Block quote ends without a blank line; unexpected unindent.</div>
-<p>&#64;
-|`` in this chunk</p>
-<blockquote>
-<p>initial: bool = False  #: Is this the first use of a given Chunk name?</p>
-<p>comment_start: str | None = None  #: If injecting location details, this is the prefix</p>
-<p>comment_end: str | None = None  #: If injecting location details, this is the suffix</p>
-<p>references: int = field(init=False, default=0)</p>
-<p>referencedBy: Optional[&quot;Chunk&quot;] = field(init=False, default=None)</p>
-<p>web: ReferenceType[&quot;Web&quot;] = field(init=False, repr=False)</p>
-<p>logger: logging.Logger = field(init=False, default=logging.getLogger(&quot;Chunk&quot;))</p>
-</blockquote>
-<p>&#64;
-property</p>
-<blockquote>
-<p>def full_name(self) -&gt; str | None:</p>
-<blockquote>
-return self.web().resolve_name(self.name)</blockquote>
-</blockquote>
-<p>&#64;
-property</p>
-<blockquote>
-<p>def path(self) -&gt; Path | None:</p>
-<blockquote>
-return None</blockquote>
-</blockquote>
-<p>&#64;
-classmethod</p>
-<p>&#64;
-property</p>
-<blockquote>
-<p>def typeid(cls) -&gt; TypeId:</p>
-<blockquote>
-return TypeId(cls)</blockquote>
-</blockquote>
-<p>&#64;
-property</p>
-<blockquote>
-<p>def location(self) -&gt; tuple[str, int]:</p>
-<blockquote>
-return self.commands[0].location</blockquote>
-</blockquote>
-<p>class OutputChunk(Chunk):</p>
-<p>&#64;
-property</p>
-<blockquote>
-<p>def path(self) -&gt; Path | None:</p>
-<blockquote>
-return Path(self.name)</blockquote>
-</blockquote>
-<p>&#64;
-property</p>
-<blockquote>
-<p>def full_name(self) -&gt; str | None:</p>
-<blockquote>
-return None</blockquote>
-</blockquote>
-<p>class NamedChunk(Chunk):</p>
-<blockquote>
-pass</blockquote>
-<p>class NamedDocumentChunk(Chunk):</p>
-<blockquote>
-pass</blockquote>
-</blockquote>
 <!--  -->
 <p class="small">∎ <em>Chunk class hierarchy -- used to describe input chunks (4)</em></p>
 <p>The <tt class="docutils literal">TypeId</tt> class is used to provide some run-time type
@@ -2297,31 +1848,14 @@ and works well with Jinja templates.</p>
 <p class="rubric" id="the-typeid-helper-5">The TypeId Helper (5) =</p>
 <pre class="code literal-block">
 class TypeId:
-
-
     &quot;&quot;&quot;
-
-
     This makes the given class name into an attribute with a
-
-
     True value. Any other attribute reference will return False.
-
-
     &quot;&quot;&quot;
-
-
     def __init__(self, member_of: type[Any]) -&gt; None:
-
-
         self.my_class = member_of.__name__
 
-
-
-
     def __getattr__(self, item: str) -&gt; bool:
-
-
         return item == self.my_class
 </pre>
 <!--  -->
@@ -2339,556 +1873,185 @@ belong to a <tt class="docutils literal">Chunk</tt>.  A chunk may be as small as
 of commands.</p>
 <p class="rubric" id="command-class-hierarchy-used-to-describe-individual-commands-6">Command class hierarchy -- used to describe individual commands (6) =</p>
 <pre class="code literal-block">
-&#64;
-dataclass
-
-
+&#64;    dataclass
 class TextCommand:
-
-
     text: str  #: The text
-
-
     location: tuple[str, int]  #: The (filename, line number)
 
-
-
-
-
     web: ReferenceType[&quot;Web&quot;] = field(init=False, repr=False)
-
-
     logger: logging.Logger = field(init=False, default=logging.getLogger(&quot;TextCommand&quot;))
-
-
     definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
 
-
-
-
-
-&#64;
-classmethod
-
-
-
-&#64;
-property
-
-
+        &#64;    classmethod
+        &#64;    property
     def typeid(cls) -&gt; &quot;TypeId&quot;:
-
-
         return TypeId(cls)
 
-
-
-
     def indent(self) -&gt; int:
-
-
         if self.text.endswith('\n'):
-
-
             self.logger.debug(f&quot;indent = 0&quot;)
-
-
             return 0
-
-
         try:
-
-
             last_line = self.text.splitlines()[-1]
-
-
             self.logger.debug(f&quot;indent = {len(last_line)}&quot;)
-
-
             return len(last_line)
-
-
         except IndexError:
-
-
             self.logger.debug(f&quot;indent (with no text) = 0&quot;)
-
-
             return 0
-
-
-
-
 
     def tangle(self, aTangler: &quot;Tangler&quot;, target: TextIO) -&gt; None:
-
-
         self.logger.debug(f&quot;tangle {self.text=!r}&quot;)
-
-
         aTangler.codeBlock(target, self.text)
 
-
-
-
-&#64;
-dataclass
-
-
+&#64;    dataclass
 class CodeCommand:
-
-
     text: str  #: The code
-
-
     location: tuple[str, int]
 
-
-
-
-
     web: ReferenceType[&quot;Web&quot;] = field(init=False, repr=False)
-
-
     logger: logging.Logger = field(init=False, default=logging.getLogger(&quot;CodeCommand&quot;))
-
-
     definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
 
-
-
-
-
-&#64;
-classmethod
-
-
-
-&#64;
-property
-
-
+        &#64;    classmethod
+        &#64;    property
     def typeid(cls) -&gt; &quot;TypeId&quot;:
-
-
         return TypeId(cls)
 
-
-
-
-
     def indent(self) -&gt; int:
-
-
         if self.text.endswith('\n'):
-
-
             return 0
-
-
         try:
-
-
             last_line = self.text.splitlines()[-1]
-
-
             return len(last_line)
-
-
         except IndexError:
-
-
             return 0
-
-
-
 
     def tangle(self, aTangler: &quot;Tangler&quot;, target: TextIO) -&gt; None:
-
-
         self.logger.debug(f&quot;tangle {self.text=!r}&quot;)
-
-
         aTangler.codeBlock(target, self.text)
 
 
-
-
-
-
-&#64;
-dataclass
-
-
+&#64;    dataclass
 class ReferenceCommand:
-
-
     &quot;&quot;&quot;
-
-
     Reference to a ``NamedChunk`` in code.
-
-
     On text, however, it expands to the text of a ``NamedDocumentChunk``.
-
-
     &quot;&quot;&quot;
-
-
     name: str  #: The name provided
-
-
     location: tuple[str, int]
 
-
-
-
-
     web: ReferenceType[&quot;Web&quot;] = field(init=False, repr=False)
-
-
     definition: bool = field(init=False, default=False)
-
-
     logger: logging.Logger = field(init=False, default=logging.getLogger(&quot;ReferenceCommand&quot;))
 
-
-
-
-
-&#64;
-property
-
-
+        &#64;    property
     def text(self) -&gt; str:
-
-
         return self.web().get_text(self.full_name)
 
-
-
-
-
-
-&#64;
-property
-
-
+        &#64;    property
     def full_name(self) -&gt; str:
-
-
         return self.web().resolve_name(self.name)
 
-
-
-
-
-&#64;
-property
-
-
+        &#64;    property
     def seq(self) -&gt; str:
-
-
         return self.web().resolve_chunk(self.name)[0].seq
 
-
-
-
-
-&#64;
-classmethod
-
-
-
-&#64;
-property
-
-
+        &#64;    classmethod
+        &#64;    property
     def typeid(cls) -&gt; &quot;TypeId&quot;:
-
-
         return TypeId(cls)
 
-
-
-
     def tangle(self, aTangler: &quot;Tangler&quot;, target: TextIO) -&gt; None:
-
-
         &quot;&quot;&quot;Expand this reference.
-
-
         The starting position is the indentation for all **subsequent** lines.
-
-
         Provide tangler.lastIndent back to the tangler.
-
-
         &quot;&quot;&quot;
-
-
         self.logger.debug(f&quot;tangle reference to {self.name=}, {aTangler.lastIndent=}&quot;)
-
-
         chunk_list = self.web().resolve_chunk(self.name)
-
-
         if len(chunk_list) == 0:
-
-
             message = f&quot;Attempt to tangle an undefined Chunk, {self.name!r}&quot;
-
-
             self.logger.error(message)
-
-
             raise Error(message)
-
-
         self.definition = True
-
-
         aTangler.addIndent(aTangler.lastIndent)
 
-
-
-
         for chunk in chunk_list:
-
-
             # TODO: if chunk.options includes '-indent': do an addIndent before tangling.
-
-
             for command in chunk.commands:
-
-
                 command.tangle(aTangler, target)
-
-
-
-
 
         aTangler.clrIndent()
 
-
-
-
-
     def indent(self) -&gt; int | None:
-
-
         return None
 
-
-
-
-&#64;
-dataclass
-
-
+&#64;    dataclass
 class FileXrefCommand:
-
-
     location: tuple[str, int]
 
-
-
-
     web: ReferenceType[&quot;Web&quot;] = field(init=False, repr=False)
-
-
     logger: logging.Logger = field(init=False, default=logging.getLogger(&quot;FileXrefCommand&quot;))
-
-
     definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
 
-
-
-
-
-&#64;
-property
-
-
+        &#64;    property
     def files(self):
-
-
         return self.web().files
 
-
-
-
-
-&#64;
-classmethod
-
-
-
-&#64;
-property
-
-
+        &#64;    classmethod
+        &#64;    property
     def typeid(cls) -&gt; &quot;TypeId&quot;:
-
-
         return TypeId(cls)
 
-
-
-
     def tangle(self, aTangler: &quot;Tangler&quot;, target: TextIO) -&gt; None:
-
-
         raise Error('Illegal tangling of a cross reference command.')
 
-
-
-
     def indent(self) -&gt; int:
-
-
         return 0
 
-
-
-
-&#64;
-dataclass
-
-
+&#64;    dataclass
 class MacroXrefCommand:
-
-
     location: tuple[str, int]
 
-
-
-
     web: ReferenceType[&quot;Web&quot;] = field(init=False, repr=False)
-
-
     logger: logging.Logger = field(init=False, default=logging.getLogger(&quot;MacroXrefCommand&quot;))
-
-
     definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
 
-
-
-
-
-&#64;
-property
-
-
+        &#64;    property
     def macros(self):
-
-
         return self.web().macros
 
-
-
-
-
-&#64;
-classmethod
-
-
-
-&#64;
-property
-
-
+        &#64;    classmethod
+        &#64;    property
     def typeid(cls) -&gt; &quot;TypeId&quot;:
-
-
         return TypeId(cls)
 
-
-
-
     def tangle(self, aTangler: &quot;Tangler&quot;, target: TextIO) -&gt; None:
-
-
         raise Error('Illegal tangling of a cross reference command.')
 
-
-
-
     def indent(self) -&gt; int:
-
-
         return 0
 
-
-
-
-&#64;
-dataclass
-
-
+&#64;    dataclass
 class UserIdXrefCommand:
-
-
     location: tuple[str, int]
 
-
-
-
     web: ReferenceType[&quot;Web&quot;] = field(init=False, repr=False)
-
-
     logger: logging.Logger = field(init=False, default=logging.getLogger(&quot;UserIdXrefCommand&quot;))
-
-
     definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
 
-
-
-
-
-&#64;
-property
-
-
+        &#64;    property
     def userids(self) -&gt; list[str]:
-
-
         return self.web().userids
 
-
-
-
-
-&#64;
-classmethod
-
-
-
-&#64;
-property
-
-
+        &#64;    classmethod
+        &#64;    property
     def typeid(cls) -&gt; &quot;TypeId&quot;:
-
-
         return TypeId(cls)
 
-
-
-
-
     def tangle(self, aTangler: &quot;Tangler&quot;, target: TextIO) -&gt; None:
-
-
         raise Error('Illegal tangling of a cross reference command.')
 
-
-
-
     def indent(self) -&gt; int:
-
-
         return 0
 </pre>
 <!--  -->
@@ -2898,11 +2061,7 @@ to act as an abstract superclass for type hints.</p>
 <p class="rubric" id="command-class-hierarchy-used-to-describe-individual-commands-7">Command class hierarchy -- used to describe individual commands (7) +=</p>
 <pre class="code literal-block">
 Command = Union[TextCommand, CodeCommand, ReferenceCommand,
-
-
     FileXrefCommand, MacroXrefCommand, UserIdXrefCommand
-
-
     ]
 </pre>
 <!--  -->
@@ -2913,49 +2072,34 @@ Command = Union[TextCommand, CodeCommand, ReferenceCommand,
 <h2><a class="toc-backref" href="#toc-entry-38">Output Serialization</a></h2>
 <p>The <tt class="docutils literal">Emitter</tt> class hierarchy writes the output files.</p>
 <p class="rubric" id="base-class-definitions-8">Base Class Definitions (8) +=</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">src/pyweb.rst</tt>, line 2824)</p>
-<p>Content block expected for the &quot;parsed-literal&quot; directive; none found.</p>
-<pre class="literal-block">
-..  parsed-literal::
-    :class: code
+<pre class="code literal-block">
+→<a class="reference internal" href="#reference-class-hierarchy-strategies-for-weaving-references-to-a-chunk-24">Reference class hierarchy - strategies for weaving references to a chunk (24)</a>
 
-
+→<a class="reference internal" href="#emitter-class-hierarchy-used-to-control-output-files-9">Emitter class hierarchy - used to control output files (9)</a>
 </pre>
-</div>
-<p>→<a class="reference internal" href="#reference-class-hierarchy-strategies-for-weaving-references-to-a-chunk-24">Reference class hierarchy - strategies for weaving references to a chunk (24)</a></p>
-<p>→<a class="reference internal" href="#emitter-class-hierarchy-used-to-control-output-files-9">Emitter class hierarchy - used to control output files (9)</a></p>
 <!--  -->
 <p class="small">∎ <em>Base Class Definitions (8)</em></p>
 <p>An <tt class="docutils literal">Emitter</tt> instance is responsible for control of an output file format.
 This includes the necessary file naming, opening, writing and closing operations.
 It also includes providing the correct markup for the file type.</p>
 <p class="rubric" id="emitter-class-hierarchy-used-to-control-output-files-9">Emitter class hierarchy - used to control output files (9) =</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">src/pyweb.rst</tt>, line 2852)</p>
-<p>Content block expected for the &quot;parsed-literal&quot; directive; none found.</p>
-<pre class="literal-block">
-..  parsed-literal::
-    :class: code
+<pre class="code literal-block">
+→<a class="reference internal" href="#emitter-superclass-11">Emitter Superclass (11)</a>
 
+→<a class="reference internal" href="#quoting-rule-definitions-functions-used-by-templates-13">Quoting rule definitions -- functions used by templates (13)</a>
 
+→<a class="reference internal" href="#weaver-subclass-uses-jinja-templates-to-weave-documentation-12">Weaver Subclass -- Uses Jinja templates to weave documentation (12)</a>
+
+→<a class="reference internal" href="#tangler-subclass-emits-the-output-files-19">Tangler Subclass -- emits the output files (19)</a>
+
+→<a class="reference internal" href="#tanglermake-subclass-extends-tangler-to-avoid-touching-files-that-didn-t-change-23">TanglerMake Subclass -- extends Tangler to avoid touching files that didn't change (23)</a>
 </pre>
-</div>
-<p>→<a class="reference internal" href="#emitter-superclass-11">Emitter Superclass (11)</a></p>
-<p>→<a class="reference internal" href="#quoting-rule-definitions-functions-used-by-templates-13">Quoting rule definitions -- functions used by templates (13)</a></p>
-<p>→<a class="reference internal" href="#weaver-subclass-uses-jinja-templates-to-weave-documentation-12">Weaver Subclass -- Uses Jinja templates to weave documentation (12)</a></p>
-<p>→<a class="reference internal" href="#tangler-subclass-emits-the-output-files-19">Tangler Subclass -- emits the output files (19)</a></p>
-<p>→<a class="reference internal" href="#tanglermake-subclass-extends-tangler-to-avoid-touching-files-that-didn-t-change-23">TanglerMake Subclass -- extends Tangler to avoid touching files that didn't change (23)</a></p>
 <!--  -->
 <p class="small">∎ <em>Emitter class hierarchy - used to control output files (9)</em></p>
 <p class="rubric" id="imports-10">Imports (10) +=</p>
 <pre class="code literal-block">
 import abc
-
-
 from textwrap import dedent
-
-
 from jinja2 import Environment, DictLoader, select_autoescape
 </pre>
 <!--  -->
@@ -2963,117 +2107,76 @@ from jinja2 import Environment, DictLoader, select_autoescape
 <p class="rubric" id="emitter-superclass-11">Emitter Superclass (11) =</p>
 <pre class="code literal-block">
 class Emitter(abc.ABC):
-
-
     def __init__(self, output: Path):
-
-
         self.logger = logging.getLogger(self.__class__.__qualname__)
-
-
         self.log_indent = logging.getLogger(&quot;indent.&quot; + self.__class__.__qualname__)
-
-
         self.output = output
 
-
-
-
-
-
-&#64;
-abc.abstractmethod
-
-
+        &#64;    abc.abstractmethod
     def emit(self, web: Web) -&gt; None:
-
-
         pass
 </pre>
 <!--  -->
 <p class="small">∎ <em>Emitter Superclass (11)</em></p>
 <p>The Weaver is a <strong>Facade</strong> that wraps Jinja template processing.</p>
 <p class="rubric" id="weaver-subclass-uses-jinja-templates-to-weave-documentation-12">Weaver Subclass -- Uses Jinja templates to weave documentation (12) =</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">src/pyweb.rst</tt>, line 2958)</p>
-<p>Content block expected for the &quot;parsed-literal&quot; directive; none found.</p>
-<pre class="literal-block">
-..  parsed-literal::
-    :class: code
+<pre class="code literal-block">
+→<a class="reference internal" href="#debug-templates-these-display-debugging-information-14">Debug Templates -- these display debugging information (14)</a>
 
+→<a class="reference internal" href="#rst-templates-the-default-weave-output-15">RST Templates -- the default weave output (15)</a>
 
+→<a class="reference internal" href="#html-templates-emit-html-weave-output-16">HTML Templates -- emit HTML weave output (16)</a>
+
+→<a class="reference internal" href="#latex-templates-emit-latex-weave-output-17">LaTeX Templates -- emit LaTeX weave output (17)</a>
+
+→<a class="reference internal" href="#common-base-template-this-is-used-for-all-weaving-18">Common base template -- this is used for ALL weaving (18)</a>
+
+class Weaver(Emitter):
+    template_map = {
+        &quot;debug&quot;: {&quot;default&quot;: debug_weaver_template, &quot;overrides&quot;: &quot;&quot;},
+        &quot;rst&quot;: {&quot;default&quot;: rst_weaver_template, &quot;overrides&quot;: rst_overrides_template},
+        &quot;html&quot;: {&quot;default&quot;: html_weaver_template, &quot;overrides&quot;: html_overrides_template},
+        &quot;tex&quot;: {&quot;default&quot;: latex_weaver_template, &quot;overrides&quot;: &quot;&quot;},
+    }
+
+    quote_rules = {
+        &quot;rst&quot;: rst_quote_rules,
+        &quot;html&quot;: html_quote_rules,
+        &quot;tex&quot;: latex_quote_rules,
+        &quot;debug&quot;: debug_quote_rules,
+    }
+
+    def __init__(self, output: Path = Path.cwd()) -&gt; None:
+        super().__init__(output)
+        # Summary
+        self.linesWritten = 0
+
+    def set_markup(self, markup: str = &quot;rst&quot;) -&gt; &quot;Weaver&quot;:
+        self.markup = markup
+        return self
+
+    def emit(self, web: Web) -&gt; None:
+        self.target_path = (self.output / web.web_path.name).with_suffix(f&quot;.{self.markup}&quot;)
+        self.logger.info(&quot;Weaving %s using %s markup&quot;, self.target_path, self.markup)
+        with self.target_path.open('w') as target_file:
+            for text in self.generate_text(web):
+                self.linesWritten += text.count(&quot;\n&quot;)
+                target_file.write(text)
+
+    def generate_text(self, web: Web) -&gt; Iterator[str]:
+        self.env = Environment(
+            loader=DictLoader(
+                self.template_map[self.markup] |
+                {'base_weaver': base_template,}
+            ),
+            autoescape=select_autoescape()
+        )
+        self.env.filters |= {
+            &quot;quote_rules&quot;: self.quote_rules[self.markup]
+        }
+        template = self.env.get_template(&quot;base_weaver&quot;)
+        yield from template.generate(web=web)
 </pre>
-</div>
-<p>→<a class="reference internal" href="#debug-templates-these-display-debugging-information-14">Debug Templates -- these display debugging information (14)</a></p>
-<p>→<a class="reference internal" href="#rst-templates-the-default-weave-output-15">RST Templates -- the default weave output (15)</a></p>
-<p>→<a class="reference internal" href="#html-templates-emit-html-weave-output-16">HTML Templates -- emit HTML weave output (16)</a></p>
-<p>→<a class="reference internal" href="#latex-templates-emit-latex-weave-output-17">LaTeX Templates -- emit LaTeX weave output (17)</a></p>
-<p>→<a class="reference internal" href="#common-base-template-this-is-used-for-all-weaving-18">Common base template -- this is used for ALL weaving (18)</a></p>
-<blockquote>
-<p>class Weaver(Emitter):</p>
-<blockquote>
-<p>template_map = {</p>
-<blockquote>
-<p>&quot;debug&quot;: {&quot;default&quot;: debug_weaver_template, &quot;overrides&quot;: &quot;&quot;},</p>
-<p>&quot;rst&quot;: {&quot;default&quot;: rst_weaver_template, &quot;overrides&quot;: rst_overrides_template},</p>
-<p>&quot;html&quot;: {&quot;default&quot;: html_weaver_template, &quot;overrides&quot;: html_overrides_template},</p>
-<p>&quot;tex&quot;: {&quot;default&quot;: latex_weaver_template, &quot;overrides&quot;: &quot;&quot;},</p>
-</blockquote>
-<p>}</p>
-<p>quote_rules = {</p>
-<blockquote>
-<p>&quot;rst&quot;: rst_quote_rules,</p>
-<p>&quot;html&quot;: html_quote_rules,</p>
-<p>&quot;tex&quot;: latex_quote_rules,</p>
-<p>&quot;debug&quot;: debug_quote_rules,</p>
-</blockquote>
-<p>}</p>
-<p>def __init__(self, output: Path = Path.cwd()) -&gt; None:</p>
-<blockquote>
-<p>super().__init__(output)</p>
-<p># Summary</p>
-<p>self.linesWritten = 0</p>
-</blockquote>
-<p>def set_markup(self, markup: str = &quot;rst&quot;) -&gt; &quot;Weaver&quot;:</p>
-<blockquote>
-<p>self.markup = markup</p>
-<p>return self</p>
-</blockquote>
-<p>def emit(self, web: Web) -&gt; None:</p>
-<blockquote>
-<p>self.target_path = (self.output / web.web_path.name).with_suffix(f&quot;.{self.markup}&quot;)</p>
-<p>self.logger.info(&quot;Weaving %s using %s markup&quot;, self.target_path, self.markup)</p>
-<p>with self.target_path.open('w') as target_file:</p>
-<blockquote>
-<p>for text in self.generate_text(web):</p>
-<blockquote>
-<p>self.linesWritten += text.count(&quot;\n&quot;)</p>
-<p>target_file.write(text)</p>
-</blockquote>
-</blockquote>
-</blockquote>
-<p>def generate_text(self, web: Web) -&gt; Iterator[str]:</p>
-<blockquote>
-<p>self.env = Environment(</p>
-<blockquote>
-<p>loader=DictLoader(</p>
-<blockquote>
-<p>self.template_map[self.markup] |</p>
-<p>{'base_weaver': base_template,}</p>
-</blockquote>
-<p>),</p>
-<p>autoescape=select_autoescape()</p>
-</blockquote>
-<p>)</p>
-<p>self.env.filters |= {</p>
-<blockquote>
-&quot;quote_rules&quot;: self.quote_rules[self.markup]</blockquote>
-<p>}</p>
-<p>template = self.env.get_template(&quot;base_weaver&quot;)</p>
-<p>yield from template.generate(web=web)</p>
-</blockquote>
-</blockquote>
-</blockquote>
 <!--  -->
 <p class="small">∎ <em>Weaver Subclass -- Uses Jinja templates to weave documentation (12)</em></p>
 <p>The quoting rules apply to the various
@@ -3083,113 +2186,42 @@ proper presentation in the code sample sections.</p>
 <p class="rubric" id="quoting-rule-definitions-functions-used-by-templates-13">Quoting rule definitions -- functions used by templates (13) =</p>
 <pre class="code literal-block">
 def rst_quote_rules(text: str) -&gt; str:
-
-
     quoted_chars = [
-
-
         ('\\', r'\\'), # Must be first.
-
-
         ('`', r'\`'),
-
-
         ('_', r'\_'),
-
-
         ('*', r'\*'),
-
-
         ('|', r'\|'),
-
-
     ]
-
-
     clean = text
-
-
     for from_, to_ in quoted_chars:
-
-
         clean = clean.replace(from_, to_)
-
-
     return clean
-
-
-
 
 def html_quote_rules(text: str) -&gt; str:
-
-
     quoted_chars = [
-
-
         (&quot;&amp;&quot;, &quot;&amp;amp;&quot;),  # Must be first
-
-
         (&quot;&lt;&quot;, &quot;&amp;lt;&quot;),
-
-
         (&quot;&gt;&quot;, &quot;&amp;gt;&quot;),
-
-
         ('&quot;', &quot;&amp;quot;&quot;),  # Only applies inside tags...
-
-
     ]
-
-
     clean = text
-
-
     for from_, to_ in quoted_chars:
-
-
         clean = clean.replace(from_, to_)
-
-
     return clean
-
-
-
 
 def latex_quote_rules(text: str) -&gt; str:
-
-
     quoted_strings = [
-
-
         (&quot;\\end{Verbatim}&quot;, &quot;\\end\\,{Verbatim}&quot;),  # Allow \end{Verbatim} in a Verbatim context
-
-
         (&quot;\\{&quot;, &quot;\\\\,{&quot;), # Prevent unexpected commands in Verbatim
-
-
         (&quot;$&quot;, &quot;\\$&quot;), # Prevent unexpected math in Verbatim
-
-
     ]
-
-
     clean = text
-
-
     for from_, to_ in quoted_strings:
-
-
         clean = clean.replace(from_, to_)
-
-
     return clean
 
-
-
-
 def debug_quote_rules(text: str) -&gt; str:
-
-
     return repr(text)
 </pre>
 <!--  -->
@@ -3229,100 +2261,37 @@ the standard weaving structure.</p>
 <p class="rubric" id="debug-templates-these-display-debugging-information-14">Debug Templates -- these display debugging information (14) =</p>
 <pre class="code literal-block">
 debug_weaver_template = dedent(&quot;&quot;&quot;\
-
-
     {%- macro text(command) -%}
-
-
     text: {{command}}
-
-
     {%- endmacro -%}
-
-
-
-
 
     {%- macro begin_code(chunk) %}
-
-
     begin_code: {{chunk}}
-
-
     {%- endmacro -%}
-
-
-
-
 
     {%- macro code(command) %}
-
-
     code: {{command}}
-
-
     {%- endmacro -%}
-
-
-
-
 
     {%- macro ref(id) %}
-
-
     ref: {{id}}
-
-
     {%- endmacro -%}
-
-
-
-
 
     {%- macro end_code(chunk) %}
-
-
     end_code: {{chunk}}
-
-
     {% endmacro -%}
 
-
-
-
-
     {%- macro file_xref(command) -%}
-
-
     file_xref {{command.files}}
-
-
     {%- endmacro -%}
-
-
-
-
 
     {%- macro macro_xref(command) -%}
-
-
     macro_xref {{command.macros}}
-
-
     {%- endmacro -%}
-
-
-
 
     {%- macro userid_xref(command) -%}
-
-
     userid_xref {{command.userids}}
-
-
     {%- endmacro -%}
-
-
     &quot;&quot;&quot;)
 </pre>
 <!--  -->
@@ -3331,165 +2300,56 @@ debug_weaver_template = dedent(&quot;&quot;&quot;\
 <p class="rubric" id="rst-templates-the-default-weave-output-15">RST Templates -- the default weave output (15) =</p>
 <pre class="code literal-block">
 rst_weaver_template = dedent(&quot;&quot;&quot;\
-
-
     {%- macro text(command) -%}
-
-
     {{command.text}}
-
-
     {%- endmacro -%}
 
-
-
-
-
     {%- macro begin_code(chunk) %}
-
-
     ..  _`{{chunk.full_name or chunk.name}} ({{chunk.seq}})`:
-
-
     ..  rubric:: {{chunk.full_name or chunk.name}} ({{chunk.seq}}) {% if chunk.initial %}={% else %}+={% endif %}
-
-
     ..  parsed-literal::
-
-
         :class: code
-
 
     {% endmacro -%}
 
+    {%- macro code(command) %}    {{command.text | quote_rules}}{%- endmacro -%}
 
-
-
-
-    {%- macro code(command) %}
-
-
-        {{command.text | quote_rules}}
-
-
-    {%- endmacro -%}
-
-
-
-
-
-    {%- macro ref(id) %}
-
-
-        \N{RIGHTWARDS ARROW}\ `{{id.full_name}} ({{id.seq}})`_
-
-
-    {%- endmacro -%}
-
-
-
-
+    {%- macro ref(id) %}    \N{RIGHTWARDS ARROW}\ `{{id.full_name}} ({{id.seq}})`_{%- endmacro -%}
 
     {%- macro end_code(chunk) %}
-
-
     ..
-
-
-
-
 
     ..  class:: small
 
-
-
-
-
         \N{END OF PROOF} *{{chunk.full_name or chunk.name}} ({{chunk.seq}})*
-
-
-
-
 
     {% endmacro -%}
 
-
-
-
-
     {%- macro file_xref(command) -%}
-
-
     {% for file in command.files -%}
-
-
     :{{file.name}}:
-
-
         \N{RIGHTWARDS ARROW}\ `{{file.name}} ({{file.seq}})`_
-
-
     {%- endfor %}
-
-
     {%- endmacro -%}
-
-
-
-
 
     {%- macro macro_xref(command) -%}
-
-
     {% for macro in command.macros -%}
-
-
     :{{macro.full_name}}:
-
-
         {% for d in macro.def_list -%}\N{RIGHTWARDS ARROW}\ `{{d.full_name or d.name}} ({{d.seq}})`_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
 
-
-
-
-
     {% endfor %}
-
-
     {%- endmacro -%}
-
-
-
 
     {%- macro userid_xref(command) -%}
-
-
     {% for userid in command.userids -%}
-
-
     :{{userid.userid}}:
-
-
         {% for r in userid.ref_list -%}\N{RIGHTWARDS ARROW}\ `{{r.full_name or r.name}} ({{r.seq}})`_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
 
-
-
-
-
     {% endfor %}
-
-
     {%- endmacro -%}
-
-
     &quot;&quot;&quot;)
 
-
-
-
 rst_overrides_template = dedent(&quot;&quot;&quot;\
-
-
     &quot;&quot;&quot;)
 </pre>
 <!--  -->
@@ -3501,165 +2361,55 @@ tailor HTML output via CSS changes, avoiding any HTML modifications.</p>
 <p class="rubric" id="html-templates-emit-html-weave-output-16">HTML Templates -- emit HTML weave output (16) =</p>
 <pre class="code literal-block">
 html_weaver_template = dedent(&quot;&quot;&quot;\
-
-
     {%- macro text(command) -%}
-
-
     {{command.text}}
-
-
     {%- endmacro -%}
-
-
-
-
 
     {%- macro begin_code(chunk) %}
-
-
     &lt;a name=&quot;pyweb_{{chunk.seq}}&quot;&gt;&lt;/a&gt;
-
-
     &lt;!--line number {{chunk.location}}--&gt;
-
-
     &lt;p&gt;&lt;em&gt;{{chunk.full_name or chunk.name}} ({{chunk.seq}})&lt;/em&gt; {% if chunk.initial %}={% else %}+={% endif %}&lt;/p&gt;
-
-
     &lt;pre&gt;&lt;code&gt;
-
-
     {%- endmacro -%}
 
+    {%- macro code(command) -%}{{command.text | quote_rules}}{%- endmacro -%}
 
-
-
-
-    {%- macro code(command) -%}
-
-
-    {{command.text | quote_rules}}
-
-
-    {%- endmacro -%}
-
-
-
-
-
-    {%- macro ref(id) %}
-
-
-    &amp;rarr;&lt;a href=&quot;#pyweb_{{id.seq}}&quot;&gt;&lt;em&gt;{{id.full_name}} ({{id.seq}})&lt;/em&gt;&lt;/a&gt;
-
-
-    {% endmacro -%}
-
-
-
-
+    {%- macro ref(id) %}&amp;rarr;&lt;a href=&quot;#pyweb_{{id.seq}}&quot;&gt;&lt;em&gt;{{id.full_name}} ({{id.seq}})&lt;/em&gt;&lt;/a&gt;{% endmacro -%}
 
     {%- macro end_code(chunk) %}
-
-
     &lt;/code&gt;&lt;/pre&gt;
-
-
     &lt;p&gt;&amp;#8718; &lt;em&gt;{{chunk.full_name or chunk.name}} ({{chunk.seq}})&lt;/em&gt;.
-
-
     &lt;/p&gt;
-
-
     {% endmacro -%}
-
-
-
-
 
     {%- macro file_xref(command) %}
-
-
     &lt;dl&gt;
-
-
     {% for file in command.files -%}
-
-
       &lt;dt&gt;{{file.name}}&lt;/dt&gt;&lt;dd&gt;{{ref(file)}}&lt;/dd&gt;
-
-
     {%- endfor %}
-
-
     &lt;/dl&gt;
-
-
     {% endmacro -%}
-
-
-
-
 
     {%- macro macro_xref(command) %}
-
-
     &lt;dl&gt;
-
-
     {% for macro in command.macros -%}
-
-
       &lt;dt&gt;{{macro.full_name}}&lt;dt&gt;
-
-
       &lt;dd&gt;{% for d in macro.def_list -%}{{ref(d)}}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}&lt;/dd&gt;
-
-
     {% endfor %}
-
-
     &lt;/dl&gt;
-
-
     {% endmacro -%}
-
-
-
 
     {%- macro userid_xref(command) %}
-
-
     &lt;dl&gt;
-
-
     {% for userid in command.userids -%}
-
-
       &lt;dt&gt;{{userid.userid}}&lt;/dt&gt;
-
-
       &lt;dd&gt;{% for r in userid.ref_list -%}{{ref(r)}}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}&lt;/dd&gt;
-
-
     {% endfor %}
-
-
     &lt;/dl&gt;
-
-
     {% endmacro -%}
-
-
     &quot;&quot;&quot;)
 
-
-
-
 html_overrides_template = dedent(&quot;&quot;&quot;\
-
-
     &quot;&quot;&quot;)
 </pre>
 <!--  -->
@@ -3669,154 +2419,51 @@ Common alternatives include <tt class="docutils literal">listings</tt> and <tt c
 <p class="rubric" id="latex-templates-emit-latex-weave-output-17">LaTeX Templates -- emit LaTeX weave output (17) =</p>
 <pre class="code literal-block">
 latex_weaver_template = dedent(&quot;&quot;&quot;\
-
-
     {%- macro text(command) -%}
-
-
     {{command.text}}
-
-
     {%- endmacro -%}
-
-
-
-
 
     {%- macro begin_code(chunk) %}
-
-
     \\label{pyweb-{{chunk.seq}}}
-
-
     \\begin{flushleft}
-
-
     \\textit{Code example {{chunk.full_name or chunk.name}} ({{chunk.seq}})}
-
-
     \\begin{Verbatim}[commandchars=\\\\\\{\\},codes={\\catcode`$$=3\\catcode`^=7},frame=single]
-
-
     {%- endmacro -%}
 
+    {%- macro code(command) -%}{{command.text | quote_rules}}{%- endmacro -%}
 
-
-
-
-    {%- macro code(command) -%}
-
-
-    {{command.text | quote_rules}}
-
-
-    {%- endmacro -%}
-
-
-
-
-
-    {%- macro ref(id) %}
-
-
-    $$\\triangleright$$ Code Example {{id.full_name}} ({{id.seq}})
-
-
-    {% endmacro -%}
-
-
-
-
+    {%- macro ref(id) %}$$\\rightarrow$$ Code Example {{id.full_name}} ({{id.seq}}){% endmacro -%}
 
     {%- macro end_code(chunk) %}
-
-
     \\end{Verbatim}
-
-
     \\end{flushleft}
-
-
     {% endmacro -%}
-
-
-
-
 
     {%- macro file_xref(command) %}
-
-
     \\begin{itemize}
-
-
     {% for file in command.files -%}
-
-
       \\item {{file.name}}: {{ref(file)}}
-
-
     {%- endfor %}
-
-
     \\end{itemize}
-
-
     {% endmacro -%}
-
-
-
-
 
     {%- macro macro_xref(command) %}
-
-
     \\begin{itemize}
-
-
     {% for macro in command.macros -%}
-
-
       \\item {{macro.full_name}} \\\\
-
-
             {% for d in macro.def_list -%}{{ref(d)}}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
-
-
     {% endfor %}
-
-
     \\end{itemize}
-
-
     {% endmacro -%}
-
-
-
 
     {%- macro userid_xref(command) %}
-
-
     \\begin{itemize}
-
-
     {% for userid in command.userids -%}
-
-
       \\item {{userid.userid}} \\\\
-
-
             {% for r in userid.ref_list -%}{{ref(r)}}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
-
-
     {% endfor %}
-
-
     \\end{itemize}
-
-
     {% endmacro -%}
-
-
     &quot;&quot;&quot;)
 </pre>
 <!--  -->
@@ -3824,74 +2471,28 @@ latex_weaver_template = dedent(&quot;&quot;&quot;\
 <p class="rubric" id="common-base-template-this-is-used-for-all-weaving-18">Common base template -- this is used for ALL weaving (18) =</p>
 <pre class="code literal-block">
 base_template = dedent(&quot;&quot;&quot;\
-
-
     {%- from 'default' import text, begin_code, code, end_code, file_xref, macro_xref, userid_xref, ref, ref_list -%}{#- default macros from rst_weaver -#}
-
-
     {#- from 'overrides' import *the names* -#}{#- customized macros from WEB document -#}
-
-
     {% for chunk in web.chunks -%}
-
-
         {%- if chunk.typeid.OutputChunk or chunk.typeid.NamedChunk -%}
-
-
             {{begin_code(chunk)}}
-
-
             {%- for command in chunk.commands -%}
-
-
                 {%- if command.typeid.CodeCommand -%}{{code(command)}}
-
-
                 {%- elif command.typeid.ReferenceCommand -%}{{ref(command)}}
-
-
                 {%- endif -%}
-
-
             {%- endfor -%}
-
-
             {{end_code(chunk)}}
-
-
         {%- elif chunk.typeid.Chunk -%}
-
-
             {%- for command in chunk.commands -%}
-
-
                 {%- if command.typeid.TextCommand %}{{text(command)}}
-
-
                 {%- elif command.typeid.ReferenceCommand %}{{ref(command)}}
-
-
                 {%- elif command.typeid.FileXrefCommand %}{{file_xref(command)}}
-
-
                 {%- elif command.typeid.MacroXrefCommand %}{{macro_xref(command)}}
-
-
                 {%- elif command.typeid.UserIdXrefCommand %}{{userid_xref(command)}}
-
-
                 {%- endif -%}
-
-
             {%- endfor -%}
-
-
         {%- endif -%}
-
-
     {%- endfor %}
-
-
 &quot;&quot;&quot;)
 </pre>
 <!--  -->
@@ -3933,165 +2534,62 @@ to the additional parts of the definition.</p>
 <p class="rubric" id="tangler-subclass-emits-the-output-files-19">Tangler Subclass -- emits the output files (19) =</p>
 <pre class="code literal-block">
 class Tangler(Emitter):
-
-
     code_indent = 0  #: Initial indent
 
-
-
-
     def __init__(self, output: Path = Path.cwd()) -&gt; None:
-
-
         super().__init__(output)
-
-
         self.context: list[int] = []
-
-
         self.resetIndent(self.code_indent)  # Create context and initial lastIndent values
-
-
         # Summary
-
-
         self.linesWritten = 0
-
-
         self.totalFiles = 0
-
-
         self.totalLines = 0
 
-
-
-
     def emit(self, web: Web) -&gt; None:
-
-
         for file_chunk in web.files:
-
-
             self.logger.info(&quot;Tangling %s&quot;, file_chunk.name)
-
-
             self.emit_file(web, file_chunk)
 
-
-
-
-
     def emit_file(self, web: Web, file_chunk: Chunk) -&gt; None:
-
-
         target_path = self.output / file_chunk.name
-
-
         self.logger.debug(&quot;Writing %s&quot;, target_path)
-
-
         self.logger.debug(&quot;Chunk %r&quot;, file_chunk)
-
-
         with target_path.open(&quot;w&quot;) as target:
-
-
             # An initial command to provide indentations.
-
-
             for command in file_chunk.commands:
-
-
                 command.tangle(self, target)
 
+        →<a class="reference internal" href="#emitter-write-a-block-of-code-with-proper-indents-20">Emitter write a block of code with proper indents (20)</a>
 
-
-
-
-    →<a class="reference internal" href="#emitter-write-a-block-of-code-with-proper-indents-20">Emitter write a block of code with proper indents (20)</a>
-
-
-
-
-    →<a class="reference internal" href="#emitter-indent-control-set-clear-and-reset-21">Emitter indent control: set, clear and reset (21)</a>
+        →<a class="reference internal" href="#emitter-indent-control-set-clear-and-reset-21">Emitter indent control: set, clear and reset (21)</a>
 </pre>
 <!--  -->
 <p class="small">∎ <em>Tangler Subclass -- emits the output files (19)</em></p>
 <p class="rubric" id="emitter-write-a-block-of-code-with-proper-indents-20">Emitter write a block of code with proper indents (20) =</p>
 <pre class="code literal-block">
 def codeBlock(self, target: TextIO, text: str) -&gt; None:
-
-
     &quot;&quot;&quot;Indented write of text in a ``CodeCommand``.
-
-
-    Counts lines and saves position to indent to when expanding ``
-&#64;
-&lt;...
-&#64;
-&gt;`` references.
-
-
-
-
+    Counts lines and saves position to indent to when expanding ``    &#64;    &lt;...    &#64;    &gt;`` references.
 
     The ``lastIndent`` is the prevailing indent used in reference expansion.
-
-
     &quot;&quot;&quot;
-
-
     indent = self.context[-1]
-
-
     if len(text) == 0:
-
-
         # Degenerate case of empty CodeText command
-
-
         pass
-
-
     elif text == '\n':
-
-
         self.linesWritten += 1
-
-
         target.write(text)
-
-
         self.lastIndent = 0
-
-
         self.fragment = False  # Generally, also means lastIndent == 0
-
-
     else:
-
-
         if not self.fragment:
-
-
             # First thing after '\n'
-
-
             target.write(indent*' ')
-
-
             wrote = target.write(text)
-
-
             self.lastIndent = wrote
-
-
             self.fragment = True
-
-
         else:
-
-
             target.write(text)
 </pre>
 <!--  -->
@@ -4105,68 +2603,26 @@ to a default.</p>
 <p class="rubric" id="emitter-indent-control-set-clear-and-reset-21">Emitter indent control: set, clear and reset (21) =</p>
 <pre class="code literal-block">
 def addIndent(self, increment: int) -&gt; None:
-
-
     self.lastIndent = self.context[-1]+increment
-
-
     self.context.append(self.lastIndent)
-
-
     self.log_indent.debug(&quot;addIndent %d: %r&quot;, increment, self.context)
 
-
-
-
-
 def setIndent(self, indent: int) -&gt; None:
-
-
     self.context.append(indent)
-
-
     self.lastIndent = self.context[-1]
-
-
     self.log_indent.debug(&quot;setIndent %d: %r&quot;, indent, self.context)
 
-
-
-
-
 def clrIndent(self) -&gt; None:
-
-
     if len(self.context) &gt; 1:
-
-
         self.context.pop()
-
-
     self.lastIndent = self.context[-1]
-
-
     self.log_indent.debug(&quot;clrIndent %r&quot;, self.context)
 
-
-
-
-
 def resetIndent(self, indent: int = 0) -&gt; None:
-
-
     &quot;&quot;&quot;Resets the indentation context.&quot;&quot;&quot;
-
-
     self.lastIndent = indent
-
-
     self.context = [self.lastIndent]
-
-
     self.fragment = False  # Nothing written yet
-
-
     self.log_indent.debug(&quot;resetIndent %d: %r&quot;, indent, self.context)
 </pre>
 <!--  -->
@@ -4175,11 +2631,7 @@ def resetIndent(self, indent: int = 0) -&gt; None:
 <p class="rubric" id="imports-22">Imports (22) +=</p>
 <pre class="code literal-block">
 import filecmp
-
-
 import tempfile
-
-
 import os
 </pre>
 <!--  -->
@@ -4187,88 +2639,33 @@ import os
 <p class="rubric" id="tanglermake-subclass-extends-tangler-to-avoid-touching-files-that-didn-t-change-23">TanglerMake Subclass -- extends Tangler to avoid touching files that didn't change (23) =</p>
 <pre class="code literal-block">
 class TanglerMake(Tangler):
-
-
     def emit_file(self, web: Web, file_chunk: Chunk) -&gt; None:
-
-
         target_path = self.output / file_chunk.name
-
-
         self.logger.debug(&quot;Writing %s via a temp file&quot;, target_path)
-
-
         self.logger.debug(&quot;Chunk %r&quot;, file_chunk)
 
-
-
-
         fd, tempname = tempfile.mkstemp(dir=os.curdir)
-
-
         with os.fdopen(fd, &quot;w&quot;) as target:
-
-
             for command in file_chunk.commands:
-
-
                 command.tangle(self, target)
 
-
-
-
-
         try:
-
-
             same = filecmp.cmp(tempname, target_path)
-
-
         except OSError as e:
-
-
             same = False  # Doesn't exist. (Could check for errno.ENOENT)
 
-
-
-
-
         if same:
-
-
             self.logger.info(&quot;Unchanged '%s'&quot;, target_path)
-
-
             os.remove(tempname)
-
-
         else:
-
-
             # Windows requires the original file name be removed first.
-
-
             try:
-
-
                 target_path.unlink()
-
-
             except OSError as e:
-
-
                 pass  # Doesn't exist. (Could check for errno.ENOENT)
-
-
             target_path.parent.mkdir(parents=True, exist_ok=True)
-
-
             target_path.hardlink_to(tempname)
-
-
             os.remove(tempname)
-
-
             self.logger.info(&quot;Wrote %d lines to %s&quot;, self.linesWritten, target_path)
 </pre>
 <!--  -->
@@ -4287,28 +2684,12 @@ this object.</p>
 <p class="rubric" id="reference-class-hierarchy-strategies-for-weaving-references-to-a-chunk-24">Reference class hierarchy - strategies for weaving references to a chunk (24) =</p>
 <pre class="code literal-block">
 class Reference(abc.ABC):
-
-
     def __init__(self) -&gt; None:
-
-
         self.logger = logging.getLogger(self.__class__.__qualname__)
 
-
-
-
-
-
-&#64;
-abc.abstractmethod
-
-
+        &#64;    abc.abstractmethod
     def chunkReferencedBy(self, aChunk: Chunk) -&gt; list[Chunk]:
-
-
         &quot;&quot;&quot;Return a list of Chunks.&quot;&quot;&quot;
-
-
         ...
 </pre>
 <!--  -->
@@ -4318,14 +2699,8 @@ the <tt class="docutils literal">Chunk</tt> instances referenced.</p>
 <p class="rubric" id="reference-class-hierarchy-strategies-for-weaving-references-to-a-chunk-25">Reference class hierarchy - strategies for weaving references to a chunk (25) +=</p>
 <pre class="code literal-block">
 class SimpleReference(Reference):
-
-
     def chunkReferencedBy(self, aChunk: Chunk) -&gt; list[Chunk]:
-
-
         refBy = [aChunk.referencedBy]
-
-
         return refBy
 </pre>
 <!--  -->
@@ -4337,46 +2712,18 @@ references to this <tt class="docutils literal">Chunk</tt>.</p>
 <p class="rubric" id="reference-class-hierarchy-strategies-for-weaving-references-to-a-chunk-26">Reference class hierarchy - strategies for weaving references to a chunk (26) +=</p>
 <pre class="code literal-block">
 class TransitiveReference(Reference):
-
-
     def chunkReferencedBy(self, aChunk: Chunk) -&gt; list[Chunk]:
-
-
         refBy = aChunk.referencedBy
-
-
         all_refs = list(self.allParentsOf(refBy))
-
-
         self.logger.debug(&quot;References: %r(%d) %r&quot;, aChunk.name, aChunk.seq, all_refs)
-
-
         return all_refs
 
-
-
-
-
-
-&#64;
-staticmethod
-
-
+        &#64;    staticmethod
     def allParentsOf(chunk: Chunk | None, depth: int = 0) -&gt; Iterator[Chunk]:
-
-
         &quot;&quot;&quot;Transitive closure of parents via recursive ascent.
-
-
         &quot;&quot;&quot;
-
-
         if chunk:
-
-
             yield chunk
-
-
             yield from TransitiveReference.allParentsOf(chunk.referencedBy, depth+1)
 </pre>
 <!--  -->
@@ -4386,19 +2733,13 @@ staticmethod
 <div class="section" id="input-parsing">
 <h2><a class="toc-backref" href="#toc-entry-40">Input Parsing</a></h2>
 <p class="rubric" id="base-class-definitions-27">Base Class Definitions (27) +=</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">src/pyweb.rst</tt>, line 4644)</p>
-<p>Content block expected for the &quot;parsed-literal&quot; directive; none found.</p>
-<pre class="literal-block">
-..  parsed-literal::
-    :class: code
+<pre class="code literal-block">
+→<a class="reference internal" href="#tokenizer-class-breaks-input-into-tokens-45">Tokenizer class - breaks input into tokens (45)</a>
 
+→<a class="reference internal" href="#option-parser-class-locates-optional-values-on-commands-47">Option Parser class - locates optional values on commands (47)</a>
 
+→<a class="reference internal" href="#webreader-class-parses-the-input-file-building-the-web-structure-28">WebReader class - parses the input file, building the Web structure (28)</a>
 </pre>
-</div>
-<p>→<a class="reference internal" href="#tokenizer-class-breaks-input-into-tokens-45">Tokenizer class - breaks input into tokens (45)</a></p>
-<p>→<a class="reference internal" href="#option-parser-class-locates-optional-values-on-commands-47">Option Parser class - locates optional values on commands (47)</a></p>
-<p>→<a class="reference internal" href="#webreader-class-parses-the-input-file-building-the-web-structure-28">WebReader class - parses the input file, building the Web structure (28)</a></p>
 <!--  -->
 <p class="small">∎ <em>Base Class Definitions (27)</em></p>
 <div class="section" id="the-webreader-class">
@@ -4480,166 +2821,60 @@ when <tt class="docutils literal">load()</tt> is called.</td>
 <p class="rubric" id="webreader-class-parses-the-input-file-building-the-web-structure-28">WebReader class - parses the input file, building the Web structure (28) =</p>
 <pre class="code literal-block">
 class WebReader:
-
-
     &quot;&quot;&quot;Parse an input file, creating Chunks and Commands.&quot;&quot;&quot;
 
-
-
-
     output_option_parser = OptionParser(
-
-
         OptionDef(&quot;-start&quot;, nargs=1, default=None),
-
-
         OptionDef(&quot;-end&quot;, nargs=1, default=&quot;&quot;),
-
-
         OptionDef(&quot;argument&quot;, nargs='*'),
-
-
     )
-
-
-
 
     # TODO: Allow a numeric argument value in ``-indent``
-
-
     definition_option_parser = OptionParser(
-
-
         OptionDef(&quot;-indent&quot;, nargs=0),
-
-
         OptionDef(&quot;-noindent&quot;, nargs=0),
-
-
         OptionDef(&quot;argument&quot;, nargs='*'),
-
-
     )
 
-
-
-
-
     # Configuration
-
-
     command: str
-
-
     permitList: list[str]
-
-
     base_path: Path
 
-
-
-
-
     # State of the reader
-
-
     filePath: Path  #: Input Path
-
-
     _source: TextIO  #: Input file
-
-
     tokenizer: Tokenizer  #: The tokenizer used to find commands
-
-
     content: list[Chunk]  #: The sequence of Chunk instances being built
-
-
     text_command: type[Command]
 
-
-
-
     def __init__(self, parent: Optional[&quot;WebReader&quot;] = None) -&gt; None:
-
-
         self.logger = logging.getLogger(self.__class__.__qualname__)
 
-
-
-
         # Configuration comes from the parent or defaults if there is no parent.
-
-
         self.parent = parent
-
-
         if self.parent:
-
-
             self.command = self.parent.command
-
-
             self.permitList = self.parent.permitList
-
-
         else: # Defaults until overridden
-
-
-            self.command = '
-&#64;
-'
-
-
+            self.command = '    &#64;    '
             self.permitList = []
 
-
-
-
-
         # Summary
-
-
         self.totalLines = 0
-
-
         self.totalFiles = 0
-
-
         self.errors = 0
 
-
-
-
-
-        →<a class="reference internal" href="#webreader-command-literals-43">WebReader command literals (43)</a>
-
-
-
-
+            →<a class="reference internal" href="#webreader-command-literals-43">WebReader command literals (43)</a>
 
     def __str__(self) -&gt; str:
-
-
         return self.__class__.__name__
 
+        →<a class="reference internal" href="#webreader-location-in-the-input-stream-40">WebReader location in the input stream (40)</a>
 
+        →<a class="reference internal" href="#webreader-load-the-web-42">WebReader load the web (42)</a>
 
-
-
-    →<a class="reference internal" href="#webreader-location-in-the-input-stream-40">WebReader location in the input stream (40)</a>
-
-
-
-
-
-    →<a class="reference internal" href="#webreader-load-the-web-42">WebReader load the web (42)</a>
-
-
-
-
-
-    →<a class="reference internal" href="#webreader-handle-a-command-string-29">WebReader handle a command string (29)</a>
+        →<a class="reference internal" href="#webreader-handle-a-command-string-29">WebReader handle a command string (29)</a>
 </pre>
 <!--  -->
 <p class="small">∎ <em>WebReader class - parses the input file, building the Web structure (28)</em></p>
@@ -4673,105 +2908,37 @@ by <tt class="docutils literal">load()</tt> is to treat the command as a syntax 
 <p class="rubric" id="webreader-handle-a-command-string-29">WebReader handle a command string (29) =</p>
 <pre class="code literal-block">
 def handleCommand(self, token: str) -&gt; bool:
-
-
     self.logger.debug(&quot;Reading %r&quot;, token)
 
-
-
-
-
     match token[:2]:
-
-
         case self.cmdo:
-
-
-            →<a class="reference internal" href="#start-an-outputchunk-adding-it-to-the-web-30">start an OutputChunk, adding it to the web (30)</a>
-
-
+                →<a class="reference internal" href="#start-an-outputchunk-adding-it-to-the-web-30">start an OutputChunk, adding it to the web (30)</a>
         case self.cmdd:
-
-
-            →<a class="reference internal" href="#start-a-namedchunk-or-nameddocumentchunk-adding-it-to-the-web-31">start a NamedChunk or NamedDocumentChunk, adding it to the web (31)</a>
-
-
+                →<a class="reference internal" href="#start-a-namedchunk-or-nameddocumentchunk-adding-it-to-the-web-31">start a NamedChunk or NamedDocumentChunk, adding it to the web (31)</a>
         case self.cmdi:
-
-
-            →<a class="reference internal" href="#include-another-file-32">include another file (32)</a>
-
-
+                →<a class="reference internal" href="#include-another-file-32">include another file (32)</a>
         case self.cmdrcurl | self.cmdrbrak:
-
-
-            →<a class="reference internal" href="#finish-a-chunk-start-a-new-chunk-adding-it-to-the-web-33">finish a chunk, start a new Chunk adding it to the web (33)</a>
-
-
+                →<a class="reference internal" href="#finish-a-chunk-start-a-new-chunk-adding-it-to-the-web-33">finish a chunk, start a new Chunk adding it to the web (33)</a>
         case self.cmdpipe:
-
-
-            →<a class="reference internal" href="#assign-user-identifiers-to-the-current-chunk-34">assign user identifiers to the current chunk (34)</a>
-
-
+                →<a class="reference internal" href="#assign-user-identifiers-to-the-current-chunk-34">assign user identifiers to the current chunk (34)</a>
         case self.cmdf:
-
-
             self.content[-1].commands.append(FileXrefCommand(self.location()))
-
-
         case self.cmdm:
-
-
             self.content[-1].commands.append(MacroXrefCommand(self.location()))
-
-
         case self.cmdu:
-
-
             self.content[-1].commands.append(UserIdXrefCommand(self.location()))
-
-
         case self.cmdlangl:
-
-
-            →<a class="reference internal" href="#add-a-reference-command-to-the-current-chunk-35">add a reference command to the current chunk (35)</a>
-
-
+                →<a class="reference internal" href="#add-a-reference-command-to-the-current-chunk-35">add a reference command to the current chunk (35)</a>
         case self.cmdlexpr:
-
-
-            →<a class="reference internal" href="#add-an-expression-command-to-the-current-chunk-37">add an expression command to the current chunk (37)</a>
-
-
+                →<a class="reference internal" href="#add-an-expression-command-to-the-current-chunk-37">add an expression command to the current chunk (37)</a>
         case self.cmdcmd:
-
-
-            →<a class="reference internal" href="#double-at-sign-replacement-append-this-character-to-previous-textcommand-38">double at-sign replacement, append this character to previous TextCommand (38)</a>
-
-
+                →<a class="reference internal" href="#double-at-sign-replacement-append-this-character-to-previous-textcommand-38">double at-sign replacement, append this character to previous TextCommand (38)</a>
         case self.cmdlcurl | self.cmdlbrak:
-
-
-            # These should have been consumed as part of
-&#64;
-o and
-&#64;
-d parsing
-
-
+            # These should have been consumed as part of     &#64;    o and     &#64;    d parsing
             self.logger.error(&quot;Extra %r (possibly missing chunk name) near %r&quot;, token, self.location())
-
-
             self.errors += 1
-
-
         case _:
-
-
             return False  # did not recogize the command
-
-
     return True  # did recognize the command
 </pre>
 <!--  -->
@@ -4786,44 +2953,18 @@ us build an appropriate instance of <tt class="docutils literal">OutputChunk</tt
 <p class="rubric" id="start-an-outputchunk-adding-it-to-the-web-30">start an OutputChunk, adding it to the web (30) =</p>
 <pre class="code literal-block">
 args = next(self.tokenizer)
-
-
 self.expect({self.cmdlcurl})
-
-
 options = self.output_option_parser.parse(args)
-
-
 newChunk = OutputChunk(
-
-
     name=' '.join(options['argument']),
-
-
     comment_start=''.join(options.get('start', &quot;# &quot;)),
-
-
     comment_end=''.join(options.get('end', &quot;&quot;)),
-
-
 )
-
-
 newChunk.filePath = self.filePath
-
-
 self.content.append(newChunk)
-
-
 self.text_command = CodeCommand
-
-
 # self.content[-1].commands.append(CodeCommand(&quot;&quot;, self.location()))
-
-
-# capture an OutputChunk up to
-&#64;
-}
+# capture an OutputChunk up to     &#64;    }
 </pre>
 <!--  -->
 <p class="small">∎ <em>start an OutputChunk, adding it to the web (30)</em></p>
@@ -4844,74 +2985,28 @@ If both are in the options, we should provide a warning.</p>
 <p class="rubric" id="start-a-namedchunk-or-nameddocumentchunk-adding-it-to-the-web-31">start a NamedChunk or NamedDocumentChunk, adding it to the web (31) =</p>
 <pre class="code literal-block">
 args = next(self.tokenizer)
-
-
 brack = self.expect({self.cmdlcurl, self.cmdlbrak})
-
-
 options = self.output_option_parser.parse(args)
-
-
 name = ' '.join(options['argument'])
 
-
-
-
 if brack == self.cmdlbrak:
-
-
     newChunk = NamedDocumentChunk(name)
-
-
 elif brack == self.cmdlcurl:
-
-
     if '-noindent' in options:
-
-
         newChunk = NamedChunk_Noindent(name)
-
-
     else:
-
-
         newChunk = NamedChunk(name)
-
-
 elif brack == None:
-
-
     newChunk = None
-
-
     pass # Error noted by expect()
-
-
 else:
-
-
     raise Error(&quot;Design Error&quot;)
 
-
-
-
 if newChunk:
-
-
     self.content.append(newChunk)
-
-
 self.text_command = CodeCommand
-
-
 # self.content[-1].commands.append(CodeCommand(&quot;&quot;, self.location()))
-
-
-# capture a NamedChunk up to
-&#64;
-} or
-&#64;
-]
+# capture a NamedChunk up to     &#64;    } or     &#64;    ]
 </pre>
 <!--  -->
 <p class="small">∎ <em>start a NamedChunk or NamedDocumentChunk, adding it to the web (31)</em></p>
@@ -4941,70 +3036,26 @@ can weave the test output file into a final, complete document.</p>
 <p class="rubric" id="include-another-file-32">include another file (32) =</p>
 <pre class="code literal-block">
 incPath = Path(next(self.tokenizer).strip())
-
-
 try:
-
-
     include = WebReader(parent=self)
-
-
     if not incPath.is_absolute():
-
-
         incPath = self.base_path / incPath
-
-
     self.logger.info(&quot;Including '%s'&quot;, incPath)
-
-
     self.content.extend(include.load(incPath))
-
-
     self.totalLines += include.tokenizer.lineNumber
-
-
     self.totalFiles += include.totalFiles
-
-
     if include.errors:
-
-
         self.errors += include.errors
-
-
         self.logger.error(&quot;Errors in included file '%s', output is incomplete.&quot;, incPath)
-
-
 except Error as e:
-
-
     self.logger.error(&quot;Problems with included file '%s', output is incomplete.&quot;, incPath)
-
-
     self.errors += 1
-
-
 except IOError as e:
-
-
     self.logger.error(&quot;Problems finding included file '%s', output is incomplete.&quot;, incPath)
-
-
     # Discretionary -- sometimes we want to continue
-
-
     if self.cmdi in self.permitList: pass
-
-
     else: raise  # Seems heavy-handed, but, the file wasn't found!
-
-
-# Start a new context for text or commands *after* the ``
-&#64;
-i``.
-
-
+# Start a new context for text or commands *after* the ``    &#64;    i``.
 self.content.append(Chunk())
 </pre>
 <!--  -->
@@ -5020,11 +3071,7 @@ For the base <tt class="docutils literal">Chunk</tt> class, this would be false,
 <p class="rubric" id="finish-a-chunk-start-a-new-chunk-adding-it-to-the-web-33">finish a chunk, start a new Chunk adding it to the web (33) =</p>
 <pre class="code literal-block">
 # Start a new context for text or commands *after* this command.
-
-
 self.content.append(Chunk())
-
-
 self.text_command = TextCommand
 </pre>
 <!--  -->
@@ -5041,25 +3088,11 @@ These are accumulated and expanded by <tt class="docutils literal">&#64;u</tt> r
 <p class="rubric" id="assign-user-identifiers-to-the-current-chunk-34">assign user identifiers to the current chunk (34) =</p>
 <pre class="code literal-block">
 try:
-
-
     names = next(self.tokenizer).strip().split()
-
-
     self.content[-1].def_names.extend(names)
-
-
 except AttributeError:
-
-
-    # Out of place
-&#64;
-| user identifier command
-
-
+    # Out of place     &#64;    | user identifier command
     self.logger.error(&quot;Unexpected references near %r: %r&quot;, self.location(), token)
-
-
     self.errors += 1
 </pre>
 <!--  -->
@@ -5069,17 +3102,9 @@ tokens from the input, the middle token is the referenced name.</p>
 <p class="rubric" id="add-a-reference-command-to-the-current-chunk-35">add a reference command to the current chunk (35) =</p>
 <pre class="code literal-block">
 # get the name, introduce into the named Chunk dictionary
-
-
 name = next(self.tokenizer).strip()
-
-
 closing = self.expect({self.cmdrangl})
-
-
 self.content[-1].commands.append(ReferenceCommand(name, self.location()))
-
-
 self.logger.debug(&quot;Reading %r %r&quot;, name, closing)
 </pre>
 <!--  -->
@@ -5104,11 +3129,7 @@ An <tt class="docutils literal">os.getcwd()</tt> could be changed to <tt class="
 <p class="rubric" id="imports-36">Imports (36) +=</p>
 <pre class="code literal-block">
 import builtins
-
-
 import sys
-
-
 import platform
 </pre>
 <!--  -->
@@ -5116,114 +3137,40 @@ import platform
 <p class="rubric" id="add-an-expression-command-to-the-current-chunk-37">add an expression command to the current chunk (37) =</p>
 <pre class="code literal-block">
 # get the Python expression, create the expression result
-
-
 expression = next(self.tokenizer)
-
-
 self.expect({self.cmdrexpr})
-
-
 try:
-
-
     # Build Context
-
-
     # **TODO:** Parts of this are static.
-
-
     dangerous = {
-
-
         'breakpoint', 'compile', 'eval', 'exec', 'execfile', 'globals', 'help', 'input',
-
-
         'memoryview', 'open', 'print', 'super', '__import__'
-
-
     }
-
-
     safe = types.SimpleNamespace(**dict(
-
-
         (name, obj)
-
-
         for name,obj in builtins.__dict__.items()
-
-
         if name not in dangerous
-
-
     ))
-
-
     globals = dict(
-
-
         __builtins__=safe,
-
-
         os=types.SimpleNamespace(path=os.path, getcwd=os.getcwd, name=os.name),
-
-
         time=time,
-
-
         datetime=datetime,
-
-
         platform=platform,
-
-
         theLocation=str(self.location()),
-
-
         theWebReader=self,
-
-
         theFile=self.filePath,
-
-
         thisApplication=sys.argv[0],
-
-
         __version__=__version__,  # Legacy compatibility. Deprecated.
-
-
         version=__version__,
-
-
         )
-
-
     # Evaluate
-
-
     result = str(eval(expression, globals))
-
-
 except Exception as exc:
-
-
     self.logger.error('Failure to process %r: result is %r', expression, exc)
-
-
     self.errors += 1
-
-
-    result = f&quot;
-&#64;
-({expression!r}: Error {exc!r}
-&#64;
-)&quot;
-
-
+    result = f&quot;    &#64;    ({expression!r}: Error {exc!r}    &#64;    )&quot;
 cls = self.text_command
-
-
 self.content[-1].commands.append(cls(result, self.location()))
 </pre>
 <!--  -->
@@ -5239,8 +3186,6 @@ largely seamless.</p>
 <p class="rubric" id="double-at-sign-replacement-append-this-character-to-previous-textcommand-38">double at-sign replacement, append this character to previous TextCommand (38) =</p>
 <pre class="code literal-block">
 cls = self.text_command
-
-
 self.content[-1].commands.append(cls(self.command, self.location()))
 </pre>
 <!--  -->
@@ -5252,50 +3197,20 @@ This is used by <tt class="docutils literal">handleCommand()</tt>.</p>
 <p class="rubric" id="webreader-handle-a-command-string-39">WebReader handle a command string (39) +=</p>
 <pre class="code literal-block">
 def expect(self, tokens: set[str]) -&gt; str | None:
-
-
     &quot;&quot;&quot;Compare next token with expectation, quietly skipping whitespace (i.e., ``\n``).&quot;&quot;&quot;
-
-
     try:
-
-
         t = next(self.tokenizer)
-
-
         while t == '\n':
-
-
             t = next(self.tokenizer)
-
-
     except StopIteration:
-
-
         self.logger.error(&quot;At %r: end of input, %r not found&quot;, self.location(), tokens)
-
-
         self.errors += 1
-
-
         return None
-
-
     if t in tokens:
-
-
         return t
-
-
     else:
-
-
         self.logger.error(&quot;At %r: expected %r, found %r&quot;, self.location(), tokens, t)
-
-
         self.errors += 1
-
-
         return None
 </pre>
 <!--  -->
@@ -5306,8 +3221,6 @@ to correctly reference the original input files.</p>
 <p class="rubric" id="webreader-location-in-the-input-stream-40">WebReader location in the input stream (40) =</p>
 <pre class="code literal-block">
 def location(self) -&gt; tuple[str, int]:
-
-
     return (str(self.filePath), self.tokenizer.lineNumber+1)
 </pre>
 <!--  -->
@@ -5329,137 +3242,49 @@ from typing import TextIO
 <p class="rubric" id="webreader-load-the-web-42">WebReader load the web (42) =</p>
 <pre class="code literal-block">
 def load(self, filepath: Path, source: TextIO | None = None) -&gt; list[Chunk]:
-
-
     &quot;&quot;&quot;Returns a flat list of chunks to be made into a Web.
-
-
-    Also used to expand ``
-&#64;
-i`` included files.
-
-
+    Also used to expand ``    &#64;    i`` included files.
     &quot;&quot;&quot;
-
-
     self.filePath = filepath
-
-
     self.base_path = self.filePath.parent
-
-
     self.text_command = TextCommand
 
-
-
-
     if source:
-
-
         self._source = source
-
-
         self.parse_source()
-
-
     else:
-
-
         with self.filePath.open() as self._source:
-
-
             self.parse_source()
-
-
     return self.content
 
-
-
-
 def parse_source(self) -&gt; None:
-
-
     &quot;&quot;&quot;Builds a sequence of Chunks.&quot;&quot;&quot;
-
-
     self.tokenizer = Tokenizer(self._source, self.command)
-
-
     self.totalFiles += 1
 
-
-
-
     # Initial anonymous chunk.
-
-
     self.content = [Chunk()]
 
-
-
-
     for token in self.tokenizer:
-
-
         if len(token) &gt;= 2 and token.startswith(self.command):
-
-
             if self.handleCommand(token):
-
-
                 continue
-
-
             else:
-
-
-                self.logger.error('Unknown
-&#64;
--command in input: %r near %r', token, self.location())
-
-
+                self.logger.error('Unknown     &#64;    -command in input: %r near %r', token, self.location())
                 cls = self.text_command
-
-
                 self.content[-1].commands.append(cls(token, self.location()))
-
-
         elif token:
-
-
             # Accumulate a non-empty block of text in the current chunk.
-
-
             # Output Chunk and Named Chunk should have CodeCommand
-
-
             # Chunk should have TextCommand.
-
-
             cls = self.text_command
-
-
             self.content[-1].commands.append(cls(token, self.location()))
-
-
         else:
-
-
             # Whitespace
-
-
             pass
-
-
     self.logger.debug(&quot;parse_source: [&quot;)
-
-
     for c in self.content:
-
-
         self.logger.debug(&quot;  %r&quot;, c)
-
-
     self.logger.debug(&quot;]&quot;)
 </pre>
 <!--  -->
@@ -5472,63 +3297,25 @@ command character.</p>
 <p class="rubric" id="webreader-command-literals-43">WebReader command literals (43) =</p>
 <pre class="code literal-block">
 # Structural (&quot;major&quot;) commands
-
-
 self.cmdo = self.command+'o'
-
-
 self.cmdd = self.command+'d'
-
-
 self.cmdlcurl = self.command+'{'
-
-
 self.cmdrcurl = self.command+'}'
-
-
 self.cmdlbrak = self.command+'['
-
-
 self.cmdrbrak = self.command+']'
-
-
 self.cmdi = self.command+'i'
 
-
-
-
 # Inline (&quot;minor&quot;) commands
-
-
 self.cmdlangl = self.command+'&lt;'
-
-
 self.cmdrangl = self.command+'&gt;'
-
-
 self.cmdpipe = self.command+'|'
-
-
 self.cmdlexpr = self.command+'('
-
-
 self.cmdrexpr = self.command+')'
-
-
 self.cmdcmd = self.command+self.command
 
-
-
-
 # Content &quot;minor&quot; commands
-
-
 self.cmdf = self.command+'f'
-
-
 self.cmdm = self.command+'m'
-
-
 self.cmdu = self.command+'u'
 </pre>
 <!--  -->
@@ -5567,8 +3354,6 @@ exception.</p>
 <p class="rubric" id="imports-44">Imports (44) +=</p>
 <pre class="code literal-block">
 import re
-
-
 from collections.abc import Iterator, Iterable
 </pre>
 <!--  -->
@@ -5576,46 +3361,18 @@ from collections.abc import Iterator, Iterable
 <p class="rubric" id="tokenizer-class-breaks-input-into-tokens-45">Tokenizer class - breaks input into tokens (45) =</p>
 <pre class="code literal-block">
 class Tokenizer(Iterator[str]):
-
-
-    def __init__(self, stream: TextIO, command_char: str='
-&#64;
-') -&gt; None:
-
-
+    def __init__(self, stream: TextIO, command_char: str='    &#64;    ') -&gt; None:
         self.command = command_char
-
-
         self.parsePat = re.compile(f'({self.command}.|\\n)')
-
-
         self.token_iter = (t for t in self.parsePat.split(stream.read()) if len(t) != 0)
-
-
         self.lineNumber = 0
 
-
-
-
-
     def __next__(self) -&gt; str:
-
-
         token = next(self.token_iter)
-
-
         self.lineNumber += token.count('\n')
-
-
         return token
 
-
-
-
-
     def __iter__(self) -&gt; Iterator[str]:
-
-
         return self
 </pre>
 <!--  -->
@@ -5666,14 +3423,8 @@ class ParseError(Exception): pass
 <p class="rubric" id="option-parser-class-locates-optional-values-on-commands-48">Option Parser class - locates optional values on commands (48) +=</p>
 <pre class="code literal-block">
 class OptionDef:
-
-
     def __init__(self, name: str, **kw: Any) -&gt; None:
-
-
         self.name = name
-
-
         self.__dict__.update(kw)
 </pre>
 <!--  -->
@@ -5684,149 +3435,53 @@ final argument value.</p>
 <p class="rubric" id="option-parser-class-locates-optional-values-on-commands-49">Option Parser class - locates optional values on commands (49) +=</p>
 <pre class="code literal-block">
 class OptionParser:
-
-
     def __init__(self, *arg_defs: Any) -&gt; None:
-
-
         self.args = dict((arg.name, arg) for arg in arg_defs)
-
-
         self.trailers = [k for k in self.args.keys() if not k.startswith('-')]
 
-
-
-
-
     def parse(self, text: str) -&gt; dict[str, list[str]]:
-
-
         try:
-
-
             word_iter = iter(shlex.split(text))
-
-
         except ValueError as e:
-
-
             raise Error(f&quot;Error parsing options in {text!r}&quot;)
-
-
         options = dict(self._group(word_iter))
-
-
         return options
 
-
-
-
-
     def _group(self, word_iter: Iterator[str]) -&gt; Iterator[tuple[str, list[str]]]:
-
-
         option: str | None
-
-
         value: list[str]
-
-
         final: list[str]
-
-
         option, value, final = None, [], []
-
-
         for word in word_iter:
-
-
             if word == '--':
-
-
                 if option:
-
-
                     yield option, value
-
-
                 try:
-
-
                     final = [next(word_iter)]
-
-
                 except StopIteration:
-
-
                     final = []  # Special case of '--' at the end.
-
-
                 break
-
-
             elif word.startswith('-'):
-
-
                 if word in self.args:
-
-
                     if option:
-
-
                         yield option, value
-
-
                     option, value = word, []
-
-
                 else:
-
-
                     raise ParseError(f&quot;Unknown option {word!r}&quot;)
-
-
             else:
-
-
                 if option:
-
-
                     if self.args[option].nargs == len(value):
-
-
                         yield option, value
-
-
                         final = [word]
-
-
                         break
-
-
                     else:
-
-
                         value.append(word)
-
-
                 else:
-
-
                     final = [word]
-
-
                     break
-
-
         # In principle, we step through the trailers based on nargs counts.
-
-
         for word in word_iter:
-
-
             final.append(word)
-
-
         yield self.trailers[0], final
 </pre>
 <!--  -->
@@ -5919,21 +3574,13 @@ forest of <tt class="docutils literal">if</tt>-statements to determine precisely
 application.   A partner with this command hierarchy is the Application class
 that defines the application options, inputs and results.</p>
 <p class="rubric" id="action-class-hierarchy-used-to-describe-actions-of-the-application-51">Action class hierarchy -- used to describe actions of the application (51) =</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">src/pyweb.rst</tt>, line 6585)</p>
-<p>Content block expected for the &quot;parsed-literal&quot; directive; none found.</p>
-<pre class="literal-block">
-..  parsed-literal::
-    :class: code
-
-
+<pre class="code literal-block">
+→<a class="reference internal" href="#action-superclass-has-common-features-of-all-actions-52">Action superclass has common features of all actions (52)</a>
+→<a class="reference internal" href="#actionsequence-subclass-that-holds-a-sequence-of-other-actions-55">ActionSequence subclass that holds a sequence of other actions (55)</a>
+→<a class="reference internal" href="#weaveaction-subclass-initiates-the-weave-action-58">WeaveAction subclass initiates the weave action (58)</a>
+→<a class="reference internal" href="#tangleaction-subclass-initiates-the-tangle-action-61">TangleAction subclass initiates the tangle action (61)</a>
+→<a class="reference internal" href="#loadaction-subclass-loads-the-document-web-64">LoadAction subclass loads the document web (64)</a>
 </pre>
-</div>
-<p>→<a class="reference internal" href="#action-superclass-has-common-features-of-all-actions-52">Action superclass has common features of all actions (52)</a></p>
-<p>→<a class="reference internal" href="#actionsequence-subclass-that-holds-a-sequence-of-other-actions-55">ActionSequence subclass that holds a sequence of other actions (55)</a></p>
-<p>→<a class="reference internal" href="#weaveaction-subclass-initiates-the-weave-action-58">WeaveAction subclass initiates the weave action (58)</a></p>
-<p>→<a class="reference internal" href="#tangleaction-subclass-initiates-the-tangle-action-61">TangleAction subclass initiates the tangle action (61)</a></p>
-<p>→<a class="reference internal" href="#loadaction-subclass-loads-the-document-web-64">LoadAction subclass loads the document web (64)</a></p>
 <!--  -->
 <p class="small">∎ <em>Action class hierarchy -- used to describe actions of the application (51)</em></p>
 <p>The <tt class="docutils literal">Action</tt> class embodies the basic operations of <strong>py-web-tool</strong> .
@@ -5972,48 +3619,20 @@ A LoadAction will update this with the <tt class="docutils literal">Web</tt> obj
 <p class="rubric" id="action-superclass-has-common-features-of-all-actions-52">Action superclass has common features of all actions (52) =</p>
 <pre class="code literal-block">
 class Action:
-
-
     &quot;&quot;&quot;An action performed by pyWeb.&quot;&quot;&quot;
-
-
     start: float
-
-
     options: argparse.Namespace
 
-
-
-
-
     def __init__(self, name: str) -&gt; None:
-
-
         self.name = name
-
-
         self.logger = logging.getLogger(self.__class__.__qualname__)
 
-
-
-
-
     def __str__(self) -&gt; str:
-
-
         return f&quot;{self.name!s} [{self.web!s}]&quot;
 
+        →<a class="reference internal" href="#action-call-method-actually-does-the-real-work-53">Action call method actually does the real work (53)</a>
 
-
-
-
-    →<a class="reference internal" href="#action-call-method-actually-does-the-real-work-53">Action call method actually does the real work (53)</a>
-
-
-
-
-
-    →<a class="reference internal" href="#action-final-summary-of-what-was-done-54">Action final summary of what was done (54)</a>
+        →<a class="reference internal" href="#action-final-summary-of-what-was-done-54">Action final summary of what was done (54)</a>
 </pre>
 <!--  -->
 <p class="small">∎ <em>Action superclass has common features of all actions (52)</em></p>
@@ -6023,14 +3642,8 @@ by a subclass.</p>
 <p class="rubric" id="action-call-method-actually-does-the-real-work-53">Action call method actually does the real work (53) =</p>
 <pre class="code literal-block">
 def __call__(self, options: argparse.Namespace) -&gt; None:
-
-
     self.logger.info(&quot;Starting %s&quot;, self.name)
-
-
     self.options = options
-
-
     self.start = time.process_time()
 </pre>
 <!--  -->
@@ -6040,20 +3653,10 @@ statistics for this action.</p>
 <p class="rubric" id="action-final-summary-of-what-was-done-54">Action final summary of what was done (54) =</p>
 <pre class="code literal-block">
 def duration(self) -&gt; float:
-
-
     &quot;&quot;&quot;Return duration of the action.&quot;&quot;&quot;
-
-
     return (self.start and time.process_time()-self.start) or 0
 
-
-
-
-
 def summary(self) -&gt; str:
-
-
     return f&quot;{self.name!s} in {self.duration():0.3f} sec.&quot;
 </pre>
 <!--  -->
@@ -6073,42 +3676,18 @@ an <tt class="docutils literal">append()</tt> method that is used to construct t
 <p class="rubric" id="actionsequence-subclass-that-holds-a-sequence-of-other-actions-55">ActionSequence subclass that holds a sequence of other actions (55) =</p>
 <pre class="code literal-block">
 class ActionSequence(Action):
-
-
     &quot;&quot;&quot;An action composed of a sequence of other actions.&quot;&quot;&quot;
-
-
     def __init__(self, name: str, opSequence: list[Action] | None = None) -&gt; None:
-
-
         super().__init__(name)
-
-
         if opSequence: self.opSequence = opSequence
-
-
         else: self.opSequence = []
 
-
-
-
-
     def __str__(self) -&gt; str:
-
-
         return &quot;; &quot;.join([str(x) for x in self.opSequence])
 
+        →<a class="reference internal" href="#actionsequence-call-method-delegates-the-sequence-of-ations-56">ActionSequence call method delegates the sequence of ations (56)</a>
 
-
-
-
-    →<a class="reference internal" href="#actionsequence-call-method-delegates-the-sequence-of-ations-56">ActionSequence call method delegates the sequence of ations (56)</a>
-
-
-
-
-
-    →<a class="reference internal" href="#actionsequence-summary-summarizes-each-step-57">ActionSequence summary summarizes each step (57)</a>
+        →<a class="reference internal" href="#actionsequence-summary-summarizes-each-step-57">ActionSequence summary summarizes each step (57)</a>
 </pre>
 <!--  -->
 <p class="small">∎ <em>ActionSequence subclass that holds a sequence of other actions (55)</em></p>
@@ -6119,14 +3698,8 @@ sub-action.</p>
 <p class="rubric" id="actionsequence-call-method-delegates-the-sequence-of-ations-56">ActionSequence call method delegates the sequence of ations (56) =</p>
 <pre class="code literal-block">
 def __call__(self, options: argparse.Namespace) -&gt; None:
-
-
     super().__call__(options)
-
-
     for o in self.opSequence:
-
-
         o(self.options)
 </pre>
 <!--  -->
@@ -6136,8 +3709,6 @@ statistics for each step of this action.</p>
 <p class="rubric" id="actionsequence-summary-summarizes-each-step-57">ActionSequence summary summarizes each step (57) =</p>
 <pre class="code literal-block">
 def summary(self) -&gt; str:
-
-
     return &quot;, &quot;.join([o.summary() for o in self.opSequence])
 </pre>
 <!--  -->
@@ -6156,35 +3727,16 @@ Otherwise, the <tt class="docutils literal">web.language()</tt> method function 
 <p class="rubric" id="weaveaction-subclass-initiates-the-weave-action-58">WeaveAction subclass initiates the weave action (58) =</p>
 <pre class="code literal-block">
 class WeaveAction(Action):
-
-
     &quot;&quot;&quot;Weave the final document.&quot;&quot;&quot;
-
-
     def __init__(self) -&gt; None:
-
-
         super().__init__(&quot;Weave&quot;)
 
-
-
-
-
     def __str__(self) -&gt; str:
-
-
         return f&quot;{self.name!s} [{self.web!s}, {self.options.theWeaver!s}]&quot;
 
+        →<a class="reference internal" href="#weaveaction-call-method-to-pick-the-language-59">WeaveAction call method to pick the language (59)</a>
 
-
-
-    →<a class="reference internal" href="#weaveaction-call-method-to-pick-the-language-59">WeaveAction call method to pick the language (59)</a>
-
-
-
-
-
-    →<a class="reference internal" href="#weaveaction-summary-of-language-choice-60">WeaveAction summary of language choice (60)</a>
+        →<a class="reference internal" href="#weaveaction-summary-of-language-choice-60">WeaveAction summary of language choice (60)</a>
 </pre>
 <!--  -->
 <p class="small">∎ <em>WeaveAction subclass initiates the weave action (58)</em></p>
@@ -6196,47 +3748,19 @@ is never defined.</p>
 <p class="rubric" id="weaveaction-call-method-to-pick-the-language-59">WeaveAction call method to pick the language (59) =</p>
 <pre class="code literal-block">
 def __call__(self, options: argparse.Namespace) -&gt; None:
-
-
     super().__call__(options)
-
-
     if not self.options.weaver:
-
-
         # Examine first few chars of first chunk of web to determine language
-
-
         self.options.weaver = self.web.language()
-
-
         self.logger.info(&quot;Using %s&quot;, self.options.theWeaver)
-
-
     self.options.theWeaver.reference_style = self.options.reference_style
-
-
     self.options.theWeaver.output = self.options.output
-
-
     try:
-
-
         self.options.theWeaver.set_markup(self.options.weaver)
-
-
         self.options.theWeaver.emit(self.options.web)
-
-
         self.logger.info(&quot;Finished Normally&quot;)
-
-
     except Error as e:
-
-
         self.logger.error(&quot;Problems weaving document from %r (weave file is faulty).&quot;, self.options.web.web_path)
-
-
         #raise
 </pre>
 <!--  -->
@@ -6246,20 +3770,10 @@ statistics for the weave action.</p>
 <p class="rubric" id="weaveaction-summary-of-language-choice-60">WeaveAction summary of language choice (60) =</p>
 <pre class="code literal-block">
 def summary(self) -&gt; str:
-
-
     if self.options.theWeaver and self.options.theWeaver.linesWritten &gt; 0:
-
-
         return (
-
-
             f&quot;{self.name!s} {self.options.theWeaver.linesWritten:d} lines in {self.duration():0.3f} sec.&quot;
-
-
         )
-
-
     return f&quot;did not {self.name!s}&quot;
 </pre>
 <!--  -->
@@ -6277,27 +3791,13 @@ are examined and a weaver is selected.</p>
 <p class="rubric" id="tangleaction-subclass-initiates-the-tangle-action-61">TangleAction subclass initiates the tangle action (61) =</p>
 <pre class="code literal-block">
 class TangleAction(Action):
-
-
     &quot;&quot;&quot;Tangle source files.&quot;&quot;&quot;
-
-
     def __init__(self) -&gt; None:
-
-
         super().__init__(&quot;Tangle&quot;)
 
+        →<a class="reference internal" href="#tangleaction-call-method-does-tangling-of-the-output-files-62">TangleAction call method does tangling of the output files (62)</a>
 
-
-
-
-    →<a class="reference internal" href="#tangleaction-call-method-does-tangling-of-the-output-files-62">TangleAction call method does tangling of the output files (62)</a>
-
-
-
-
-
-    →<a class="reference internal" href="#tangleaction-summary-method-provides-total-lines-tangled-63">TangleAction summary method provides total lines tangled (63)</a>
+        →<a class="reference internal" href="#tangleaction-summary-method-provides-total-lines-tangled-63">TangleAction summary method provides total lines tangled (63)</a>
 </pre>
 <!--  -->
 <p class="small">∎ <em>TangleAction subclass initiates the tangle action (61)</em></p>
@@ -6307,29 +3807,13 @@ with any of <tt class="docutils literal">&#64;d</tt> or <tt class="docutils lite
 <p class="rubric" id="tangleaction-call-method-does-tangling-of-the-output-files-62">TangleAction call method does tangling of the output files (62) =</p>
 <pre class="code literal-block">
 def __call__(self, options: argparse.Namespace) -&gt; None:
-
-
     super().__call__(options)
-
-
     self.options.theTangler.include_line_numbers = self.options.tangler_line_numbers
-
-
     self.options.theTangler.output = self.options.output
-
-
     try:
-
-
         self.options.theTangler.emit(self.options.web)
-
-
     except Error as e:
-
-
         self.logger.error(&quot;Problems tangling outputs from %r (tangle files are faulty).&quot;, self.options.web.web_path)
-
-
         #raise
 </pre>
 <!--  -->
@@ -6339,20 +3823,10 @@ statistics for the tangle action.</p>
 <p class="rubric" id="tangleaction-summary-method-provides-total-lines-tangled-63">TangleAction summary method provides total lines tangled (63) =</p>
 <pre class="code literal-block">
 def summary(self) -&gt; str:
-
-
     if self.options.theTangler and self.options.theTangler.linesWritten &gt; 0:
-
-
         return (
-
-
             f&quot;{self.name!s} {self.options.theTangler.totalLines:d} lines in {self.duration():0.3f} sec.&quot;
-
-
         )
-
-
     return f&quot;did not {self.name!r}&quot;
 </pre>
 <!--  -->
@@ -6369,36 +3843,16 @@ this class is part of any of the weave, tangle and &quot;do everything&quot; act
 <p class="rubric" id="loadaction-subclass-loads-the-document-web-64">LoadAction subclass loads the document web (64) =</p>
 <pre class="code literal-block">
 class LoadAction(Action):
-
-
     &quot;&quot;&quot;Load the source web.&quot;&quot;&quot;
-
-
     def __init__(self) -&gt; None:
-
-
         super().__init__(&quot;Load&quot;)
 
-
-
-
-
     def __str__(self) -&gt; str:
-
-
         return f&quot;Load [{self.webReader!s}, {self.options.web!s}]&quot;
 
+        →<a class="reference internal" href="#loadaction-call-method-loads-the-input-files-65">LoadAction call method loads the input files (65)</a>
 
-
-
-
-    →<a class="reference internal" href="#loadaction-call-method-loads-the-input-files-65">LoadAction call method loads the input files (65)</a>
-
-
-
-
-
-    →<a class="reference internal" href="#loadaction-summary-provides-lines-read-66">LoadAction summary provides lines read (66)</a>
+        →<a class="reference internal" href="#loadaction-summary-provides-lines-read-66">LoadAction summary provides lines read (66)</a>
 </pre>
 <!--  -->
 <p class="small">∎ <em>LoadAction subclass loads the document web (64)</em></p>
@@ -6420,76 +3874,29 @@ chunk reference cannot be resolved to a named chunk.</li>
 <p class="rubric" id="loadaction-call-method-loads-the-input-files-65">LoadAction call method loads the input files (65) =</p>
 <pre class="code literal-block">
 def __call__(self, options: argparse.Namespace) -&gt; None:
-
-
     super().__call__(options)
-
-
     self.webReader = self.options.webReader
-
-
     self.webReader.command = self.options.command
-
-
     self.webReader.permitList = self.options.permitList
-
-
     self.logger.debug(&quot;Reader Class %s&quot;, self.webReader.__class__.__name__)
 
-
-
-
     error = f&quot;Problems with source file {self.options.source_path!r}, no output produced.&quot;
-
-
     try:
-
-
         chunks = self.webReader.load(self.options.source_path)
-
-
         if self.webReader.errors != 0:
-
-
             raise Error(&quot;Syntax Errors in the Web&quot;)
-
-
         self.logger.debug(&quot;Read %d Chunks&quot;, len(chunks))
-
-
         self.options.web = Web(chunks)
-
-
         self.options.web.web_path = self.options.source_path
-
-
         self.logger.debug(&quot;Web contains %3d chunks&quot;, len(self.options.web.chunks))
-
-
         self.logger.debug(&quot;Web defines  %3d files&quot;, len(self.options.web.files))
-
-
         self.logger.debug(&quot;Web defines  %3d macros&quot;, len(self.options.web.macros))
-
-
         self.logger.debug(&quot;Web defines  %3d names&quot;, len(self.options.web.userids))
-
-
     except Error as e:
-
-
         self.logger.error(error)
-
-
         raise  # Could not be parsed or built.
-
-
     except IOError as e:
-
-
         self.logger.error(error)
-
-
         raise
 </pre>
 <!--  -->
@@ -6499,14 +3906,8 @@ statistics for the load action.</p>
 <p class="rubric" id="loadaction-summary-provides-lines-read-66">LoadAction summary provides lines read (66) =</p>
 <pre class="code literal-block">
 def summary(self) -&gt; str:
-
-
     return (
-
-
         f&quot;{self.name!s} {self.webReader.totalLines:d} lines from {self.webReader.totalFiles:d} files in {self.duration():0.3f} sec.&quot;
-
-
     )
 </pre>
 <!--  -->
@@ -6557,24 +3958,12 @@ import argparse
 <p class="rubric" id="application-class-for-overall-cli-operation-68">Application Class for overall CLI operation (68) =</p>
 <pre class="code literal-block">
 class Application:
-
-
     def __init__(self) -&gt; None:
-
-
         self.logger = logging.getLogger(self.__class__.__qualname__)
+            →<a class="reference internal" href="#application-default-options-69">Application default options (69)</a>
 
-
-        →<a class="reference internal" href="#application-default-options-69">Application default options (69)</a>
-
-
-
-
-
-    →<a class="reference internal" href="#application-parse-command-line-70">Application parse command line (70)</a>
-
-
-    →<a class="reference internal" href="#application-class-process-all-files-71">Application class process all files (71)</a>
+        →<a class="reference internal" href="#application-parse-command-line-70">Application parse command line (70)</a>
+        →<a class="reference internal" href="#application-class-process-all-files-71">Application class process all files (71)</a>
 </pre>
 <!--  -->
 <p class="small">∎ <em>Application Class for overall CLI operation (68)</em></p>
@@ -6644,62 +4033,24 @@ to create the output files.</td>
 <p class="rubric" id="application-default-options-69">Application default options (69) =</p>
 <pre class="code literal-block">
 self.defaults = argparse.Namespace(
-
-
     verbosity=logging.INFO,
-
-
-    command='
-&#64;
-',
-
-
+    command='    &#64;    ',
     weaver='rst',
-
-
     skip='',  # Don't skip any steps
-
-
     permit='',  # Don't tolerate missing includes
-
-
     reference='s',  # Simple references
-
-
     tangler_line_numbers=False,
-
-
     output=Path.cwd(),
-
-
     )
 
-
-
-
 # Primitive Actions
-
-
 self.loadOp = LoadAction()
-
-
 self.weaveOp = WeaveAction()
-
-
 self.tangleOp = TangleAction()
 
-
-
-
 # Composite Actions
-
-
 self.doWeave = ActionSequence(&quot;load and weave&quot;, [self.loadOp, self.weaveOp])
-
-
 self.doTangle = ActionSequence(&quot;load and tangle&quot;, [self.loadOp, self.tangleOp])
-
-
 self.theAction = ActionSequence(&quot;load, tangle and weave&quot;, [self.loadOp, self.tangleOp, self.weaveOp])
 </pre>
 <!--  -->
@@ -6712,129 +4063,46 @@ instances.</p>
 <p class="rubric" id="application-parse-command-line-70">Application parse command line (70) =</p>
 <pre class="code literal-block">
 def parseArgs(self, argv: list[str]) -&gt; argparse.Namespace:
-
-
     p = argparse.ArgumentParser()
-
-
     p.add_argument(&quot;-v&quot;, &quot;--verbose&quot;, dest=&quot;verbosity&quot;, action=&quot;store_const&quot;, const=logging.INFO)
-
-
     p.add_argument(&quot;-s&quot;, &quot;--silent&quot;, dest=&quot;verbosity&quot;, action=&quot;store_const&quot;, const=logging.WARN)
-
-
     p.add_argument(&quot;-d&quot;, &quot;--debug&quot;, dest=&quot;verbosity&quot;, action=&quot;store_const&quot;, const=logging.DEBUG)
-
-
     p.add_argument(&quot;-c&quot;, &quot;--command&quot;, dest=&quot;command&quot;, action=&quot;store&quot;)
-
-
     p.add_argument(&quot;-w&quot;, &quot;--weaver&quot;, dest=&quot;weaver&quot;, action=&quot;store&quot;)
-
-
     p.add_argument(&quot;-x&quot;, &quot;--except&quot;, dest=&quot;skip&quot;, action=&quot;store&quot;, choices=('w', 't'))
-
-
     p.add_argument(&quot;-p&quot;, &quot;--permit&quot;, dest=&quot;permit&quot;, action=&quot;store&quot;)
-
-
     p.add_argument(&quot;-r&quot;, &quot;--reference&quot;, dest=&quot;reference&quot;, action=&quot;store&quot;, choices=('t', 's'))
-
-
     p.add_argument(&quot;-n&quot;, &quot;--linenumbers&quot;, dest=&quot;tangler_line_numbers&quot;, action=&quot;store_true&quot;)
-
-
     p.add_argument(&quot;-o&quot;, &quot;--output&quot;, dest=&quot;output&quot;, action=&quot;store&quot;, type=Path)
-
-
     p.add_argument(&quot;-V&quot;, &quot;--Version&quot;, action='version', version=f&quot;py-web-tool pyweb.py {__version__}&quot;)
-
-
     p.add_argument(&quot;files&quot;, nargs='+', type=Path)
-
-
     config = p.parse_args(argv, namespace=self.defaults)
-
-
     self.expand(config)
-
-
     return config
 
-
-
-
-
 def expand(self, config: argparse.Namespace) -&gt; argparse.Namespace:
-
-
     &quot;&quot;&quot;Translate the argument values from simple text to useful objects.
-
-
     Weaver. Tangler. WebReader.
-
-
     &quot;&quot;&quot;
-
-
     match config.reference:
-
-
         case 't':
-
-
             config.reference_style = TransitiveReference()
-
-
         case 's':
-
-
             config.reference_style = SimpleReference()
-
-
         case _:
-
-
             raise Error(&quot;Improper configuration&quot;)
 
-
-
-
     # Weaver &amp; Tangler
-
-
     config.theWeaver = Weaver(config.output)
-
-
     config.theTangler = TanglerMake(config.output)
 
-
-
-
-
     if config.permit:
-
-
-        # save permitted errors, usual case is ``-pi`` to permit ``
-&#64;
-i`` include errors
-
-
+        # save permitted errors, usual case is ``-pi`` to permit ``    &#64;    i`` include errors
         config.permitList = [f'{config.command!s}{c!s}' for c in config.permit]
-
-
     else:
-
-
         config.permitList = []
 
-
-
-
     config.webReader = WebReader()
-
-
-
 
     return config
 </pre>
@@ -6861,64 +4129,25 @@ outermost main program.</p>
 <p class="rubric" id="application-class-process-all-files-71">Application class process all files (71) =</p>
 <pre class="code literal-block">
 def process(self, config: argparse.Namespace) -&gt; None:
-
-
     root = logging.getLogger()
-
-
     root.setLevel(config.verbosity)
-
-
     self.logger.debug(&quot;Setting root log level to %r&quot;, logging.getLevelName(root.getEffectiveLevel()))
 
-
-
-
-
     if config.command:
-
-
         self.logger.debug(&quot;Command character %r&quot;, config.command)
 
-
-
-
-
     if config.skip:
-
-
         if config.skip.lower().startswith('w'):  # not weaving == tangling
-
-
             self.theAction = self.doTangle
-
-
         elif config.skip.lower().startswith('t'):  # not tangling == weaving
-
-
             self.theAction = self.doWeave
-
-
         else:
-
-
             raise Exception(f&quot;Unknown -x option {config.skip!r}&quot;)
 
-
-
-
     for f in config.files:
-
-
         self.logger.info(&quot;%s %r&quot;, self.theAction.name, f)
-
-
         config.source_path = f
-
-
         self.theAction(config)
-
-
         self.logger.info(self.theAction.summary())
 </pre>
 <!--  -->
@@ -6932,8 +4161,6 @@ configured and cleaned up politely.</p>
 <p class="rubric" id="imports-72">Imports (72) +=</p>
 <pre class="code literal-block">
 import logging
-
-
 import logging.config
 </pre>
 <!--  -->
@@ -6946,47 +4173,19 @@ encoded in YAML and use that with <tt class="docutils literal">logging.config.di
 <p class="rubric" id="logging-setup-73">Logging Setup (73) =</p>
 <pre class="code literal-block">
 class Logger:
-
-
     def __init__(self, dict_config: dict[str, Any] | None = None, **kw_config: Any) -&gt; None:
-
-
         self.dict_config = dict_config
-
-
         self.kw_config = kw_config
 
-
-
-
-
     def __enter__(self) -&gt; &quot;Logger&quot;:
-
-
         if self.dict_config:
-
-
             logging.config.dictConfig(self.dict_config)
-
-
         else:
-
-
             logging.basicConfig(**self.kw_config)
-
-
         return self
 
-
-
-
-
     def __exit__(self, *args: Any) -&gt; Literal[False]:
-
-
         logging.shutdown()
-
-
         return False
 </pre>
 <!--  -->
@@ -6998,86 +4197,32 @@ used to gather additional information.</p>
 <p class="rubric" id="logging-setup-74">Logging Setup (74) +=</p>
 <pre class="code literal-block">
 log_config = {
-
-
     'version': 1,
-
-
     'disable_existing_loggers': False, # Allow pre-existing loggers to work.
-
-
     'style': '{',
-
-
     'handlers': {
-
-
         'console': {
-
-
             'class': 'logging.StreamHandler',
-
-
             'stream': 'ext://sys.stderr',
-
-
             'formatter': 'basic',
-
-
         },
-
-
     },
-
-
     'formatters': {
-
-
         'basic': {
-
-
             'format': &quot;{levelname}:{name}:{message}&quot;,
-
-
             'style': &quot;{&quot;,
-
-
         }
-
-
     },
-
-
-
-
 
     'root': {'handlers': ['console'], 'level': logging.INFO,},
 
-
-
-
-
     # For specific debugging support...
-
-
     'loggers': {
-
-
         'Weaver': {'level': logging.INFO},
-
-
         'WebReader': {'level': logging.INFO},
-
-
         'TanglerMake': {'level': logging.INFO},
-
-
         'Web': {'level': logging.INFO},
-
-
     },
-
-
 }
 </pre>
 <!--  -->
@@ -7086,71 +4231,29 @@ log_config = {
 <p class="rubric" id="logging-toml-75">logging.toml (75) =</p>
 <pre class="code literal-block">
 version = 1
-
-
 disable_existing_loggers = false
 
-
-
-
 [root]
-
-
 handlers = [ &quot;console&quot;,]
-
-
 level = &quot;INFO&quot;
-
-
-
 
 [handlers.console]
-
-
 class = &quot;logging.StreamHandler&quot;
-
-
 stream = &quot;ext://sys.stderr&quot;
-
-
 formatter = &quot;basic&quot;
 
-
-
-
 [formatters.basic]
-
-
 format = &quot;{levelname}:{name}:{message}&quot;
-
-
 style = &quot;{&quot;
 
-
-
-
 [loggers.Weaver]
-
-
 level = &quot;INFO&quot;
-
-
-
 
 [loggers.WebReader]
-
-
 level = &quot;INFO&quot;
-
-
-
 
 [loggers.TanglerMake]
-
-
 level = &quot;INFO&quot;
-
-
 }
 </pre>
 <!--  -->
@@ -7176,14 +4279,8 @@ as a weaver template configuration file.</p>
 <p class="rubric" id="interface-functions-76">Interface Functions (76) =</p>
 <pre class="code literal-block">
 def main(argv: list[str] = sys.argv[1:]) -&gt; None:
-
-
     a = Application()
-
-
     config = a.parseArgs(argv)
-
-
     a.process(config)
 </pre>
 <!--  -->
@@ -7193,33 +4290,20 @@ def main(argv: list[str] = sys.argv[1:]) -&gt; None:
 <h2><a class="toc-backref" href="#toc-entry-54"><strong>pyWeb</strong> Module File</a></h2>
 <p>The <strong>pyWeb</strong> application file is shown below:</p>
 <p class="rubric" id="pyweb-py-77">pyweb.py (77) =</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">src/pyweb.rst</tt>, line 8296)</p>
-<p>Content block expected for the &quot;parsed-literal&quot; directive; none found.</p>
-<pre class="literal-block">
-..  parsed-literal::
-    :class: code
+<pre class="code literal-block">
+→<a class="reference internal" href="#overheads-79">Overheads (79)</a>
+→<a class="reference internal" href="#imports-2">Imports (2)</a>
+→<a class="reference internal" href="#error-class-defines-the-errors-raised-50">Error class -- defines the errors raised (50)</a>
+→<a class="reference internal" href="#base-class-definitions-1">Base Class Definitions (1)</a>
+→<a class="reference internal" href="#action-class-hierarchy-used-to-describe-actions-of-the-application-51">Action class hierarchy -- used to describe actions of the application (51)</a>
+→<a class="reference internal" href="#application-class-for-overall-cli-operation-68">Application Class for overall CLI operation (68)</a>
+→<a class="reference internal" href="#logging-setup-73">Logging Setup (73)</a>
+→<a class="reference internal" href="#interface-functions-76">Interface Functions (76)</a>
+
+if __name__ == &quot;__main__&quot;:
+    with Logger(log_config):
+        main()
 </pre>
-</div>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">src/pyweb.rst</tt>, line 8298)</p>
-Explicit markup ends without a blank line; unexpected unindent.</div>
-<p>→<a class="reference internal" href="#overheads-79">Overheads (79)</a></p>
-<p>→<a class="reference internal" href="#imports-2">Imports (2)</a></p>
-<p>→<a class="reference internal" href="#error-class-defines-the-errors-raised-50">Error class -- defines the errors raised (50)</a></p>
-<p>→<a class="reference internal" href="#base-class-definitions-1">Base Class Definitions (1)</a></p>
-<p>→<a class="reference internal" href="#action-class-hierarchy-used-to-describe-actions-of-the-application-51">Action class hierarchy -- used to describe actions of the application (51)</a></p>
-<p>→<a class="reference internal" href="#application-class-for-overall-cli-operation-68">Application Class for overall CLI operation (68)</a></p>
-<p>→<a class="reference internal" href="#logging-setup-73">Logging Setup (73)</a></p>
-<p>→<a class="reference internal" href="#interface-functions-76">Interface Functions (76)</a></p>
-<blockquote>
-<p>if __name__ == &quot;__main__&quot;:</p>
-<blockquote>
-<p>with Logger(log_config):</p>
-<blockquote>
-main()</blockquote>
-</blockquote>
-</blockquote>
 <!--  -->
 <p class="small">∎ <em>pyweb.py (77)</em></p>
 <p>The <a class="reference internal" href="#overheads">Overheads</a> are described below, they include things like:</p>
@@ -7253,14 +4337,8 @@ as well as log messages.</li>
 <p class="rubric" id="imports-78">Imports (78) +=</p>
 <pre class="code literal-block">
 import os
-
-
 import time
-
-
 import datetime
-
-
 import types
 </pre>
 <!--  -->
@@ -7290,21 +4368,10 @@ detailed usage information.</p>
 <pre class="code literal-block">
 &quot;&quot;&quot;py-web-tool Literate Programming.
 
-
-
-
 Yet another simple literate programming tool derived from **nuweb**,
-
-
 implemented entirely in Python.
-
-
 With a suitable configuration, this weaves documents with any markup language,
-
-
 and tangles source files for any programming language.
-
-
 &quot;&quot;&quot;
 </pre>
 <!--  -->
@@ -7318,29 +4385,10 @@ source files.</p>
 <pre class="code literal-block">
 __version__ = &quot;&quot;&quot;3.2&quot;&quot;&quot;
 
-
-
-
 ### DO NOT EDIT THIS FILE!
-
-
-### It was created by
-pyweb.py
-, __version__='
-3.2
-'.
-
-
-### From source
-impl.w
- modified
-Tue Jun 28 12:33:07 2022
-.
-
-
-### In working directory '
-/Users/slott/Documents/Projects/py-web-tool/src
-'.
+### It was created by     pyweb.py    , __version__='    3.2    '.
+### From source     impl.w     modified     Tue Jun 28 13:48:39 2022    .
+### In working directory '    /Users/slott/Documents/Projects/py-web-tool/src    '.
 </pre>
 <!--  -->
 <p class="small">∎ <em>Overheads (81)</em></p>
@@ -7405,91 +4453,33 @@ a summary.</li>
 <p class="rubric" id="tangle-py-82">tangle.py (82) =</p>
 <pre class="code literal-block">
 #!/usr/bin/env python3
-
-
 &quot;&quot;&quot;Sample tangle.py script.&quot;&quot;&quot;
-
-
 import argparse
-
-
 import logging
-
-
 from pathlib import Path
-
-
 import pyweb
 
-
-
-
 def main(source: Path) -&gt; None:
-
-
     with pyweb.Logger(pyweb.log_config):
-
-
         logger = logging.getLogger(__file__)
 
-
-
-
-
         options = argparse.Namespace(
-
-
             source_path=source,
-
-
             output=source.parent,
-
-
             verbosity=logging.INFO,
-
-
-            command='
-&#64;
-',
-
-
-            permitList=['
-&#64;
-i'],
-
-
+            command='    &#64;    ',
+            permitList=['    &#64;    i'],
             tangler_line_numbers=False,
-
-
             reference_style=pyweb.SimpleReference(),
-
-
             theTangler=pyweb.TanglerMake(),
-
-
             webReader=pyweb.WebReader(),
-
-
         )
 
-
-
-
-
         for action in pyweb.LoadAction(), pyweb.TangleAction():
-
-
             action(options)
-
-
             logger.info(action.summary())
 
-
-
-
 if __name__ == &quot;__main__&quot;:
-
-
     main(Path(&quot;examples/test_rst.w&quot;))
 </pre>
 <!--  -->
@@ -7501,42 +4491,23 @@ if __name__ == &quot;__main__&quot;:
 to define a customized set of templates for a different markup language.</p>
 <p>A customized weaver generally has three parts.</p>
 <p class="rubric" id="weave-py-83">weave.py (83) =</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">src/pyweb.rst</tt>, line 8722)</p>
-<p>Content block expected for the &quot;parsed-literal&quot; directive; none found.</p>
-<pre class="literal-block">
-..  parsed-literal::
-    :class: code
+<pre class="code literal-block">
+→<a class="reference internal" href="#weave-py-overheads-for-correct-operation-of-a-script-84">weave.py overheads for correct operation of a script (84)</a>
+
+→<a class="reference internal" href="#weave-py-custom-weaver-definition-to-customize-the-weaver-being-used-85">weave.py custom weaver definition to customize the Weaver being used (85)</a>
+
+→<a class="reference internal" href="#weaver-py-processing-load-and-weave-the-document-86">weaver.py processing: load and weave the document (86)</a>
 </pre>
-</div>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">src/pyweb.rst</tt>, line 8724)</p>
-Explicit markup ends without a blank line; unexpected unindent.</div>
-<p>→<a class="reference internal" href="#weave-py-overheads-for-correct-operation-of-a-script-84">weave.py overheads for correct operation of a script (84)</a></p>
-<p>→<a class="reference internal" href="#weave-py-custom-weaver-definition-to-customize-the-weaver-being-used-85">weave.py custom weaver definition to customize the Weaver being used (85)</a></p>
-<p>→<a class="reference internal" href="#weaver-py-processing-load-and-weave-the-document-86">weaver.py processing: load and weave the document (86)</a></p>
 <!--  -->
 <p class="small">∎ <em>weave.py (83)</em></p>
 <p class="rubric" id="weave-py-overheads-for-correct-operation-of-a-script-84">weave.py overheads for correct operation of a script (84) =</p>
 <pre class="code literal-block">
 #!/usr/bin/env python3
-
-
 &quot;&quot;&quot;Sample weave.py script.&quot;&quot;&quot;
-
-
 import argparse
-
-
 import logging
-
-
 import string
-
-
 from pathlib import Path
-
-
 import pyweb
 </pre>
 <!--  -->
@@ -7553,8 +4524,6 @@ self.template_map['html']['overrides'] = my_templates
 <p class="rubric" id="weave-py-custom-weaver-definition-to-customize-the-weaver-being-used-85">weave.py custom weaver definition to customize the Weaver being used (85) =</p>
 <pre class="code literal-block">
 class MyHTML(pyweb.Weaver):
-
-
     pass
 </pre>
 <!--  -->
@@ -7562,72 +4531,27 @@ class MyHTML(pyweb.Weaver):
 <p class="rubric" id="weaver-py-processing-load-and-weave-the-document-86">weaver.py processing: load and weave the document (86) =</p>
 <pre class="code literal-block">
 def main(source: Path) -&gt; None:
-
-
     with pyweb.Logger(pyweb.log_config):
-
-
         logger = logging.getLogger(__file__)
 
-
-
-
-
         options = argparse.Namespace(
-
-
             source_path=source,
-
-
             output=source.parent,
-
-
             verbosity=logging.INFO,
-
-
             weaver=&quot;html&quot;,
-
-
-            command='
-&#64;
-',
-
-
+            command='    &#64;    ',
             permitList=[],
-
-
             tangler_line_numbers=False,
-
-
             reference_style=pyweb.SimpleReference(),
-
-
             theWeaver=MyHTML(),
-
-
             webReader=pyweb.WebReader(),
-
-
         )
 
-
-
-
-
         for action in pyweb.LoadAction(), pyweb.WeaveAction():
-
-
             action(options)
-
-
             logger.info(action.summary())
 
-
-
-
 if __name__ == &quot;__main__&quot;:
-
-
     main(Path(&quot;examples/test_rst.w&quot;))
 </pre>
 <!--  -->
@@ -8097,8 +5021,8 @@ of the ReferenceCommand.</li>
 </table>
 <hr class="docutils" />
 <blockquote class="small">
-Created by pyweb.py at Tue Jun 28 12:33:10 2022.</blockquote>
-<p class="small">Source pyweb.w modified Tue Jun 28 11:08:03 2022.</p>
+Created by pyweb.py at Tue Jun 28 13:51:00 2022.</blockquote>
+<p class="small">Source pyweb.w modified Tue Jun 28 13:51:00 2022.</p>
 <blockquote class="small">
 <p>pyweb.__version__ '3.2'.</p>
 <p>Working directory '/Users/slott/Documents/Projects/py-web-tool/src'.</p>

@@ -888,15 +888,12 @@ rst_weaver_template = dedent("""\
     ..  rubric:: {{chunk.full_name or chunk.name}} ({{chunk.seq}}) {% if chunk.initial %}={% else %}+={% endif %}
     ..  parsed-literal::
         :class: code
+        
     {% endmacro -%}
     
-    {%- macro code(command) %}
-        {{command.text | quote_rules}}
-    {%- endmacro -%}
+    {%- macro code(command) %}    {{command.text | quote_rules}}{%- endmacro -%}
     
-    {%- macro ref(id) %}
-        \N{RIGHTWARDS ARROW}\ `{{id.full_name}} ({{id.seq}})`_
-    {%- endmacro -%}
+    {%- macro ref(id) %}    \N{RIGHTWARDS ARROW}\ `{{id.full_name}} ({{id.seq}})`_{%- endmacro -%}
     
     {%- macro end_code(chunk) %}
     ..
@@ -954,13 +951,9 @@ html_weaver_template = dedent("""\
     <pre><code>
     {%- endmacro -%}
     
-    {%- macro code(command) -%}
-    {{command.text | quote_rules}}
-    {%- endmacro -%}
+    {%- macro code(command) -%}{{command.text | quote_rules}}{%- endmacro -%}
     
-    {%- macro ref(id) %}
-    &rarr;<a href="#pyweb_{{id.seq}}"><em>{{id.full_name}} ({{id.seq}})</em></a>
-    {% endmacro -%}
+    {%- macro ref(id) %}&rarr;<a href="#pyweb_{{id.seq}}"><em>{{id.full_name}} ({{id.seq}})</em></a>{% endmacro -%}
     
     {%- macro end_code(chunk) %}
     </code></pre>
@@ -1016,13 +1009,9 @@ latex_weaver_template = dedent("""\
     \\begin{Verbatim}[commandchars=\\\\\\{\\},codes={\\catcode`$$=3\\catcode`^=7},frame=single]
     {%- endmacro -%}
     
-    {%- macro code(command) -%}
-    {{command.text | quote_rules}}
-    {%- endmacro -%}
+    {%- macro code(command) -%}{{command.text | quote_rules}}{%- endmacro -%}
     
-    {%- macro ref(id) %}
-    $$\\triangleright$$ Code Example {{id.full_name}} ({{id.seq}})
-    {% endmacro -%}
+    {%- macro ref(id) %}$$\\rightarrow$$ Code Example {{id.full_name}} ({{id.seq}}){% endmacro -%}
     
     {%- macro end_code(chunk) %}
     \\end{Verbatim}
