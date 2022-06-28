@@ -3,11 +3,11 @@
 Architecture and Design Overview
 ================================
 
-This application breaks the overall problem into the following sub-problems.
+This application breaks the overall problem of literate programming into the following sub-problems.
 
-1.	Representation of the Web as Chunks and Commands
+1.	Representation of the WEB document as Chunks and Commands
 
-2.	Reading and parsing the input.
+2.	Reading and parsing the input WEB document.
 
 3.	Weaving a document file.
 
@@ -17,45 +17,47 @@ This application breaks the overall problem into the following sub-problems.
 Representation
 ---------------
 
-The basic parse tree has three layers. The source document is transformed into a web, 
+The basic parse tree has three layers. 
+The source document is transformed into a ``Web``, 
 which is the overall container. The source is
-decomposed into a simple sequence of Chunks.  Each Chunk is a simple sequence
-of Commands.
+decomposed into a sequence of ``Chunk`` instances.  Each ``Chunk`` is a sequence
+of ``Commands``. 
 
-Chunks and Commands cannot be nested, leading to delightful simplification.
+``Chunk`` objects and ``Command`` objects cannot be nested, leading to delightful simplification.
 
-The overall Web
-includes the sequence of Chunks as well as an index for the named chunks.
+The overall ``Web``
+includes both the original sequence of ``Chunk`` objects as well as an index for the named ``Chunk`` instances.
 
 Note that a named chunk may be created through a number of ``@@d`` commands.
 This means that
-each named chunk may be a sequence of Chunks with a common name.
+each named ``Chunk`` may be a sequence of definitions sharing a common name.
 They are concatenated in order to permit decomposing a single concept into sequentially described pieces.
  
-Because a Chunk is composed of a sequence Commands, the weave and tangle actions can be 
-delegated to each Chunk, and in turn, delegated to each Command that
-composes a Chunk.
+The various layers of ``Web``, ``Chunk``, and ``Command`` each have attributes designed
+to be usable by a Jinja template when weaving output. When tangling, however, the only 
+attribute that matters is the text contained in the ``@@{`` and ``@@}`` brackets.
+This makes tangling somewhat simpler than weaving. 
 
-There is a small interaction between Tanglers and Chunks to work out the indentation.
-Otherwise, the output and input work is largely independent of the Web itself.
-
+There is a small interaction between a ``Tangler`` and each ``Chunk`` to work out the indentation.
+based in the context in which a ``@@< name @@>`` reference occurs.
 
 Reading and Parsing
 --------------------
 
 A solution to the reading and parsing problem depends on a convenient 
-tool for breaking up the input stream and a representation for the chunks of input.
-Input decomposition is done with the Python Splitter pattern. 
+tool for breaking up the input stream and a representation for the chunks of input 
+and the sequence of commands.
+Input decomposition is done with something we might call the **Splitter** design pattern. 
 
 The **Splitter** pattern is widely used in text processing, and has a long legacy
-in a variety of languages and libraries.  A Splitter decomposes a string into
-a sequence of strings using the split pattern.  There are many variant implementations.
-One variant locates only a single occurence (usually the left-most); this is
+in a variety of languages and libraries.  A **Splitter** decomposes a string into
+a sequence of strings using some split pattern.  There are many variant implementations.
+For example, one variant locates only a single occurence (usually the left-most); this is
 commonly implemented as a Find or Search string function.  Another variant locates all
 occurrences of a specific string or character, and discards the matching string or
-character.
+character. 
 
-The variation on **Splitter** that we use in this application
+The variation on **Splitter** in this application
 creates each element in the resulting sequence as either (1) an instance of the 
 split regular expression or (2) the text between split patterns.  
 
@@ -66,48 +68,61 @@ expression ``'@@.|\n'``.  This will split on either of these patterns:
 
 -	or, a newline.
 
-For the most part, ``\n`` is just text. The exception is the 
+For the most part, ``\n`` is only text, and as almost no special significance. The exception is the 
 ``@@i`` *filename* command, which ends at the end of the line, making the ``\n``
-significant syntax.
+significant syntax in this case.
 
-We could be a tad more specific and use the following as a split pattern:
+We could be more specific with the following as a split pattern:
 ``'@@[doOifmu\|<>(){}\[\]]|\n'``.  This would silently ignore unknown commands, 
 merging them in with the surrounding text.  This would leave the ``'@@@@'`` sequences 
 completely alone, allowing us to replace ``'@@@@'`` with ``'@@'`` in
-every text chunk.
+every text chunk. It's not clear this additional level of detail is helpful.
 
-Within the ``@@d`` and ``@@o`` commands, we also parse options. These follow
+Within the ``@@d`` and ``@@o`` commands, there is a name and options. These follow
 the syntax rules for Tcl or the shell. Optional fields are prefaced with ``-``.
-All options come before all positional arguments. 
+All options must come before all positional arguments. The positional arguments
+provide the name being defined. In effect, the name is ``' '.join(args.split(' ')``; 
+this means multiple adjacent spaces in a name will be collapsed to a single space.
 
 Weaving
 ---------
 
-The weaving operation depends on the target document markup language.
+The weaving operation depends on having a target document markup language.
 There are several approaches to this problem.  
 
--	We can use a markup language unique to **py-web-tool**, 
-	and weave using markup in the desired target language.
+-   We can use a markup language unique to **py-web-tool**.
+    This would hide the final target markup language. It would mean
+    that **py-web-tool** would be equivalent to a tool like Pandoc, 
+    producing a variety of target markup languages from a single, common source.
 	
--	We can use a standard markup language and use converters to transform
-	the standard markup to the desired target markup. We could adopt
-	XML or RST or some other generic markup that can be converted.
-	
-The problem with the second method is the mixture of background document
-in some standard markup and the code elements, which need to be bracketed 
-with common templates. We hate to repeat these templates; that's the
-job of a literate programming tool. Also, certain code characters must
-be properly escaped.
+-   We can use any of the existing markup languages (HTML, RST, Markdown, LaTeX, etc.) 
+    expand snippets of markup into author-supplied markup to create the 
+    target woven document.
 
-Since **py-web-tool** must transform the code into a specific markup language,
-we opt using a **Strategy** pattern to encapsulate markup language details.
-Each alternative markup strategy is then a subclass of **Weaver**.  This 
-simplifies adding additional markup languages without inventing a 
-markup language unique to **py-web-tool**.
-The author uses their preferred markup, and their preferred
-toolset to convert to other output languages.
+The problem with the first method is defining yet-another-markup-language.
+This seems needlessly complex.
 
-The templates used to wrap code sections can be tweaked relatively easily.
+The problem with the second method is the source WEB file is a mixture of the following two things:
+
+-   The background document in some standard markup and 
+
+-   The code elements.
+
+The code elements must be set off from the background text via some markup. In languages
+like RST and Markdown, there's a small textual wrapper around code samples. In languages
+like HTML, the wrapper can be much more complex. Also, certain code characters may need to be
+properly escaped if the code sample happens to contain markup that should **not** be processed,
+but treated as literal text.
+
+The author should not be foreced to repeat the wrappers around each code examples. 
+This should be delegated to the literate programming tool.
+Further, the author should not be narrowly constrained by the markup injected
+by the weaving process; the weaver should be extensible to add features. 
+
+This leads to using the **Facade** design pattern. The weaver is
+a **Facade** over the Jinja template engine. The tool provides default
+templates in RST, HTML, and LaTeX. These can be replaced; new templates
+can be added. The templates used to wrap code sections can be tweaked relatively easily.
 
 
 Tangling
@@ -120,7 +135,7 @@ to turn off indentation for languages like Fortran, where identation
 is not used.  
 
 In **py-web-tool**, there are two options. The default behavior is that the
-indent of a ``@@<`` command is used to set the indent of the 
+indent of a ``@@< name @@>`` command is used to set the indent of the 
 material is expanded in place of this reference.  If all ``@@<`` commands are presented at the
 left margin, no indentation will be done.  This is helpful simplification,
 particularly for users of Python, where indentation is significant.
@@ -131,9 +146,19 @@ rule to force the material to be placed at the left margin.
 Application
 ------------
 
-The overall application has two layers to it. There are actions (Load, Tangle, Weave)
-as well as a top-level main function that parses the command line, creates
-and configures the actions, and then closes up shop when all done.
+The overall application has the following layers to it:
 
+-   The central model is defined by ``Web``, ``Chunk``, and ``Command`` class hierarchies.
+
+-   The parsing of the WEB is defined by the ``WebReader`` class and some additional helpers.
+
+-   The serialization of output is defined by an ``Emitter`` class hierarchy that includes ``Weaver`` and ``Tangler``
+    classes.
+    
+-   These are wrapped into an ``Action`` class hierarchy that includes the actions of Load, Tangle, and Weave.
+
+-   A top-level main function parses the command line, creates and configures the actions, and executes the sequence
+    of actions.
+    
 The idea is that the Weaver Action should be visible to tools like `PyInvoke <https://docs.pyinvoke.org/en/stable/index.html>`_.
 We want ``Weave("someFile.w")`` to be a sensible task.  

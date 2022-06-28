@@ -3,33 +3,45 @@
 Implementation
 ==============
 
-The implementation is contained in a single Python with
-the base classes and an overall ``main()`` function.  The ``main()``
+The implementation is contained in a single Python module defining 
+the all of the classes and functions, as well as an overall ``main()`` function.  The ``main()``
 function uses these base classes to weave and tangle the output files.
 
 The broad outline of the presentation is as follows:
 
--   `Web`_ contains the overall Web of Chunks. A Web is a sequence
-    of `Chunk` objects. It's also a mapping from chunk name to definition.
+-   `Base Classes`_ that define a model for the ``.w`` file.
 
--   `Chunks`_ are pieces of the source document, built into a Web.
-    A ``Chunk`` is a collection of ``Command`` instances.  This can be
-    either an anonymous chunk that will be sent directly to the output, 
-    or a named chunks delimited by the structural ``@@d`` or ``@@o`` commands.
+    -   `Web Class`_ contains the overall Web of Chunks. A Web is a sequence
+        of `Chunk` objects. It's also a mapping from chunk name to definition.
+    
+    -   `Chunk Class`_ are pieces of the source document, built into a Web.
+        A ``Chunk`` is a collection of ``Command`` instances.  This can be
+        either an anonymous chunk that will be sent directly to the output, 
+        or a named chunks delimited by the structural ``@@d`` or ``@@o`` commands.
+    
+    -   `Command Class`_ are the items within a ``Chunk``. The text and
+        the inline ``@@<name@@>`` references are the principle command classes.  
+        Additionally, there are some cross reference commands (``@@f``, ``@@m``, or ``@@u``).
 
--   `Commands`_ are the items within a ``Chunk``. The text and
-    the inline ``@@<name@@>`` references are the principle command classes.  
-    Additionally, there are some cross reference commands (``@@f``, ``@@m``, or ``@@u``).
+-   `Output Serialization`_. This is the ``Emitter`` class
+    hierarchy writes various kinds of files. 
+    These decompose into two subclasses:
+            
+         -  A ``Tangler`` creates source code. 
+         
+         -  A ``Weaver`` creates documentation. The various Jinja-based templates
+            are part of weaving.
+         
+    -   `Reference Strategy`_ is a class hierarchy to define alternative ways to 
+        present cross-references among chunks.
+        These support the ``Weaver`` subclasses of the ``Emitters``.
+        We can have references resolved either transitively or simply. A transitive
+        reference becomes a list of parent ``NamedChunk`` instances. A simple reference
+        is the referenced ``NamedChunk``.
 
--   `Emitters`_ write various kinds of files. These decompose into two subclasses:
-        
-     -  A ``Tangler`` creates source code. 
-     
-     -  A ``Weaver`` creates documentation.
-
--   `WebReader`_ is the parser which produces a `Web` from source text.
-    This has several closely-related components:
-
+-   `Input Parsing`_ covers deserialization from the source ``.w`` file
+    to the base model of ``Web``, ``Chunk``, and ``Command``.
+    
     -   `The WebReader class`_ which parses the Web structure.
     
     -   `The Tokenizer class`_ which tokenizes the raw input.
@@ -37,50 +49,39 @@ The broad outline of the presentation is as follows:
     -   `The Option Parser Class`_ which tokenizes just the arguments to ``@@d`` and ``@@o``
         commands.
     
--   `Error class`_ defines an application-specific Error.
+-   Other application components:
+        
+    -   `Error Class`_ defines an application-specific exception.
+        This covers all of the various kinds of problems that might arise.
 
--   `Reference Strategy`_ defines ways to manage cross-references among chunks.
-    These support the ``Weaver`` subclasses of the ``Emitters``.
-    We can have references resolved transitively or simply. A transitive
-    reference becomes a list of parent ``NamedChunk`` instances.
+    -   `Action class hierarchy`_ defines things this program does.
+    
+    -   `The Application class`_. This is an overall class definition that includes
+        command line parsing, picking an Action, configuring and executing the Action.
+        It could be a set of related functions, but we've bound them into a class.
+    
+    -   `Logging setup`_. This includes a simple context manager for logging.
+    
+    -   `The Main Function`_.
+    
+    -   `pyWeb Module File`_ defines the final module file that's created.
 
--   `Action class hierarchy`_ defines things this program does.
+We'll start with the base classes that define the 
+data model for the source WEB of chunks.
 
--   `pyWeb Module File`_ defines the final module file that's created.
+Base Classes
+-------------
 
--   `The Application class`_. This is an overall class definition that includes
-    command line parsing, picking an Action, configuring and executing the Action.
-    It could be a set of related functions, but we've bound them into a class.
-
--   `Logging setup`_. This includes a simple context manager for logging.
-
--   `The Main Function`_.
-
-We'll start with a place-holder that collects the definitions 
-into the order most convenient for the final implementation.
+Here are some of the base classes that define
+the structure and meaning of a ``.w`` source file.
 
 @d Base Class Definitions 
 @{
+@<Command class hierarchy -- used to describe individual commands@>
 
-@<Error class - defines the errors raised@>
+@<Chunk class hierarchy -- used to describe input chunks@>
 
-@<Command class hierarchy - used to describe individual commands@>
-
-@<Chunk class hierarchy - used to describe input chunks@>
-
-@<Web class - describes the overall "web" of chunks@>
-
-@<Tokenizer class - breaks input into tokens@>
-
-@<Option Parser class - locates optional values on commands@>
-
-@<WebReader class - parses the input file, building the Web structure@>
-
-@<Reference class hierarchy - strategies for weaving references to a chunk@> 
-
-@<Emitter class hierarchy - used to control output files@>
-
-@<Action class hierarchy - used to describe actions of the application@>
+@<Web class -- describes the overall "web" of chunks@>
 @}
 
 The above order is reasonably helpful for Python and minimizes forward
@@ -88,10 +89,8 @@ references. The ``Chunk``, ``Command``, and ``Web`` instances do have a circular
 
 We'll start at the central collection of information, the ``Web`` class of objects.
 
-
-
 Web Class
-----------
+~~~~~~~~~
 
 The overall web of chunks is contained in a 
 single instance of the ``Web`` class that is the principle parameter for the weaving and tangling actions.  
@@ -343,8 +342,8 @@ class Web:
 A web is built by a WebReader. It's used by Emitters, including Weaver and Tangler.
 It's composed of individual Chunk instances.
 
-Chunks
---------
+Chunk Class
+~~~~~~~~~~~~
 
 A ``Chunk`` is a piece of the input file.  It is a collection of ``Command`` instances.
 A chunk can be woven or tangled to create output.
@@ -440,8 +439,8 @@ class TypeId:
 @| TypeId
 @}
 
-Commands
---------
+Command Class
+~~~~~~~~~~~~~
 
 The input stream is broken into individual commands, based on the
 various ``@@*x*`` strings in the file.  There are several subclasses of ``Command``,
@@ -649,8 +648,18 @@ Command = Union[TextCommand, CodeCommand, ReferenceCommand,
     ]
 @}
 
-Emitters
----------
+Output Serialization
+--------------------
+
+The ``Emitter`` class hierarchy writes the output files.
+
+@d Base Class Definitions
+@{
+@<Reference class hierarchy - strategies for weaving references to a chunk@> 
+
+@<Emitter class hierarchy - used to control output files@>
+@}
+
 
 An ``Emitter`` instance is responsible for control of an output file format.
 This includes the necessary file naming, opening, writing and closing operations.
@@ -658,7 +667,6 @@ It also includes providing the correct markup for the file type.
 
 @d Emitter class hierarchy...
 @{
-
 @<Emitter Superclass@>
 
 @<Quoting rule definitions -- functions used by templates@> 
@@ -688,6 +696,8 @@ class Emitter(abc.ABC):
     def emit(self, web: Web) -> None:
         pass
 @}
+
+The Weaver is a **Facade** that wraps Jinja template processing.
 
 @d Weaver Subclass...
 @{
@@ -748,6 +758,11 @@ class Weaver(Emitter):
         yield from template.generate(web=web)
 @}
 
+The quoting rules apply to the various
+template languages. The idea is that
+a few characters must be escaped for
+proper presentation in the code sample sections.
+
 @d Quoting rule definitions...
 @{
 def rst_quote_rules(text: str) -> str:
@@ -793,8 +808,8 @@ def debug_quote_rules(text: str) -> str:
 The objective is to have a generic "weaver" template which includes three levels
 of template definition:
 
-1. Defaults
-2. Configured overrides from ``pyweb.toml``
+1. Defaults.
+2. Configured overrides, perhaps from ``pyweb.toml``.
 3. Document overrides from the ``.w`` file in ``@@t name @@{...@@}`` commands.
 
 This means there is a two-step binding between document and macros.
@@ -837,7 +852,7 @@ debug_weaver_template = dedent("""\
     code: {{command}}
     {%- endmacro -%}
     
-    {%- macro ref(id) -%}
+    {%- macro ref(id) %}
     ref: {{id}}
     {%- endmacro -%}
     
@@ -982,7 +997,6 @@ html_weaver_template = dedent("""\
 
 html_overrides_template = dedent("""\
     """)
-
 @}
 
 The LaTEX templates use a markup focused in the ``verbatim`` environment.
@@ -1052,8 +1066,8 @@ base_template = dedent("""\
         {%- if chunk.typeid.OutputChunk or chunk.typeid.NamedChunk -%}
             {{begin_code(chunk)}}
             {%- for command in chunk.commands -%}
-                {%- if command.typeid.CodeCommand %}{{code(command)}}
-                {%- elif command.typeid.ReferenceCommand %}{{ref(command)}}
+                {%- if command.typeid.CodeCommand -%}{{code(command)}}
+                {%- elif command.typeid.ReferenceCommand -%}{{ref(command)}}
                 {%- endif -%}
             {%- endfor -%}
             {{end_code(chunk)}}
@@ -1071,7 +1085,7 @@ base_template = dedent("""\
 """)
 @}
 
-**TODO:** Need to handle the case where an output chunk
+**TODO:** Need to more gracefully handle the case where an output chunk
 has multiple definitions. 
 
 ..  parsed-literal::
@@ -1106,9 +1120,9 @@ The above should have the same output as the follow (more complex) alternative:
     ... part 2 ...
     @@}
 
-The following definition may not support the first alternative.
-The ``Web`` needs to create a mapping from file name to all chunks that
-create the file. 
+Currently, we casually treat the first instance
+as the "definition", and don't provide references
+to the additional parts of the definition.
 
 @d Tangler Subclass...
 @{
@@ -1209,7 +1223,7 @@ def resetIndent(self, indent: int = 0) -> None:
 @| addIndent setIndent clrIndent resetIndent
 @}
 
-An extension that only updates a file if the content has changed.
+An extension to the ``Tangler`` class that only updates a file if the content has changed.
 
 @d Imports
 @{import filecmp
@@ -1250,9 +1264,8 @@ class TanglerMake(Tangler):
             self.logger.info("Wrote %d lines to %s", self.linesWritten, target_path)
 @}
 
-
 Reference Strategy
----------------------------------
+~~~~~~~~~~~~~~~~~~
 
 The Reference Strategy has two implementations.  An instance
 of this is injected into each Chunk by the Web.  By injecting this
@@ -1262,13 +1275,8 @@ algorithm, we assure that:
 
 (2) a simple configuration change can be applied to the document.
 
-
-Reference Superclass
-~~~~~~~~~~~~~~~~~~~~~
-
 The superclass is an abstract class that defines the interface for
 this object.
-
 
 @d Reference class hierarchy... 
 @{
@@ -1282,11 +1290,9 @@ class Reference(abc.ABC):
         ...
 @}
 
-SimpleReference Class
-~~~~~~~~~~~~~~~~~~~~~
 
-The SimpleReference subclass does the simplest version of resolution. It returns
-the ``Chunks`` referenced.
+The ``SimpleReference`` subclass does the simplest version of resolution. It returns
+the ``Chunk`` instances referenced.
     
 @d Reference class hierarchy... 
 @{
@@ -1296,11 +1302,8 @@ class SimpleReference(Reference):
         return refBy
 @}
 
-TransitiveReference Class
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The TransitiveReference subclass does a transitive closure of all
-references to this Chunk.
+The ``TransitiveReference`` subclass does a transitive closure of all
+references to this ``Chunk``.
 
 This requires walking through the ``Web`` to locate "parents" of each referenced
 ``Chunk``.
@@ -1324,50 +1327,20 @@ class TransitiveReference(Reference):
 @}
 
 
-Error class
-------------
+Input Parsing
+-------------
 
-An ``Error`` is raised whenever processing cannot continue.  Since it
-is a subclass of Exception, it takes an arbitrary number of arguments.  The
-first should be the basic message text.  Subsequent arguments provide 
-additional details.  We will try to be sure that
-all of our internal exceptions reference a specific chunk, if possible.
-This means either including the chunk as an argument, or catching the 
-exception and appending the current chunk to the exception's arguments.
-
-The Python ``raise`` statement takes an instance of ``Error`` and passes it
-to the enclosing ``try/except`` statement for processing.
-
-The typical creation is as follows:
-
-..  parsed-literal::
-
-    raise Error(f"No full name for {chunk.name!r}", chunk)
-
-A typical exception-handling suite might look like this:
-
-..  parsed-literal::
-
-    try:
-        *...something that may raise an Error or Exception...*
-    except Error as e:
-        print(e.args) # this is a pyWeb internal Error
-    except Exception as w:
-        print(w.args) # this is some other Python Exception
-
-The ``Error`` class is a subclass of ``Exception`` used to differentiate 
-application-specific
-exceptions from other Python exceptions.  It does no additional processing,
-but merely creates a distinct class to facilitate writing ``except`` statements.
-
-
-@d Error class...
+@d Base Class Definitions
 @{
-class Error(Exception): pass
-@| Error @}
+@<Tokenizer class - breaks input into tokens@>
+
+@<Option Parser class - locates optional values on commands@>
+
+@<WebReader class - parses the input file, building the Web structure@>
+@}
 
 The WebReader Class
------------------------------
+~~~~~~~~~~~~~~~~~~~
 
 There are two forms of the constructor for a ``WebReader``.  The 
 initial ``WebReader`` instance is created with code like the following:
@@ -2177,8 +2150,53 @@ Then we'd have something like this. (Untested, incomplete, just hand-waving.)
             trailers.pop(0)
     yield trailers[0], " ".join(final)
     
+Other Application Components
+----------------------------
+
+Error class
+~~~~~~~~~~~
+
+An ``Error`` is raised whenever processing cannot continue.  Since it
+is a subclass of Exception, it takes an arbitrary number of arguments.  The
+first should be the basic message text.  Subsequent arguments provide 
+additional details.  We will try to be sure that
+all of our internal exceptions reference a specific chunk, if possible.
+This means either including the chunk as an argument, or catching the 
+exception and appending the current chunk to the exception's arguments.
+
+The Python ``raise`` statement takes an instance of ``Error`` and passes it
+to the enclosing ``try/except`` statement for processing.
+
+The typical creation is as follows:
+
+..  parsed-literal::
+
+    raise Error(f"No full name for {chunk.name!r}", chunk)
+
+A typical exception-handling suite might look like this:
+
+..  parsed-literal::
+
+    try:
+        *...something that may raise an Error or Exception...*
+    except Error as e:
+        print(e.args) # this is a pyWeb internal Error
+    except Exception as w:
+        print(w.args) # this is some other Python Exception
+
+The ``Error`` class is a subclass of ``Exception`` used to differentiate 
+application-specific
+exceptions from other Python exceptions.  It does no additional processing,
+but merely creates a distinct class to facilitate writing ``except`` statements.
+
+
+@d Error class -- defines the errors raised
+@{
+class Error(Exception): pass
+@| Error @}
+
 Action Class Hierarchy
------------------------
+~~~~~~~~~~~~~~~~~~~~~~
 
 This application performs three major actions: loading the document web, 
 weaving and tangling.  Generally,
@@ -2221,7 +2239,7 @@ Each action has the potential to update the state of the overall
 application.   A partner with this command hierarchy is the Application class
 that defines the application options, inputs and results. 
 
-@d Action class hierarchy... 
+@d Action class hierarchy -- used to describe actions of the application 
 @{
 @<Action superclass has common features of all actions@>
 @<ActionSequence subclass that holds a sequence of other actions@>
@@ -2230,8 +2248,6 @@ that defines the application options, inputs and results.
 @<LoadAction subclass loads the document web@>
 @}
 
-Action Class
-~~~~~~~~~~~~~
 
 The ``Action`` class embodies the basic operations of **py-web-tool** .
 The intent of this hierarchy is to both provide an easily expanded method of
@@ -2587,123 +2603,6 @@ def summary(self) -> str:
 @}
 
 
-**pyWeb** Module File
-------------------------
-
-The **pyWeb** application file is shown below:
-
-@o pyweb.py 
-@{@<Overheads@>
-@<Imports@>
-@<Base Class Definitions@>
-@<Application Class@>
-@<Logging Setup@>
-@<Interface Functions@>
-@}
-
-The `Overheads`_ are described below, they include things like:
-
--     shell escape
-
--     doc string
-
--     ``__version__`` setting
-
-
-`Python Library Imports`_ are actually scattered in various places in this description.
-
-
-The more important elements are described in separate sections:
-
--     Base Class Definitions
-
--     Application Class and Main Functions
-
--     Interface Functions
-
-Python Library Imports
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Numerous Python library modules are used by this application. 
-
-A few are listed here because they're used widely. Others are listed
-closer to where they're referenced.
-
--   The ``os`` module provide os-specific file and path manipulations; it is used
-    to transform the input file name into the output file name as well as track down file modification
-    times.
-
--   The ``time`` module provides a handy current-time string; this is used
-    to by the HTML Weaver to write a closing timestamp on generated HTML files, 
-    as well as log messages.
-    
--   The ``datetime`` module is used to format times, phasing out use of ``time``.
-
--   The ``types`` module is used to get at ``SimpleNamespace`` for configuration.
-
-
-
-@d Imports
-@{
-import os
-import time
-import datetime
-import types
-@|  os time datetime types
-@}
-
-Note that ``os.path``, ``time``, ``datetime`` and ``platform```
-are provided in the expression context.
-
-Overheads
-~~~~~~~~~~~~
-
-The shell escape is provided so that the user can define this
-file as executable, and launch it directly from their shell.
-The shell reads the first line of a file; when it finds the ``'#!'`` shell
-escape, the remainder of the line is taken as the path to the binary program
-that should be run.  The shell runs this binary, providing the 
-file as standard input.
-
-
-@d Overheads
-@{#!/usr/bin/env python
-@}
-
-A Python ``__doc__`` string provides a standard vehicle for documenting
-the module or the application program.  The usual style is to provide
-a one-sentence summary on the first line.  This is followed by more 
-detailed usage information.
-
-
-@d Overheads 
-@{"""py-web-tool Literate Programming.
-
-Yet another simple literate programming tool derived from **nuweb**, 
-implemented entirely in Python.
-With a suitable configuration, this weaves documents with any markup language,
-and tangles source files for any programming language.
-"""
-@}
-
-The keyword cruft is a standard way of placing version control information into
-a Python module so it is preserved.  See PEP (Python Enhancement Proposal) #8 for information
-on recommended styles.
-
-
-We also sneak in a "DO NOT EDIT" warning that belongs in all generated application 
-source files.
-
-@d Overheads
-@{__version__ = """3.2"""
-
-### DO NOT EDIT THIS FILE!
-### It was created by @(thisApplication@), __version__='@(__version__@)'.
-### From source @(theFile@) modified @(datetime.datetime.fromtimestamp(os.path.getmtime(theFile)).ctime()@).
-### In working directory '@(os.path.realpath('.')@)'.
-@| __version__ @}
-
-
 The Application Class
 -----------------------
 
@@ -2758,7 +2657,7 @@ The configuration can be either a ``types.SimpleNamespace`` or an
 @| argparse
 @}
 
-@d Application Class...
+@d Application Class for overall CLI operation
 @{
 class Application:
     def __init__(self) -> None:
@@ -3027,10 +2926,10 @@ log_config = {
     
     # For specific debugging support...
     'loggers': {
-        'Weaver': {'level': logging.DEBUG},
-        'WebReader': {'level': logging.DEBUG},
-        'TanglerMake': {'level': logging.DEBUG},
-        'Web': {'level': logging.DEBUG},
+        'Weaver': {'level': logging.INFO},
+        'WebReader': {'level': logging.INFO},
+        'TanglerMake': {'level': logging.INFO},
+        'Web': {'level': logging.INFO},
     },
 }
 @}
@@ -3056,14 +2955,15 @@ format = "{levelname}:{name}:{message}"
 style = "{"
 
 [loggers.Weaver]
-level = "DEBUG"
+level = "INFO"
 
 [loggers.WebReader]
-level = "DEBUG"
+level = "INFO"
 
 [loggers.TanglerMake]
-level = "DEBUG"
+level = "INFO"
 }
+@}
 
 We can load this with 
 
@@ -3076,7 +2976,6 @@ Rather then use the ``-v`` and ``-d`` options, a ``-l logging.toml``
 options can be used to provide non-default config values. 
 
 Also, we might want a decorator to define loggers more consistently for each class definition.
-
 
 The Main Function
 ------------------
@@ -3091,16 +2990,136 @@ This two-step process allows for some dependency injection to customize argument
 We might also want to parse a logging configuration file, as well
 as a weaver template configuration file.
 
-@d Interface Functions...
+@d Interface Functions
 @{
 def main(argv: list[str] = sys.argv[1:]) -> None:
     a = Application()
     config = a.parseArgs(argv)
     a.process(config)
+@}
+
+**pyWeb** Module File
+------------------------
+
+The **pyWeb** application file is shown below:
+
+@o pyweb.py 
+@{@<Overheads@>
+@<Imports@>
+@<Error class...@>
+@<Base Class Definitions@>
+@<Action class hierarchy...@>
+@<Application Class...@>
+@<Logging Setup@>
+@<Interface Functions@>
 
 if __name__ == "__main__":
     with Logger(log_config):
         main()
+@}
+
+The `Overheads`_ are described below, they include things like:
+
+-     shell escape
+
+-     doc string
+
+-     ``__version__`` setting
+
+
+`Python Library Imports`_ are actually scattered in various places in this description.
+
+
+The more important elements are described in separate sections:
+
+-     Base Class Definitions
+
+-     Application Class and Main Functions
+
+-     Interface Functions
+
+Python Library Imports
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Numerous Python library modules are used by this application. 
+
+A few are listed here because they're used widely. Others are listed
+closer to where they're referenced.
+
+-   The ``os`` module provide os-specific file and path manipulations; it is used
+    to transform the input file name into the output file name as well as track down file modification
+    times.
+
+-   The ``time`` module provides a handy current-time string; this is used
+    to by the HTML Weaver to write a closing timestamp on generated HTML files, 
+    as well as log messages.
+    
+-   The ``datetime`` module is used to format times, phasing out use of ``time``.
+
+-   The ``types`` module is used to get at ``SimpleNamespace`` for configuration.
+
+
+
+@d Imports
+@{
+import os
+import time
+import datetime
+import types
+@|  os time datetime types
+@}
+
+Note that ``os.path``, ``time``, ``datetime`` and ``platform```
+are provided in the expression context.
+
+Overheads
+~~~~~~~~~~~~
+
+The shell escape is provided so that the user can define this
+file as executable, and launch it directly from their shell.
+The shell reads the first line of a file; when it finds the ``'#!'`` shell
+escape, the remainder of the line is taken as the path to the binary program
+that should be run.  The shell runs this binary, providing the 
+file as standard input.
+
+
+@d Overheads
+@{#!/usr/bin/env python
+@}
+
+A Python ``__doc__`` string provides a standard vehicle for documenting
+the module or the application program.  The usual style is to provide
+a one-sentence summary on the first line.  This is followed by more 
+detailed usage information.
+
+
+@d Overheads 
+@{"""py-web-tool Literate Programming.
+
+Yet another simple literate programming tool derived from **nuweb**, 
+implemented entirely in Python.
+With a suitable configuration, this weaves documents with any markup language,
+and tangles source files for any programming language.
+"""
+@}
+
+The keyword cruft is a standard way of placing version control information into
+a Python module so it is preserved.  See PEP (Python Enhancement Proposal) #8 for information
+on recommended styles.
+
+
+We also sneak in a "DO NOT EDIT" warning that belongs in all generated application 
+source files.
+
+@d Overheads
+@{__version__ = """3.2"""
+
+### DO NOT EDIT THIS FILE!
+### It was created by @(thisApplication@), __version__='@(__version__@)'.
+### From source @(theFile@) modified @(datetime.datetime.fromtimestamp(os.path.getmtime(theFile)).ctime()@).
+### In working directory '@(os.path.realpath('.')@)'.
+@| __version__ @}
+
 @| main @}
 
 This can be extended by doing something like the following.

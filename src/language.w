@@ -68,45 +68,6 @@ Boilerplate
 There is some mandatory "boilerplate" required to make a working document.
 Requirements vary by markup language.
 
-RST
-~~~
-
-The RST template uses two substitutions, ``|srarr|`` and ``|loz|``.
-
-These can be provided by 
-
-::
-    
-    ..	include:: <isoamsa.txt>
-    ..	include:: <isopub.txt>
-    
-Or
-
-::
-
-    .. |srarr|  unicode:: U+02192 .. RIGHTWARDS ARROW
-    .. |loz|    unicode:: U+025CA .. LOZENGE
-    
-Often the boilerplate document looks like this
-
-..  parsed-literal::
-    
-    ####################
-    *Title*
-    ####################
-    
-    ===============
-    *Author*
-    ===============
-    
-    ..  include:: <isoamsa.txt>
-    ..	include:: <isopub.txt>
-    
-    ..  contents::
-    
-    *Your Document Starts Here*
-
-
 LaTeX
 ~~~~~
 
@@ -138,9 +99,11 @@ Some minimal boilerplate document looks like this:
 HTML
 ~~~~
 
-No additional setup is required for HTML. However, there's often
-a fairly large amount of HTML boilerplate, depending on the CSS
-requirements.
+There's often a fairly large amount of HTML boilerplate.
+Currently, the templates used do **not** provide any CSS classes.
+For more sophisticated HTML documents, it may be necessary to
+provide customized templates with CSS classes to make the 
+document look good.
 
 Structural Tags
 ---------------

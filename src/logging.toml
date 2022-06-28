@@ -16,38 +16,11 @@ format = "{levelname}:{name}:{message}"
 style = "{"
 
 [loggers.Weaver]
-level = "DEBUG"
+level = "INFO"
 
 [loggers.WebReader]
-level = "DEBUG"
+level = "INFO"
 
 [loggers.TanglerMake]
-level = "DEBUG"
+level = "INFO"
 }
-
-We can load this with 
-
-..  parsed-literal::
-
-    log_config = toml.load(Path("logging.toml"))
-
-This makes it slightly easier to add and change debuging alternatives.
-Rather then use the ``-v`` and ``-d`` options, a ``-l logging.toml`` 
-options can be used to provide non-default config values. 
-
-Also, we might want a decorator to define loggers more consistently for each class definition.
-
-
-The Main Function
-------------------
-
-The top-level interface is the ``main()`` function.
-This function creates an ``Application`` instance.
-
-The ``Application`` object parses the command-line arguments.
-Then the ``Application`` object does the requested processing.
-This two-step process allows for some dependency injection to customize argument processing.
-
-We might also want to parse a logging configuration file, as well
-as a weaver template configuration file.
-

@@ -8,13 +8,15 @@ This requires Python 3.10.
 This is not (currently) hosted in PyPI. Instead of installing it with PIP,
 clone the GitHub repository or download the distribution kit.
 
-Install pyweb "manually" using the provided ``setup.py``.
+After downloading, install pyweb "manually" using the provided ``setup.py``.
 
 ::
 
     python setup.py install
     
 This will install the ``pyweb`` module.
+
+This depends on 
 
 Using
 =====

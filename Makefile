@@ -19,8 +19,6 @@ test : $(SOURCE_PYLPWEB) $(TEST_PYLPWEB)
 	rst2html.py tests/pyweb_test.rst tests/pyweb_test.html
 	mypy --strict --show-error-codes src
 
-pretest : src/pyweb.py tests/pyweb_test.rst
-
 doc : src/pyweb.html
 
 build : src/pyweb.py src/tangle.py src/weave.py src/pyweb.html tests/pyweb_test.rst
@@ -28,7 +26,7 @@ build : src/pyweb.py src/tangle.py src/weave.py src/pyweb.html tests/pyweb_test.
 examples : examples/hello_world_latex.tex examples/hello_world_rst.html examples/ackermanns.html
 
 src/pyweb.py src/pyweb.rst : $(SOURCE_PYLPWEB)
-	cd src && python3 $(PYLPWEB_BOOTSTRAP) pyweb.w 
+	cd src && python3 pyweb.py pyweb.w 
 
 src/pyweb.html : src/pyweb.rst $(DOCUTILS_PYLPWEB)
 	rst2html.py $< $@

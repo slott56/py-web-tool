@@ -9,7 +9,12 @@ Changes for 3.2
 
 -   Dramatic redesign to Class, Chunk, and Command class hierarchies.
 
--   Dramatic redesign to Emitters.
+-   Dramatic redesign to Emitters to switch to using Jinja templates.
+    By stepping away from the ``string.Template``,
+    we can incorporate list-processing ``{% for %}...{% endfor %}`` construct that 
+    pushes some processing into the template.
+
+-   Remove ``'\N{LOZENGE}'`` (borrowed from Interscript) and use the ``'\N{END OF PROOF}'`` symbol instead.
 
 Changes for 3.1
 
