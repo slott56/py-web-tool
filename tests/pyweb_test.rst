@@ -2737,7 +2737,11 @@ Weaving test cases have a common setup shown in this superclass.
             try:
                 self.file\_path.with\_suffix(".html").unlink()
             except FileNotFoundError:
-                pass  # if the test failed, nothing to remove
+                pass
+            try:
+                self.file\_path.with\_suffix(".debug").unlink()
+            except FileNotFoundError:
+                pass
 
 ..
 
@@ -3666,7 +3670,7 @@ User Identifiers
 
 ..	class:: small
 
-	Created by src/pyweb.py at Fri Jul  1 08:24:41 2022.
+	Created by src/pyweb.py at Fri Jul  1 08:28:55 2022.
 
     Source tests/pyweb_test.w modified Sat Jun 18 10:00:51 2022.
 

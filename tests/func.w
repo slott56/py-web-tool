@@ -434,7 +434,11 @@ class WeaveTestcase(unittest.TestCase):
         try:
             self.file_path.with_suffix(".html").unlink()
         except FileNotFoundError:
-            pass  # if the test failed, nothing to remove
+            pass
+        try:
+            self.file_path.with_suffix(".debug").unlink()
+        except FileNotFoundError:
+            pass
 @}
 
 @d Weave Test references... @{
