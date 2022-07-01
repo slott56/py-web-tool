@@ -313,7 +313,7 @@ class Web:
             SimpleNamespace(name=first_def.name, full_name=first_def.full_name, seq=first_def.seq, def_list=def_list)
             for first_def, def_list in first_list
         )
-        # print(f"macros: {defs}")
+        # self.logger.debug(f"macros: {defs}")
         return macro_list
 
     @@property
@@ -322,7 +322,7 @@ class Web:
             SimpleNamespace(userid=userid, ref_list=self.userid_map[userid])
             for userid in sorted(self.userid_map)
         )
-        # print(f"userids: {userid_list}")
+        # self.logger.debug(f"userids: {userid_list}")
         return userid_list
             
     def no_reference(self) -> list[Chunk]:
@@ -469,18 +469,6 @@ class TextCommand:
     @@property
     def typeid(cls) -> "TypeId":
         return TypeId(cls)
-
-    def indent(self) -> int:
-        if self.text.endswith('\n'):
-            self.logger.debug(f"indent = 0")
-            return 0
-        try:
-            last_line = self.text.splitlines()[-1]
-            self.logger.debug(f"indent = {len(last_line)}")
-            return len(last_line)
-        except IndexError:
-            self.logger.debug(f"indent (with no text) = 0")
-            return 0
         
     def tangle(self, aTangler: "Tangler", target: TextIO) -> None:
         self.logger.debug(f"tangle {self.text=!r}")
@@ -500,15 +488,6 @@ class CodeCommand:
     def typeid(cls) -> "TypeId":
         return TypeId(cls)
         
-    def indent(self) -> int:
-        if self.text.endswith('\n'):
-            return 0
-        try:
-            last_line = self.text.splitlines()[-1]
-            return len(last_line)
-        except IndexError:
-            return 0
-
     def tangle(self, aTangler: "Tangler", target: TextIO) -> None:
         self.logger.debug(f"tangle {self.text=!r}")
         aTangler.codeBlock(target, self.text)
@@ -547,27 +526,25 @@ class ReferenceCommand:
     def tangle(self, aTangler: "Tangler", target: TextIO) -> None:
         """Expand this reference.
         The starting position is the indentation for all **subsequent** lines.
-        Provide tangler.lastIndent back to the tangler. 
+        Provide the indent before ``@@<``, in ``tangler.fragment`` back to the tangler. 
         """
-        self.logger.debug(f"tangle reference to {self.name=}, {aTangler.lastIndent=}")
+        self.logger.debug(f"tangle reference to {self.name=}, context: {aTangler.fragment=}")
         chunk_list = self.web().resolve_chunk(self.name)
         if len(chunk_list) == 0:
             message = f"Attempt to tangle an undefined Chunk, {self.name!r}"
             self.logger.error(message)
             raise Error(message) 
         self.definition = True
-        aTangler.addIndent(aTangler.lastIndent)
+        aTangler.addIndent(len(aTangler.fragment))
+        aTangler.fragment = ""
 
         for chunk in chunk_list:
-            # TODO: if chunk.options includes '-indent': do an addIndent before tangling.
+            # TODO: if chunk.options includes '-indent': do an setIndent before tangling.
             for command in chunk.commands:
                 command.tangle(aTangler, target)
                 
         aTangler.clrIndent()
         
-    def indent(self) -> int | None:
-        return None
-
 @@dataclass
 class FileXrefCommand:
     location: tuple[str, int]
@@ -587,9 +564,6 @@ class FileXrefCommand:
 
     def tangle(self, aTangler: "Tangler", target: TextIO) -> None:
         raise Error('Illegal tangling of a cross reference command.')
-
-    def indent(self) -> int:
-        return 0
 
 @@dataclass
 class MacroXrefCommand:
@@ -611,9 +585,6 @@ class MacroXrefCommand:
     def tangle(self, aTangler: "Tangler", target: TextIO) -> None:
         raise Error('Illegal tangling of a cross reference command.')
 
-    def indent(self) -> int:
-        return 0
-
 @@dataclass
 class UserIdXrefCommand:
     location: tuple[str, int]
@@ -633,9 +604,6 @@ class UserIdXrefCommand:
         
     def tangle(self, aTangler: "Tangler", target: TextIO) -> None:
         raise Error('Illegal tangling of a cross reference command.')
-
-    def indent(self) -> int:
-        return 0
 @}
 
 We can define a union of these various data classes 
@@ -876,9 +844,13 @@ debug_weaver_template = dedent("""\
 
 The RST Templates produce ReStructuredText for the various web commands.
 
+**TODO:** four spaces indent **only** after ``code(c)`` where ``c.text == '\n'``.
+Either state maintained here, or, ``CodeCommand`` (and ``TextCommand``) instances are merged into lines.
+We might, for example, handle ``c.text == '\n'`` seperately from all other commands.
+
 @d RST Templates...
 @{
-rst_weaver_template = dedent("""\
+rst_weaver_template = dedent("""
     {%- macro text(command) -%}
     {{command.text}}
     {%- endmacro -%}
@@ -890,10 +862,12 @@ rst_weaver_template = dedent("""\
         :class: code
         
     {% endmacro -%}
+
+    {# For RST, each line must be indented. #}    
+    {%- macro code(command) %}{% for line in command.text.splitlines() %}    {{line | quote_rules}}
+    {% endfor -%}{% endmacro -%}
     
-    {%- macro code(command) %}    {{command.text | quote_rules}}{%- endmacro -%}
-    
-    {%- macro ref(id) %}    \N{RIGHTWARDS ARROW}\ `{{id.full_name}} ({{id.seq}})`_{%- endmacro -%}
+    {%- macro ref(id) %}    \N{RIGHTWARDS ARROW}\ `{{id.full_name}} ({{id.seq}})`_{% endmacro -%}
     
     {%- macro end_code(chunk) %}
     ..
@@ -1122,6 +1096,7 @@ class Tangler(Emitter):
         super().__init__(output)
         self.context: list[int] = []
         self.resetIndent(self.code_indent)  # Create context and initial lastIndent values
+        self.fragment = ""  # Nothing written yet.
         # Summary
         self.linesWritten = 0
         self.totalFiles = 0
@@ -1146,6 +1121,42 @@ class Tangler(Emitter):
     @< Emitter indent control: set, clear and reset @>
 @}
 
+The ``codeBlock()`` method is used by each block of code tangled into 
+a document. There are two sources of indentation:
+
+-   A ``Chunk`` can provide an indent setting as an option. This is provided by the ``indent`` attribute
+    of the tangle context. If specified, this is the indentation. 
+    
+-   A ``@@< name @@>`` ``ReferenceCommand`` may be indented. This will be in a ``Chunk`` as the following three commands:
+
+    1.  A ``CodeCommand`` with only spaces and no trailing ``\n``. 
+        The indent is buffered -- not written -- and the ``fragment`` attribute is set.
+    
+    2.  The ``ReferenceCommand``. This interpolates text from a ``NamedChunk`` using the prevailing indent.
+        The ``tangle()`` method uses ``addIndent()`` and ``clrIndent()`` to mark this. The processing depends 
+        on this tangler's ``fragment`` attribute to provide the pending indentation; the ``addIndent()`` 
+        must consume the fragment to prevent confusion with subsequent indentations.
+    
+    3.  A ``CodeCommand`` with a trailing ``\n``. (Often it's only the newline.)  If the ``fragment`` attribute
+        is set, there's a pending indentation that hasn't yet been written.
+        This can happen with there's a ``@@@@`` command at the left end of a line; often a Python decorator. 
+        The fragment is written and the ``fragment`` attribute cleared.  No ``addIdent()`` will have
+        been done to consume the fragment. 
+    
+While the WEB language permits multiple ``@@<name@@> @@<name@@>`` on a single line,
+this is odd and potentially confusing. It isn't clear how the second reference
+should be indented.
+
+The ``ReferenceCommand`` ``tangle()`` implementation handles much of this. 
+The following two rules apply:
+    
+-   A line of text that does not end with a newline, sets a new prevailing indent
+    for the following command(s).
+
+-   A line of text ending with a newline resets the prevailing indent.
+
+This a stack, maintained by the Tangler.
+
 
 @d Emitter write a block of code...
 @{
@@ -1153,30 +1164,35 @@ def codeBlock(self, target: TextIO, text: str) -> None:
     """Indented write of text in a ``CodeCommand``. 
     Counts lines and saves position to indent to when expanding ``@@<...@@>`` references.
     
-    The ``lastIndent`` is the prevailing indent used in reference expansion.
+    The ``fragment`` is the prevailing indent used in reference expansion.
     """
-    indent = self.context[-1]
-    if len(text) == 0:
-        # Degenerate case of empty CodeText command
-        pass
-    elif text == '\n':
-        self.linesWritten += 1
-        target.write(text)
-        self.lastIndent = 0
-        self.fragment = False  # Generally, also means lastIndent == 0
-    else:
-        if not self.fragment:
-            # First thing after '\n'
+    for line in text.splitlines(keepends=True):
+        self.logger.debug("codeBlock(%r)", line)
+        indent = self.context[-1]
+        if len(line) == 0:
+            # Degenerate case of empty CodeText command. Should not occur.
+            pass
+        elif not line.endswith('\n'):
+            # Possible start of indentation prior to a ``@@<name@@>``
             target.write(indent*' ')
-            wrote = target.write(text)
-            self.lastIndent = wrote
-            self.fragment = True
+            wrote = target.write(line)
+            self.fragment = ' ' * wrote
+            # May be used by a ``ReferenceCommand``, if needed.
+        elif line.endswith('\n'):
+            target.write(indent*' ')
+            target.write(line)
+            self.linesWritten += 1
         else:
-            target.write(text)
+            raise RuntimeError("Non-exhaustive if statement.")
+
 @| codeBlock
 @}
 
-The ``setIndent()`` pushes a fixed indent instead adding an increment.
+The ``addIndent()`` increments the indent. 
+Used by ``@@<name@@>`` to set a prevailing indent.
+
+The ``setIndent()`` pushes a fixed indent instead adding an increment. 
+Used by a ``Chunk`` with an ``-indent`` option.
     
 The ``clrIndent()`` method discards the most recent indent from the context stack.  
 This is used when finished
@@ -1191,23 +1207,25 @@ def addIndent(self, increment: int) -> None:
     self.lastIndent = self.context[-1]+increment
     self.context.append(self.lastIndent)
     self.log_indent.debug("addIndent %d: %r", increment, self.context)
+    self.fragment = ""
     
 def setIndent(self, indent: int) -> None:
     self.context.append(indent)
     self.lastIndent = self.context[-1]
     self.log_indent.debug("setIndent %d: %r", indent, self.context)
-    
+    self.fragment = ""
+
 def clrIndent(self) -> None:
     if len(self.context) > 1:
         self.context.pop()
     self.lastIndent = self.context[-1]
     self.log_indent.debug("clrIndent %r", self.context)
-    
+    self.fragment = ""
+
 def resetIndent(self, indent: int = 0) -> None:
     """Resets the indentation context."""
     self.lastIndent = indent
     self.context = [self.lastIndent]
-    self.fragment = False  # Nothing written yet
     self.log_indent.debug("resetIndent %d: %r", indent, self.context)
 @| addIndent setIndent clrIndent resetIndent
 @}
@@ -1568,7 +1586,6 @@ newChunk = OutputChunk(
 newChunk.filePath = self.filePath
 self.content.append(newChunk)
 self.text_command = CodeCommand
-# self.content[-1].commands.append(CodeCommand("", self.location()))
 # capture an OutputChunk up to @@}
 @}
 
@@ -1615,7 +1632,6 @@ else:
 if newChunk:
     self.content.append(newChunk)
 self.text_command = CodeCommand
-# self.content[-1].commands.append(CodeCommand("", self.location()))
 # capture a NamedChunk up to @@} or @@]
 @}
 
@@ -1805,10 +1821,19 @@ We replace with '@@' here and now! This is put this at the end of the previous c
 And we make sure the next chunk will be appended to this so that it's 
 largely seamless.
 
-@d double at-sign...
+@d double at-sign replacement...
 @{
+self.logger.debug(f"double-command: {self.content[-1]=}")
 cls = self.text_command
-self.content[-1].commands.append(cls(self.command, self.location()))
+if len(self.content[-1].commands) == 0:  
+    self.content[-1].commands.append(cls(self.command, self.location()))
+else:
+    tail = self.content[-1].commands[-1]
+    if tail.typeid.CodeCommand or tail.typeid.TextCommand:
+        tail.text += self.command
+    else:
+        # A non-text command: one of @@< name @@>, @@f, @@m, @@u.
+        self.content[-1].commands.append(cls(self.command, self.location()))
 @}
 
 The ``expect()`` method examines the 
@@ -1896,12 +1921,22 @@ def parse_source(self) -> None:
                 self.logger.error('Unknown @@-command in input: %r near %r', token, self.location())
                 cls = self.text_command
                 self.content[-1].commands.append(cls(token, self.location()))
+                
         elif token:
             # Accumulate a non-empty block of text in the current chunk.
             # Output Chunk and Named Chunk should have CodeCommand 
             # Chunk should have TextCommand.
-            cls = self.text_command
-            self.content[-1].commands.append(cls(token, self.location()))
+            # Edge case is Chunk with no Command
+            if len(self.content[-1].commands) == 0:
+                cls = self.text_command
+                self.content[-1].commands.append(cls(token, self.location()))
+            elif (tail := self.content[-1].commands[-1]) and (tail.typeid.CodeCommand or tail.typeid.TextCommand):
+                tail.text += token
+            else:
+                # A non-text command: one of @@< name @@>, @@f, @@m, @@u.
+                cls = self.text_command
+                self.content[-1].commands.append(cls(token, self.location()))
+            
         else:
             # Whitespace
             pass
@@ -2917,8 +2952,13 @@ log_config = {
     'loggers': {
         'Weaver': {'level': logging.INFO},
         'WebReader': {'level': logging.INFO},
+        'Tangler': {'level': logging.INFO},
         'TanglerMake': {'level': logging.INFO},
+        'indent.TanglerMake': {'level': logging.INFO},
         'Web': {'level': logging.INFO},
+        'WebReader': {'level': logging.INFO},
+        # Unit test requires this...
+        'ReferenceCommand': {'level': logging.INFO},
     },
 }
 @}
@@ -2949,8 +2989,22 @@ level = "INFO"
 [loggers.WebReader]
 level = "INFO"
 
+[loggers.Tangler]
+level = "INFO"
+
 [loggers.TanglerMake]
 level = "INFO"
+
+[loggers.indent.TanglerMake]
+level = "INFO"
+
+[loggers.WebReader]
+level = "INFO"
+
+[loggers.ReferenceCommand]
+# Unit test requires this...
+level = "INFO"
+
 }
 @}
 

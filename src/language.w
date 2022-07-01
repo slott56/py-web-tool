@@ -447,7 +447,7 @@ The expanded syntax for ``@@o`` looks like this.
 
 ..  parsed-literal::
 
-    @@o -start /* -end */ page-layout.css
+    @@o -start /* -end \*/ page-layout.css
     @@{
     *Some CSS code*
     @@}

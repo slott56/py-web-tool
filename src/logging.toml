@@ -21,6 +21,20 @@ level = "INFO"
 [loggers.WebReader]
 level = "INFO"
 
+[loggers.Tangler]
+level = "INFO"
+
 [loggers.TanglerMake]
 level = "INFO"
+
+[loggers.indent.TanglerMake]
+level = "INFO"
+
+[loggers.WebReader]
+level = "INFO"
+
+[loggers.ReferenceCommand]
+# Unit test requires this...
+level = "INFO"
+
 }

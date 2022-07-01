@@ -25,7 +25,6 @@ class TangleTestcase(unittest.TestCase):
             chunks = self.rdr.load(self.file_path, self.source)
             self.web = pyweb.Web(chunks)
             self.tangler.emit(self.web)
-            # Old: self.web.createUsedBy()
             self.fail("Should not tangle")
         exc = exc_mgr.exception
         self.assertEqual(exception_text, exc.args[0])
@@ -165,7 +164,6 @@ class Test_IncludeError_7(TangleTestcase):
         chunks = self.rdr.load(self.file_path, self.source)
         self.web = pyweb.Web(chunks)
         self.tangler.emit(self.web)
-        # Old: self.web.createUsedBy()
         self.assertEqual(5, len(self.web.chunks))
         self.assertEqual(test7_inc_w, self.web.chunks[3].commands[0].text)
     def tearDown(self) -> None:

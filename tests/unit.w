@@ -331,7 +331,8 @@ class TestWeaver(unittest.TestCase):
             '..  parsed-literal::\n'
             '    :class: code\n'
             '\n'
-            '    \\|char\\| \\`code\\` \\*em\\* \\_em\\_    \n'
+            '    \\|char\\| \\`code\\` \\*em\\* \\_em\\_\n'
+            '    \n'
             '    →\\ `named chunk (42)`_\n'
             '..\n'
             '\n'
@@ -345,7 +346,8 @@ class TestWeaver(unittest.TestCase):
             '..  parsed-literal::\n'
             '    :class: code\n'
             '\n'
-            '    \\|char\\| \\`code\\` \\*em\\* \\_em\\_    \n'
+            '    \\|char\\| \\`code\\` \\*em\\* \\_em\\_\n'
+            '    \n'
             '\n'
             '..\n'
             '\n'
@@ -468,14 +470,11 @@ class TestTangler(unittest.TestCase):
         
     def test_tangler_should_indent(self) -> None:
         target = io.StringIO()
-        self.tangler.codeBlock(target, "Begin")
-        self.tangler.codeBlock(target, "\n")
+        self.tangler.codeBlock(target, "Begin\n")
         self.tangler.addIndent(4)
-        self.tangler.codeBlock(target, "More Code")
-        self.tangler.codeBlock(target, "\n")
+        self.tangler.codeBlock(target, "More Code\n")
         self.tangler.clrIndent()
-        self.tangler.codeBlock(target, "End")
-        self.tangler.codeBlock(target, "\n")
+        self.tangler.codeBlock(target, "End\n")
         output = target.getvalue()
         self.assertEqual("Begin\n    More Code\nEnd\n", output)
         
@@ -852,8 +851,6 @@ class TestTextCommand(unittest.TestCase):
         
     def test_methods_should_work(self) -> None:
         self.assertTrue(self.cmd.typeid.TextCommand)
-        self.assertEqual(4, self.cmd.indent())
-        self.assertEqual(0, self.cmd2.indent())
         self.assertEqual(("sample.w", 314), self.cmd.location)
              
     def test_tangle_should_work(self) -> None:
@@ -872,7 +869,6 @@ class TestCodeCommand(unittest.TestCase):
         
     def test_methods_should_work(self) -> None:
         self.assertTrue(self.cmd.typeid.CodeCommand)
-        self.assertEqual(4, self.cmd.indent())
         self.assertEqual(("sample.w", 314), self.cmd.location)
              
     def test_tangle_should_work(self) -> None:
@@ -900,7 +896,6 @@ class TestFileXRefCommand(unittest.TestCase):
         
     def test_methods_should_work(self) -> None:
         self.assertTrue(self.cmd.typeid.FileXrefCommand)
-        self.assertEqual(0, self.cmd.indent())
         self.assertEqual(("sample.w", 314), self.cmd.location)
         self.assertEqual(sentinel.FILES, self.cmd.files)
         
@@ -925,7 +920,6 @@ class TestMacroXRefCommand(unittest.TestCase):
 
     def test_methods_should_work(self) -> None:
         self.assertTrue(self.cmd.typeid.MacroXrefCommand)
-        self.assertEqual(0, self.cmd.indent())
         self.assertEqual(("sample.w", 314), self.cmd.location)
         self.assertEqual(sentinel.MACROS, self.cmd.macros)
 
@@ -950,7 +944,6 @@ class TestUserIdXrefCommand(unittest.TestCase):
 
     def test_methods_should_work(self) -> None:
         self.assertTrue(self.cmd.typeid.UserIdXrefCommand)
-        self.assertEqual(0, self.cmd.indent())
         self.assertEqual(("sample.w", 314), self.cmd.location)
         self.assertEqual(sentinel.USERIDS, self.cmd.userids)
         
@@ -997,7 +990,6 @@ class TestReferenceCommand(unittest.TestCase):
         
     def test_methods_should_work(self) -> None:
         self.assertTrue(self.cmd.typeid.ReferenceCommand)
-        self.assertIsNone(self.cmd.indent())  # Depends on aTangler.lastIndent.
         self.assertEqual(("sample.w", 314), self.cmd.location)
         self.assertEqual(sentinel.TEXT, self.cmd.text)
         self.assertEqual(sentinel.FULL_NAME, self.cmd.full_name)
@@ -1284,7 +1276,6 @@ class TestLoadAction(unittest.TestCase):
             pass
     def test_should_execute_loading(self) -> None:
         self.action(self.options)
-        # Old: self.assertEqual(1, self.webReader.count)
         print(self.webReader.load.mock_calls)
         self.assertEqual(self.webReader.load.mock_calls, [call(self.source_path)])
         self.webReader.web.assert_not_called()  # Deprecated

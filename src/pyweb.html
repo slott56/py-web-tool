@@ -1246,9 +1246,9 @@ on how tangling worked.</p>
 </ol>
 <p>The expanded syntax for <tt class="docutils literal">&#64;o</tt> looks like this.</p>
 <pre class="literal-block">
-&#64;o -start /* -end <em>/ page-layout.css
+&#64;o -start /* -end */ page-layout.css
 &#64;{
-*Some CSS code</em>
+<em>Some CSS code</em>
 &#64;}
 </pre>
 <p>We've added two options: <tt class="docutils literal"><span class="pre">-start</span> /*</tt> and <tt class="docutils literal"><span class="pre">-end</span> */</tt> which define comment
@@ -1590,14 +1590,14 @@ from weakref import ref, ReferenceType
 <p class="small">∎ <em>Imports (2)</em></p>
 <p class="rubric" id="web-class-describes-the-overall-web-of-chunks-3">Web class -- describes the overall &quot;web&quot; of chunks (3) =</p>
 <pre class="code literal-block">
-&#64;    dataclass
+&#64;dataclass
 class Web:
     chunks: list[&quot;Chunk&quot;]  #: The source sequence of chunks.
 
-    # The ``    &#64;    d`` chunk names and locations where they're defined.
+    # The ``&#64;d`` chunk names and locations where they're defined.
     chunk_map: dict[str, list[&quot;Chunk&quot;]] = field(init=False)
 
-    # The ``    &#64;    |`` defined names and chunks with which they're associated.
+    # The ``&#64;|`` defined names and chunks with which they're associated.
     userid_map: defaultdict[str, list[&quot;Chunk&quot;]] = field(init=False)
 
     logger: logging.Logger = field(init=False, default=logging.getLogger(&quot;Web&quot;))
@@ -1623,12 +1623,12 @@ class Web:
         for seq, c in enumerate(named_chunks, start=1):
             c.seq = seq
             if not c.path:
-                # Use ``    &#64;    d name`` chunks (reject ``    &#64;    o`` and text)
+                # Use ``&#64;d name`` chunks (reject ``&#64;o`` and text)
                 if not c.name.endswith('...'):
                     self.logger.debug(f&quot;__post_init__ 2a {c.name=!r}&quot;)
                     self.chunk_map.setdefault(c.name, [])
             for cmd in c.commands:
-                # Find ``    &#64;    &lt; name     &#64;    &gt;`` in ``    &#64;    d name`` chunks or ``    &#64;    o`` chunks
+                # Find ``&#64;&lt; name &#64;&gt;`` in ``&#64;d name`` chunks or ``&#64;o`` chunks
                 if cmd.typeid.ReferenceCommand and not cmd.name.endswith('...'):
                     self.logger.debug(f&quot;__post_init__ 2b {cmd.name=!r}&quot;)
                     self.chunk_map.setdefault(cmd.name, [])
@@ -1639,13 +1639,13 @@ class Web:
             for name in c.def_names:
                 self.userid_map[name].append(c)
             if not c.path:
-                # Named ``    &#64;    d name`` chunks
+                # Named ``&#64;d name`` chunks
                 c.initial = len(self.chunk_map[c.full_name]) == 0
                 self.chunk_map[c.full_name].append(c)
                 self.logger.debug(f&quot;__post_init__ 3 {c.name=!r} -&gt; {c.full_name=!r}&quot;)
             else:
-                # Output ``    &#64;    o`` and anonymous chunks.
-                # Assume all     &#64;    o chunks are unique. If they're not, they overwrite each other.
+                # Output ``&#64;o`` and anonymous chunks.
+                # Assume all &#64;o chunks are unique. If they're not, they overwrite each other.
                 # Also, there's not ``full_name`` for these chunks.
                 c.initial = True
 
@@ -1719,11 +1719,11 @@ class Web:
         yield from (SimpleNamespace(def_name=n, chunk=c) for c in self.file_iter() for n in c.def_names)
         yield from (SimpleNamespace(def_name=n, chunk=c) for c in self.macro_iter() for n in c.def_names)
 
-        &#64;    property
+    &#64;property
     def files(self) -&gt; list[&quot;OutputChunk&quot;]:
         return list(self.file_iter())
 
-        &#64;    property
+    &#64;property
     def macros(self) -&gt; list[SimpleNamespace]:
         &quot;&quot;&quot;
         The chunk_map has the list of Chunks that comprise a macro definition.
@@ -1738,16 +1738,16 @@ class Web:
             SimpleNamespace(name=first_def.name, full_name=first_def.full_name, seq=first_def.seq, def_list=def_list)
             for first_def, def_list in first_list
         )
-        # print(f&quot;macros: {defs}&quot;)
+        # self.logger.debug(f&quot;macros: {defs}&quot;)
         return macro_list
 
-        &#64;    property
+    &#64;property
     def userids(self) -&gt; list[SimpleNamespace]:
         userid_list = list(
             SimpleNamespace(userid=userid, ref_list=self.userid_map[userid])
             for userid in sorted(self.userid_map)
         )
-        # print(f&quot;userids: {userid_list}&quot;)
+        # self.logger.debug(f&quot;userids: {userid_list}&quot;)
         return userid_list
 
     def no_reference(self) -&gt; list[Chunk]:
@@ -1775,27 +1775,27 @@ A chunk can be woven or tangled to create output.</p>
 <pre class="code literal-block">
 →<a class="reference internal" href="#the-typeid-helper-5">The TypeId Helper (5)</a>
 
-&#64;    dataclass
+&#64;dataclass
 class Chunk:
     &quot;&quot;&quot;Superclass for OutputChunk, NamedChunk, NamedDocumentChunk.
 
     Chunk is the anonymous text context.
         The Text, Ref, and the various XREF commands can *only* appear here.
-        A REF must be do a ``    &#64;    d name     &#64;    [...    &#64;    ]`` NamedDocumentChunk, which is expanded, not linked.
+        A REF must be do a ``&#64;d name &#64;[...&#64;]`` NamedDocumentChunk, which is expanded, not linked.
 
-    OutputChunk is the ``    &#64;    o`` context.
+    OutputChunk is the ``&#64;o`` context.
         The Code and Ref commands appear here.
         This is tangled to a file.
 
-    NamedChunk is the ``    &#64;    d`` context.
+    NamedChunk is the ``&#64;d`` context.
         The Code and Ref commands appear here.
         This is tangled where referenced.
     &quot;&quot;&quot;
     name: str | None = None  #: Short name of the chunk
     seq: int | None = None  #: Unique sequence number of chunk in the WEB
     commands: list[&quot;Command&quot;] = field(default_factory=list)  #: Sequence of commands inside this chunk
-    options: list[str] = field(default_factory=list)  #: Parsed options for     &#64;    d and     &#64;    o chunks.
-    def_names: list[str] = field(default_factory=list)  #: Names defined after ``    &#64;    |`` in this chunk
+    options: list[str] = field(default_factory=list)  #: Parsed options for &#64;d and &#64;o chunks.
+    def_names: list[str] = field(default_factory=list)  #: Names defined after ``&#64;|`` in this chunk
     initial: bool = False  #: Is this the first use of a given Chunk name?
     comment_start: str | None = None  #: If injecting location details, this is the prefix
     comment_end: str | None = None  #: If injecting location details, this is the suffix
@@ -1805,29 +1805,29 @@ class Chunk:
     web: ReferenceType[&quot;Web&quot;] = field(init=False, repr=False)
     logger: logging.Logger = field(init=False, default=logging.getLogger(&quot;Chunk&quot;))
 
-        &#64;    property
+    &#64;property
     def full_name(self) -&gt; str | None:
         return self.web().resolve_name(self.name)
 
-        &#64;    property
+    &#64;property
     def path(self) -&gt; Path | None:
         return None
 
-        &#64;    classmethod
-        &#64;    property
+    &#64;classmethod
+    &#64;property
     def typeid(cls) -&gt; TypeId:
         return TypeId(cls)
 
-        &#64;    property
+    &#64;property
     def location(self) -&gt; tuple[str, int]:
         return self.commands[0].location
 
 class OutputChunk(Chunk):
-        &#64;    property
+    &#64;property
     def path(self) -&gt; Path | None:
         return Path(self.name)
 
-        &#64;    property
+    &#64;property
     def full_name(self) -&gt; str | None:
         return None
 
@@ -1873,7 +1873,7 @@ belong to a <tt class="docutils literal">Chunk</tt>.  A chunk may be as small as
 of commands.</p>
 <p class="rubric" id="command-class-hierarchy-used-to-describe-individual-commands-6">Command class hierarchy -- used to describe individual commands (6) =</p>
 <pre class="code literal-block">
-&#64;    dataclass
+&#64;dataclass
 class TextCommand:
     text: str  #: The text
     location: tuple[str, int]  #: The (filename, line number)
@@ -1882,28 +1882,16 @@ class TextCommand:
     logger: logging.Logger = field(init=False, default=logging.getLogger(&quot;TextCommand&quot;))
     definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
 
-        &#64;    classmethod
-        &#64;    property
+    &#64;classmethod
+    &#64;property
     def typeid(cls) -&gt; &quot;TypeId&quot;:
         return TypeId(cls)
-
-    def indent(self) -&gt; int:
-        if self.text.endswith('\n'):
-            self.logger.debug(f&quot;indent = 0&quot;)
-            return 0
-        try:
-            last_line = self.text.splitlines()[-1]
-            self.logger.debug(f&quot;indent = {len(last_line)}&quot;)
-            return len(last_line)
-        except IndexError:
-            self.logger.debug(f&quot;indent (with no text) = 0&quot;)
-            return 0
 
     def tangle(self, aTangler: &quot;Tangler&quot;, target: TextIO) -&gt; None:
         self.logger.debug(f&quot;tangle {self.text=!r}&quot;)
         aTangler.codeBlock(target, self.text)
 
-&#64;    dataclass
+&#64;dataclass
 class CodeCommand:
     text: str  #: The code
     location: tuple[str, int]
@@ -1912,26 +1900,17 @@ class CodeCommand:
     logger: logging.Logger = field(init=False, default=logging.getLogger(&quot;CodeCommand&quot;))
     definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
 
-        &#64;    classmethod
-        &#64;    property
+    &#64;classmethod
+    &#64;property
     def typeid(cls) -&gt; &quot;TypeId&quot;:
         return TypeId(cls)
-
-    def indent(self) -&gt; int:
-        if self.text.endswith('\n'):
-            return 0
-        try:
-            last_line = self.text.splitlines()[-1]
-            return len(last_line)
-        except IndexError:
-            return 0
 
     def tangle(self, aTangler: &quot;Tangler&quot;, target: TextIO) -&gt; None:
         self.logger.debug(f&quot;tangle {self.text=!r}&quot;)
         aTangler.codeBlock(target, self.text)
 
 
-&#64;    dataclass
+&#64;dataclass
 class ReferenceCommand:
     &quot;&quot;&quot;
     Reference to a ``NamedChunk`` in code.
@@ -1944,48 +1923,46 @@ class ReferenceCommand:
     definition: bool = field(init=False, default=False)
     logger: logging.Logger = field(init=False, default=logging.getLogger(&quot;ReferenceCommand&quot;))
 
-        &#64;    property
+    &#64;property
     def text(self) -&gt; str:
         return self.web().get_text(self.full_name)
 
-        &#64;    property
+    &#64;property
     def full_name(self) -&gt; str:
         return self.web().resolve_name(self.name)
 
-        &#64;    property
+    &#64;property
     def seq(self) -&gt; str:
         return self.web().resolve_chunk(self.name)[0].seq
 
-        &#64;    classmethod
-        &#64;    property
+    &#64;classmethod
+    &#64;property
     def typeid(cls) -&gt; &quot;TypeId&quot;:
         return TypeId(cls)
 
     def tangle(self, aTangler: &quot;Tangler&quot;, target: TextIO) -&gt; None:
         &quot;&quot;&quot;Expand this reference.
         The starting position is the indentation for all **subsequent** lines.
-        Provide tangler.lastIndent back to the tangler.
+        Provide the indent before ``&#64;&lt;``, in ``tangler.fragment`` back to the tangler.
         &quot;&quot;&quot;
-        self.logger.debug(f&quot;tangle reference to {self.name=}, {aTangler.lastIndent=}&quot;)
+        self.logger.debug(f&quot;tangle reference to {self.name=}, context: {aTangler.fragment=}&quot;)
         chunk_list = self.web().resolve_chunk(self.name)
         if len(chunk_list) == 0:
             message = f&quot;Attempt to tangle an undefined Chunk, {self.name!r}&quot;
             self.logger.error(message)
             raise Error(message)
         self.definition = True
-        aTangler.addIndent(aTangler.lastIndent)
+        aTangler.addIndent(len(aTangler.fragment))
+        aTangler.fragment = &quot;&quot;
 
         for chunk in chunk_list:
-            # TODO: if chunk.options includes '-indent': do an addIndent before tangling.
+            # TODO: if chunk.options includes '-indent': do an setIndent before tangling.
             for command in chunk.commands:
                 command.tangle(aTangler, target)
 
         aTangler.clrIndent()
 
-    def indent(self) -&gt; int | None:
-        return None
-
-&#64;    dataclass
+&#64;dataclass
 class FileXrefCommand:
     location: tuple[str, int]
 
@@ -1993,22 +1970,19 @@ class FileXrefCommand:
     logger: logging.Logger = field(init=False, default=logging.getLogger(&quot;FileXrefCommand&quot;))
     definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
 
-        &#64;    property
+    &#64;property
     def files(self):
         return self.web().files
 
-        &#64;    classmethod
-        &#64;    property
+    &#64;classmethod
+    &#64;property
     def typeid(cls) -&gt; &quot;TypeId&quot;:
         return TypeId(cls)
 
     def tangle(self, aTangler: &quot;Tangler&quot;, target: TextIO) -&gt; None:
         raise Error('Illegal tangling of a cross reference command.')
 
-    def indent(self) -&gt; int:
-        return 0
-
-&#64;    dataclass
+&#64;dataclass
 class MacroXrefCommand:
     location: tuple[str, int]
 
@@ -2016,22 +1990,19 @@ class MacroXrefCommand:
     logger: logging.Logger = field(init=False, default=logging.getLogger(&quot;MacroXrefCommand&quot;))
     definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
 
-        &#64;    property
+    &#64;property
     def macros(self):
         return self.web().macros
 
-        &#64;    classmethod
-        &#64;    property
+    &#64;classmethod
+    &#64;property
     def typeid(cls) -&gt; &quot;TypeId&quot;:
         return TypeId(cls)
 
     def tangle(self, aTangler: &quot;Tangler&quot;, target: TextIO) -&gt; None:
         raise Error('Illegal tangling of a cross reference command.')
 
-    def indent(self) -&gt; int:
-        return 0
-
-&#64;    dataclass
+&#64;dataclass
 class UserIdXrefCommand:
     location: tuple[str, int]
 
@@ -2039,20 +2010,17 @@ class UserIdXrefCommand:
     logger: logging.Logger = field(init=False, default=logging.getLogger(&quot;UserIdXrefCommand&quot;))
     definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
 
-        &#64;    property
+    &#64;property
     def userids(self) -&gt; list[str]:
         return self.web().userids
 
-        &#64;    classmethod
-        &#64;    property
+    &#64;classmethod
+    &#64;property
     def typeid(cls) -&gt; &quot;TypeId&quot;:
         return TypeId(cls)
 
     def tangle(self, aTangler: &quot;Tangler&quot;, target: TextIO) -&gt; None:
         raise Error('Illegal tangling of a cross reference command.')
-
-    def indent(self) -&gt; int:
-        return 0
 </pre>
 <!--  -->
 <p class="small">∎ <em>Command class hierarchy -- used to describe individual commands (6)</em></p>
@@ -2112,7 +2080,7 @@ class Emitter(abc.ABC):
         self.log_indent = logging.getLogger(&quot;indent.&quot; + self.__class__.__qualname__)
         self.output = output
 
-        &#64;    abc.abstractmethod
+    &#64;abc.abstractmethod
     def emit(self, web: Web) -&gt; None:
         pass
 </pre>
@@ -2297,9 +2265,12 @@ debug_weaver_template = dedent(&quot;&quot;&quot;\
 <!--  -->
 <p class="small">∎ <em>Debug Templates -- these display debugging information (14)</em></p>
 <p>The RST Templates produce ReStructuredText for the various web commands.</p>
+<p><strong>TODO:</strong> four spaces indent <strong>only</strong> after <tt class="docutils literal">code(c)</tt> where <tt class="docutils literal">c.text == '\n'</tt>.
+Either state maintained here, or, <tt class="docutils literal">CodeCommand</tt> (and <tt class="docutils literal">TextCommand</tt>) instances are merged into lines.
+We might, for example, handle <tt class="docutils literal">c.text == '\n'</tt> seperately from all other commands.</p>
 <p class="rubric" id="rst-templates-the-default-weave-output-15">RST Templates -- the default weave output (15) =</p>
 <pre class="code literal-block">
-rst_weaver_template = dedent(&quot;&quot;&quot;\
+rst_weaver_template = dedent(&quot;&quot;&quot;
     {%- macro text(command) -%}
     {{command.text}}
     {%- endmacro -%}
@@ -2312,9 +2283,11 @@ rst_weaver_template = dedent(&quot;&quot;&quot;\
 
     {% endmacro -%}
 
-    {%- macro code(command) %}    {{command.text | quote_rules}}{%- endmacro -%}
+    {# For RST, each line must be indented. #}
+    {%- macro code(command) %}{% for line in command.text.splitlines() %}    {{line | quote_rules}}
+    {% endfor -%}{% endmacro -%}
 
-    {%- macro ref(id) %}    \N{RIGHTWARDS ARROW}\ `{{id.full_name}} ({{id.seq}})`_{%- endmacro -%}
+    {%- macro ref(id) %}    \N{RIGHTWARDS ARROW}\ `{{id.full_name}} ({{id.seq}})`_{% endmacro -%}
 
     {%- macro end_code(chunk) %}
     ..
@@ -2540,6 +2513,7 @@ class Tangler(Emitter):
         super().__init__(output)
         self.context: list[int] = []
         self.resetIndent(self.code_indent)  # Create context and initial lastIndent values
+        self.fragment = &quot;&quot;  # Nothing written yet.
         # Summary
         self.linesWritten = 0
         self.totalFiles = 0
@@ -2559,42 +2533,78 @@ class Tangler(Emitter):
             for command in file_chunk.commands:
                 command.tangle(self, target)
 
-        →<a class="reference internal" href="#emitter-write-a-block-of-code-with-proper-indents-20">Emitter write a block of code with proper indents (20)</a>
 
-        →<a class="reference internal" href="#emitter-indent-control-set-clear-and-reset-21">Emitter indent control: set, clear and reset (21)</a>
+→<a class="reference internal" href="#emitter-write-a-block-of-code-with-proper-indents-20">Emitter write a block of code with proper indents (20)</a>
+
+
+→<a class="reference internal" href="#emitter-indent-control-set-clear-and-reset-21">Emitter indent control: set, clear and reset (21)</a>
 </pre>
 <!--  -->
 <p class="small">∎ <em>Tangler Subclass -- emits the output files (19)</em></p>
+<p>The <tt class="docutils literal">codeBlock()</tt> method is used by each block of code tangled into
+a document. There are two sources of indentation:</p>
+<ul class="simple">
+<li>A <tt class="docutils literal">Chunk</tt> can provide an indent setting as an option. This is provided by the <tt class="docutils literal">indent</tt> attribute
+of the tangle context. If specified, this is the indentation.</li>
+<li>A <tt class="docutils literal">&#64;&lt; name &#64;&gt;</tt> <tt class="docutils literal">ReferenceCommand</tt> may be indented. This will be in a <tt class="docutils literal">Chunk</tt> as the following three commands:<ol class="arabic">
+<li>A <tt class="docutils literal">CodeCommand</tt> with only spaces and no trailing <tt class="docutils literal">\n</tt>.
+The indent is buffered -- not written -- and the <tt class="docutils literal">fragment</tt> attribute is set.</li>
+<li>The <tt class="docutils literal">ReferenceCommand</tt>. This interpolates text from a <tt class="docutils literal">NamedChunk</tt> using the prevailing indent.
+The <tt class="docutils literal">tangle()</tt> method uses <tt class="docutils literal">addIndent()</tt> and <tt class="docutils literal">clrIndent()</tt> to mark this. The processing depends
+on this tangler's <tt class="docutils literal">fragment</tt> attribute to provide the pending indentation; the <tt class="docutils literal">addIndent()</tt>
+must consume the fragment to prevent confusion with subsequent indentations.</li>
+<li>A <tt class="docutils literal">CodeCommand</tt> with a trailing <tt class="docutils literal">\n</tt>. (Often it's only the newline.)  If the <tt class="docutils literal">fragment</tt> attribute
+is set, there's a pending indentation that hasn't yet been written.
+This can happen with there's a <tt class="docutils literal">&#64;&#64;</tt> command at the left end of a line; often a Python decorator.
+The fragment is written and the <tt class="docutils literal">fragment</tt> attribute cleared.  No <tt class="docutils literal">addIdent()</tt> will have
+been done to consume the fragment.</li>
+</ol>
+</li>
+</ul>
+<p>While the WEB language permits multiple <tt class="docutils literal">&#64;&lt;name&#64;&gt; &#64;&lt;name&#64;&gt;</tt> on a single line,
+this is odd and potentially confusing. It isn't clear how the second reference
+should be indented.</p>
+<p>The <tt class="docutils literal">ReferenceCommand</tt> <tt class="docutils literal">tangle()</tt> implementation handles much of this.
+The following two rules apply:</p>
+<ul class="simple">
+<li>A line of text that does not end with a newline, sets a new prevailing indent
+for the following command(s).</li>
+<li>A line of text ending with a newline resets the prevailing indent.</li>
+</ul>
+<p>This a stack, maintained by the Tangler.</p>
 <p class="rubric" id="emitter-write-a-block-of-code-with-proper-indents-20">Emitter write a block of code with proper indents (20) =</p>
 <pre class="code literal-block">
 def codeBlock(self, target: TextIO, text: str) -&gt; None:
     &quot;&quot;&quot;Indented write of text in a ``CodeCommand``.
-    Counts lines and saves position to indent to when expanding ``    &#64;    &lt;...    &#64;    &gt;`` references.
+    Counts lines and saves position to indent to when expanding ``&#64;&lt;...&#64;&gt;`` references.
 
-    The ``lastIndent`` is the prevailing indent used in reference expansion.
+    The ``fragment`` is the prevailing indent used in reference expansion.
     &quot;&quot;&quot;
-    indent = self.context[-1]
-    if len(text) == 0:
-        # Degenerate case of empty CodeText command
-        pass
-    elif text == '\n':
-        self.linesWritten += 1
-        target.write(text)
-        self.lastIndent = 0
-        self.fragment = False  # Generally, also means lastIndent == 0
-    else:
-        if not self.fragment:
-            # First thing after '\n'
+    for line in text.splitlines(keepends=True):
+        self.logger.debug(&quot;codeBlock(%r)&quot;, line)
+        indent = self.context[-1]
+        if len(line) == 0:
+            # Degenerate case of empty CodeText command. Should not occur.
+            pass
+        elif not line.endswith('\n'):
+            # Possible start of indentation prior to a ``&#64;&lt;name&#64;&gt;``
             target.write(indent*' ')
-            wrote = target.write(text)
-            self.lastIndent = wrote
-            self.fragment = True
+            wrote = target.write(line)
+            self.fragment = ' ' * wrote
+            # May be used by a ``ReferenceCommand``, if needed.
+        elif line.endswith('\n'):
+            target.write(indent*' ')
+            target.write(line)
+            self.linesWritten += 1
         else:
-            target.write(text)
+            raise RuntimeError(&quot;Non-exhaustive if statement.&quot;)
 </pre>
 <!--  -->
 <p class="small">∎ <em>Emitter write a block of code with proper indents (20)</em></p>
-<p>The <tt class="docutils literal">setIndent()</tt> pushes a fixed indent instead adding an increment.</p>
+<p>The <tt class="docutils literal">addIndent()</tt> increments the indent.
+Used by <tt class="docutils literal">&#64;&lt;name&#64;&gt;</tt> to set a prevailing indent.</p>
+<p>The <tt class="docutils literal">setIndent()</tt> pushes a fixed indent instead adding an increment.
+Used by a <tt class="docutils literal">Chunk</tt> with an <tt class="docutils literal"><span class="pre">-indent</span></tt> option.</p>
 <p>The <tt class="docutils literal">clrIndent()</tt> method discards the most recent indent from the context stack.
 This is used when finished
 tangling a source chunk.  This restores the indent to the prevailing indent.</p>
@@ -2606,23 +2616,25 @@ def addIndent(self, increment: int) -&gt; None:
     self.lastIndent = self.context[-1]+increment
     self.context.append(self.lastIndent)
     self.log_indent.debug(&quot;addIndent %d: %r&quot;, increment, self.context)
+    self.fragment = &quot;&quot;
 
 def setIndent(self, indent: int) -&gt; None:
     self.context.append(indent)
     self.lastIndent = self.context[-1]
     self.log_indent.debug(&quot;setIndent %d: %r&quot;, indent, self.context)
+    self.fragment = &quot;&quot;
 
 def clrIndent(self) -&gt; None:
     if len(self.context) &gt; 1:
         self.context.pop()
     self.lastIndent = self.context[-1]
     self.log_indent.debug(&quot;clrIndent %r&quot;, self.context)
+    self.fragment = &quot;&quot;
 
 def resetIndent(self, indent: int = 0) -&gt; None:
     &quot;&quot;&quot;Resets the indentation context.&quot;&quot;&quot;
     self.lastIndent = indent
     self.context = [self.lastIndent]
-    self.fragment = False  # Nothing written yet
     self.log_indent.debug(&quot;resetIndent %d: %r&quot;, indent, self.context)
 </pre>
 <!--  -->
@@ -2687,7 +2699,7 @@ class Reference(abc.ABC):
     def __init__(self) -&gt; None:
         self.logger = logging.getLogger(self.__class__.__qualname__)
 
-        &#64;    abc.abstractmethod
+    &#64;abc.abstractmethod
     def chunkReferencedBy(self, aChunk: Chunk) -&gt; list[Chunk]:
         &quot;&quot;&quot;Return a list of Chunks.&quot;&quot;&quot;
         ...
@@ -2718,7 +2730,7 @@ class TransitiveReference(Reference):
         self.logger.debug(&quot;References: %r(%d) %r&quot;, aChunk.name, aChunk.seq, all_refs)
         return all_refs
 
-        &#64;    staticmethod
+    &#64;staticmethod
     def allParentsOf(chunk: Chunk | None, depth: int = 0) -&gt; Iterator[Chunk]:
         &quot;&quot;&quot;Transitive closure of parents via recursive ascent.
         &quot;&quot;&quot;
@@ -2857,7 +2869,7 @@ class WebReader:
             self.command = self.parent.command
             self.permitList = self.parent.permitList
         else: # Defaults until overridden
-            self.command = '    &#64;    '
+            self.command = '&#64;'
             self.permitList = []
 
         # Summary
@@ -2865,16 +2877,20 @@ class WebReader:
         self.totalFiles = 0
         self.errors = 0
 
-            →<a class="reference internal" href="#webreader-command-literals-43">WebReader command literals (43)</a>
+
+→<a class="reference internal" href="#webreader-command-literals-43">WebReader command literals (43)</a>
 
     def __str__(self) -&gt; str:
         return self.__class__.__name__
 
-        →<a class="reference internal" href="#webreader-location-in-the-input-stream-40">WebReader location in the input stream (40)</a>
 
-        →<a class="reference internal" href="#webreader-load-the-web-42">WebReader load the web (42)</a>
+→<a class="reference internal" href="#webreader-location-in-the-input-stream-40">WebReader location in the input stream (40)</a>
 
-        →<a class="reference internal" href="#webreader-handle-a-command-string-29">WebReader handle a command string (29)</a>
+
+→<a class="reference internal" href="#webreader-load-the-web-42">WebReader load the web (42)</a>
+
+
+→<a class="reference internal" href="#webreader-handle-a-command-string-29">WebReader handle a command string (29)</a>
 </pre>
 <!--  -->
 <p class="small">∎ <em>WebReader class - parses the input file, building the Web structure (28)</em></p>
@@ -2912,15 +2928,20 @@ def handleCommand(self, token: str) -&gt; bool:
 
     match token[:2]:
         case self.cmdo:
-                →<a class="reference internal" href="#start-an-outputchunk-adding-it-to-the-web-30">start an OutputChunk, adding it to the web (30)</a>
+
+→<a class="reference internal" href="#start-an-outputchunk-adding-it-to-the-web-30">start an OutputChunk, adding it to the web (30)</a>
         case self.cmdd:
-                →<a class="reference internal" href="#start-a-namedchunk-or-nameddocumentchunk-adding-it-to-the-web-31">start a NamedChunk or NamedDocumentChunk, adding it to the web (31)</a>
+
+→<a class="reference internal" href="#start-a-namedchunk-or-nameddocumentchunk-adding-it-to-the-web-31">start a NamedChunk or NamedDocumentChunk, adding it to the web (31)</a>
         case self.cmdi:
-                →<a class="reference internal" href="#include-another-file-32">include another file (32)</a>
+
+→<a class="reference internal" href="#include-another-file-32">include another file (32)</a>
         case self.cmdrcurl | self.cmdrbrak:
-                →<a class="reference internal" href="#finish-a-chunk-start-a-new-chunk-adding-it-to-the-web-33">finish a chunk, start a new Chunk adding it to the web (33)</a>
+
+→<a class="reference internal" href="#finish-a-chunk-start-a-new-chunk-adding-it-to-the-web-33">finish a chunk, start a new Chunk adding it to the web (33)</a>
         case self.cmdpipe:
-                →<a class="reference internal" href="#assign-user-identifiers-to-the-current-chunk-34">assign user identifiers to the current chunk (34)</a>
+
+→<a class="reference internal" href="#assign-user-identifiers-to-the-current-chunk-34">assign user identifiers to the current chunk (34)</a>
         case self.cmdf:
             self.content[-1].commands.append(FileXrefCommand(self.location()))
         case self.cmdm:
@@ -2928,13 +2949,16 @@ def handleCommand(self, token: str) -&gt; bool:
         case self.cmdu:
             self.content[-1].commands.append(UserIdXrefCommand(self.location()))
         case self.cmdlangl:
-                →<a class="reference internal" href="#add-a-reference-command-to-the-current-chunk-35">add a reference command to the current chunk (35)</a>
+
+→<a class="reference internal" href="#add-a-reference-command-to-the-current-chunk-35">add a reference command to the current chunk (35)</a>
         case self.cmdlexpr:
-                →<a class="reference internal" href="#add-an-expression-command-to-the-current-chunk-37">add an expression command to the current chunk (37)</a>
+
+→<a class="reference internal" href="#add-an-expression-command-to-the-current-chunk-37">add an expression command to the current chunk (37)</a>
         case self.cmdcmd:
-                →<a class="reference internal" href="#double-at-sign-replacement-append-this-character-to-previous-textcommand-38">double at-sign replacement, append this character to previous TextCommand (38)</a>
+
+→<a class="reference internal" href="#double-at-sign-replacement-append-this-character-to-previous-textcommand-38">double at-sign replacement, append this character to previous TextCommand (38)</a>
         case self.cmdlcurl | self.cmdlbrak:
-            # These should have been consumed as part of     &#64;    o and     &#64;    d parsing
+            # These should have been consumed as part of &#64;o and &#64;d parsing
             self.logger.error(&quot;Extra %r (possibly missing chunk name) near %r&quot;, token, self.location())
             self.errors += 1
         case _:
@@ -2963,8 +2987,7 @@ newChunk = OutputChunk(
 newChunk.filePath = self.filePath
 self.content.append(newChunk)
 self.text_command = CodeCommand
-# self.content[-1].commands.append(CodeCommand(&quot;&quot;, self.location()))
-# capture an OutputChunk up to     &#64;    }
+# capture an OutputChunk up to &#64;}
 </pre>
 <!--  -->
 <p class="small">∎ <em>start an OutputChunk, adding it to the web (30)</em></p>
@@ -3005,8 +3028,7 @@ else:
 if newChunk:
     self.content.append(newChunk)
 self.text_command = CodeCommand
-# self.content[-1].commands.append(CodeCommand(&quot;&quot;, self.location()))
-# capture a NamedChunk up to     &#64;    } or     &#64;    ]
+# capture a NamedChunk up to &#64;} or &#64;]
 </pre>
 <!--  -->
 <p class="small">∎ <em>start a NamedChunk or NamedDocumentChunk, adding it to the web (31)</em></p>
@@ -3055,7 +3077,7 @@ except IOError as e:
     # Discretionary -- sometimes we want to continue
     if self.cmdi in self.permitList: pass
     else: raise  # Seems heavy-handed, but, the file wasn't found!
-# Start a new context for text or commands *after* the ``    &#64;    i``.
+# Start a new context for text or commands *after* the ``&#64;i``.
 self.content.append(Chunk())
 </pre>
 <!--  -->
@@ -3091,7 +3113,7 @@ try:
     names = next(self.tokenizer).strip().split()
     self.content[-1].def_names.extend(names)
 except AttributeError:
-    # Out of place     &#64;    | user identifier command
+    # Out of place &#64;| user identifier command
     self.logger.error(&quot;Unexpected references near %r: %r&quot;, self.location(), token)
     self.errors += 1
 </pre>
@@ -3169,7 +3191,7 @@ try:
 except Exception as exc:
     self.logger.error('Failure to process %r: result is %r', expression, exc)
     self.errors += 1
-    result = f&quot;    &#64;    ({expression!r}: Error {exc!r}    &#64;    )&quot;
+    result = f&quot;&#64;({expression!r}: Error {exc!r}&#64;)&quot;
 cls = self.text_command
 self.content[-1].commands.append(cls(result, self.location()))
 </pre>
@@ -3185,8 +3207,17 @@ And we make sure the next chunk will be appended to this so that it's
 largely seamless.</p>
 <p class="rubric" id="double-at-sign-replacement-append-this-character-to-previous-textcommand-38">double at-sign replacement, append this character to previous TextCommand (38) =</p>
 <pre class="code literal-block">
+self.logger.debug(f&quot;double-command: {self.content[-1]=}&quot;)
 cls = self.text_command
-self.content[-1].commands.append(cls(self.command, self.location()))
+if len(self.content[-1].commands) == 0:
+    self.content[-1].commands.append(cls(self.command, self.location()))
+else:
+    tail = self.content[-1].commands[-1]
+    if tail.typeid.CodeCommand or tail.typeid.TextCommand:
+        tail.text += self.command
+    else:
+        # A non-text command: one of &#64;&lt; name &#64;&gt;, &#64;f, &#64;m, &#64;u.
+        self.content[-1].commands.append(cls(self.command, self.location()))
 </pre>
 <!--  -->
 <p class="small">∎ <em>double at-sign replacement, append this character to previous TextCommand (38)</em></p>
@@ -3243,7 +3274,7 @@ from typing import TextIO
 <pre class="code literal-block">
 def load(self, filepath: Path, source: TextIO | None = None) -&gt; list[Chunk]:
     &quot;&quot;&quot;Returns a flat list of chunks to be made into a Web.
-    Also used to expand ``    &#64;    i`` included files.
+    Also used to expand ``&#64;i`` included files.
     &quot;&quot;&quot;
     self.filePath = filepath
     self.base_path = self.filePath.parent
@@ -3270,15 +3301,25 @@ def parse_source(self) -&gt; None:
             if self.handleCommand(token):
                 continue
             else:
-                self.logger.error('Unknown     &#64;    -command in input: %r near %r', token, self.location())
+                self.logger.error('Unknown &#64;-command in input: %r near %r', token, self.location())
                 cls = self.text_command
                 self.content[-1].commands.append(cls(token, self.location()))
+
         elif token:
             # Accumulate a non-empty block of text in the current chunk.
             # Output Chunk and Named Chunk should have CodeCommand
             # Chunk should have TextCommand.
-            cls = self.text_command
-            self.content[-1].commands.append(cls(token, self.location()))
+            # Edge case is Chunk with no Command
+            if len(self.content[-1].commands) == 0:
+                cls = self.text_command
+                self.content[-1].commands.append(cls(token, self.location()))
+            elif (tail := self.content[-1].commands[-1]) and (tail.typeid.CodeCommand or tail.typeid.TextCommand):
+                tail.text += token
+            else:
+                # A non-text command: one of &#64;&lt; name &#64;&gt;, &#64;f, &#64;m, &#64;u.
+                cls = self.text_command
+                self.content[-1].commands.append(cls(token, self.location()))
+
         else:
             # Whitespace
             pass
@@ -3361,7 +3402,7 @@ from collections.abc import Iterator, Iterable
 <p class="rubric" id="tokenizer-class-breaks-input-into-tokens-45">Tokenizer class - breaks input into tokens (45) =</p>
 <pre class="code literal-block">
 class Tokenizer(Iterator[str]):
-    def __init__(self, stream: TextIO, command_char: str='    &#64;    ') -&gt; None:
+    def __init__(self, stream: TextIO, command_char: str='&#64;') -&gt; None:
         self.command = command_char
         self.parsePat = re.compile(f'({self.command}.|\\n)')
         self.token_iter = (t for t in self.parsePat.split(stream.read()) if len(t) != 0)
@@ -3630,9 +3671,11 @@ class Action:
     def __str__(self) -&gt; str:
         return f&quot;{self.name!s} [{self.web!s}]&quot;
 
-        →<a class="reference internal" href="#action-call-method-actually-does-the-real-work-53">Action call method actually does the real work (53)</a>
 
-        →<a class="reference internal" href="#action-final-summary-of-what-was-done-54">Action final summary of what was done (54)</a>
+→<a class="reference internal" href="#action-call-method-actually-does-the-real-work-53">Action call method actually does the real work (53)</a>
+
+
+→<a class="reference internal" href="#action-final-summary-of-what-was-done-54">Action final summary of what was done (54)</a>
 </pre>
 <!--  -->
 <p class="small">∎ <em>Action superclass has common features of all actions (52)</em></p>
@@ -3685,9 +3728,11 @@ class ActionSequence(Action):
     def __str__(self) -&gt; str:
         return &quot;; &quot;.join([str(x) for x in self.opSequence])
 
-        →<a class="reference internal" href="#actionsequence-call-method-delegates-the-sequence-of-ations-56">ActionSequence call method delegates the sequence of ations (56)</a>
 
-        →<a class="reference internal" href="#actionsequence-summary-summarizes-each-step-57">ActionSequence summary summarizes each step (57)</a>
+→<a class="reference internal" href="#actionsequence-call-method-delegates-the-sequence-of-ations-56">ActionSequence call method delegates the sequence of ations (56)</a>
+
+
+→<a class="reference internal" href="#actionsequence-summary-summarizes-each-step-57">ActionSequence summary summarizes each step (57)</a>
 </pre>
 <!--  -->
 <p class="small">∎ <em>ActionSequence subclass that holds a sequence of other actions (55)</em></p>
@@ -3734,9 +3779,11 @@ class WeaveAction(Action):
     def __str__(self) -&gt; str:
         return f&quot;{self.name!s} [{self.web!s}, {self.options.theWeaver!s}]&quot;
 
-        →<a class="reference internal" href="#weaveaction-call-method-to-pick-the-language-59">WeaveAction call method to pick the language (59)</a>
 
-        →<a class="reference internal" href="#weaveaction-summary-of-language-choice-60">WeaveAction summary of language choice (60)</a>
+→<a class="reference internal" href="#weaveaction-call-method-to-pick-the-language-59">WeaveAction call method to pick the language (59)</a>
+
+
+→<a class="reference internal" href="#weaveaction-summary-of-language-choice-60">WeaveAction summary of language choice (60)</a>
 </pre>
 <!--  -->
 <p class="small">∎ <em>WeaveAction subclass initiates the weave action (58)</em></p>
@@ -3795,9 +3842,11 @@ class TangleAction(Action):
     def __init__(self) -&gt; None:
         super().__init__(&quot;Tangle&quot;)
 
-        →<a class="reference internal" href="#tangleaction-call-method-does-tangling-of-the-output-files-62">TangleAction call method does tangling of the output files (62)</a>
 
-        →<a class="reference internal" href="#tangleaction-summary-method-provides-total-lines-tangled-63">TangleAction summary method provides total lines tangled (63)</a>
+→<a class="reference internal" href="#tangleaction-call-method-does-tangling-of-the-output-files-62">TangleAction call method does tangling of the output files (62)</a>
+
+
+→<a class="reference internal" href="#tangleaction-summary-method-provides-total-lines-tangled-63">TangleAction summary method provides total lines tangled (63)</a>
 </pre>
 <!--  -->
 <p class="small">∎ <em>TangleAction subclass initiates the tangle action (61)</em></p>
@@ -3850,9 +3899,11 @@ class LoadAction(Action):
     def __str__(self) -&gt; str:
         return f&quot;Load [{self.webReader!s}, {self.options.web!s}]&quot;
 
-        →<a class="reference internal" href="#loadaction-call-method-loads-the-input-files-65">LoadAction call method loads the input files (65)</a>
 
-        →<a class="reference internal" href="#loadaction-summary-provides-lines-read-66">LoadAction summary provides lines read (66)</a>
+→<a class="reference internal" href="#loadaction-call-method-loads-the-input-files-65">LoadAction call method loads the input files (65)</a>
+
+
+→<a class="reference internal" href="#loadaction-summary-provides-lines-read-66">LoadAction summary provides lines read (66)</a>
 </pre>
 <!--  -->
 <p class="small">∎ <em>LoadAction subclass loads the document web (64)</em></p>
@@ -3960,10 +4011,13 @@ import argparse
 class Application:
     def __init__(self) -&gt; None:
         self.logger = logging.getLogger(self.__class__.__qualname__)
-            →<a class="reference internal" href="#application-default-options-69">Application default options (69)</a>
 
-        →<a class="reference internal" href="#application-parse-command-line-70">Application parse command line (70)</a>
-        →<a class="reference internal" href="#application-class-process-all-files-71">Application class process all files (71)</a>
+→<a class="reference internal" href="#application-default-options-69">Application default options (69)</a>
+
+
+→<a class="reference internal" href="#application-parse-command-line-70">Application parse command line (70)</a>
+
+→<a class="reference internal" href="#application-class-process-all-files-71">Application class process all files (71)</a>
 </pre>
 <!--  -->
 <p class="small">∎ <em>Application Class for overall CLI operation (68)</em></p>
@@ -4034,7 +4088,7 @@ to create the output files.</td>
 <pre class="code literal-block">
 self.defaults = argparse.Namespace(
     verbosity=logging.INFO,
-    command='    &#64;    ',
+    command='&#64;',
     weaver='rst',
     skip='',  # Don't skip any steps
     permit='',  # Don't tolerate missing includes
@@ -4097,7 +4151,7 @@ def expand(self, config: argparse.Namespace) -&gt; argparse.Namespace:
     config.theTangler = TanglerMake(config.output)
 
     if config.permit:
-        # save permitted errors, usual case is ``-pi`` to permit ``    &#64;    i`` include errors
+        # save permitted errors, usual case is ``-pi`` to permit ``&#64;i`` include errors
         config.permitList = [f'{config.command!s}{c!s}' for c in config.permit]
     else:
         config.permitList = []
@@ -4220,8 +4274,13 @@ log_config = {
     'loggers': {
         'Weaver': {'level': logging.INFO},
         'WebReader': {'level': logging.INFO},
+        'Tangler': {'level': logging.INFO},
         'TanglerMake': {'level': logging.INFO},
+        'indent.TanglerMake': {'level': logging.INFO},
         'Web': {'level': logging.INFO},
+        'WebReader': {'level': logging.INFO},
+        # Unit test requires this...
+        'ReferenceCommand': {'level': logging.INFO},
     },
 }
 </pre>
@@ -4252,8 +4311,22 @@ level = &quot;INFO&quot;
 [loggers.WebReader]
 level = &quot;INFO&quot;
 
+[loggers.Tangler]
+level = &quot;INFO&quot;
+
 [loggers.TanglerMake]
 level = &quot;INFO&quot;
+
+[loggers.indent.TanglerMake]
+level = &quot;INFO&quot;
+
+[loggers.WebReader]
+level = &quot;INFO&quot;
+
+[loggers.ReferenceCommand]
+# Unit test requires this...
+level = &quot;INFO&quot;
+
 }
 </pre>
 <!--  -->
@@ -4386,9 +4459,14 @@ source files.</p>
 __version__ = &quot;&quot;&quot;3.2&quot;&quot;&quot;
 
 ### DO NOT EDIT THIS FILE!
-### It was created by     pyweb.py    , __version__='    3.2    '.
-### From source     impl.w     modified     Tue Jun 28 13:48:39 2022    .
-### In working directory '    /Users/slott/Documents/Projects/py-web-tool/src    '.
+### It was created by
+pyweb.py, __version__='
+3.2'.
+### From source
+impl.w modified
+Fri Jul  1 08:22:10 2022.
+### In working directory '
+/Users/slott/Documents/Projects/py-web-tool/src'.
 </pre>
 <!--  -->
 <p class="small">∎ <em>Overheads (81)</em></p>
@@ -4467,8 +4545,8 @@ def main(source: Path) -&gt; None:
             source_path=source,
             output=source.parent,
             verbosity=logging.INFO,
-            command='    &#64;    ',
-            permitList=['    &#64;    i'],
+            command='&#64;',
+            permitList=['&#64;i'],
             tangler_line_numbers=False,
             reference_style=pyweb.SimpleReference(),
             theTangler=pyweb.TanglerMake(),
@@ -4539,7 +4617,7 @@ def main(source: Path) -&gt; None:
             output=source.parent,
             verbosity=logging.INFO,
             weaver=&quot;html&quot;,
-            command='    &#64;    ',
+            command='&#64;',
             permitList=[],
             tangler_line_numbers=False,
             reference_style=pyweb.SimpleReference(),
@@ -5021,8 +5099,8 @@ of the ReferenceCommand.</li>
 </table>
 <hr class="docutils" />
 <blockquote class="small">
-Created by pyweb.py at Tue Jun 28 13:51:00 2022.</blockquote>
-<p class="small">Source pyweb.w modified Tue Jun 28 13:51:00 2022.</p>
+Created by pyweb.py at Fri Jul  1 08:25:15 2022.</blockquote>
+<p class="small">Source pyweb.w modified Fri Jul  1 08:25:15 2022.</p>
 <blockquote class="small">
 <p>pyweb.__version__ '3.2'.</p>
 <p>Working directory '/Users/slott/Documents/Projects/py-web-tool/src'.</p>
