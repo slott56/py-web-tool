@@ -64,7 +64,7 @@ The broad outline of the presentation is as follows:
     
     -   `The Main Function`_.
     
-    -   `pyWeb Module File`_ defines the final module file that's created.
+    -   `pyWeb Module File`_ defines the final module file that contains the application.
 
 We'll start with the base classes that define the 
 data model for the source WEB of chunks.
@@ -77,15 +77,16 @@ the structure and meaning of a ``.w`` source file.
 
 @d Base Class Definitions 
 @{
-@<Command class hierarchy -- used to describe individual commands@>
+@<Command class hierarchy -- used to describe individual commands in a chunk@>
 
-@<Chunk class hierarchy -- used to describe input chunks@>
+@<Chunk class hierarchy -- used to describe individual chunks@>
 
 @<Web class -- describes the overall "web" of chunks@>
 @}
 
 The above order is reasonably helpful for Python and minimizes forward
-references. The ``Chunk``, ``Command``, and ``Web`` instances do have a circular relationship.
+references. The ``Chunk``, ``Command``, and ``Web`` instances do have a circular relationship,
+making a strict ordering a bit complex.
 
 We'll start at the central collection of information, the ``Web`` class of objects.
 
@@ -96,32 +97,31 @@ The overall web of chunks is contained in a
 single instance of the ``Web`` class that is the principle parameter for the weaving and tangling actions.  
 Broadly, the functionality of a Web can be separated into the folloowing areas:
 
-- It supports  construction methods used by ``Chunks`` and ``WebReader``.
+- It is constructed by a ``WebReader``.
 
-- It also supports "enrichment" of the web, once all the Chunks are known. 
-  This is a stateful update to the web.  Each Chunk is updated with Chunk 
-  references it makes as well as Chunks which reference it.
+- It also supports "enrichment" of the web, once all the ``Chunk`` instances are known. 
+  This is a stateful update to the web.  Each ``Chunk`` is updated with 
+  references it makes as well as references to it.
 
 - It supports ``Chunk`` cross-reference methods that traverse this enriched data.
   This includes a kind of validity check to be sure that everything is used once
   and once only. 
   
 
-Fundamentally, a ``Web`` is a hybrid list-mapping. It as the following features:
+Fundamentally, a ``Web`` is a hybrid list+mapping. It as the following features:
 
--   It's a mapping of names to chunks that also offers a 
+-   It's a ``Sequence`` to retain all ``Chunk`` instances in order.
+
+-   It's a mapping of name-to-Chunk that also offers a 
     moderately sophisticated
-    lookup, including exact match for a chunk name and an approximate match for a
-    an abbreviated chunk name. 
-    There are several methods to  resolve references among chunks.
+    lookup, including exact match for a ``Chunk`` name and an approximate match for a
+    an abbreviated name. 
 
--   It's a sequence that retains all chunks in order.
+The ``Web`` is built by the parser by loading the sequence of ``Chunk`` instances.
 
-The ``Web`` is built, incrementally, by the parser.
-
-Note that the source language has a "mixed content model". This means the code chunks
+Note that the WEB source language has a "mixed content model". This means the code chunks
 have specific tags with names. The text, on the other hand, is interspersed
-among the code chunks. The text can be collected into implicit, unnamed text chunks.
+among the code chunks. The text belongs to implicit, unnamed text chunks.
 
 A web instance has a number of attributes.
 
@@ -156,6 +156,7 @@ and, consequently, chunk references.
 @{from collections import defaultdict
 from collections.abc import Iterator
 from dataclasses import dataclass, field
+from functools import cache
 import logging
 from pathlib import Path
 from types import SimpleNamespace
@@ -175,9 +176,13 @@ class Web:
     # The ``@@|`` defined names and chunks with which they're associated.
     userid_map: defaultdict[str, list["Chunk"]] = field(init=False)
     
+    references: set[str] = field(init=False, default_factory=set)
+    
     logger: logging.Logger = field(init=False, default=logging.getLogger("Web"))
 
     strict_match: ClassVar[bool] = True  #: Don't permit ... names without a definition.
+    
+    web_path: Path = field(init=False)  #: Source WEB file; set by ```WebParse``
     
     def __post_init__(self) -> None:
         """
@@ -199,14 +204,15 @@ class Web:
             c.seq = seq
             if not c.path:
                 # Use ``@@d name`` chunks (reject ``@@o`` and text)
-                if not c.name.endswith('...'):
+                if c.name and not c.name.endswith('...'):
                     self.logger.debug(f"__post_init__ 2a {c.name=!r}")
                     self.chunk_map.setdefault(c.name, [])
             for cmd in c.commands:
                 # Find ``@@< name @@>`` in ``@@d name`` chunks or ``@@o`` chunks 
-                if cmd.typeid.ReferenceCommand and not cmd.name.endswith('...'):
-                    self.logger.debug(f"__post_init__ 2b {cmd.name=!r}")
-                    self.chunk_map.setdefault(cmd.name, [])
+                if cmd.has_name:
+                    if not cast(ReferenceCommand, cmd).name.endswith('...'):
+                        self.logger.debug(f"__post_init__ 2b {cast(ReferenceCommand, cmd).name=!r}")
+                        self.chunk_map.setdefault(cast(ReferenceCommand, cmd).name, [])
                     
         # Pass 3 -- accumulate chunk lists, output lists, and name definition lists
         self.userid_map = defaultdict(list)
@@ -215,9 +221,10 @@ class Web:
                 self.userid_map[name].append(c)
             if not c.path:
                 # Named ``@@d name`` chunks
-                c.initial = len(self.chunk_map[c.full_name]) == 0
-                self.chunk_map[c.full_name].append(c)
-                self.logger.debug(f"__post_init__ 3 {c.name=!r} -> {c.full_name=!r}")
+                if full_name := c.full_name:
+                    c.initial = len(self.chunk_map[full_name]) == 0
+                    self.chunk_map[full_name].append(c)
+                    self.logger.debug(f"__post_init__ 3 {c.name=!r} -> {c.full_name=!r}")
             else:
                 # Output ``@@o`` and anonymous chunks.
                 # Assume all @@o chunks are unique. If they're not, they overwrite each other.
@@ -232,8 +239,8 @@ class Web:
         # Or incrementing ref_chunk.references > 1.
         for c in named_chunks:
             for cmd in c.commands:
-                if cmd.typeid.ReferenceCommand:
-                    ref_to_list = self.resolve_chunk(cmd.name)
+                if cmd.has_name:
+                    ref_to_list = self.resolve_chunk(cast(ReferenceCommand, cmd).name)
                     for ref_chunk in ref_to_list:
                         ref_chunk.referencedBy = c
                         ref_chunk.references += 1
@@ -258,6 +265,7 @@ class Web:
                 for c_name in self.chunk_map
                 if c_name.startswith(target[:-3])
             )
+            match : str
             # self.logger.debug(f"resolve_name {target=} {matches=} in self.chunk_map")
             match matches:
                 case []:
@@ -266,12 +274,13 @@ class Web:
                     else:
                         self.logger.warning(f"resolve_name {target=} unknown")
                         self.chunk_map[target] = []
-                        return target
+                    match = target
                 case [head]:
-                    return head
+                    match = head
                 case [head, *tail]:
                     message = f"Ambiguous abbreviation {target!r}, matches {[head] + tail!r}"
                     raise Error(message)
+            return match
         else:
             self.logger.warning(f"resolve_name {target=} unknown")
             self.chunk_map[target] = []
@@ -284,11 +293,11 @@ class Web:
         self.logger.debug(f"resolve_chunk {target=!r} -> {full_name=!r} -> {chunk_list=}")
         return chunk_list
 
-    def file_iter(self) -> Iterator[SimpleNamespace]:
-        return filter(lambda c: c.typeid.OutputChunk, self.chunks)
+    def file_iter(self) -> Iterator[OutputChunk]:
+        return (cast(OutputChunk, c) for c in self.chunks if c.type_is("OutputChunk"))
 
-    def macro_iter(self) -> Iterator[SimpleNamespace]:
-        return filter(lambda c: c.typeid.NamedChunk, self.chunks)
+    def macro_iter(self) -> Iterator[NamedChunk]:
+        return (cast(NamedChunk, c) for c in self.chunks if c.type_is("NamedChunk"))
 
     def userid_iter(self) -> Iterator[SimpleNamespace]:
         yield from (SimpleNamespace(def_name=n, chunk=c) for c in self.file_iter() for n in c.def_names)
@@ -331,27 +340,25 @@ class Web:
     def multi_reference(self) -> list[Chunk]:
         return list(filter(lambda c: c.name and not c.path and c.references > 1, self.chunks))
         
-    def no_definition(self) -> list[str]:
-        commands = (
-            cmd for c in self.chunks for cmd in c.commands
-        )
-        return list(filter(lambda cmd: not cmd.definition, commands))
+    # def no_definition(self) -> list[Command]:
+    #    commands = (
+    #        cmd for c in self.chunks for cmd in c.commands
+    #    )
+    #    return list(filter(lambda cmd: not cmd.definition, commands))
 @| Web
 @}
 
-A web is built by a WebReader. It's used by Emitters, including Weaver and Tangler.
-It's composed of individual Chunk instances.
+A ``Web`` instance is built by a ``WebReader``. It's used by an ``Emitter``, including a ``Weaver`` as well as a ``Tangler``.
+A ``Web`` is composed of individual ``Chunk`` instances.
 
 Chunk Class
 ~~~~~~~~~~~~
 
 A ``Chunk`` is a piece of the input file.  It is a collection of ``Command`` instances.
-A chunk can be woven or tangled to create output.
+A ``Chunk`` can be woven or tangled to create output.
 
 @d Chunk class hierarchy...
 @{
-@<The TypeId Helper@>
-
 @@dataclass
 class Chunk:
     """Superclass for OutputChunk, NamedChunk, NamedDocumentChunk.
@@ -384,25 +391,33 @@ class Chunk:
 
     @@property
     def full_name(self) -> str | None:
-        return self.web().resolve_name(self.name)
+        if self.name:
+            return cast(Web, self.web()).resolve_name(self.name)
+        else:
+            return None
 
     @@property
     def path(self) -> Path | None:
         return None
 
-    @@classmethod
-    @@property
-    def typeid(cls) -> TypeId:
-        return TypeId(cls)
-
     @@property
     def location(self) -> tuple[str, int]:
         return self.commands[0].location
 
+    def type_is(self, name: str) -> bool:
+        """There are really two interesting features:
+        - has_code() (i.e., NamedChunk and OutputChunk)
+        - has_text() (i.e., Chunk and NamedDocumentChunk)
+        """
+        return self.__class__.__name__ == name
+
 class OutputChunk(Chunk):
     @@property
     def path(self) -> Path | None:
-        return Path(self.name)
+        if self.name:
+            return Path(self.name)
+        else:
+            return None
 
     @@property
     def full_name(self) -> str | None:
@@ -411,117 +426,158 @@ class OutputChunk(Chunk):
 class NamedChunk(Chunk): 
     pass
 
+class NamedChunk_Noindent(Chunk): 
+    pass
 
 class NamedDocumentChunk(Chunk): 
     pass
 
-@| Chunk NamedChunk OutputChunk NamedDocumentChunk
-@}
-
-The ``TypeId`` class is used to provide some run-time type
-identification. This helps sort out the various nodes of the AST
-built from the source WEB document. The idea is ``object.typeid.AClass`` is 
-equivalent to ``isinstance(object, AClass)``. It has simpler syntax
-and works well with Jinja templates.
-
-@d The TypeId Helper
-@{
-class TypeId:
-    """
-    This makes the given class name into an attribute with a 
-    True value. Any other attribute reference will return False.
-    """
-    def __init__(self, member_of: type[Any]) -> None:
-        self.my_class = member_of.__name__
-
-    def __getattr__(self, item: str) -> bool:
-        return item == self.my_class
-@| TypeId
+@| Chunk NamedChunk OutputChunk NamedChunk_Noindent NamedDocumentChunk
 @}
 
 Command Class
 ~~~~~~~~~~~~~
 
-The input stream is broken into individual commands, based on the
-various ``@@*x*`` strings in the file.  There are several subclasses of ``Command``,
-each used to describe a different command or block of text in the input.
 
+The ``TypeId`` class is used to provide some run-time type
+identification. This helps sort out the various nodes of the AST
+built from the source WEB document. The idea is ``object.typeid.AClass`` is 
+equivalent to ``isinstance(object, pyweb.AClass)``. It has simpler syntax
+and works better with Jinja templates.
+
+There are two parts to this:
+
+-   A small class definition to handle the attribute access of ``typeid.Name``
+    via ``__getattr__('Name')``.
+    
+-   A decorator to inject the ``typeid`` attribute into a class.
+
+The idea of run-time type identification is -- in a way -- a failure to properly
+define the classes to follow the Liskov Substitution design principle. A better
+design would check for specific features of a subclass of ``Command``.
+This becomes awkwardly complex in the Jinja templates, because the templates exist
+outside the class hierarchy. We rely on the ``typeid`` to map classes to macros appropriate to the class.  
+
+@d Imports
+@{from typing import TypeGuard, TypeVar, Generic
+@}
+
+@d Command class hierarchy...
+@{
+_T = TypeVar("_T")
+
+class TypeId:
+    """
+    This makes a given class name into an attribute with a 
+    True value. Any other attribute reference will return False.
+    
+    >>> class A:
+    ...     typeid = TypeId()
+    >>> a = A()
+    >>> a.typeid.A 
+    True
+    >>> a.typeid.B
+    False
+    """             
+    def __set_name__(self, owner: type[_T], name: str) -> "TypeId":
+        self.my_class = owner
+        return self
+
+    def __getattr__(self, item: str) -> TypeGuard[_T]:
+        return self.my_class.__name__ == item
+        
+from collections.abc import Mapping
+
+class TypeIdMeta(type):
+    """Inject the ``typeid`` attribute into a class definition."""
+    @@classmethod
+    def __prepare__(metacls, name: str, bases: tuple[type, ...], **kwds: Any) -> Mapping[str, object]:  # type: ignore[override]
+        return {"typeid": TypeId()}
+@| TypeId TypeIdMeta
+@}
+
+The metaclass sets the ``typeid`` attribute. The ordinary class preparation will invoke
+the ``__set_name__()`` special method to provide details to the attribute.
+
+The input stream is broken into individual commands, based on the
+various ``@@``\ *x* strings in the file.  There are several subclasses of ``Command``,
+each used to describe a different command or block of text in the input.
 
 All instances of the ``Command`` class are created by a ``WebReader`` instance.  
 In this case, a ``WebReader`` can be thought of as a factory for ``Command`` instances.
 Each ``Command`` instance is appended to the sequence of commands that
-belong to a ``Chunk``.  A chunk may be as small as a single command, or a long sequence
-of commands.
+belong to a ``Chunk``.
+
 
 @d Command class hierarchy...
 @{
-
-@@dataclass
-class TextCommand:
-    text: str  #: The text
-    location: tuple[str, int]  #: The (filename, line number)
-    
-    web: ReferenceType["Web"] = field(init=False, repr=False)
-    logger: logging.Logger = field(init=False, default=logging.getLogger("TextCommand"))
-    definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
-
-    @@classmethod
-    @@property
-    def typeid(cls) -> "TypeId":
-        return TypeId(cls)
+class Command(metaclass=TypeIdMeta):
+    typeid: TypeId
+    has_name: TypeGuard["ReferenceCommand"] = False
+    has_text: TypeGuard[Union["CodeCommand", "TextCommand"]] = False
         
+    def __init__(self, location: tuple[str, int]) -> None:
+        self.location = location  #: The (filename, line number)
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.web: ReferenceType["Web"]
+        
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(location={self.location!r})"
+        
+    @@abc.abstractmethod
+    def tangle(self, aTangler: "Tangler", target: TextIO) -> None:
+        ...
+
+
+class TextCommand(Command):
+    """Text outside any other command."""    
+    has_text: TypeGuard[Union["CodeCommand", "TextCommand"]] = True
+    
+    def __init__(self, text: str, location: tuple[str, int]) -> None:
+        super().__init__(location)
+        self.text = text  #: The text
+            
     def tangle(self, aTangler: "Tangler", target: TextIO) -> None:
         self.logger.debug(f"tangle {self.text=!r}")
         aTangler.codeBlock(target, self.text)
 
-@@dataclass
-class CodeCommand:
-    text: str  #: The code
-    location: tuple[str, int]
-    
-    web: ReferenceType["Web"] = field(init=False, repr=False)
-    logger: logging.Logger = field(init=False, default=logging.getLogger("CodeCommand"))
-    definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(text={self.text!r}, location={self.location!r})"
 
-    @@classmethod
-    @@property
-    def typeid(cls) -> "TypeId":
-        return TypeId(cls)
-        
+class CodeCommand(Command):
+    """Code inside a ``@@o``, or ``@@d`` command."""    
+    has_text: TypeGuard[Union["CodeCommand", "TextCommand"]] = True
+
+    def __init__(self, text: str, location: tuple[str, int]) -> None:
+        super().__init__(location)
+        self.text = text  #: The text
+
     def tangle(self, aTangler: "Tangler", target: TextIO) -> None:
         self.logger.debug(f"tangle {self.text=!r}")
         aTangler.codeBlock(target, self.text)
 
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(text={self.text!r}, location={self.location!r})"
 
-@@dataclass
-class ReferenceCommand:
+class ReferenceCommand(Command):
     """
-    Reference to a ``NamedChunk`` in code.
-    On text, however, it expands to the text of a ``NamedDocumentChunk``.
-    """
-    name: str  #: The name provided
-    location: tuple[str, int]
-    
-    web: ReferenceType["Web"] = field(init=False, repr=False)
-    definition: bool = field(init=False, default=False)
-    logger: logging.Logger = field(init=False, default=logging.getLogger("ReferenceCommand"))
+    Reference to a ``NamedChunk`` in code, a ``@@< name @@>`` construct.
+    In a CodeChunk or OutputChunk, it tangles to the definition from a ``NamedChunk``.
+    In text, it can weave to the text of a ``NamedDocumentChunk``.
+    """    
+    has_name: TypeGuard["ReferenceCommand"] = True
 
-    @@property
-    def text(self) -> str:
-        return self.web().get_text(self.full_name)
+    def __init__(self, name: str, location: tuple[str, int]) -> None:
+        super().__init__(location)
+        self.name = name  #: The name that is referenced.
     
     @@property
     def full_name(self) -> str:
-        return self.web().resolve_name(self.name)
+        return cast(Web, self.web()).resolve_name(self.name)
 
     @@property
-    def seq(self) -> str:
-        return self.web().resolve_chunk(self.name)[0].seq
-
-    @@classmethod
-    @@property
-    def typeid(cls) -> "TypeId":
-        return TypeId(cls)
+    def seq(self) -> int | None:
+        return cast(Web, self.web()).resolve_chunk(self.name)[0].seq
 
     def tangle(self, aTangler: "Tangler", target: TextIO) -> None:
         """Expand this reference.
@@ -529,12 +585,12 @@ class ReferenceCommand:
         Provide the indent before ``@@<``, in ``tangler.fragment`` back to the tangler. 
         """
         self.logger.debug(f"tangle reference to {self.name=}, context: {aTangler.fragment=}")
-        chunk_list = self.web().resolve_chunk(self.name)
+        chunk_list = cast(Web, self.web()).resolve_chunk(self.name)
         if len(chunk_list) == 0:
             message = f"Attempt to tangle an undefined Chunk, {self.name!r}"
             self.logger.error(message)
             raise Error(message) 
-        self.definition = True
+        aTangler.reference_names.add(self.name)
         aTangler.addIndent(len(aTangler.fragment))
         aTangler.fragment = ""
 
@@ -544,97 +600,71 @@ class ReferenceCommand:
                 command.tangle(aTangler, target)
                 
         aTangler.clrIndent()
-        
-@@dataclass
-class FileXrefCommand:
-    location: tuple[str, int]
 
-    web: ReferenceType["Web"] = field(init=False, repr=False)
-    logger: logging.Logger = field(init=False, default=logging.getLogger("FileXrefCommand"))
-    definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(name={self.name!r}, location={self.location!r})"
+
+class FileXrefCommand(Command):
+    """The ``@@f`` command."""    
+    def __init__(self, location: tuple[str, int]) -> None:
+        super().__init__(location)
 
     @@property
-    def files(self):
-        return self.web().files
-
-    @@classmethod
-    @@property
-    def typeid(cls) -> "TypeId":
-        return TypeId(cls)
+    def files(self) -> list["OutputChunk"]:
+        return cast(Web, self.web()).files
 
     def tangle(self, aTangler: "Tangler", target: TextIO) -> None:
         raise Error('Illegal tangling of a cross reference command.')
 
-@@dataclass
-class MacroXrefCommand:
-    location: tuple[str, int]
-
-    web: ReferenceType["Web"] = field(init=False, repr=False)
-    logger: logging.Logger = field(init=False, default=logging.getLogger("MacroXrefCommand"))
-    definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
+class MacroXrefCommand(Command):
+    """The ``@@m`` command."""    
+    def __init__(self, location: tuple[str, int]) -> None:
+        super().__init__(location)
 
     @@property
-    def macros(self):
-        return self.web().macros
-
-    @@classmethod
-    @@property
-    def typeid(cls) -> "TypeId":
-        return TypeId(cls)
+    def macros(self) -> list[SimpleNamespace]:
+        return cast(Web, self.web()).macros
 
     def tangle(self, aTangler: "Tangler", target: TextIO) -> None:
         raise Error('Illegal tangling of a cross reference command.')
 
-@@dataclass
-class UserIdXrefCommand:
-    location: tuple[str, int]
-
-    web: ReferenceType["Web"] = field(init=False, repr=False)
-    logger: logging.Logger = field(init=False, default=logging.getLogger("UserIdXrefCommand"))
-    definition: bool = field(init=False, default=True)  # Only used for ReferenceCommand
+class UserIdXrefCommand(Command):
+    """The ``@@u`` command."""    
+    def __init__(self, location: tuple[str, int]) -> None:
+        super().__init__(location)
 
     @@property
-    def userids(self) -> list[str]:
-        return self.web().userids
-
-    @@classmethod
-    @@property
-    def typeid(cls) -> "TypeId":
-        return TypeId(cls)
+    def userids(self) -> list[SimpleNamespace]:
+        return cast(Web, self.web()).userids
         
     def tangle(self, aTangler: "Tangler", target: TextIO) -> None:
         raise Error('Illegal tangling of a cross reference command.')
+        
+HasText = Union["CodeCommand", "TextCommand"]
 @}
 
-We can define a union of these various data classes 
-to act as an abstract superclass for type hints.
+This model permits two kinds of serialization:
 
-@d Command class hierarchy...
-@{
-Command = Union[TextCommand, CodeCommand, ReferenceCommand,
-    FileXrefCommand, MacroXrefCommand, UserIdXrefCommand
-    ]
-@}
+-  Weaving a document from the WEB source file.
+
+-  Tangling target documents with code.
+
+We'll look at the general problem of emitting output, then the two specializations.
 
 Output Serialization
 --------------------
 
-The ``Emitter`` class hierarchy writes the output files.
+The ``Emitter`` class hierarchy writes the output files. 
+An ``Emitter`` instance is responsible for control of an output file format.
+This includes the necessary file naming, opening, writing and closing operations.
+It also includes providing the correct markup for the file type.
+
+The reference class definitions are used by by the ``Emitter`` class, and needs to be defined first.
 
 @d Base Class Definitions
 @{
 @<Reference class hierarchy - strategies for weaving references to a chunk@> 
 
-@<Emitter class hierarchy - used to control output files@>
-@}
-
-
-An ``Emitter`` instance is responsible for control of an output file format.
-This includes the necessary file naming, opening, writing and closing operations.
-It also includes providing the correct markup for the file type.
-
-@d Emitter class hierarchy...
-@{
 @<Emitter Superclass@>
 
 @<Quoting rule definitions -- functions used by templates@> 
@@ -843,10 +873,7 @@ debug_weaver_template = dedent("""\
 @}
 
 The RST Templates produce ReStructuredText for the various web commands.
-
-**TODO:** four spaces indent **only** after ``code(c)`` where ``c.text == '\n'``.
-Either state maintained here, or, ``CodeCommand`` (and ``TextCommand``) instances are merged into lines.
-We might, for example, handle ``c.text == '\n'`` seperately from all other commands.
+Note that code lines must be indented when using this markup.
 
 @d RST Templates...
 @{
@@ -1026,7 +1053,7 @@ base_template = dedent("""\
     {%- from 'default' import text, begin_code, code, end_code, file_xref, macro_xref, userid_xref, ref, ref_list -%}{#- default macros from rst_weaver -#}
     {#- from 'overrides' import *the names* -#}{#- customized macros from WEB document -#}
     {% for chunk in web.chunks -%}
-        {%- if chunk.typeid.OutputChunk or chunk.typeid.NamedChunk -%}
+        {%- if chunk.type_is('OutputChunk') or chunk.type_is('NamedChunk') -%}
             {{begin_code(chunk)}}
             {%- for command in chunk.commands -%}
                 {%- if command.typeid.CodeCommand -%}{{code(command)}}
@@ -1034,7 +1061,7 @@ base_template = dedent("""\
                 {%- endif -%}
             {%- endfor -%}
             {{end_code(chunk)}}
-        {%- elif chunk.typeid.Chunk -%}
+        {%- elif chunk.type_is('Chunk') -%}
             {%- for command in chunk.commands -%}
                 {%- if command.typeid.TextCommand %}{{text(command)}}
                 {%- elif command.typeid.ReferenceCommand %}{{ref(command)}}
@@ -1098,6 +1125,7 @@ class Tangler(Emitter):
         self.resetIndent(self.code_indent)  # Create context and initial lastIndent values
         self.fragment = ""  # Nothing written yet.
         # Summary
+        self.reference_names: set[str] = set()
         self.linesWritten = 0
         self.totalFiles = 0
         self.totalLines = 0
@@ -1108,7 +1136,7 @@ class Tangler(Emitter):
             self.emit_file(web, file_chunk)
             
     def emit_file(self, web: Web, file_chunk: Chunk) -> None:
-        target_path = self.output / file_chunk.name
+        target_path = self.output / (file_chunk.name or "Untitled.out")
         self.logger.debug("Writing %s", target_path)
         self.logger.debug("Chunk %r", file_chunk)
         with target_path.open("w") as target:
@@ -1242,7 +1270,7 @@ import os
 @{
 class TanglerMake(Tangler):
     def emit_file(self, web: Web, file_chunk: Chunk) -> None:
-        target_path = self.output / file_chunk.name
+        target_path = self.output / (file_chunk.name or "Untitled.out")
         self.logger.debug("Writing %s via a temp file", target_path)
         self.logger.debug("Chunk %r", file_chunk)
 
@@ -1305,8 +1333,9 @@ the ``Chunk`` instances referenced.
 @{
 class SimpleReference(Reference):
     def chunkReferencedBy(self, aChunk: Chunk) -> list[Chunk]:
-        refBy = [aChunk.referencedBy]
-        return refBy
+        if aChunk.referencedBy:
+            return [aChunk.referencedBy]
+        return []
 @}
 
 The ``TransitiveReference`` subclass does a transitive closure of all
@@ -1320,9 +1349,12 @@ This requires walking through the ``Web`` to locate "parents" of each referenced
 class TransitiveReference(Reference):
     def chunkReferencedBy(self, aChunk: Chunk) -> list[Chunk]:
         refBy = aChunk.referencedBy
-        all_refs = list(self.allParentsOf(refBy))
-        self.logger.debug("References: %r(%d) %r", aChunk.name, aChunk.seq, all_refs)
-        return all_refs
+        if refBy:
+            all_refs = list(self.allParentsOf(refBy))
+            self.logger.debug("References: %r(%d) %r", aChunk.name, aChunk.seq, all_refs)
+            return all_refs
+        else:
+            return []
         
     @@staticmethod
     def allParentsOf(chunk: Chunk | None, depth: int = 0) -> Iterator[Chunk]:
@@ -1334,8 +1366,22 @@ class TransitiveReference(Reference):
 @}
 
 
+The base class definitions and the emitter class definitions are used
+to build the web and produce output. The next section looks at the ``WebReader`` parser
+to build a ``Web`` from a source file.
+
+
 Input Parsing
 -------------
+
+There are three tiers to the input parsing:
+
+-   The base tokenizer.
+
+-   A separate parser for options in ``@@d`` and ``@@o`` commands.
+
+-   The overall ``WebReader`` class.
+
 
 @d Base Class Definitions
 @{
@@ -1460,7 +1506,7 @@ class WebReader:
     _source: TextIO  #: Input file
     tokenizer: Tokenizer  #: The tokenizer used to find commands
     content: list[Chunk]  #: The sequence of Chunk instances being built
-    text_command: type[Command]
+    text_command: type[HasText]
 
     def __init__(self, parent: Optional["WebReader"] = None) -> None:
         self.logger = logging.getLogger(self.__class__.__qualname__)
@@ -1528,7 +1574,7 @@ A subclass can override ``handleCommand()`` to
 @{
 def handleCommand(self, token: str) -> bool:
     self.logger.debug("Reading %r", token)
-    
+    new_chunk: Optional[Chunk] = None
     match token[:2]:
         case self.cmdo:
             @<start an OutputChunk, adding it to the web@>
@@ -1578,13 +1624,12 @@ With some small additional changes, we could use ``OutputChunk(**options)``.
 args = next(self.tokenizer)
 self.expect({self.cmdlcurl})
 options = self.output_option_parser.parse(args)
-newChunk = OutputChunk(
+new_chunk = OutputChunk(
     name=' '.join(options['argument']),
     comment_start=''.join(options.get('start', "# ")),
     comment_end=''.join(options.get('end', "")),
 )
-newChunk.filePath = self.filePath
-self.content.append(newChunk)
+self.content.append(new_chunk)
 self.text_command = CodeCommand
 # capture an OutputChunk up to @@}
 @}
@@ -1617,20 +1662,20 @@ options = self.output_option_parser.parse(args)
 name = ' '.join(options['argument'])
 
 if brack == self.cmdlbrak:
-    newChunk = NamedDocumentChunk(name)
+    new_chunk = NamedDocumentChunk(name)
 elif brack == self.cmdlcurl:
     if '-noindent' in options:
-        newChunk = NamedChunk_Noindent(name)
+        new_chunk = NamedChunk_Noindent(name)
     else:
-        newChunk = NamedChunk(name)
+        new_chunk = NamedChunk(name)
 elif brack == None:
-    newChunk = None
-    pass # Error noted by expect()
+    new_chunk = None
+    pass  # Error already noted by ``expect()``
 else:
-    raise Error("Design Error")
+    raise RuntimeError("Design Error")
 
-if newChunk:
-    self.content.append(newChunk)
+if new_chunk:
+    self.content.append(new_chunk)
 self.text_command = CodeCommand
 # capture a NamedChunk up to @@} or @@]
 @}
@@ -1760,12 +1805,11 @@ There are two alternative semantics for an embedded expression.
 We use the **Immediate Execution** semantics -- the expression is immediately appended
 to the current chunk's text.
 
-We provide elements of the ``os`` module.  We provide ``os.path`` library.
-An ``os.getcwd()`` could be changed to ``os.path.realpath('.')``.
+We provide a few elements of the ``os`` module.  We provide ``os.path`` library.
+The ``os.getcwd()`` could be changed to ``os.path.realpath('.')``, but that seems too long-winded.
 
 @d Imports 
-@{
-import builtins
+@{import builtins
 import sys
 import platform
 @| builtins sys platform
@@ -1778,7 +1822,7 @@ expression = next(self.tokenizer)
 self.expect({self.cmdrexpr})
 try:
     # Build Context
-    # **TODO:** Parts of this are static.
+    # **TODO:** Parts of this are static and can be built as part of ``__init__()``.
     dangerous = {
         'breakpoint', 'compile', 'eval', 'exec', 'execfile', 'globals', 'help', 'input', 
         'memoryview', 'open', 'print', 'super', '__import__'
@@ -1794,17 +1838,17 @@ try:
         time=time,
         datetime=datetime,
         platform=platform,
-        theLocation=str(self.location()),
         theWebReader=self,
         theFile=self.filePath,
         thisApplication=sys.argv[0],
         __version__=__version__,  # Legacy compatibility. Deprecated.
         version=__version__,
+        theLocation=str(self.location()),  # The only thing that's dynamic
         )
     # Evaluate
     result = str(eval(expression, globals))
 except Exception as exc:
-    self.logger.error('Failure to process %r: result is %r', expression, exc)
+    self.logger.error('Failure to process %r: exception is %r', expression, exc)
     self.errors += 1
     result = f"@@({expression!r}: Error {exc!r}@@)"
 cls = self.text_command
@@ -1812,14 +1856,12 @@ self.content[-1].commands.append(cls(result, self.location()))
 @}
 
 A double command sequence (``'@@@@'``, when the command is an ``'@@'``) has the
-usual meaning of ``'@@'`` in the input stream.  We do this via 
-the ``appendText()`` method of the current ``Chunk``.  This will append the 
-character on the end of the most recent ``TextCommand``; if this fails, it will
-create a new, empty ``TextCommand``.
+usual meaning of ``'@@'`` in the input stream.  We do this by appending text to
+the last command in the current ``Chunk``.  This will append the 
+character on the end of the most recent ``TextCommand`` or ``CodeCommand```; if this fails, it will
+create a new, empty ``TextCommand`` or ``CodeCommand``.
 
-We replace with '@@' here and now! This is put this at the end of the previous chunk.
-And we make sure the next chunk will be appended to this so that it's 
-largely seamless.
+**TODO:** This should be a method of a Chunk.
 
 @d double at-sign replacement...
 @{
@@ -1830,7 +1872,7 @@ if len(self.content[-1].commands) == 0:
 else:
     tail = self.content[-1].commands[-1]
     if tail.typeid.CodeCommand or tail.typeid.TextCommand:
-        tail.text += self.command
+        cast(HasText, tail).text += self.command
     else:
         # A non-text command: one of @@< name @@>, @@f, @@m, @@u.
         self.content[-1].commands.append(cls(self.command, self.location()))
@@ -1884,7 +1926,7 @@ The ``load()`` method is used recursively to handle the ``@@i`` command. The iss
 is that it's always loading a single top-level web. 
 
 @d Imports
-@{from typing import TextIO
+@{from typing import TextIO, cast
 @}
 
 @d WebReader load...
@@ -1931,7 +1973,7 @@ def parse_source(self) -> None:
                 cls = self.text_command
                 self.content[-1].commands.append(cls(token, self.location()))
             elif (tail := self.content[-1].commands[-1]) and (tail.typeid.CodeCommand or tail.typeid.TextCommand):
-                tail.text += token
+                cast(HasText, tail).text += token
             else:
                 # A non-text command: one of @@< name @@>, @@f, @@m, @@u.
                 cls = self.text_command
@@ -2020,8 +2062,7 @@ and ``next(tokens)`` to step through the sequence of tokens until we raise a ``S
 exception.
 
 @d Imports
-@{
-import re
+@{import re
 from collections.abc import Iterator, Iterable
 @| re
 @}
@@ -2069,8 +2110,7 @@ To handle this, we have a separate lexical scanner and parser for these
 two commands.
 
 @d Imports
-@{
-import shlex
+@{import shlex
 @| shlex
 @}
 
@@ -2315,13 +2355,13 @@ class Action:
     """An action performed by pyWeb."""
     start: float
     options: argparse.Namespace
-    
+
     def __init__(self, name: str) -> None:
         self.name = name
         self.logger = logging.getLogger(self.__class__.__qualname__)
-        
+
     def __str__(self) -> str:
-        return f"{self.name!s} [{self.web!s}]"
+        return f"{self.name!s} [{self.options.web!s}]"
         
     @<Action call method actually does the real work@>
     
@@ -2433,7 +2473,7 @@ class WeaveAction(Action):
         super().__init__("Weave")
         
     def __str__(self) -> str:
-        return f"{self.name!s} [{self.web!s}, {self.options.theWeaver!s}]"
+        return f"{self.name!s} [{self.options.web!s}, {self.options.theWeaver!s}]"
 
     @<WeaveAction call method to pick the language@>
     
@@ -2453,7 +2493,7 @@ def __call__(self, options: argparse.Namespace) -> None:
     super().__call__(options)
     if not self.options.weaver: 
         # Examine first few chars of first chunk of web to determine language
-        self.options.weaver = self.web.language() 
+        self.options.weaver = self.options.web.language() 
         self.logger.info("Using %s", self.options.theWeaver)
     self.options.theWeaver.reference_style = self.options.reference_style
     self.options.theWeaver.output = self.options.output
@@ -2689,6 +2729,7 @@ class Application:
         @<Application default options@>
         
     @<Application parse command line@>
+    
     @<Application class process all files@>
 @| Application
 @}
@@ -2873,7 +2914,7 @@ def process(self, config: argparse.Namespace) -> None:
             raise Exception(f"Unknown -x option {config.skip!r}")
 
     for f in config.files:
-        self.logger.info("%s %r", self.theAction.name, f)
+        self.logger.info("%s %s %r", self.theAction.name, __version__, f)
         config.source_path = f
         self.theAction(config)
         self.logger.info(self.theAction.summary())
@@ -2888,8 +2929,7 @@ function in an explicit ``with`` statement that assures that logging is
 configured and cleaned up politely.
 
 @d Imports...
-@{
-import logging
+@{import logging
 import logging.config
 @| logging logging.config
 @}
@@ -3104,8 +3144,7 @@ closer to where they're referenced.
 
 
 @d Imports
-@{
-import os
+@{import os
 import time
 import datetime
 import types

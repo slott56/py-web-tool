@@ -1,0 +1,141 @@
+@startuml context.jpg
+left to right direction
+skinparam actorStyle awesome
+
+actor "Developer" as Dev
+rectangle PyWeb {
+    usecase "Tangle Source" as UC_Tangle
+    usecase "Weave Document" as UC_Weave
+}
+rectangle IDE {
+    usecase "Create WEB" as UC_Create
+    usecase "Run Tests" as UC_Test
+}
+Dev --> UC_Tangle
+Dev --> UC_Weave
+Dev --> UC_Create
+Dev --> UC_Test
+
+UC_Test --> UC_Tangle
+@enduml
+
+@startuml components.jpg
+component pyweb
+component jinja
+pyweb ..> jinja
+
+component weave
+weave ..> pyweb
+
+component tangle
+tangle ..> pyweb
+@enduml
+
+@startuml code_model.jpg
+class Web
+class Chunk
+abstract class Command
+
+Web *-- "1..*" Chunk
+Chunk *-- "1..*" Command
+
+class CodeChunk
+Chunk <|-- CodeChunk
+
+class NamedChunk 
+Chunk <|-- NamedChunk
+
+class OutputChunk
+Chunk <|-- OutputChunk
+
+class NamedCodeChunk 
+Chunk <|-- NamedCodeChunk
+
+class TextCommand
+Command <|-- TextCommand
+
+class CodeCommand
+Command <|-- CodeCommand
+
+class ReferenceCommand
+Command <|-- ReferenceCommand
+
+class XRefCommand
+Command <|-- XRefCommand
+
+class FileXRefCommand
+XRefCommand <|-- FileXRefCommand
+
+class MacroXRefCommand
+XRefCommand <|-- MacroXRefCommand
+
+class UseridXRefCommand
+XRefCommand <|-- UseridXRefCommand
+@enduml
+
+@startuml code_emitter.jpg
+class Web
+
+abstract class Emitter {
+    emit(web)
+}
+
+Emitter ..> Web
+
+class Weaver
+Emitter <|-- Weaver
+
+class Tangler
+Emitter <|-- Tangler
+
+class TanglerMake
+Tangler <|-- TanglerMake
+
+abstract class ReferenceStyle
+Weaver --> ReferenceStyle
+
+class Simple
+ReferenceStyle <|-- Simple
+
+class Transitive
+ReferenceStyle <|-- Transitive
+@enduml
+
+@startuml code_parser.jpg
+class Web
+class WebReader {
+    parse : Web
+}
+WebReader ..> Web
+class Tokenizer 
+WebReader ..> Tokenizer
+
+class OptionParser
+
+class OptionDef
+
+OptionParser *-- OptionDef
+
+WebReader ..> OptionParser
+@enduml
+
+@startuml code_application.jpg
+abstract class Action
+
+class ActionSequence
+Action <|-- ActionSequence
+ActionSequence *-- "2..m" Action
+
+class LoadAction
+Action <|-- LoadAction
+
+class WeaveAction
+Action <|-- WeaveAction
+
+class TangleAction
+Action <|-- TangleAction
+
+class Application
+
+Application *-- Action
+@enduml

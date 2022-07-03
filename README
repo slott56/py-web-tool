@@ -22,7 +22,7 @@ applying a weave operation to the ``.w`` file.
 Installation
 -------------
 
-This requires Python 3.10.
+This requires Python 3.10. 
 
 This is not (currently) hosted in PyPI. Instead of installing it with PIP,
 clone the GitHub repository or download the distribution kit.
@@ -34,6 +34,8 @@ Install pyweb "manually" using the provided ``setup.py``.
     python setup.py install
     
 This will install the ``pyweb`` module.
+
+This requires Jinja2, which should be installed automatically by the setup.
 
 Produce Documentation
 ---------------------

@@ -5,8 +5,9 @@ SOURCE_PYLPWEB = src/pyweb.w src/intro.w src/overview.w src/impl.w src/tests.w s
 TEST_PYLPWEB = tests/pyweb_test.w tests/intro.w tests/unit.w tests/func.w tests/scripts.w	
 EXAMPLES_PYLPWEB = examples/hello_world_latex.w examples/hello_world_rst.w ackermanns.w
 DOCUTILS_PYLPWEB = docutils.conf pyweb.css page-layout.css
+SOURCE_DIAGRAMS = src/context.png src/components.png src/code_model.png src/code_parser.png src/code_emitter.png src/code_application.png
 
-.PHONY : test
+.PHONY : test diagrams doc build examples
 
 # Note the bootstrapping new version from version 3.1 as baseline.
 PYLPWEB_BOOTSTRAP=${PWD}/bootstrap/pyweb.py
@@ -28,7 +29,7 @@ examples : examples/hello_world_latex.tex examples/hello_world_rst.html examples
 src/pyweb.py src/pyweb.rst : $(SOURCE_PYLPWEB)
 	cd src && python3 pyweb.py pyweb.w 
 
-src/pyweb.html : src/pyweb.rst $(DOCUTILS_PYLPWEB)
+src/pyweb.html : src/pyweb.rst $(DOCUTILS_PYLPWEB) $(SOURCE_DIAGRAMS)
 	rst2html.py $< $@
          
 tests/pyweb_test.rst : src/pyweb.py $(TEST_PYLPWEB)
@@ -52,3 +53,8 @@ examples/ackermanns.rst : examples/ackermanns.w
 
 examples/ackermanns.html : examples/ackermanns.rst $(DOCUTILS_PYLPWEB)
 	rst2html.py $< $@
+
+diagrams : $(SOURCE_DIAGRAMS)
+	
+$(SOURCE_DIAGRAMS) : src/c4_diagrams.uml
+	java -jar plantuml-1.2022.6.jar src/c4_diagrams.uml

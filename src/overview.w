@@ -13,11 +13,45 @@ This application breaks the overall problem of literate programming into the fol
 
 4. 	Tangling the desired program source files.
 
+Here's the overall Context Diagram for this.
 
-Representation
----------------
+..  image:: context.png
 
-The basic parse tree has three layers. 
+Since this runs as part of an Development
+Environment, the container is the developer's desktop.
+
+Here's a summary of the components.
+
+..  image:: components.png
+
+The ``weave`` and ``tangle`` are convenient
+scripts that invoke the underlying ``pyweb`` application.
+This uses Jinja2 to define the various templates
+for weaving the output documents.
+
+Overall Code
+-------------
+
+Generally, the code breaks into three functional areas
+
+-   The core representation of a WEB
+
+-   The parser to read the source WEB
+
+-   The emitters to produce woven and tangled output, which include weavers and tanglers.
+
+We'll look at the core model, first.
+
+Core WEB Representation
+-----------------------
+
+
+
+The basic structure has three layers, as shown in the following diagram:
+
+..  image:: code_model.png
+    :width: 6in
+ 
 The source document is transformed into a ``Web``, 
 which is the overall container. The source is
 decomposed into a sequence of ``Chunk`` instances.  Each ``Chunk`` is a sequence
@@ -43,6 +77,8 @@ based in the context in which a ``@@< name @@>`` reference occurs.
 
 Reading and Parsing
 --------------------
+
+..  image:: code_parser.png
 
 A solution to the reading and parsing problem depends on a convenient 
 tool for breaking up the input stream and a representation for the chunks of input 
@@ -83,6 +119,21 @@ the syntax rules for Tcl or the shell. Optional fields are prefaced with ``-``.
 All options must come before all positional arguments. The positional arguments
 provide the name being defined. In effect, the name is ``' '.join(args.split(' ')``; 
 this means multiple adjacent spaces in a name will be collapsed to a single space.
+
+Emitters
+--------
+
+There are two possible outputs:
+
+-   A woven document.
+
+-   One or more tangled source files.
+
+The overall structure of the classes is shown in the following diagram.
+
+..  image:: code_emitter.png
+
+We'll look at weaving first, then tangling.
 
 Weaving
 ---------
@@ -147,18 +198,17 @@ Application
 ------------
 
 The overall application has the following layers to it:
-
--   The central model is defined by ``Web``, ``Chunk``, and ``Command`` class hierarchies.
-
--   The parsing of the WEB is defined by the ``WebReader`` class and some additional helpers.
-
--   The serialization of output is defined by an ``Emitter`` class hierarchy that includes ``Weaver`` and ``Tangler``
-    classes.
     
--   These are wrapped into an ``Action`` class hierarchy that includes the actions of Load, Tangle, and Weave.
+-   An ``Action`` class hierarchy that includes the actions of Load, Tangle, and Weave.
+
+-   An overall ``Application`` class that executes the actions.
 
 -   A top-level main function parses the command line, creates and configures the actions, and executes the sequence
     of actions.
     
 The idea is that the Weaver Action should be visible to tools like `PyInvoke <https://docs.pyinvoke.org/en/stable/index.html>`_.
 We want ``Weave("someFile.w")`` to be a sensible task.  
+
+..  image:: code_application.png
+
+This shows the essential structure of the top-level classes.

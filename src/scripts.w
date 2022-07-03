@@ -82,6 +82,8 @@ import argparse
 import logging
 import string
 from pathlib import Path
+from textwrap import dedent
+
 import pyweb
 @}
 
@@ -100,7 +102,32 @@ Something like the following:
 @d weave.py custom weaver definition...
 @{
 class MyHTML(pyweb.Weaver):
-    pass
+    bootstrap_html = dedent("""
+    {%- macro begin_code(chunk) %}
+    <div class="card">
+      <div class="card-header">
+        <a type="button" class="btn btn-primary" name="pyweb_{{chunk.seq}}"></a>
+        <!--line number {{chunk.location}}-->
+        <p class="small"><em>{{chunk.full_name or chunk.name}} ({{chunk.seq}})</em> {% if chunk.initial %}={% else %}+={% endif %}</p>
+       </div>
+      <div class="card-body">
+        <pre><code>
+    {%- endmacro -%}
+
+    {%- macro end_code(chunk) %}
+        </code></pre>
+      </div>
+    <div class="card-footer">
+      <p>&#8718; <em>{{chunk.full_name or chunk.name}} ({{chunk.seq}})</em>.
+      </p> 
+    </div>
+    </div>
+    {% endmacro -%}
+    """)
+    
+    def __init__(self, output: Path = Path.cwd()) -> None:
+        super().__init__(output)
+        self.template_map["html"]["overrides"] = self.bootstrap_html
 @}
 
 @d weaver.py processing...

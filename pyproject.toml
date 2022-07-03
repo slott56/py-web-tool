@@ -11,10 +11,12 @@ envlist = py310
 deps = 
     pytest == 7.1.2
     mypy == 0.961
+    -rrequirements.txt
 setenv = 
     PYTHONPATH = {toxinidir}/src
+    PYTHONHASHSEED = 0
 commands_pre = 
-    python3 bootstrap/pyweb.py -o src src/pyweb.w
+    python3 bootstrap/pyweb.py -xw -o src src/pyweb.w
     python3 src/pyweb.py -o tests tests/pyweb_test.w 
 commands = 
     pytest

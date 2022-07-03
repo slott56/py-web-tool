@@ -135,11 +135,10 @@ class Test_SemanticError_6(TangleTestcase):
         chunks = self.rdr.load(self.file_path, self.source)
         self.web = pyweb.Web(chunks)
         self.tangler.emit(self.web)
-        # Old: self.web.createUsedBy()
         print(self.web.no_reference())
         self.assertEqual(1, len(self.web.no_reference()))
         self.assertEqual(1, len(self.web.multi_reference()))
-        self.assertEqual(0, len(self.web.no_definition()))
+        self.assertEqual({'part1a', 'part1...'}, self.tangler.reference_names)
 
 
 
