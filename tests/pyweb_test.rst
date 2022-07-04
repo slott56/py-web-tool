@@ -567,6 +567,7 @@ We'll examine a few features of the HTML templates.
      
     class TestHTML(unittest.TestCase):
         def setUp(self) -> None:
+            self.maxDiff = None
             self.weaver = pyweb.Weaver( )
             self.weaver.set\_markup("html")
             self.weaver.reference\_style = pyweb.SimpleReference() 
@@ -3133,6 +3134,7 @@ The sample ``test_sample.w`` file is created and removed after the test.
         def setUp(self) -> None:
             self.sample\_path = Path("test\_sample.w")
             self.sample\_path.write\_text(sample)
+            self.maxDiff = None
             
         def tearDown(self) -> None:
             self.sample\_path.unlink()
@@ -3141,9 +3143,9 @@ The sample ``test_sample.w`` file is created and removed after the test.
             """Skips blank lines and trailing whitespace that (generally) aren't problems when weaving."""
             def non\_blank(line: str) -> bool:
                 return len(line) > 0
-            first\_nb = list(filter(non\_blank, (line.rstrip() for line in first.splitlines())))
-            second\_nb = list(filter(non\_blank, (line.rstrip() for line in second.splitlines())))
-            self.assertListEqual(first\_nb, second\_nb, msg)
+            first\_nb = '\\n'.join(filter(non\_blank, (line.rstrip() for line in first.splitlines())))
+            second\_nb = '\\n'.join(filter(non\_blank, (line.rstrip() for line in second.splitlines())))
+            self.assertEqual(first\_nb, second\_nb, msg)
 
 ..
 
@@ -3166,8 +3168,7 @@ This could be altered to check a few features of the weave file rather than comp
     :class: code
 
     
-    expected\_weave = ('\\n'
-        '<!doctype html>\\n'
+    expected\_weave = ('<!doctype html>\\n'
         '<html lang="en">\\n'
         '  <head>\\n'
         '    <meta charset="utf-8">\\n'
@@ -3178,58 +3179,59 @@ This could be altered to check a few features of the weave file rather than comp
         '    <h1>Sample HTML web file</h1>\\n'
         "    <p>We're avoiding using Python specifically.\\n"
         '    This hints at other languages being tangled by this tool.</p>\\n'
-        '\\n'
-        '\\n'
-        '<a name="pyweb\_1"></a>\\n'
-        "<!--line number ('test\_sample.w', 16)-->\\n"
-        '<p><em>sample\_tangle.code (1)</em> =</p>\\n'
-        '<pre><code>\\n'
-        '\\n'
-        '        \\n'
+        '<div class="card">\\n'
+        '  <div class="card-header">\\n'
+        '    <a type="button" class="btn btn-primary" name="pyweb\_1"></a>\\n'
+        "    <!--line number ('test\_sample.w', 16)-->\\n"
+        '    <p class="small"><em>sample\_tangle.code (1)</em> =</p>\\n'
+        '   </div>\\n'
+        '  <div class="card-body">\\n'
+        '    <pre><code>\\n'
         '&rarr;<a href="#pyweb\_2"><em>preamble (2)</em></a>\\n'
         '&rarr;<a href="#pyweb\_3"><em>body (3)</em></a>\\n'
-        '\\n'
-        '        \\n'
-        '</code></pre>\\n'
-        '<p>&#8718; <em>sample\_tangle.code (1)</em>.\\n'
-        '</p> \\n'
-        '\\n'
-        '\\n'
-        '\\n'
-        '<a name="pyweb\_2"></a>\\n'
-        "<!--line number ('test\_sample.w', 22)-->\\n"
-        '<p><em>preamble (2)</em> =</p>\\n'
-        '<pre><code>\\n'
-        '\\n'
-        '        \\n'
+        '    </code></pre>\\n'
+        '  </div>\\n'
+        '<div class="card-footer">\\n'
+        '  <p>&#8718; <em>sample\_tangle.code (1)</em>.\\n'
+        '  </p>\\n'
+        '</div>\\n'
+        '</div>\\n'
+        '<div class="card">\\n'
+        '  <div class="card-header">\\n'
+        '    <a type="button" class="btn btn-primary" name="pyweb\_2"></a>\\n'
+        "    <!--line number ('test\_sample.w', 22)-->\\n"
+        '    <p class="small"><em>preamble (2)</em> =</p>\\n'
+        '   </div>\\n'
+        '  <div class="card-body">\\n'
+        '    <pre><code>\\n'
         '#include &lt;stdio.h&gt;\\n'
-        '\\n'
-        '        \\n'
-        '</code></pre>\\n'
-        '<p>&#8718; <em>preamble (2)</em>.\\n'
-        '</p> \\n'
-        '\\n'
-        '\\n'
-        '\\n'
-        '<a name="pyweb\_3"></a>\\n'
-        "<!--line number ('test\_sample.w', 27)-->\\n"
-        '<p><em>body (3)</em> =</p>\\n'
-        '<pre><code>\\n'
-        '\\n'
-        '        \\n'
+        '    </code></pre>\\n'
+        '  </div>\\n'
+        '<div class="card-footer">\\n'
+        '  <p>&#8718; <em>preamble (2)</em>.\\n'
+        '  </p>\\n'
+        '</div>\\n'
+        '</div>\\n'
+        '<div class="card">\\n'
+        '  <div class="card-header">\\n'
+        '    <a type="button" class="btn btn-primary" name="pyweb\_3"></a>\\n'
+        "    <!--line number ('test\_sample.w', 27)-->\\n"
+        '    <p class="small"><em>body (3)</em> =</p>\\n'
+        '   </div>\\n'
+        '  <div class="card-body">\\n'
+        '    <pre><code>\\n'
         'int main() {\\n'
         '    println(&quot;Hello, World!&quot;)\\n'
         '}\\n'
-        '\\n'
-        '        \\n'
-        '</code></pre>\\n'
-        '<p>&#8718; <em>body (3)</em>.\\n'
-        '</p> \\n'
-        '\\n'
-        '\\n'
+        '    </code></pre>\\n'
+        '  </div>\\n'
+        '<div class="card-footer">\\n'
+        '  <p>&#8718; <em>body (3)</em>.\\n'
+        '  </p>\\n'
+        '</div>\\n'
+        '</div>\\n'
         '  </body>\\n'
-        '</html>\\n'
-    )
+        '</html>')
         
     class TestWeave(SampleWeb):
         def setUp(self) -> None:
@@ -3665,7 +3667,7 @@ Macros
 
 ..	class:: small
 
-	Created by src/pyweb.py at Sun Jul  3 13:37:31 2022.
+	Created by src/pyweb.py at Mon Jul  4 16:38:22 2022.
 
     Source tests/pyweb_test.w modified Sat Jul  2 09:39:56 2022.
 

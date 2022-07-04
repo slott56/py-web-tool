@@ -17,8 +17,8 @@ def main(source: Path) -> None:
             permitList=['@i'],
             tangler_line_numbers=False,
             reference_style=pyweb.SimpleReference(),
-            theTangler=pyweb.TanglerMake(),
             webReader=pyweb.WebReader(),
+            theTangler=pyweb.TanglerMake(),
         )
             
         for action in pyweb.LoadAction(), pyweb.TangleAction():

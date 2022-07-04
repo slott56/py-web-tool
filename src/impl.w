@@ -711,10 +711,10 @@ The Weaver is a **Facade** that wraps Jinja template processing.
 
 class Weaver(Emitter):
     template_map = {
-        "debug": {"default": debug_weaver_template, "overrides": ""},
-        "rst": {"default": rst_weaver_template, "overrides": rst_overrides_template},
-        "html": {"default": html_weaver_template, "overrides": html_overrides_template},
-        "tex": {"default": latex_weaver_template, "overrides": ""},
+        "debug_defaults": debug_weaver_template, "debug_macros": "",
+        "rst_defaults": rst_weaver_template, "rst_macros": rst_overrides_template,
+        "html_defaults": html_weaver_template, "html_macros": html_overrides_template,
+        "tex_defaults": latex_weaver_template, "tex_macros": tex_overrides_template,
     }
         
     quote_rules = {
@@ -744,7 +744,7 @@ class Weaver(Emitter):
     def generate_text(self, web: Web) -> Iterator[str]:
         self.env = Environment(
             loader=DictLoader(
-                self.template_map[self.markup] |
+                self.template_map | 
                 {'base_weaver': base_template,}
             ),
             autoescape=select_autoescape()
@@ -752,8 +752,10 @@ class Weaver(Emitter):
         self.env.filters |= {
             "quote_rules": self.quote_rules[self.markup]
         }
+        defaults = self.env.get_template(f"{self.markup}_defaults")
+        macros = self.env.get_template(f"{self.markup}_macros")
         template = self.env.get_template("base_weaver")
-        yield from template.generate(web=web)
+        return template.generate(web=web, macros=macros, defaults=defaults)
 @}
 
 The quoting rules apply to the various
@@ -1045,13 +1047,24 @@ latex_weaver_template = dedent("""\
     \\end{itemize}
     {% endmacro -%}
     """)
+
+tex_overrides_template = dedent("""\
+    """)
+
 @}
 
 @d Common base template...
 @{
 base_template = dedent("""\
-    {%- from 'default' import text, begin_code, code, end_code, file_xref, macro_xref, userid_xref, ref, ref_list -%}{#- default macros from rst_weaver -#}
-    {#- from 'overrides' import *the names* -#}{#- customized macros from WEB document -#}
+    {%- from macros import text, begin_code, code, ref, end_code, file_xref, macro_xref, userid_xref -%}
+    {%- if not text is defined %}{%- from defaults import text -%}{%- endif -%}
+    {%- if not begin_code is defined %}{%- from defaults import begin_code -%}{%- endif -%}
+    {%- if not code is defined %}{%- from defaults import code -%}{%- endif -%}
+    {%- if not ref is defined %}{%- from defaults import ref -%}{%- endif -%}
+    {%- if not end_code is defined %}{%- from defaults import end_code -%}{%- endif -%}
+    {%- if not file_xref is defined %}{%- from defaults import file_xref -%}{%- endif -%}
+    {%- if not macro_xref is defined %}{%- from defaults import macro_xref -%}{%- endif -%}
+    {%- if not userid_xref is defined %}{%- from defaults import userid_xref -%}{%- endif -%}
     {% for chunk in web.chunks -%}
         {%- if chunk.type_is('OutputChunk') or chunk.type_is('NamedChunk') -%}
             {{begin_code(chunk)}}

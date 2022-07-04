@@ -627,6 +627,7 @@ def mock_chunk_instance(name: str, seq: int, location: tuple[str, int]) -&gt; Mo
         def_names=[],
         path=None,
         tangle=Mock(),
+        type_is=Mock(side_effect=lambda x: x == &quot;Chunk&quot;),
         # reference_indent=Mock(),
         # reference_dedent=Mock(),
     )
@@ -648,7 +649,8 @@ def mock_web() -&gt; pyweb.Web:
     mock_output.name = &quot;named chunk&quot;
     mock_uid_1 = Mock(userid=&quot;user_id_1&quot;, ref_list=[mock_output])
     mock_uid_2 = Mock(userid=&quot;user_id_2&quot;, ref_list=[mock_output])
-    mock_ref = Mock(typeid=pyweb.TypeId(pyweb.ReferenceCommand), full_name=&quot;named chunk&quot;, seq=42)
+    mock_ref = Mock(typeid=pyweb.TypeId(), full_name=&quot;named chunk&quot;, seq=42)
+    mock_ref.typeid.__set_name__(pyweb.ReferenceCommand, &quot;typeid&quot;)
     mock_ref.name = &quot;named...&quot;
     web = Mock(
         name=&quot;mock web&quot;,
@@ -656,36 +658,36 @@ def mock_web() -&gt; pyweb.Web:
         chunks=[
             Mock(
                 name=&quot;mock Chunk&quot;,
-                typeid=pyweb.TypeId(pyweb.Chunk),
+                type_is=Mock(side_effect = lambda n: n == &quot;Chunk&quot;),
                 commands=[
                     Mock(
-                        typeid=pyweb.TypeId(pyweb.TextCommand),
+                        typeid=pyweb.TypeId().__set_name__(pyweb.TextCommand, &quot;typeid&quot;),
                         text=&quot;text with |char| untouched.&quot;,
                     ),
                     Mock(
-                        typeid=pyweb.TypeId(pyweb.TextCommand),
+                        typeid=pyweb.TypeId().__set_name__(pyweb.TextCommand, &quot;typeid&quot;),
                         text=&quot;\n&quot;,
                     ),
                     Mock(
-                        typeid=pyweb.TypeId(pyweb.FileXrefCommand),
+                        typeid=pyweb.TypeId().__set_name__(pyweb.FileXrefCommand, &quot;typeid&quot;),
                         location=1,
                         files=[mock_file],
                     ),
                     Mock(
-                        typeid=pyweb.TypeId(pyweb.TextCommand),
+                        typeid=pyweb.TypeId().__set_name__(pyweb.TextCommand, &quot;typeid&quot;),
                         text=&quot;\n&quot;,
                     ),
                     Mock(
-                        typeid=pyweb.TypeId(pyweb.MacroXrefCommand),
+                        typeid=pyweb.TypeId().__set_name__(pyweb.MacroXrefCommand, &quot;typeid&quot;),
                         location=2,
                         macros=[mock_output],
                     ),
                     Mock(
-                        typeid=pyweb.TypeId(pyweb.TextCommand),
+                        typeid=pyweb.TypeId().__set_name__(pyweb.TextCommand, &quot;typeid&quot;),
                         text=&quot;\n&quot;,
                     ),
                     Mock(
-                        typeid=pyweb.TypeId(pyweb.UserIdXrefCommand),
+                        typeid=pyweb.TypeId().__set_name__(pyweb.UserIdXrefCommand, &quot;typeid&quot;),
                         location=3,
                         userids=[mock_uid_1, mock_uid_2]
                     ),
@@ -693,17 +695,17 @@ def mock_web() -&gt; pyweb.Web:
             ),
             Mock(
                 name=&quot;mock OutputChunk&quot;,
-                typeid=pyweb.TypeId(pyweb.OutputChunk),
+                type_is=Mock(side_effect = lambda n: n == &quot;OutputChunk&quot;),
                 seq=42,
                 full_name=&quot;sample.out&quot;,
                 commands=[
                     Mock(
-                        typeid=pyweb.TypeId(pyweb.CodeCommand),
+                        typeid=pyweb.TypeId().__set_name__(pyweb.CodeCommand, &quot;typeid&quot;),
                         text=&quot;|char| `code` *em* _em_&quot;,
                         tangle=Mock(side_effect=tangle_method),
                     ),
                     Mock(
-                        typeid=pyweb.TypeId(pyweb.CodeCommand),
+                        typeid=pyweb.TypeId().__set_name__(pyweb.CodeCommand, &quot;typeid&quot;),
                         text=&quot;\n&quot;,
                         tangle=Mock(),
                     ),
@@ -713,16 +715,16 @@ def mock_web() -&gt; pyweb.Web:
             ),
             Mock(
                 name=&quot;mock NamedChunk&quot;,
-                typeid=pyweb.TypeId(pyweb.NamedChunk),
+                type_is=Mock(side_effect = lambda n: n == &quot;NamedChunk&quot;),
                 seq=42,
                 full_name=&quot;named chunk&quot;,
                 commands=[
                     Mock(
-                        typeid=pyweb.TypeId(pyweb.CodeCommand),
+                        typeid=pyweb.TypeId().__set_name__(pyweb.CodeCommand, &quot;typeid&quot;),
                         text=&quot;|char| `code` *em* _em_&quot;,
                     ),
                     Mock(
-                        typeid=pyweb.TypeId(pyweb.CodeCommand),
+                        typeid=pyweb.TypeId().__set_name__(pyweb.CodeCommand, &quot;typeid&quot;),
                         text=&quot;\n&quot;,
                         tangle=Mock(),
                     ),
@@ -829,6 +831,7 @@ class TestLaTeX(unittest.TestCase):
         self.aFileChunk = MockChunk(&quot;File&quot;, 123, (&quot;sample.w&quot;, 456))
         self.aFileChunk.referencedBy = [ ]
         self.aChunk = MockChunk(&quot;Chunk&quot;, 314, (&quot;sample.w&quot;, 789))
+        self.aChunk.type_is = Mock(side_effect=lambda n: n == &quot;OutputChunk&quot;)
         self.aChunk.referencedBy = [self.aFileChunk,]
         self.aChunk.references = [(self.aFileChunk.name, self.aFileChunk.seq)]
 
@@ -869,6 +872,7 @@ class TestHTML(unittest.TestCase):
         self.aFileChunk = MockChunk(&quot;File&quot;, 123, (&quot;sample.w&quot;, 456))
         self.aFileChunk.referencedBy = []
         self.aChunk = MockChunk(&quot;Chunk&quot;, 314, (&quot;sample.w&quot;, 789))
+        self.aChunk.type_is = Mock(side_effect=lambda n: n == &quot;OutputChunk&quot;)
         self.aChunk.referencedBy = [self.aFileChunk,]
         self.aChunk.references = [(self.aFileChunk.name, self.aFileChunk.seq)]
 
@@ -1089,12 +1093,13 @@ MockWeaver = Mock(
 def mock_tangler_instance() -&gt; MagicMock:
     context = MagicMock(
         name=&quot;Tangler instance context&quot;,
+        reference_names=Mock(add=Mock()),
         __exit__=Mock()
     )
 
     tangler = MagicMock(
         name=&quot;Tangler instance&quot;,
-        __enter__=Mock(return_value=context)
+        __enter__=Mock(return_value=context),
     )
     return tangler
 
@@ -1153,13 +1158,14 @@ def test_lineNumber_should_work(self) -&gt; None:
 <p class="rubric" id="unit-test-of-chunk-properties-17">Unit Test of Chunk properties (17) =</p>
 <pre class="code literal-block">
 def test_properties(self) -&gt; None:
+    self.theChunk.name = &quot;some name&quot;
     web = MockWeb()
     self.theChunk.web = Mock(return_value=web)
     self.theChunk.full_name
     web.resolve_name.assert_called_once_with(self.theChunk.name)
     self.assertIsNone(self.theChunk.path)
-    self.assertTrue(self.theChunk.typeid.Chunk)
-    self.assertFalse(self.theChunk.typeid.OutputChunk)
+    self.assertTrue(self.theChunk.type_is('Chunk'))
+    self.assertFalse(self.theChunk.type_is('OutputChunk'))
 </pre>
 <!--  -->
 <p class="small">∎ <em>Unit Test of Chunk properties (17)</em></p>
@@ -1185,9 +1191,9 @@ class TestNamedChunk(unittest.TestCase):
         self.theChunk.full_name
         web.resolve_name.assert_called_once_with(self.theChunk.name)
         self.assertIsNone(self.theChunk.path)
-        self.assertTrue(self.theChunk.typeid.NamedChunk)
-        self.assertFalse(self.theChunk.typeid.OutputChunk)
-        self.assertFalse(self.theChunk.typeid.Chunk)
+        self.assertTrue(self.theChunk.type_is(&quot;NamedChunk&quot;))
+        self.assertFalse(self.theChunk.type_is(&quot;OutputChunk&quot;))
+        self.assertFalse(self.theChunk.type_is(&quot;Chunk&quot;))
 </pre>
 <!--  -->
 <p class="small">∎ <em>Unit Test of NamedChunk subclass (18)</em></p>
@@ -1210,8 +1216,8 @@ class TestNamedChunk_Noindent(unittest.TestCase):
         self.theChunk.full_name
         web.resolve_name.assert_called_once_with(self.theChunk.name)
         self.assertIsNone(self.theChunk.path)
-        self.assertTrue(self.theChunk.typeid.NamedChunk)
-        self.assertFalse(self.theChunk.typeid.Chunk)
+        self.assertTrue(self.theChunk.type_is(&quot;NamedChunk&quot;))
+        self.assertFalse(self.theChunk.type_is(&quot;Chunk&quot;))
 </pre>
 <!--  -->
 <p class="small">∎ <em>Unit Test of NamedChunk_Noindent subclass (19)</em></p>
@@ -1240,8 +1246,8 @@ class TestOutputChunk(unittest.TestCase):
         self.assertIsNone(self.theChunk.full_name)
         web.resolve_name.assert_not_called()
         self.assertEqual(self.theChunk.path, Path(&quot;filename.out&quot;))
-        self.assertTrue(self.theChunk.typeid.OutputChunk)
-        self.assertFalse(self.theChunk.typeid.Chunk)
+        self.assertTrue(self.theChunk.type_is(&quot;OutputChunk&quot;))
+        self.assertFalse(self.theChunk.type_is(&quot;Chunk&quot;))
 </pre>
 <!--  -->
 <p class="small">∎ <em>Unit Test of OutputChunk subclass (20)</em></p>
@@ -1267,8 +1273,8 @@ class TestNamedDocumentChunk(unittest.TestCase):
         self.theChunk.full_name
         web.resolve_name.assert_called_once_with(self.theChunk.name)
         self.assertIsNone(self.theChunk.path)
-        self.assertTrue(self.theChunk.typeid.NamedDocumentChunk)
-        self.assertFalse(self.theChunk.typeid.OutputChunk)
+        self.assertTrue(self.theChunk.type_is(&quot;NamedDocumentChunk&quot;))
+        self.assertFalse(self.theChunk.type_is(&quot;OutputChunk&quot;))
 </pre>
 <!--  -->
 <p class="small">∎ <em>Unit Test of NamedDocumentChunk subclass (21)</em></p>
@@ -1457,7 +1463,7 @@ class TestReferenceCommand(unittest.TestCase):
         tnglr = MockTangler()
         self.cmd.tangle(tnglr, sentinel.TARGET)
         self.web.resolve_chunk.assert_called_once_with(&quot;Some Name&quot;)
-        self.assertTrue(self.cmd.definition)
+        tnglr.reference_names.add.assert_called_once_with('Some Name')
         self.assertEqual(1, self.referenced_chunk.references)
         self.referenced_chunk.commands[0].tangle.assert_called_once_with(tnglr, sentinel.TARGET)
 </pre>
@@ -1520,17 +1526,17 @@ because some state is recorded in the Chunk instances.</p>
 class TestWebConstruction(unittest.TestCase):
     def setUp(self) -&gt; None:
         self.c1 = MockChunk(&quot;c1&quot;, 1, (&quot;sample.w&quot;, 11))
-        self.c1.typeid = Mock(Chunk=True, OutputChunk=False, NamedChunk=False)
+        self.c1.type_is = Mock(side_effect = lambda n: n == &quot;Chunk&quot;)
         self.c1.referencedBy = None
         self.c1.name = None
         self.c2 = MockChunk(&quot;c2&quot;, 2, (&quot;sample.w&quot;, 22))
-        self.c2.typeid = Mock(Chunk=False, OutputChunk=True, NamedChunk=False)
+        self.c2.type_is = Mock(side_effect = lambda n: n == &quot;OutputChunk&quot;)
         self.c2.commands = [Mock()]
         self.c2.commands[0].name = &quot;c3...&quot;
         self.c2.commands[0].typeid = Mock(ReferenceCommand=True, TextCommand=False, CodeCommand=False)
         self.c2.referencedBy = None
         self.c3 = MockChunk(&quot;c3 has a long name&quot;, 3, (&quot;sample.w&quot;, 33))
-        self.c3.typeid = Mock(Chunk=False, OutputChunk=False, NamedChunk=True)
+        self.c3.type_is = Mock(side_effect = lambda n: n == &quot;NamedChunk&quot;)
         self.c3.referencedBy = None
         self.c3.def_names = [&quot;userid&quot;]
         self.web = pyweb.Web([self.c1, self.c2, self.c3])
@@ -1555,7 +1561,6 @@ class TestWebConstruction(unittest.TestCase):
         self.assertEqual([SimpleNamespace(userid='userid', ref_list=[self.c3])], self.web.userids)
         self.assertEqual([self.c2], self.web.no_reference())
         self.assertEqual([], self.web.multi_reference())
-        self.assertEqual([], self.web.no_definition())
 
     def test_valid_web_should_tangle(self) -&gt; None:
         &quot;&quot;&quot;This is the entire interface used by tangling.
@@ -1565,7 +1570,7 @@ class TestWebConstruction(unittest.TestCase):
 
     def test_valid_web_should_weave(self) -&gt; None:
         &quot;&quot;&quot;This is the entire interface used by tangling.
-        The details are pushed down to unique processing based on ``chunk.typeid``.
+        The details are pushed down to unique processing based on ``chunk.type_is``.
         &quot;&quot;&quot;
         self.assertEqual([self.c1, self.c2, self.c3], self.web.chunks)
 </pre>
@@ -2137,11 +2142,10 @@ class Test_SemanticError_6(TangleTestcase):
         chunks = self.rdr.load(self.file_path, self.source)
         self.web = pyweb.Web(chunks)
         self.tangler.emit(self.web)
-        # Old: self.web.createUsedBy()
         print(self.web.no_reference())
         self.assertEqual(1, len(self.web.no_reference()))
         self.assertEqual(1, len(self.web.multi_reference()))
-        self.assertEqual(0, len(self.web.no_definition()))
+        self.assertEqual({'part1a', 'part1...'}, self.tangler.reference_names)
 </pre>
 <!--  -->
 <p class="small">∎ <em>Tangle Test semantic error 6 (64)</em></p>
@@ -2359,13 +2363,13 @@ for i in range(24):
 <p class="rubric" id="expected-output-0-75">Expected Output 0 (75) +=</p>
 <pre class="code literal-block">
 test0_expected_debug = (
-    'text: TextCommand(text=\'&lt;html&gt;\\n&lt;head&gt;\\n    &lt;link rel=&quot;StyleSheet&quot; href=&quot;pyweb.css&quot; type=&quot;text/css&quot; /&gt;\\n&lt;/head&gt;\\n&lt;body&gt;\\n\', location=(\'test0.w\', 1), logger=&lt;Logger TextCommand (INFO)&gt;, definition=True)\n'
-    &quot;ref: ReferenceCommand(name='some code', location=('test0.w', 6), definition=False, logger=&lt;Logger ReferenceCommand (INFO)&gt;)&quot;
-    &quot;text: TextCommand(text='\\n\\n', location=('test0.w', 7), logger=&lt;Logger TextCommand (INFO)&gt;, definition=True)\n&quot;
-    &quot;begin_code: NamedChunk(name='some code', seq=1, commands=[CodeCommand(text='\\ndef fastExp(n, p):\\n    r = 1\\n    while p &gt; 0:\\n        if p%2 == 1: return n*fastExp(n,p-1)\\n    return n*n*fastExp(n,p/2)\\n\\nfor i in range(24):\\n    fastExp(2,i)\\n', location=('test0.w', 10), logger=&lt;Logger CodeCommand (INFO)&gt;, definition=True)], options=[], def_names=[], initial=True, comment_start=None, comment_end=None, references=0, referencedBy=None, logger=&lt;Logger Chunk (INFO)&gt;)\n&quot;
-    &quot;code: CodeCommand(text='\\ndef fastExp(n, p):\\n    r = 1\\n    while p &gt; 0:\\n        if p%2 == 1: return n*fastExp(n,p-1)\\n    return n*n*fastExp(n,p/2)\\n\\nfor i in range(24):\\n    fastExp(2,i)\\n', location=('test0.w', 10), logger=&lt;Logger CodeCommand (INFO)&gt;, definition=True)\n&quot;
-    &quot;end_code: NamedChunk(name='some code', seq=1, commands=[CodeCommand(text='\\ndef fastExp(n, p):\\n    r = 1\\n    while p &gt; 0:\\n        if p%2 == 1: return n*fastExp(n,p-1)\\n    return n*n*fastExp(n,p/2)\\n\\nfor i in range(24):\\n    fastExp(2,i)\\n', location=('test0.w', 10), logger=&lt;Logger CodeCommand (INFO)&gt;, definition=True)], options=[], def_names=[], initial=True, comment_start=None, comment_end=None, references=0, referencedBy=None, logger=&lt;Logger Chunk (INFO)&gt;)\n&quot;
-    &quot;text: TextCommand(text='\\n&lt;/body&gt;\\n&lt;/html&gt;\\n', location=('test0.w', 19), logger=&lt;Logger TextCommand (INFO)&gt;, definition=True)&quot;
+    'text: TextCommand(text=\'&lt;html&gt;\\n&lt;head&gt;\\n    &lt;link rel=&quot;StyleSheet&quot; href=&quot;pyweb.css&quot; type=&quot;text/css&quot; /&gt;\\n&lt;/head&gt;\\n&lt;body&gt;\\n\', location=(\'test0.w\', 1))\n'
+    &quot;ref: ReferenceCommand(name='some code', location=('test0.w', 6))&quot;
+    &quot;text: TextCommand(text='\\n\\n', location=('test0.w', 7))\n&quot;
+    &quot;begin_code: NamedChunk(name='some code', seq=1, commands=[CodeCommand(text='\\ndef fastExp(n, p):\\n    r = 1\\n    while p &gt; 0:\\n        if p%2 == 1: return n*fastExp(n,p-1)\\n    return n*n*fastExp(n,p/2)\\n\\nfor i in range(24):\\n    fastExp(2,i)\\n', location=('test0.w', 10))], options=[], def_names=[], initial=True, comment_start=None, comment_end=None, references=0, referencedBy=None, logger=&lt;Logger Chunk (INFO)&gt;)\n&quot;
+    &quot;code: CodeCommand(text='\\ndef fastExp(n, p):\\n    r = 1\\n    while p &gt; 0:\\n        if p%2 == 1: return n*fastExp(n,p-1)\\n    return n*n*fastExp(n,p/2)\\n\\nfor i in range(24):\\n    fastExp(2,i)\\n', location=('test0.w', 10))\n&quot;
+    &quot;end_code: NamedChunk(name='some code', seq=1, commands=[CodeCommand(text='\\ndef fastExp(n, p):\\n    r = 1\\n    while p &gt; 0:\\n        if p%2 == 1: return n*fastExp(n,p-1)\\n    return n*n*fastExp(n,p/2)\\n\\nfor i in range(24):\\n    fastExp(2,i)\\n', location=('test0.w', 10))], options=[], def_names=[], initial=True, comment_start=None, comment_end=None, references=0, referencedBy=None, logger=&lt;Logger Chunk (INFO)&gt;)\n&quot;
+    &quot;text: TextCommand(text='\\n&lt;/body&gt;\\n&lt;/html&gt;\\n', location=('test0.w', 19))&quot;
     )
 </pre>
 <!--  -->
@@ -2983,7 +2987,7 @@ div.document { width: 7in; }
 </table>
 <hr class="docutils" />
 <blockquote class="small">
-Created by src/pyweb.py at Sat Jul  2 11:22:22 2022.</blockquote>
+Created by src/pyweb.py at Mon Jul  4 11:43:42 2022.</blockquote>
 <p class="small">Source tests/pyweb_test.w modified Sat Jul  2 09:39:56 2022.</p>
 <blockquote class="small">
 <p>pyweb.__version__ '3.2'.</p>

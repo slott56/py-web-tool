@@ -272,6 +272,7 @@ class TestLaTeX(unittest.TestCase):
  
 class TestHTML(unittest.TestCase):
     def setUp(self) -> None:
+        self.maxDiff = None
         self.weaver = pyweb.Weaver( )
         self.weaver.set_markup("html")
         self.weaver.reference_style = pyweb.SimpleReference() 

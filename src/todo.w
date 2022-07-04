@@ -5,9 +5,6 @@ To Do
 =======
 
 1.  Add a docutils plug-in for PlantUML. See https://gist.github.com/mastbaum/2655700 and https://plantuml.com/docutils.
-
-2.  Create a better ``weave.py`` example that shows how to incorporate bootstrap CSS into HTML overrides.
-    This also requires designing a more easily extended ``Weaver`` class.
     
 #.  Separate TOML-based logging configuration file would be helpful. 
     Must be separate from template configuration.

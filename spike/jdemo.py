@@ -40,6 +40,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 from weakref import ref, ReferenceType
+
 from jinja2 import Environment, DictLoader, select_autoescape
 
 
@@ -100,15 +101,14 @@ rst_weaver_template = dedent("""\
         
     {% endfor %}
     {%- endmacro -%}
-    """
-)
+    """)
 
-rst_overrides_template = dedent("""
-""")
+rst_overrides_template = dedent("""\
+    {# Write override macros here #}
+    """)
 
 base_weaver_template_1 = dedent("""\
-    {%- from 'rst_weaver' import text, begin_code, code, end_code, file_xref, macro_xref, userid_xref, ref, ref_list -%}{#- default macros from rst_weaver -#}
-    {#- from 'rst_overrides' import *the names* -#}{#- customized macros from WEB document -#}
+    {%- from macros import text, begin_code, code, end_code, file_xref, macro_xref, userid_xref, ref, ref_list -%}
     {% for chunk in web.chunks -%}
         {%- if chunk.typeid.OutputChunk or chunk.typeid.NamedChunk -%}{{begin_code(chunk)}}{%- endif -%}
         {% for command in chunk.commands -%}
@@ -122,11 +122,19 @@ base_weaver_template_1 = dedent("""\
         {%- endfor %}
         {%- if chunk.typeid.OutputChunk or chunk.typeid.NamedChunk -%}{{end_code(chunk)}}{%- endif -%}
     {%- endfor %}
-""")
+    """)
 
 base_weaver_template_2 = dedent("""\
-    {%- from 'rst_weaver' import text, begin_code, code, end_code, file_xref, macro_xref, userid_xref, ref, ref_list -%}{#- default macros from rst_weaver -#}
-    {#- from 'rst_overrides' import *the names* -#}{#- customized macros from WEB document -#}
+    {%- from macros import text, begin_code, code, end_code, file_xref, macro_xref, userid_xref, ref, ref_list -%}
+    {%- if not text is defined %}{%- from defaults import text -%}{%- endif -%}
+    {%- if not begin_code is defined %}{%- from defaults import begin_code -%}{%- endif -%}
+    {%- if not code is defined %}{%- from defaults import code -%}{%- endif -%}
+    {%- if not end_code is defined %}{%- from defaults import end_code -%}{%- endif -%}
+    {%- if not file_xref is defined %}{%- from defaults import file_xref -%}{%- endif -%}
+    {%- if not macro_xref is defined %}{%- from defaults import macro_xref -%}{%- endif -%}
+    {%- if not userid_xref is defined %}{%- from defaults import userid_xref -%}{%- endif -%}
+    {%- if not ref is defined %}{%- from defaults import ref -%}{%- endif -%}
+    {%- if not ref_list is defined %}{%- from defaults import ref_list -%}{%- endif -%}
     {% for chunk in web.chunks -%}
         {%- if chunk.typeid.OutputChunk or chunk.typeid.NamedChunk -%}
             {{begin_code(chunk)}}
@@ -147,7 +155,7 @@ base_weaver_template_2 = dedent("""\
             {%- endfor %}
         {%- endif -%}
     {%- endfor %}
-""")
+    """)
 
 
 @dataclass
@@ -577,17 +585,19 @@ def weave(web):
     env = Environment(
         loader=DictLoader(
             {
-                'rst_weaver': rst_weaver_template,
-                'rst_overrides': rst_overrides_template,
-                'weaver': base_weaver_template_2,
+                'rst_defaults': rst_weaver_template,
+                'rst_macros': rst_overrides_template,
+                'base_weaver': base_weaver_template_2,
             }
         ),
         autoescape=select_autoescape()
     )
     env.filters |= {"quote_rules": rst_quote_rules}
 
-    template = env.get_template("weaver")
-    return template.render(web=web)
+    defaults = env.get_template("rst_defaults")
+    macros = env.get_template("rst_macros")
+    template = env.get_template("base_weaver")
+    return template.render(web=web, macros=macros, defaults=defaults)
 
 
 def test_template_whitespace():

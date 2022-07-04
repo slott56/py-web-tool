@@ -46,8 +46,8 @@ def main(source: Path) -> None:
             permitList=['@@i'],
             tangler_line_numbers=False,
             reference_style=pyweb.SimpleReference(),
-            theTangler=pyweb.TanglerMake(),
             webReader=pyweb.WebReader(),
+            theTangler=pyweb.TanglerMake(),
         )
             
         for action in pyweb.LoadAction(), pyweb.TangleAction():
@@ -103,6 +103,7 @@ Something like the following:
 @{
 class MyHTML(pyweb.Weaver):
     bootstrap_html = dedent("""
+    {%- from 'html_defaults' import text, begin_code, code, end_code, file_xref, macro_xref, userid_xref, ref, ref_list with context -%}
     {%- macro begin_code(chunk) %}
     <div class="card">
       <div class="card-header">
@@ -127,7 +128,7 @@ class MyHTML(pyweb.Weaver):
     
     def __init__(self, output: Path = Path.cwd()) -> None:
         super().__init__(output)
-        self.template_map["html"]["overrides"] = self.bootstrap_html
+        self.template_map = pyweb.Weaver.template_map | {"html_macros": self.bootstrap_html}
 @}
 
 @d weaver.py processing...
@@ -145,8 +146,9 @@ def main(source: Path) -> None:
             permitList=[],
             tangler_line_numbers=False,
             reference_style=pyweb.SimpleReference(),
-            theWeaver=MyHTML(),
             webReader=pyweb.WebReader(),
+            
+            theWeaver=MyHTML(),  # Customize with a specific Weaver subclass
         )
         
         for action in pyweb.LoadAction(), pyweb.WeaveAction():

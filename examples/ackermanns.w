@@ -6,9 +6,6 @@ Ackermann’s Function
 Steven F. Lott
 ==============
 
-..  include:: <isoamsa.txt>
-..	include:: <isopub.txt>
-
 ..  contents::
 
 Definitions

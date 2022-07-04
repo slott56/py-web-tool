@@ -1,6 +1,6 @@
 .. py-web-tool/src/language.w
 
-The **py-web-tool** ``.w`` Markup Language
+The **py-web-tool** Markup Language
 ==========================================
 
 The essence of literate programming is a markup language that includes both code

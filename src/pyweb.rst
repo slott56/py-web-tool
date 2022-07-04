@@ -297,25 +297,61 @@ After downloading, install pyweb "manually" using the provided ``setup.py``.
     
 This will install the ``pyweb`` module.
 
-This depends on 
+This depends on Jinja2 templates. The Jinja components should be installed
+when ``setup.py`` uses ``requirements.txt`` to install the required components.
 
 Using
 =====
 
 **py-web-tool** supports two use cases, `Tangle Source Files`_ and `Weave Documentation`_.
 These are often combined to both tangle and weave an application and it's documentation.
+The work starts with creating a WEB file with documentation and code.
+
+Create WEB File
+----------------
+
+See `The py-web-tool Markup Language`_ for more details on the language.
+For a simple example, we'll use the following WEB file: ``examples/hw.w``.
+
+..  parsed-literal
+
+    ###########
+    Hello World
+    ###########
+    
+    This file has a *small* example.
+    
+    @d The Body Of The Script @{
+    print("Hello, World!")
+    @}
+    
+    The Python module includes a small script.
+    
+    @o hw.py @{
+    @<The Body...@>
+    @}
+
+This example has RST markup document, that includes some ``@d`` and ``@o`` chunks
+to define code blocks. The ``@d`` is the definition of a named chunk, ``The Body Of The Script``.
+The ``@o`` defines an output file to be tangled. This file has a reference to
+the ``The Body Of The Script`` chunk.
+
+When tangling, the code will be used to build the file(s) in the ``@o`` chunk(s).
+In this example, it will write the ``hw.py`` file by tangling the referenced chunk.
+
+When weaving, the ``@d`` and ``@o`` chunks will have some additional RST markup inserted
+into the document. The output file will have a name based on the source WEB document.
+In this case it will be ``hw.rst``.
+
 
 Tangle Source Files
 -------------------
 
 A user initiates this process when they have a complete ``.w`` file that contains 
 a description of source files.  These source files are described with ``@o`` commands
-in the ``.w`` file.
+in the WEB file.
 
 The use case is successful when the source files are produced.
-
-Outside this use case, the user will debug those source files, possibly updating the
-``.w`` file.  This will lead to a need to restart this use case.
 
 The use case is a failure when the source files cannot be produced, due to 
 errors in the ``.w`` file.  These must be corrected based on information in log messages.
@@ -324,22 +360,20 @@ A typical command to tangle (without weaving) is:
 
 ..  parsed-literal::
 
-    python -m pyweb -xw *theFile*.w
+    python -m pyweb -xw examples/hw.w -o examples
 
 The outputs will be defined by the ``@o`` commands in the source.
+The ``-o`` option writes the resulting tangled files to the named directory.
 
 Weave Documentation
 -------------------
 
 A user initiates this process when they have a ``.w`` file that contains 
 a description of a document to produce.  The document is described by the entire
-``.w`` file. The default is to use ReSTructured Text (RST) markup.
+WEB file. The default is to use ReSTructured Text (RST) markup.
 The output file will have the ``.rst`` suffix. 
 
 The use case is successful when the documentation file is produced.
-
-Outside this use case, the user will edit the documentation file, possibly updating the
-``.w`` file.  This will lead to a need to restart this use case.
 
 The use case is a failure when the documentation file cannot be produced, due to 
 errors in the ``.w`` file.  These must be corrected based on information in log messages.
@@ -348,42 +382,10 @@ A typical command to weave (without tangling) is:
 
 ..  parsed-literal::
 
-    python -m pyweb -xt *theFile*\ .w
+    python -m pyweb -xt examples/hw.w -o examples
     
-The output will be the *theFile*\ ``.rst``.
-
-Tangle, Test, and Weave with Test Results
------------------------------------------
-
-A user initiates this process when they have a ``.w`` file that contains 
-a description of a document to produce.  The document is described by the entire
-``.w`` file.  Further, their final document should include test output 
-from the source files created by the tangle operation.
-
-The use case is successful when the documentation file is produced, including
-current test output.
-
-Outside this use case, the user will edit the documentation file, possibly updating the
-``.w`` file.  This will lead to a need to restart this use case.
-
-The use case is a failure when the documentation file cannot be produced, due to 
-errors in the ``.w`` file.  These must be corrected based on information in log messages.
-
-The use case is a failure when the documentation file does not include current
-test output.
-
-The sequence is as follows:
-
-..  parsed-literal::
-
-    python -m pyweb -xw -pi *theFile*\ .w
-    pytest >\ *aLog*
-    python -m pyweb -xt *theFile*\ .w
-     
-The first step excludes weaving and permits errors on the ``@i`` command.  The ``-pi`` option
-is necessary in the event that the log file does not yet exist.  The second step 
-runs the test, creating a log file.  The third step weaves the final document,
-including the test output.
+The output will be named ``examples/hw.rst``. The ``-o`` option made sure the file
+was written to the ``examples`` directory.
 
 Running **py-web-tool** to Tangle and Weave
 -------------------------------------------
@@ -393,10 +395,11 @@ you do the following:
 
 ..  parsed-literal::
 
-    python -m pyweb *theFile*\ .w
+    python -m pyweb examples/hw.w -o examples
 
-This will tangle the ``@o`` commands in each *theFile*.
-It will also weave the output, and create *theFile*.rst.
+This will tangle the ``@o`` commands in ``examples/hw.w``
+It will also weave the output, and create ``examples/hw.rst``.
+This can be processed by docutils to create an HTML file.
 
 Command Line Options
 ~~~~~~~~~~~~~~~~~~~~~
@@ -415,7 +418,7 @@ Currently, the following command line options are accepted.
 
 :-w\ *weaver*:
     Choose a particular documentation weaver template. Currently the choices
-    are RST and HTML.
+    are ``rst``, ``tex``, and ``html``.
 
 :-xw:
     Exclude weaving.  This does tangling of source program files only.
@@ -465,15 +468,94 @@ Dependencies
 
 **py-web-tool** requires Python 3.10 or newer.
 
+It uses Jinja2 for template processing.
+
 If you create RST output, you'll want to use ``docutils`` to translate
 the RST to HTML or LaTeX or any of the other formats supported by docutils.
+This is not a proper requirement to use the tool; it's a common
+part of an overall document production tool-chain.
 
 Tools like ``pytest`` and ``tox`` are also used for development.
+
+More Advanced Usage
+===================
+
+Here are two more advanced use cases.
+
+Tangle, Test, and Weave with Test Results
+-----------------------------------------
+
+A user initiates this process when the final document should include test output 
+from the source files created by the tangle operation. This is an extension to 
+the example shown earlier.
+
+..  parsed-literal::
+
+    ###########
+    Hello World
+    ###########
+    
+    This file has a *small* example.
+    
+    @d The Body Of The Script @{
+    print("Hello, World!")
+    @}
+    
+    The Python module includes a small script.
+    
+    @o hw.py @{
+    @<The Body...@>
+    @}
+       
+    Example Output
+    ==============
+    
+    @i examples/hw_output.log 
+
+
+The use case is successful when the documentation file is produced, including
+current test output.
+
+The use case is a failure when the documentation file cannot be produced, due to 
+errors in the ``.w`` file.  These must be corrected based on information in log messages.
+
+The use case is a failure when the documentation file does not include current
+test output.
+
+The sequence is as follows:
+
+..  parsed-literal::
+
+    python -m pyweb -xw -pi examples/hw.w -o examples
+    python examples/hw.py >examples/hw_output.log
+    python -m pyweb -xt examples/hw.w -o examples
+     
+The first step uses ``-xw`` to excludes document weaving.
+The ``-pi`` option will permits errors on the ``@i`` command. 
+This is necessary in the event that the log file does not yet exist. 
+
+The second step runs the test, creating a log file.  
+
+The third step weaves the final document, including the test output file.
+The ``-xt`` option excludes tangling, since output file had already been produced.
+
+
+Template Changes
+----------------
+
+The woven document is based -- primarily -- on the text in the source WEB file.
+This is processed using a small set of Jinja2 macros to modify behavior.
+To fine-tune the results, we can adjust the templates used by this application.
+
+The easiest way to do this is to work with the ``weave.py`` script which shows
+how to create a customized subclass of ``Weaver``. 
+The `Handy Scripts and Other Files`_ section shows this script and how it's build
+from a few ``pyweb`` components.
 
 
 .. py-web-tool/src/language.w
 
-The **py-web-tool** ``.w`` Markup Language
+The **py-web-tool** Markup Language
 ==========================================
 
 The essence of literate programming is a markup language that includes both code
@@ -2040,10 +2122,10 @@ The Weaver is a **Facade** that wraps Jinja template processing.
     
     class Weaver(Emitter):
         template\_map = {
-            "debug": {"default": debug\_weaver\_template, "overrides": ""},
-            "rst": {"default": rst\_weaver\_template, "overrides": rst\_overrides\_template},
-            "html": {"default": html\_weaver\_template, "overrides": html\_overrides\_template},
-            "tex": {"default": latex\_weaver\_template, "overrides": ""},
+            "debug\_defaults": debug\_weaver\_template, "debug\_macros": "",
+            "rst\_defaults": rst\_weaver\_template, "rst\_macros": rst\_overrides\_template,
+            "html\_defaults": html\_weaver\_template, "html\_macros": html\_overrides\_template,
+            "tex\_defaults": latex\_weaver\_template, "tex\_macros": tex\_overrides\_template,
         }
             
         quote\_rules = {
@@ -2073,7 +2155,7 @@ The Weaver is a **Facade** that wraps Jinja template processing.
         def generate\_text(self, web: Web) -> Iterator[str]:
             self.env = Environment(
                 loader=DictLoader(
-                    self.template\_map[self.markup] \|
+                    self.template\_map \| 
                     {'base\_weaver': base\_template,}
                 ),
                 autoescape=select\_autoescape()
@@ -2081,8 +2163,10 @@ The Weaver is a **Facade** that wraps Jinja template processing.
             self.env.filters \|= {
                 "quote\_rules": self.quote\_rules[self.markup]
             }
+            defaults = self.env.get\_template(f"{self.markup}\_defaults")
+            macros = self.env.get\_template(f"{self.markup}\_macros")
             template = self.env.get\_template("base\_weaver")
-            yield from template.generate(web=web)
+            return template.generate(web=web, macros=macros, defaults=defaults)
 
 ..
 
@@ -2434,6 +2518,10 @@ Common alternatives include ``listings`` and ``minted``.
         \\\\end{itemize}
         {% endmacro -%}
         """)
+    
+    tex\_overrides\_template = dedent("""\\
+        """)
+    
 
 ..
 
@@ -2451,8 +2539,15 @@ Common alternatives include ``listings`` and ``minted``.
 
     
     base\_template = dedent("""\\
-        {%- from 'default' import text, begin\_code, code, end\_code, file\_xref, macro\_xref, userid\_xref, ref, ref\_list -%}{#- default macros from rst\_weaver -#}
-        {#- from 'overrides' import \*the names\* -#}{#- customized macros from WEB document -#}
+        {%- from macros import text, begin\_code, code, ref, end\_code, file\_xref, macro\_xref, userid\_xref -%}
+        {%- if not text is defined %}{%- from defaults import text -%}{%- endif -%}
+        {%- if not begin\_code is defined %}{%- from defaults import begin\_code -%}{%- endif -%}
+        {%- if not code is defined %}{%- from defaults import code -%}{%- endif -%}
+        {%- if not ref is defined %}{%- from defaults import ref -%}{%- endif -%}
+        {%- if not end\_code is defined %}{%- from defaults import end\_code -%}{%- endif -%}
+        {%- if not file\_xref is defined %}{%- from defaults import file\_xref -%}{%- endif -%}
+        {%- if not macro\_xref is defined %}{%- from defaults import macro\_xref -%}{%- endif -%}
+        {%- if not userid\_xref is defined %}{%- from defaults import userid\_xref -%}{%- endif -%}
         {% for chunk in web.chunks -%}
             {%- if chunk.type\_is('OutputChunk') or chunk.type\_is('NamedChunk') -%}
                 {{begin\_code(chunk)}}
@@ -5397,7 +5492,7 @@ source files.
     3.2'.
     ### From source 
     impl.w modified 
-    Sun Jul  3 13:00:58 2022.
+    Mon Jul  4 15:36:20 2022.
     ### In working directory '
     /Users/slott/Documents/Projects/py-web-tool/src'.
 
@@ -5515,8 +5610,8 @@ Note the general flow of this top-level script.
                 permitList=['@i'],
                 tangler\_line\_numbers=False,
                 reference\_style=pyweb.SimpleReference(),
-                theTangler=pyweb.TanglerMake(),
                 webReader=pyweb.WebReader(),
+                theTangler=pyweb.TanglerMake(),
             )
                 
             for action in pyweb.LoadAction(), pyweb.TangleAction():
@@ -5575,6 +5670,8 @@ A customized weaver generally has three parts.
     import logging
     import string
     from pathlib import Path
+    from textwrap import dedent
+    
     import pyweb
 
 ..
@@ -5605,7 +5702,33 @@ Something like the following:
 
     
     class MyHTML(pyweb.Weaver):
-        pass
+        bootstrap\_html = dedent("""
+        {%- from 'html\_defaults' import text, begin\_code, code, end\_code, file\_xref, macro\_xref, userid\_xref, ref, ref\_list with context -%}
+        {%- macro begin\_code(chunk) %}
+        <div class="card">
+          <div class="card-header">
+            <a type="button" class="btn btn-primary" name="pyweb\_{{chunk.seq}}"></a>
+            <!--line number {{chunk.location}}-->
+            <p class="small"><em>{{chunk.full\_name or chunk.name}} ({{chunk.seq}})</em> {% if chunk.initial %}={% else %}+={% endif %}</p>
+           </div>
+          <div class="card-body">
+            <pre><code>
+        {%- endmacro -%}
+    
+        {%- macro end\_code(chunk) %}
+            </code></pre>
+          </div>
+        <div class="card-footer">
+          <p>&#8718; <em>{{chunk.full\_name or chunk.name}} ({{chunk.seq}})</em>.
+          </p> 
+        </div>
+        </div>
+        {% endmacro -%}
+        """)
+        
+        def \_\_init\_\_(self, output: Path = Path.cwd()) -> None:
+            super().\_\_init\_\_(output)
+            self.template\_map = pyweb.Weaver.template\_map \| {"html\_macros": self.bootstrap\_html}
 
 ..
 
@@ -5635,8 +5758,9 @@ Something like the following:
                 permitList=[],
                 tangler\_line\_numbers=False,
                 reference\_style=pyweb.SimpleReference(),
-                theWeaver=MyHTML(),
                 webReader=pyweb.WebReader(),
+                
+                theWeaver=MyHTML(),  # Customize with a specific Weaver subclass
             )
             
             for action in pyweb.LoadAction(), pyweb.WeaveAction():
@@ -5662,9 +5786,6 @@ To Do
 =======
 
 1.  Add a docutils plug-in for PlantUML. See https://gist.github.com/mastbaum/2655700 and https://plantuml.com/docutils.
-
-2.  Create a better ``weave.py`` example that shows how to incorporate bootstrap CSS into HTML overrides.
-    This also requires designing a more easily extended ``Weaver`` class.
     
 #.  Separate TOML-based logging configuration file would be helpful. 
     Must be separate from template configuration.
@@ -5713,7 +5834,10 @@ Changes for 3.2
     we can incorporate list-processing ``{% for %}...{% endfor %}`` construct that 
     pushes some processing into the template.
 
--   Remove ``'\N{LOZENGE}'`` (borrowed from Interscript) and use the ``'\N{END OF PROOF}'`` symbol instead.
+-   Removed ``'\N{LOZENGE}'`` (borrowed from Interscript) and use the ``'\N{END OF PROOF}'`` symbol instead.
+
+-   Created a better ``weave.py`` example that shows how to incorporate bootstrap CSS into HTML overrides.
+    This also requires designing a more easily extended ``Weaver`` class.
 
 Changes for 3.1
 
@@ -6216,7 +6340,7 @@ User Identifiers
 
 ..	class:: small
 
-	Created by pyweb.py at Sun Jul  3 13:07:50 2022.
+	Created by pyweb.py at Mon Jul  4 17:12:00 2022.
 
     Source pyweb.w modified Sun Jul  3 13:07:49 2022.
 

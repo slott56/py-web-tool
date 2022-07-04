@@ -24,7 +24,7 @@ doc : src/pyweb.html
 
 build : src/pyweb.py src/tangle.py src/weave.py src/pyweb.html tests/pyweb_test.rst
 
-examples : examples/hello_world_latex.tex examples/hello_world_rst.html examples/ackermanns.html
+examples : examples/hello_world_latex.tex examples/hello_world_rst.html examples/ackermanns.html examples/hw.html
 
 src/pyweb.py src/pyweb.rst : $(SOURCE_PYLPWEB)
 	cd src && python3 pyweb.py pyweb.w 
@@ -39,19 +39,26 @@ tests/pyweb_test.html : tests/pyweb_test.rst $(DOCUTILS_PYLPWEB)
 	rst2html.py $< $@
 
 examples/hello_world_rst.rst : examples/hello_world_rst.w
-	python3 src/pyweb.py -w rst examples/hello_world_rst.w -o examples
+	python3 src/pyweb.py -w rst $< -o examples
 
 examples/hello_world_rst.html : examples/hello_world_rst.rst $(DOCUTILS_PYLPWEB)
 	rst2html.py $< $@
 
 examples/hello_world_latex.tex : examples/hello_world_latex.w
-	python3 src/pyweb.py -w latex examples/hello_world_latex.w -o examples
+	python3 src/pyweb.py -w latex $< -o examples
 
 examples/ackermanns.rst : examples/ackermanns.w
-	python3 src/pyweb.py -w rst examples/ackermanns.w -o examples
+	python3 src/pyweb.py -w rst $< -o examples
 	python -m doctest examples/ackermanns.py
 
 examples/ackermanns.html : examples/ackermanns.rst $(DOCUTILS_PYLPWEB)
+	rst2html.py $< $@
+
+examples/hw.rst : examples/hw.w
+	python3 src/pyweb.py -pi -w rst $< -o examples
+	python3 examples/hw.py >examples/hw_output.log
+
+examples/hw.html : examples/hw.rst $(DOCUTILS_PYLPWEB)
 	rst2html.py $< $@
 
 diagrams : $(SOURCE_DIAGRAMS)

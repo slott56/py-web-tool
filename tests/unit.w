@@ -410,6 +410,7 @@ We'll examine a few features of the HTML templates.
 @d Unit Test of HTML subclass... @{ 
 class TestHTML(unittest.TestCase):
     def setUp(self) -> None:
+        self.maxDiff = None
         self.weaver = pyweb.Weaver( )
         self.weaver.set_markup("html")
         self.weaver.reference_style = pyweb.SimpleReference() 

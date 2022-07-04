@@ -6,9 +6,6 @@ Test Program
 Jason R. Fruit
 ===============
 
-..  include:: <isoamsa.txt>
-..	include:: <isopub.txt>
-
 ..  contents::
 
 
@@ -32,43 +29,45 @@ This document contains the makings of two files; the first,
 message:
 
 
-..  _`1`:
+..  _`hw_rst_1.py (1)`:
 ..  rubric:: hw_rst_1.py (1) =
 ..  parsed-literal::
     :class: code
 
     
-    |srarr|\ Import the os module (`3`_)
-    |srarr|\ Get the OS description (`4`_)
-    |srarr|\ Construct the message with Concatenation (`5`_)
-    |srarr|\ Print the message (`7`_)
+    →\ `Import the os module (3)`_    
+    →\ `Get the OS description (4)`_    
+    →\ `Construct the message with Concatenation (5)`_    
+    →\ `Print the message (7)`_    
 
 ..
 
-    ..  class:: small
+..  class:: small
 
-        |loz| *hw_rst_1.py (1)*.
+    ∎ *hw_rst_1.py (1)*
+
 
 
 The second uses string substitution:
 
 
-..  _`2`:
+..  _`hw_rst_2.py (2)`:
 ..  rubric:: hw_rst_2.py (2) =
 ..  parsed-literal::
     :class: code
 
     
-    |srarr|\ Import the os module (`3`_)
-    |srarr|\ Get the OS description (`4`_)
-    |srarr|\ Construct the message with Substitution (`6`_)
-    |srarr|\ Print the message (`7`_)
+    →\ `Import the os module (3)`_    
+    →\ `Get the OS description (4)`_    
+    →\ `Construct the message with Substitution (6)`_    
+    →\ `Print the message (7)`_    
 
 ..
 
-    ..  class:: small
+..  class:: small
 
-        |loz| *hw_rst_2.py (2)*.
+    ∎ *hw_rst_2.py (2)*
+
 
 
 Retrieving the OS description
@@ -77,7 +76,7 @@ Retrieving the OS description
 First we must import the os module so we can learn about the OS:
 
 
-..  _`3`:
+..  _`Import the os module (3)`:
 ..  rubric:: Import the os module (3) =
 ..  parsed-literal::
     :class: code
@@ -87,15 +86,16 @@ First we must import the os module so we can learn about the OS:
 
 ..
 
-    ..  class:: small
+..  class:: small
 
-        |loz| *Import the os module (3)*. Used by: hw_rst_1.py (`1`_); hw_rst_2.py (`2`_)
+    ∎ *Import the os module (3)*
+
 
 
 That having been done, we can retrieve Python's name for the OS type:
 
 
-..  _`4`:
+..  _`Get the OS description (4)`:
 ..  rubric:: Get the OS description (4) =
 ..  parsed-literal::
     :class: code
@@ -105,9 +105,10 @@ That having been done, we can retrieve Python's name for the OS type:
 
 ..
 
-    ..  class:: small
+..  class:: small
 
-        |loz| *Get the OS description (4)*. Used by: hw_rst_1.py (`1`_); hw_rst_2.py (`2`_)
+    ∎ *Get the OS description (4)*
+
 
 
 Building the message
@@ -116,7 +117,7 @@ Building the message
 Now, we're ready for the meat of the application: concatenating two strings:
 
 
-..  _`5`:
+..  _`Construct the message with Concatenation (5)`:
 ..  rubric:: Construct the message with Concatenation (5) =
 ..  parsed-literal::
     :class: code
@@ -126,16 +127,17 @@ Now, we're ready for the meat of the application: concatenating two strings:
 
 ..
 
-    ..  class:: small
+..  class:: small
 
-        |loz| *Construct the message with Concatenation (5)*. Used by: hw_rst_1.py (`1`_)
+    ∎ *Construct the message with Concatenation (5)*
+
 
 
 But wait!  Is there a better way?  Using string substitution might be
 better:
 
 
-..  _`6`:
+..  _`Construct the message with Substitution (6)`:
 ..  rubric:: Construct the message with Substitution (6) =
 ..  parsed-literal::
     :class: code
@@ -145,9 +147,10 @@ better:
 
 ..
 
-    ..  class:: small
+..  class:: small
 
-        |loz| *Construct the message with Substitution (6)*. Used by: hw_rst_2.py (`2`_)
+    ∎ *Construct the message with Substitution (6)*
+
 
 
 We'll use the first of these methods in ``rst_test_1.py``, and the
@@ -161,7 +164,7 @@ cheery greeting will make them happy to know what operating system
 they have:
 
 
-..  _`7`:
+..  _`Print the message (7)`:
 ..  rubric:: Print the message (7) =
 ..  parsed-literal::
     :class: code
@@ -171,7 +174,8 @@ they have:
 
 ..
 
-    ..  class:: small
+..  class:: small
 
-        |loz| *Print the message (7)*. Used by: hw_rst_1.py (`1`_); hw_rst_2.py (`2`_)
+    ∎ *Print the message (7)*
+
 

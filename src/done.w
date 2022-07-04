@@ -14,7 +14,10 @@ Changes for 3.2
     we can incorporate list-processing ``{% for %}...{% endfor %}`` construct that 
     pushes some processing into the template.
 
--   Remove ``'\N{LOZENGE}'`` (borrowed from Interscript) and use the ``'\N{END OF PROOF}'`` symbol instead.
+-   Removed ``'\N{LOZENGE}'`` (borrowed from Interscript) and use the ``'\N{END OF PROOF}'`` symbol instead.
+
+-   Created a better ``weave.py`` example that shows how to incorporate bootstrap CSS into HTML overrides.
+    This also requires designing a more easily extended ``Weaver`` class.
 
 Changes for 3.1
 
