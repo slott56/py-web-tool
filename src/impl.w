@@ -697,6 +697,29 @@ class Emitter(abc.ABC):
 
 The Weaver is a **Facade** that wraps Jinja template processing.
 
+We have an interesting wrinkle with RST-formatted output. There are two variants:
+
+- When used with Sphinx, the "small" caption at the end of a code block uses ``..  rst-class::``.
+
+- When used without Sphinx, i.e., native docutils, the the "small" caption at the end of a code block uses ``..  class::``.
+
+This is a minor change to the template being used. The question is how to make that distinction
+in the weaver? One view is to use subclasses of :py:class:`Weaver` for this.
+However, we really use the ``template_map`` within the weaver for this.
+The ``--weaver`` command-line option provides a string like ``rst`` or ``html`` that is
+part of the key into the template map. We expand this into ``rst_macros`` or ``html_macros``.
+
+We can, therefore, provide an expanded set of names for RST processing.
+
+- ``rst`` is the Sphinx option.
+
+- ``rst-sphinx`` is an alias for ``rst``.
+
+- ``rst-nosphinx`` is the "pure-docutils" version, using ``.. class::``.
+
+- ``rst-docutils`` is an alias for the nosphinx option.
+
+
 @d Weaver Subclass...
 @{
 @<Debug Templates -- these display debugging information@>
@@ -715,6 +738,11 @@ class Weaver(Emitter):
         "rst_defaults": rst_weaver_template, "rst_macros": rst_overrides_template,
         "html_defaults": html_weaver_template, "html_macros": html_overrides_template,
         "tex_defaults": latex_weaver_template, "tex_macros": tex_overrides_template,
+
+        "rst-sphinx_defaults": rst_weaver_template, "rst-sphinx_macros": rst_overrides_template, 
+        "rst-nosphinx_defaults": rst_weaver_template, "rst-nosphinx_macros": rst_nosphinx_template, 
+        "rst-docutils_defaults": rst_weaver_template, "rst-docutils_macros": rst_nosphinx_template, 
+
     }
         
     quote_rules = {
@@ -896,12 +924,13 @@ rst_weaver_template = dedent("""
     {%- macro code(command) %}{% for line in command.text.splitlines() %}    {{line | quote_rules}}
     {% endfor -%}{% endmacro -%}
     
-    {%- macro ref(id) %}    \N{RIGHTWARDS ARROW}\ `{{id.full_name}} ({{id.seq}})`_{% endmacro -%}
+    {%- macro ref(id) %}    \N{RIGHTWARDS ARROW} `{{id.full_name}} ({{id.seq}})`_{% endmacro -%}
     
+    {# When using Sphinx, this *could* be rst-class::, pure docutils uses container::#}
     {%- macro end_code(chunk) %}
     ..
     
-    ..  class:: small
+    ..  container:: small
     
         \N{END OF PROOF} *{{chunk.full_name or chunk.name}} ({{chunk.seq}})*
         
@@ -910,14 +939,14 @@ rst_weaver_template = dedent("""
     {%- macro file_xref(command) -%}
     {% for file in command.files -%}
     :{{file.name}}:
-        \N{RIGHTWARDS ARROW}\ `{{file.name}} ({{file.seq}})`_
+        \N{RIGHTWARDS ARROW} `{{file.name}} ({{file.seq}})`_
     {%- endfor %}
     {%- endmacro -%}
     
     {%- macro macro_xref(command) -%}
     {% for macro in command.macros -%}
     :{{macro.full_name}}:
-        {% for d in macro.def_list -%}\N{RIGHTWARDS ARROW}\ `{{d.full_name or d.name}} ({{d.seq}})`_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
+        {% for d in macro.def_list -%}\N{RIGHTWARDS ARROW} `{{d.full_name or d.name}} ({{d.seq}})`_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
         
     {% endfor %}
     {%- endmacro -%}
@@ -925,13 +954,24 @@ rst_weaver_template = dedent("""
     {%- macro userid_xref(command) -%}
     {% for userid in command.userids -%}
     :{{userid.userid}}:
-        {% for r in userid.ref_list -%}\N{RIGHTWARDS ARROW}\ `{{r.full_name or r.name}} ({{r.seq}})`_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
+        {% for r in userid.ref_list -%}\N{RIGHTWARDS ARROW} `{{r.full_name or r.name}} ({{r.seq}})`_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
         
     {% endfor %}
     {%- endmacro -%}
     """)
 
 rst_overrides_template = dedent("""\
+    """)
+    
+rst_nosphinx_template = dedent("""\
+    {%- macro end_code(chunk) %}
+    ..
+    
+    ..  class:: small
+    
+        \N{END OF PROOF} *{{chunk.full_name or chunk.name}} ({{chunk.seq}})*
+        
+    {% endmacro -%}
     """)
 @}
 

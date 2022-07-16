@@ -15,14 +15,45 @@ This application breaks the overall problem of literate programming into the fol
 
 Here's the overall Context Diagram for this.
 
-..  image:: context.png
+..  uml:: 
+
+    left to right direction
+    skinparam actorStyle awesome
+    
+    actor "Developer" as Dev
+    rectangle PyWeb {
+        usecase "Tangle Source" as UC_Tangle
+        usecase "Weave Document" as UC_Weave
+    }
+    rectangle IDE {
+        usecase "Create WEB" as UC_Create
+        usecase "Run Tests" as UC_Test
+    }
+    Dev --> UC_Tangle
+    Dev --> UC_Weave
+    Dev --> UC_Create
+    Dev --> UC_Test
+    
+    UC_Test --> UC_Tangle
+
 
 Since this runs as part of an Development
 Environment, the container is the developer's desktop.
 
 Here's a summary of the components.
 
-..  image:: components.png
+..  uml::
+
+    component pyweb
+    component jinja
+    pyweb ..> jinja
+    
+    component weave
+    weave ..> pyweb
+    
+    component tangle
+    tangle ..> pyweb
+
 
 The ``weave`` and ``tangle`` are convenient
 scripts that invoke the underlying ``pyweb`` application.
@@ -48,10 +79,49 @@ Core WEB Representation
 
 
 The basic structure has three layers, as shown in the following diagram:
-
-..  image:: code_model.png
-    :width: 6in
- 
+    
+..  uml:: 
+    
+    class Web
+    class Chunk
+    abstract class Command
+    
+    Web *-- "1..*" Chunk
+    Chunk *-- "1..*" Command
+    
+    class CodeChunk
+    Chunk <|-- CodeChunk
+    
+    class NamedChunk 
+    Chunk <|-- NamedChunk
+    
+    class OutputChunk
+    Chunk <|-- OutputChunk
+    
+    class NamedCodeChunk 
+    Chunk <|-- NamedCodeChunk
+    
+    class TextCommand
+    Command <|-- TextCommand
+    
+    class CodeCommand
+    Command <|-- CodeCommand
+    
+    class ReferenceCommand
+    Command <|-- ReferenceCommand
+    
+    class XRefCommand
+    Command <|-- XRefCommand
+    
+    class FileXRefCommand
+    XRefCommand <|-- FileXRefCommand
+    
+    class MacroXRefCommand
+    XRefCommand <|-- MacroXRefCommand
+    
+    class UseridXRefCommand
+    XRefCommand <|-- UseridXRefCommand
+     
 The source document is transformed into a ``Web``, 
 which is the overall container. The source is
 decomposed into a sequence of ``Chunk`` instances.  Each ``Chunk`` is a sequence
@@ -78,7 +148,23 @@ based in the context in which a ``@@< name @@>`` reference occurs.
 Reading and Parsing
 --------------------
 
-..  image:: code_parser.png
+..  uml::
+
+    class Web
+    class WebReader {
+        parse : Web
+    }
+    WebReader ..> Web
+    class Tokenizer 
+    WebReader ..> Tokenizer
+    
+    class OptionParser
+    
+    class OptionDef
+    
+    OptionParser *-- OptionDef
+    
+    WebReader ..> OptionParser
 
 A solution to the reading and parsing problem depends on a convenient 
 tool for breaking up the input stream and a representation for the chunks of input 
@@ -131,7 +217,33 @@ There are two possible outputs:
 
 The overall structure of the classes is shown in the following diagram.
 
-..  image:: code_emitter.png
+..  uml::
+    
+    class Web
+    
+    abstract class Emitter {
+        emit(web)
+    }
+    
+    Emitter ..> Web
+    
+    class Weaver
+    Emitter <|-- Weaver
+    
+    class Tangler
+    Emitter <|-- Tangler
+    
+    class TanglerMake
+    Tangler <|-- TanglerMake
+    
+    abstract class ReferenceStyle
+    Weaver --> ReferenceStyle
+    
+    class Simple
+    ReferenceStyle <|-- Simple
+    
+    class Transitive
+    ReferenceStyle <|-- Transitive
 
 We'll look at weaving first, then tangling.
 
@@ -209,6 +321,25 @@ The overall application has the following layers to it:
 The idea is that the Weaver Action should be visible to tools like `PyInvoke <https://docs.pyinvoke.org/en/stable/index.html>`_.
 We want ``Weave("someFile.w")`` to be a sensible task.  
 
-..  image:: code_application.png
+..  uml::
+
+    abstract class Action
+    
+    class ActionSequence
+    Action <|-- ActionSequence
+    ActionSequence *-- "2..m" Action
+    
+    class LoadAction
+    Action <|-- LoadAction
+    
+    class WeaveAction
+    Action <|-- WeaveAction
+    
+    class TangleAction
+    Action <|-- TangleAction
+    
+    class Application
+    
+    Application *-- Action
 
 This shows the essential structure of the top-level classes.
