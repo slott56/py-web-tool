@@ -1,4 +1,4 @@
-@startuml context.jpg
+@startuml context.png
 left to right direction
 skinparam actorStyle awesome
 
@@ -19,7 +19,7 @@ Dev --> UC_Test
 UC_Test --> UC_Tangle
 @enduml
 
-@startuml components.jpg
+@startuml components.png
 component pyweb
 component jinja
 pyweb ..> jinja
@@ -31,7 +31,7 @@ component tangle
 tangle ..> pyweb
 @enduml
 
-@startuml code_model.jpg
+@startuml code_model.png
 class Web
 class Chunk
 abstract class Command
@@ -73,7 +73,7 @@ class UseridXRefCommand
 XRefCommand <|-- UseridXRefCommand
 @enduml
 
-@startuml code_emitter.jpg
+@startuml code_emitter.png
 class Web
 
 abstract class Emitter {
@@ -101,7 +101,7 @@ class Transitive
 ReferenceStyle <|-- Transitive
 @enduml
 
-@startuml code_parser.jpg
+@startuml code_parser.png
 class Web
 class WebReader {
     parse : Web
@@ -119,7 +119,7 @@ OptionParser *-- OptionDef
 WebReader ..> OptionParser
 @enduml
 
-@startuml code_application.jpg
+@startuml code_application.png
 abstract class Action
 
 class ActionSequence
