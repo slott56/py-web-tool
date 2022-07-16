@@ -924,7 +924,7 @@ rst_weaver_template = dedent("""
     {%- macro code(command) %}{% for line in command.text.splitlines() %}    {{line | quote_rules}}
     {% endfor -%}{% endmacro -%}
     
-    {%- macro ref(id) %}    \N{RIGHTWARDS ARROW}\ `{{id.full_name}} ({{id.seq}})`_{% endmacro -%}
+    {%- macro ref(id) %}    \N{RIGHTWARDS ARROW} `{{id.full_name}} ({{id.seq}})`_{% endmacro -%}
     
     {# When using Sphinx, this *could* be rst-class::, pure docutils uses container::#}
     {%- macro end_code(chunk) %}
@@ -939,14 +939,14 @@ rst_weaver_template = dedent("""
     {%- macro file_xref(command) -%}
     {% for file in command.files -%}
     :{{file.name}}:
-        \N{RIGHTWARDS ARROW}\ `{{file.name}} ({{file.seq}})`_
+        \N{RIGHTWARDS ARROW} `{{file.name}} ({{file.seq}})`_
     {%- endfor %}
     {%- endmacro -%}
     
     {%- macro macro_xref(command) -%}
     {% for macro in command.macros -%}
     :{{macro.full_name}}:
-        {% for d in macro.def_list -%}\N{RIGHTWARDS ARROW}\ `{{d.full_name or d.name}} ({{d.seq}})`_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
+        {% for d in macro.def_list -%}\N{RIGHTWARDS ARROW} `{{d.full_name or d.name}} ({{d.seq}})`_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
         
     {% endfor %}
     {%- endmacro -%}
@@ -954,7 +954,7 @@ rst_weaver_template = dedent("""
     {%- macro userid_xref(command) -%}
     {% for userid in command.userids -%}
     :{{userid.userid}}:
-        {% for r in userid.ref_list -%}\N{RIGHTWARDS ARROW}\ `{{r.full_name or r.name}} ({{r.seq}})`_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
+        {% for r in userid.ref_list -%}\N{RIGHTWARDS ARROW} `{{r.full_name or r.name}} ({{r.seq}})`_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
         
     {% endfor %}
     {%- endmacro -%}

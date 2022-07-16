@@ -1499,11 +1499,11 @@ the structure and meaning of a ``.w`` source file.
     :class: code
 
     
-    →\ `Command class hierarchy -- used to describe individual commands in a chunk (6)`_    
+    → `Command class hierarchy -- used to describe individual commands in a chunk (6)`_    
     
-    →\ `Chunk class hierarchy -- used to describe individual chunks (4)`_    
+    → `Chunk class hierarchy -- used to describe individual chunks (4)`_    
     
-    →\ `Web class -- describes the overall "web" of chunks (3)`_    
+    → `Web class -- describes the overall "web" of chunks (3)`_    
 
 ..
 
@@ -2169,17 +2169,17 @@ The reference class definitions are used by by the ``Emitter`` class, and needs 
     :class: code
 
     
-    →\ `Reference class hierarchy - strategies for weaving references to a chunk (23)`_     
+    → `Reference class hierarchy - strategies for weaving references to a chunk (23)`_     
     
-    →\ `Emitter Superclass (10)`_    
+    → `Emitter Superclass (10)`_    
     
-    →\ `Quoting rule definitions -- functions used by templates (12)`_     
+    → `Quoting rule definitions -- functions used by templates (12)`_     
     
-    →\ `Weaver Subclass -- Uses Jinja templates to weave documentation (11)`_    
+    → `Weaver Subclass -- Uses Jinja templates to weave documentation (11)`_    
     
-    →\ `Tangler Subclass -- emits the output files (18)`_     
+    → `Tangler Subclass -- emits the output files (18)`_     
     
-    →\ `TanglerMake Subclass -- extends Tangler to avoid touching files that didn't change (22)`_    
+    → `TanglerMake Subclass -- extends Tangler to avoid touching files that didn't change (22)`_    
 
 ..
 
@@ -2264,15 +2264,15 @@ We can, therefore, provide an expanded set of names for RST processing.
     :class: code
 
     
-    →\ `Debug Templates -- these display debugging information (13)`_    
+    → `Debug Templates -- these display debugging information (13)`_    
     
-    →\ `RST Templates -- the default weave output (14)`_    
+    → `RST Templates -- the default weave output (14)`_    
     
-    →\ `HTML Templates -- emit HTML weave output (15)`_     
+    → `HTML Templates -- emit HTML weave output (15)`_     
     
-    →\ `LaTeX Templates -- emit LaTeX weave output (16)`_     
+    → `LaTeX Templates -- emit LaTeX weave output (16)`_     
     
-    →\ `Common base template -- this is used for ALL weaving (17)`_    
+    → `Common base template -- this is used for ALL weaving (17)`_    
     
     class Weaver(Emitter):
         template\_map = {
@@ -2502,7 +2502,7 @@ Note that code lines must be indented when using this markup.
         {%- macro code(command) %}{% for line in command.text.splitlines() %}    {{line \| quote\_rules}}
         {% endfor -%}{% endmacro -%}
         
-        {%- macro ref(id) %}    \\N{RIGHTWARDS ARROW}\\ \`{{id.full\_name}} ({{id.seq}})\`\_{% endmacro -%}
+        {%- macro ref(id) %}    \\N{RIGHTWARDS ARROW} \`{{id.full\_name}} ({{id.seq}})\`\_{% endmacro -%}
         
         {# When using Sphinx, this \*could\* be rst-class::, pure docutils uses container::#}
         {%- macro end\_code(chunk) %}
@@ -2517,14 +2517,14 @@ Note that code lines must be indented when using this markup.
         {%- macro file\_xref(command) -%}
         {% for file in command.files -%}
         :{{file.name}}:
-            \\N{RIGHTWARDS ARROW}\\ \`{{file.name}} ({{file.seq}})\`\_
+            \\N{RIGHTWARDS ARROW} \`{{file.name}} ({{file.seq}})\`\_
         {%- endfor %}
         {%- endmacro -%}
         
         {%- macro macro\_xref(command) -%}
         {% for macro in command.macros -%}
         :{{macro.full\_name}}:
-            {% for d in macro.def\_list -%}\\N{RIGHTWARDS ARROW}\\ \`{{d.full\_name or d.name}} ({{d.seq}})\`\_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
+            {% for d in macro.def\_list -%}\\N{RIGHTWARDS ARROW} \`{{d.full\_name or d.name}} ({{d.seq}})\`\_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
             
         {% endfor %}
         {%- endmacro -%}
@@ -2532,7 +2532,7 @@ Note that code lines must be indented when using this markup.
         {%- macro userid\_xref(command) -%}
         {% for userid in command.userids -%}
         :{{userid.userid}}:
-            {% for r in userid.ref\_list -%}\\N{RIGHTWARDS ARROW}\\ \`{{r.full\_name or r.name}} ({{r.seq}})\`\_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
+            {% for r in userid.ref\_list -%}\\N{RIGHTWARDS ARROW} \`{{r.full\_name or r.name}} ({{r.seq}})\`\_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
             
         {% endfor %}
         {%- endmacro -%}
@@ -2824,10 +2824,10 @@ to the additional parts of the definition.
                     command.tangle(self, target)
                     
         
-    →\ `Emitter write a block of code with proper indents (19)`_    
+    → `Emitter write a block of code with proper indents (19)`_    
     
         
-    →\ `Emitter indent control: set, clear and reset (20)`_    
+    → `Emitter indent control: set, clear and reset (20)`_    
 
 ..
 
@@ -3162,11 +3162,11 @@ There are three tiers to the input parsing:
     :class: code
 
     
-    →\ `Tokenizer class - breaks input into tokens (44)`_    
+    → `Tokenizer class - breaks input into tokens (44)`_    
     
-    →\ `Option Parser class - locates optional values on commands (46)`_    
+    → `Option Parser class - locates optional values on commands (46)`_    
     
-    →\ `WebReader class - parses the input file, building the Web structure (27)`_    
+    → `WebReader class - parses the input file, building the Web structure (27)`_    
 
 ..
 
@@ -3315,19 +3315,19 @@ The class has the following attributes:
             self.errors = 0 
             
             
-    →\ `WebReader command literals (42)`_    
+    → `WebReader command literals (42)`_    
             
         def \_\_str\_\_(self) -> str:
             return self.\_\_class\_\_.\_\_name\_\_
             
         
-    →\ `WebReader location in the input stream (39)`_    
+    → `WebReader location in the input stream (39)`_    
         
         
-    →\ `WebReader load the web (41)`_    
+    → `WebReader load the web (41)`_    
         
         
-    →\ `WebReader handle a command string (28)`_    
+    → `WebReader handle a command string (28)`_    
 
 ..
 
@@ -3383,19 +3383,19 @@ A subclass can override ``handleCommand()`` to
         match token[:2]:
             case self.cmdo:
                 
-    →\ `start an OutputChunk, adding it to the web (29)`_    
+    → `start an OutputChunk, adding it to the web (29)`_    
             case self.cmdd:
                 
-    →\ `start a NamedChunk or NamedDocumentChunk, adding it to the web (30)`_    
+    → `start a NamedChunk or NamedDocumentChunk, adding it to the web (30)`_    
             case self.cmdi:
                 
-    →\ `include another file (31)`_    
+    → `include another file (31)`_    
             case self.cmdrcurl \| self.cmdrbrak:
                 
-    →\ `finish a chunk, start a new Chunk adding it to the web (32)`_    
+    → `finish a chunk, start a new Chunk adding it to the web (32)`_    
             case self.cmdpipe:
                 
-    →\ `assign user identifiers to the current chunk (33)`_    
+    → `assign user identifiers to the current chunk (33)`_    
             case self.cmdf:
                 self.content[-1].commands.append(FileXrefCommand(self.location()))
             case self.cmdm:
@@ -3404,13 +3404,13 @@ A subclass can override ``handleCommand()`` to
                 self.content[-1].commands.append(UserIdXrefCommand(self.location()))
             case self.cmdlangl:
                 
-    →\ `add a reference command to the current chunk (34)`_    
+    → `add a reference command to the current chunk (34)`_    
             case self.cmdlexpr:
                 
-    →\ `add an expression command to the current chunk (36)`_    
+    → `add an expression command to the current chunk (36)`_    
             case self.cmdcmd:
                 
-    →\ `double at-sign replacement, append this character to previous TextCommand (37)`_    
+    → `double at-sign replacement, append this character to previous TextCommand (37)`_    
             case self.cmdlcurl \| self.cmdlbrak:
                 # These should have been consumed as part of @o and @d parsing
                 self.logger.error("Extra %r (possibly missing chunk name) near %r", token, self.location())
@@ -4382,11 +4382,11 @@ that defines the application options, inputs and results.
     :class: code
 
     
-    →\ `Action superclass has common features of all actions (51)`_    
-    →\ `ActionSequence subclass that holds a sequence of other actions (54)`_    
-    →\ `WeaveAction subclass initiates the weave action (57)`_    
-    →\ `TangleAction subclass initiates the tangle action (60)`_    
-    →\ `LoadAction subclass loads the document web (63)`_    
+    → `Action superclass has common features of all actions (51)`_    
+    → `ActionSequence subclass that holds a sequence of other actions (54)`_    
+    → `WeaveAction subclass initiates the weave action (57)`_    
+    → `TangleAction subclass initiates the tangle action (60)`_    
+    → `LoadAction subclass loads the document web (63)`_    
 
 ..
 
@@ -4453,10 +4453,10 @@ An ``Action`` has a number of common attributes.
             return f"{self.name!s} [{self.options.web!s}]"
             
         
-    →\ `Action call method actually does the real work (52)`_    
+    → `Action call method actually does the real work (52)`_    
         
         
-    →\ `Action final summary of what was done (53)`_    
+    → `Action final summary of what was done (53)`_    
     
 
 ..
@@ -4552,10 +4552,10 @@ an ``append()`` method that is used to construct the sequence of actions.
             return "; ".join([str(x) for x in self.opSequence])
             
         
-    →\ `ActionSequence call method delegates the sequence of ations (55)`_    
+    → `ActionSequence call method delegates the sequence of ations (55)`_    
             
         
-    →\ `ActionSequence summary summarizes each step (56)`_    
+    → `ActionSequence summary summarizes each step (56)`_    
     
 
 ..
@@ -4644,10 +4644,10 @@ Otherwise, the ``web.language()`` method function is used to guess what weaver t
             return f"{self.name!s} [{self.options.web!s}, {self.options.theWeaver!s}]"
     
         
-    →\ `WeaveAction call method to pick the language (58)`_    
+    → `WeaveAction call method to pick the language (58)`_    
         
         
-    →\ `WeaveAction summary of language choice (59)`_    
+    → `WeaveAction summary of language choice (59)`_    
     
 
 ..
@@ -4750,10 +4750,10 @@ The options **must** include ``theTangler``, with the ``Tangler`` instance to be
             super().\_\_init\_\_("Tangle")
             
         
-    →\ `TangleAction call method does tangling of the output files (61)`_    
+    → `TangleAction call method does tangling of the output files (61)`_    
         
         
-    →\ `TangleAction summary method provides total lines tangled (62)`_    
+    → `TangleAction summary method provides total lines tangled (62)`_    
     
 
 ..
@@ -4852,10 +4852,10 @@ The options **must** include ``webReader``, with the ``WebReader`` instance to b
             return f"Load [{self.webReader!s}, {self.options.web!s}]"
             
         
-    →\ `LoadAction call method loads the input files (64)`_    
+    → `LoadAction call method loads the input files (64)`_    
         
         
-    →\ `LoadAction summary provides lines read (65)`_    
+    → `LoadAction summary provides lines read (65)`_    
     
 
 ..
@@ -5029,13 +5029,13 @@ The configuration can be either a ``types.SimpleNamespace`` or an
         def \_\_init\_\_(self) -> None:
             self.logger = logging.getLogger(self.\_\_class\_\_.\_\_qualname\_\_)
             
-    →\ `Application default options (68)`_    
+    → `Application default options (68)`_    
             
         
-    →\ `Application parse command line (69)`_    
+    → `Application parse command line (69)`_    
         
         
-    →\ `Application class process all files (70)`_    
+    → `Application class process all files (70)`_    
     
 
 ..
@@ -5500,14 +5500,14 @@ The **pyWeb** application file is shown below:
 ..  parsed-literal::
     :class: code
 
-    →\ `Overheads (78)`_    
-    →\ `Imports (2)`_    
-    →\ `Error class -- defines the errors raised (49)`_    
-    →\ `Base Class Definitions (1)`_    
-    →\ `Action class hierarchy -- used to describe actions of the application (50)`_    
-    →\ `Application Class for overall CLI operation (67)`_    
-    →\ `Logging Setup (72)`_    
-    →\ `Interface Functions (75)`_    
+    → `Overheads (78)`_    
+    → `Imports (2)`_    
+    → `Error class -- defines the errors raised (49)`_    
+    → `Base Class Definitions (1)`_    
+    → `Action class hierarchy -- used to describe actions of the application (50)`_    
+    → `Application Class for overall CLI operation (67)`_    
+    → `Logging Setup (72)`_    
+    → `Interface Functions (75)`_    
     
     if \_\_name\_\_ == "\_\_main\_\_":
         with Logger(log\_config):
@@ -5663,7 +5663,7 @@ source files.
     3.2'.
     ### From source 
     impl.w modified 
-    Sat Jul 16 11:39:51 2022.
+    Sat Jul 16 12:17:52 2022.
     ### In working directory '
     /Users/slott/Documents/Projects/py-web-tool/src'.
 
@@ -5815,11 +5815,11 @@ A customized weaver generally has three parts.
 ..  parsed-literal::
     :class: code
 
-    →\ `weave.py overheads for correct operation of a script (83)`_    
+    → `weave.py overheads for correct operation of a script (83)`_    
     
-    →\ `weave.py custom weaver definition to customize the Weaver being used (84)`_    
+    → `weave.py custom weaver definition to customize the Weaver being used (84)`_    
     
-    →\ `weaver.py processing: load and weave the document (85)`_    
+    → `weaver.py processing: load and weave the document (85)`_    
 
 ..
 
@@ -6175,193 +6175,193 @@ Files
 ------
 
 :logging.toml:
-    →\ `logging.toml (74)`_:pyweb.py:
-    →\ `pyweb.py (76)`_:tangle.py:
-    →\ `tangle.py (81)`_:weave.py:
-    →\ `weave.py (82)`_
+    → `logging.toml (74)`_:pyweb.py:
+    → `pyweb.py (76)`_:tangle.py:
+    → `tangle.py (81)`_:weave.py:
+    → `weave.py (82)`_
 
 Macros
 ------
 
 :Action call method actually does the real work:
-    →\ `Action call method actually does the real work (52)`_
+    → `Action call method actually does the real work (52)`_
 
 :Action class hierarchy -- used to describe actions of the application:
-    →\ `Action class hierarchy -- used to describe actions of the application (50)`_
+    → `Action class hierarchy -- used to describe actions of the application (50)`_
 
 :Action final summary of what was done:
-    →\ `Action final summary of what was done (53)`_
+    → `Action final summary of what was done (53)`_
 
 :Action superclass has common features of all actions:
-    →\ `Action superclass has common features of all actions (51)`_
+    → `Action superclass has common features of all actions (51)`_
 
 :ActionSequence call method delegates the sequence of ations:
-    →\ `ActionSequence call method delegates the sequence of ations (55)`_
+    → `ActionSequence call method delegates the sequence of ations (55)`_
 
 :ActionSequence subclass that holds a sequence of other actions:
-    →\ `ActionSequence subclass that holds a sequence of other actions (54)`_
+    → `ActionSequence subclass that holds a sequence of other actions (54)`_
 
 :ActionSequence summary summarizes each step:
-    →\ `ActionSequence summary summarizes each step (56)`_
+    → `ActionSequence summary summarizes each step (56)`_
 
 :Application Class for overall CLI operation:
-    →\ `Application Class for overall CLI operation (67)`_
+    → `Application Class for overall CLI operation (67)`_
 
 :Application class process all files:
-    →\ `Application class process all files (70)`_
+    → `Application class process all files (70)`_
 
 :Application default options:
-    →\ `Application default options (68)`_
+    → `Application default options (68)`_
 
 :Application parse command line:
-    →\ `Application parse command line (69)`_
+    → `Application parse command line (69)`_
 
 :Base Class Definitions:
-    →\ `Base Class Definitions (1)`_, →\ `Base Class Definitions (8)`_, →\ `Base Class Definitions (26)`_
+    → `Base Class Definitions (1)`_, → `Base Class Definitions (8)`_, → `Base Class Definitions (26)`_
 
 :Chunk class hierarchy -- used to describe individual chunks:
-    →\ `Chunk class hierarchy -- used to describe individual chunks (4)`_
+    → `Chunk class hierarchy -- used to describe individual chunks (4)`_
 
 :Command class hierarchy -- used to describe individual commands in a chunk:
-    →\ `Command class hierarchy -- used to describe individual commands in a chunk (6)`_, →\ `Command class hierarchy -- used to describe individual commands in a chunk (7)`_
+    → `Command class hierarchy -- used to describe individual commands in a chunk (6)`_, → `Command class hierarchy -- used to describe individual commands in a chunk (7)`_
 
 :Common base template -- this is used for ALL weaving:
-    →\ `Common base template -- this is used for ALL weaving (17)`_
+    → `Common base template -- this is used for ALL weaving (17)`_
 
 :Debug Templates -- these display debugging information:
-    →\ `Debug Templates -- these display debugging information (13)`_
+    → `Debug Templates -- these display debugging information (13)`_
 
 :Emitter Superclass:
-    →\ `Emitter Superclass (10)`_
+    → `Emitter Superclass (10)`_
 
 :Emitter indent control: set, clear and reset:
-    →\ `Emitter indent control: set, clear and reset (20)`_
+    → `Emitter indent control: set, clear and reset (20)`_
 
 :Emitter write a block of code with proper indents:
-    →\ `Emitter write a block of code with proper indents (19)`_
+    → `Emitter write a block of code with proper indents (19)`_
 
 :Error class -- defines the errors raised:
-    →\ `Error class -- defines the errors raised (49)`_
+    → `Error class -- defines the errors raised (49)`_
 
 :HTML Templates -- emit HTML weave output:
-    →\ `HTML Templates -- emit HTML weave output (15)`_
+    → `HTML Templates -- emit HTML weave output (15)`_
 
 :Imports:
-    →\ `Imports (2)`_, →\ `Imports (5)`_, →\ `Imports (9)`_, →\ `Imports (21)`_, →\ `Imports (35)`_, →\ `Imports (40)`_, →\ `Imports (43)`_, →\ `Imports (45)`_, →\ `Imports (66)`_, →\ `Imports (71)`_, →\ `Imports (77)`_
+    → `Imports (2)`_, → `Imports (5)`_, → `Imports (9)`_, → `Imports (21)`_, → `Imports (35)`_, → `Imports (40)`_, → `Imports (43)`_, → `Imports (45)`_, → `Imports (66)`_, → `Imports (71)`_, → `Imports (77)`_
 
 :Interface Functions:
-    →\ `Interface Functions (75)`_
+    → `Interface Functions (75)`_
 
 :LaTeX Templates -- emit LaTeX weave output:
-    →\ `LaTeX Templates -- emit LaTeX weave output (16)`_
+    → `LaTeX Templates -- emit LaTeX weave output (16)`_
 
 :LoadAction call method loads the input files:
-    →\ `LoadAction call method loads the input files (64)`_
+    → `LoadAction call method loads the input files (64)`_
 
 :LoadAction subclass loads the document web:
-    →\ `LoadAction subclass loads the document web (63)`_
+    → `LoadAction subclass loads the document web (63)`_
 
 :LoadAction summary provides lines read:
-    →\ `LoadAction summary provides lines read (65)`_
+    → `LoadAction summary provides lines read (65)`_
 
 :Logging Setup:
-    →\ `Logging Setup (72)`_, →\ `Logging Setup (73)`_
+    → `Logging Setup (72)`_, → `Logging Setup (73)`_
 
 :Option Parser class - locates optional values on commands:
-    →\ `Option Parser class - locates optional values on commands (46)`_, →\ `Option Parser class - locates optional values on commands (47)`_, →\ `Option Parser class - locates optional values on commands (48)`_
+    → `Option Parser class - locates optional values on commands (46)`_, → `Option Parser class - locates optional values on commands (47)`_, → `Option Parser class - locates optional values on commands (48)`_
 
 :Overheads:
-    →\ `Overheads (78)`_, →\ `Overheads (79)`_, →\ `Overheads (80)`_
+    → `Overheads (78)`_, → `Overheads (79)`_, → `Overheads (80)`_
 
 :Quoting rule definitions -- functions used by templates:
-    →\ `Quoting rule definitions -- functions used by templates (12)`_
+    → `Quoting rule definitions -- functions used by templates (12)`_
 
 :RST Templates -- the default weave output:
-    →\ `RST Templates -- the default weave output (14)`_
+    → `RST Templates -- the default weave output (14)`_
 
 :Reference class hierarchy - strategies for weaving references to a chunk:
-    →\ `Reference class hierarchy - strategies for weaving references to a chunk (23)`_, →\ `Reference class hierarchy - strategies for weaving references to a chunk (24)`_, →\ `Reference class hierarchy - strategies for weaving references to a chunk (25)`_
+    → `Reference class hierarchy - strategies for weaving references to a chunk (23)`_, → `Reference class hierarchy - strategies for weaving references to a chunk (24)`_, → `Reference class hierarchy - strategies for weaving references to a chunk (25)`_
 
 :TangleAction call method does tangling of the output files:
-    →\ `TangleAction call method does tangling of the output files (61)`_
+    → `TangleAction call method does tangling of the output files (61)`_
 
 :TangleAction subclass initiates the tangle action:
-    →\ `TangleAction subclass initiates the tangle action (60)`_
+    → `TangleAction subclass initiates the tangle action (60)`_
 
 :TangleAction summary method provides total lines tangled:
-    →\ `TangleAction summary method provides total lines tangled (62)`_
+    → `TangleAction summary method provides total lines tangled (62)`_
 
 :Tangler Subclass -- emits the output files:
-    →\ `Tangler Subclass -- emits the output files (18)`_
+    → `Tangler Subclass -- emits the output files (18)`_
 
 :TanglerMake Subclass -- extends Tangler to avoid touching files that didn't change:
-    →\ `TanglerMake Subclass -- extends Tangler to avoid touching files that didn't change (22)`_
+    → `TanglerMake Subclass -- extends Tangler to avoid touching files that didn't change (22)`_
 
 :Tokenizer class - breaks input into tokens:
-    →\ `Tokenizer class - breaks input into tokens (44)`_
+    → `Tokenizer class - breaks input into tokens (44)`_
 
 :WeaveAction call method to pick the language:
-    →\ `WeaveAction call method to pick the language (58)`_
+    → `WeaveAction call method to pick the language (58)`_
 
 :WeaveAction subclass initiates the weave action:
-    →\ `WeaveAction subclass initiates the weave action (57)`_
+    → `WeaveAction subclass initiates the weave action (57)`_
 
 :WeaveAction summary of language choice:
-    →\ `WeaveAction summary of language choice (59)`_
+    → `WeaveAction summary of language choice (59)`_
 
 :Weaver Subclass -- Uses Jinja templates to weave documentation:
-    →\ `Weaver Subclass -- Uses Jinja templates to weave documentation (11)`_
+    → `Weaver Subclass -- Uses Jinja templates to weave documentation (11)`_
 
 :Web class -- describes the overall "web" of chunks:
-    →\ `Web class -- describes the overall "web" of chunks (3)`_
+    → `Web class -- describes the overall "web" of chunks (3)`_
 
 :WebReader class - parses the input file, building the Web structure:
-    →\ `WebReader class - parses the input file, building the Web structure (27)`_
+    → `WebReader class - parses the input file, building the Web structure (27)`_
 
 :WebReader command literals:
-    →\ `WebReader command literals (42)`_
+    → `WebReader command literals (42)`_
 
 :WebReader handle a command string:
-    →\ `WebReader handle a command string (28)`_, →\ `WebReader handle a command string (38)`_
+    → `WebReader handle a command string (28)`_, → `WebReader handle a command string (38)`_
 
 :WebReader load the web:
-    →\ `WebReader load the web (41)`_
+    → `WebReader load the web (41)`_
 
 :WebReader location in the input stream:
-    →\ `WebReader location in the input stream (39)`_
+    → `WebReader location in the input stream (39)`_
 
 :add a reference command to the current chunk:
-    →\ `add a reference command to the current chunk (34)`_
+    → `add a reference command to the current chunk (34)`_
 
 :add an expression command to the current chunk:
-    →\ `add an expression command to the current chunk (36)`_
+    → `add an expression command to the current chunk (36)`_
 
 :assign user identifiers to the current chunk:
-    →\ `assign user identifiers to the current chunk (33)`_
+    → `assign user identifiers to the current chunk (33)`_
 
 :double at-sign replacement, append this character to previous TextCommand:
-    →\ `double at-sign replacement, append this character to previous TextCommand (37)`_
+    → `double at-sign replacement, append this character to previous TextCommand (37)`_
 
 :finish a chunk, start a new Chunk adding it to the web:
-    →\ `finish a chunk, start a new Chunk adding it to the web (32)`_
+    → `finish a chunk, start a new Chunk adding it to the web (32)`_
 
 :include another file:
-    →\ `include another file (31)`_
+    → `include another file (31)`_
 
 :start a NamedChunk or NamedDocumentChunk, adding it to the web:
-    →\ `start a NamedChunk or NamedDocumentChunk, adding it to the web (30)`_
+    → `start a NamedChunk or NamedDocumentChunk, adding it to the web (30)`_
 
 :start an OutputChunk, adding it to the web:
-    →\ `start an OutputChunk, adding it to the web (29)`_
+    → `start an OutputChunk, adding it to the web (29)`_
 
 :weave.py custom weaver definition to customize the Weaver being used:
-    →\ `weave.py custom weaver definition to customize the Weaver being used (84)`_
+    → `weave.py custom weaver definition to customize the Weaver being used (84)`_
 
 :weave.py overheads for correct operation of a script:
-    →\ `weave.py overheads for correct operation of a script (83)`_
+    → `weave.py overheads for correct operation of a script (83)`_
 
 :weaver.py processing: load and weave the document:
-    →\ `weaver.py processing: load and weave the document (85)`_
+    → `weaver.py processing: load and weave the document (85)`_
 
 
 
@@ -6369,142 +6369,142 @@ User Identifiers
 ----------------
 
 :Action:
-    →\ `Action superclass has common features of all actions (51)`_
+    → `Action superclass has common features of all actions (51)`_
 
 :ActionSequence:
-    →\ `ActionSequence subclass that holds a sequence of other actions (54)`_
+    → `ActionSequence subclass that holds a sequence of other actions (54)`_
 
 :Application:
-    →\ `Application Class for overall CLI operation (67)`_
+    → `Application Class for overall CLI operation (67)`_
 
 :Chunk:
-    →\ `Chunk class hierarchy -- used to describe individual chunks (4)`_
+    → `Chunk class hierarchy -- used to describe individual chunks (4)`_
 
 :Error:
-    →\ `Error class -- defines the errors raised (49)`_
+    → `Error class -- defines the errors raised (49)`_
 
 :LoadAction:
-    →\ `LoadAction subclass loads the document web (63)`_
+    → `LoadAction subclass loads the document web (63)`_
 
 :NamedChunk:
-    →\ `Chunk class hierarchy -- used to describe individual chunks (4)`_
+    → `Chunk class hierarchy -- used to describe individual chunks (4)`_
 
 :NamedChunk_Noindent:
-    →\ `Chunk class hierarchy -- used to describe individual chunks (4)`_
+    → `Chunk class hierarchy -- used to describe individual chunks (4)`_
 
 :NamedDocumentChunk:
-    →\ `Chunk class hierarchy -- used to describe individual chunks (4)`_
+    → `Chunk class hierarchy -- used to describe individual chunks (4)`_
 
 :OutputChunk:
-    →\ `Chunk class hierarchy -- used to describe individual chunks (4)`_
+    → `Chunk class hierarchy -- used to describe individual chunks (4)`_
 
 :TangleAction:
-    →\ `TangleAction subclass initiates the tangle action (60)`_
+    → `TangleAction subclass initiates the tangle action (60)`_
 
 :Tokenizer:
-    →\ `Tokenizer class - breaks input into tokens (44)`_
+    → `Tokenizer class - breaks input into tokens (44)`_
 
 :TypeId:
-    →\ `Command class hierarchy -- used to describe individual commands in a chunk (6)`_
+    → `Command class hierarchy -- used to describe individual commands in a chunk (6)`_
 
 :TypeIdMeta:
-    →\ `Command class hierarchy -- used to describe individual commands in a chunk (6)`_
+    → `Command class hierarchy -- used to describe individual commands in a chunk (6)`_
 
 :WeaveAction:
-    →\ `WeaveAction subclass initiates the weave action (57)`_
+    → `WeaveAction subclass initiates the weave action (57)`_
 
 :Web:
-    →\ `Web class -- describes the overall "web" of chunks (3)`_
+    → `Web class -- describes the overall "web" of chunks (3)`_
 
 :WebReader:
-    →\ `WebReader class - parses the input file, building the Web structure (27)`_
+    → `WebReader class - parses the input file, building the Web structure (27)`_
 
 :__version__:
-    →\ `Overheads (80)`_
+    → `Overheads (80)`_
 
 :addIndent:
-    →\ `Emitter indent control: set, clear and reset (20)`_
+    → `Emitter indent control: set, clear and reset (20)`_
 
 :argparse:
-    →\ `Imports (66)`_
+    → `Imports (66)`_
 
 :builtins:
-    →\ `Imports (35)`_
+    → `Imports (35)`_
 
 :clrIndent:
-    →\ `Emitter indent control: set, clear and reset (20)`_
+    → `Emitter indent control: set, clear and reset (20)`_
 
 :codeBlock:
-    →\ `Emitter write a block of code with proper indents (19)`_
+    → `Emitter write a block of code with proper indents (19)`_
 
 :datetime:
-    →\ `Imports (77)`_
+    → `Imports (77)`_
 
 :duration:
-    →\ `Action final summary of what was done (53)`_
+    → `Action final summary of what was done (53)`_
 
 :expand:
-    →\ `Application parse command line (69)`_
+    → `Application parse command line (69)`_
 
 :expect:
-    →\ `WebReader handle a command string (38)`_
+    → `WebReader handle a command string (38)`_
 
 :handleCommand:
-    →\ `WebReader handle a command string (28)`_
+    → `WebReader handle a command string (28)`_
 
 :load:
-    →\ `WebReader load the web (41)`_
+    → `WebReader load the web (41)`_
 
 :location:
-    →\ `WebReader location in the input stream (39)`_
+    → `WebReader location in the input stream (39)`_
 
 :logging:
-    →\ `Imports (71)`_
+    → `Imports (71)`_
 
 :logging.config:
-    →\ `Imports (71)`_
+    → `Imports (71)`_
 
 :os:
-    →\ `Imports (77)`_
+    → `Imports (77)`_
 
 :parse:
-    →\ `WebReader load the web (41)`_
+    → `WebReader load the web (41)`_
 
 :parseArgs:
-    →\ `Application parse command line (69)`_
+    → `Application parse command line (69)`_
 
 :perform:
-    →\ `Action call method actually does the real work (52)`_, →\ `ActionSequence call method delegates the sequence of ations (55)`_, →\ `WeaveAction call method to pick the language (58)`_, →\ `TangleAction call method does tangling of the output files (61)`_, →\ `LoadAction call method loads the input files (64)`_
+    → `Action call method actually does the real work (52)`_, → `ActionSequence call method delegates the sequence of ations (55)`_, → `WeaveAction call method to pick the language (58)`_, → `TangleAction call method does tangling of the output files (61)`_, → `LoadAction call method loads the input files (64)`_
 
 :platform:
-    →\ `Imports (35)`_
+    → `Imports (35)`_
 
 :process:
-    →\ `Application class process all files (70)`_
+    → `Application class process all files (70)`_
 
 :re:
-    →\ `Imports (43)`_
+    → `Imports (43)`_
 
 :resetIndent:
-    →\ `Emitter indent control: set, clear and reset (20)`_
+    → `Emitter indent control: set, clear and reset (20)`_
 
 :setIndent:
-    →\ `Emitter indent control: set, clear and reset (20)`_
+    → `Emitter indent control: set, clear and reset (20)`_
 
 :shlex:
-    →\ `Imports (45)`_
+    → `Imports (45)`_
 
 :summary:
-    →\ `Action final summary of what was done (53)`_, →\ `ActionSequence summary summarizes each step (56)`_, →\ `WeaveAction summary of language choice (59)`_, →\ `TangleAction summary method provides total lines tangled (62)`_, →\ `LoadAction summary provides lines read (65)`_
+    → `Action final summary of what was done (53)`_, → `ActionSequence summary summarizes each step (56)`_, → `WeaveAction summary of language choice (59)`_, → `TangleAction summary method provides total lines tangled (62)`_, → `LoadAction summary provides lines read (65)`_
 
 :sys:
-    →\ `Imports (35)`_
+    → `Imports (35)`_
 
 :time:
-    →\ `Imports (77)`_
+    → `Imports (77)`_
 
 :types:
-    →\ `Imports (77)`_
+    → `Imports (77)`_
 
 
 
@@ -6513,7 +6513,7 @@ User Identifiers
 
 ..	class:: small
 
-	Created by pyweb.py at Sat Jul 16 12:07:44 2022.
+	Created by pyweb.py at Sat Jul 16 12:18:44 2022.
 
     Source pyweb.w modified Sun Jul  3 13:07:49 2022.
 

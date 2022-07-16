@@ -550,16 +550,16 @@ We'll decompose these into several hierarchies.</p>
 <p>This gives us the following outline for unit testing.</p>
 <p class="rubric" id="test-unit-py-1">test_unit.py (1) =</p>
 <pre class="code literal-block">
-→<a class="reference internal" href="#unit-test-overheads-imports-etc-42">Unit Test overheads: imports, etc. (42)</a>
-→<a class="reference internal" href="#unit-test-of-emitter-class-hierarchy-2">Unit Test of Emitter class hierarchy (2)</a>
-→<a class="reference internal" href="#unit-test-of-chunk-class-hierarchy-10">Unit Test of Chunk class hierarchy (10)</a>
-→<a class="reference internal" href="#unit-test-of-command-class-hierarchy-22">Unit Test of Command class hierarchy (22)</a>
-→<a class="reference internal" href="#unit-test-of-reference-class-hierarchy-31">Unit Test of Reference class hierarchy (31)</a>
-→<a class="reference internal" href="#unit-test-of-web-class-32">Unit Test of Web class (32)</a>
-→<a class="reference internal" href="#unit-test-of-webreader-class-33">Unit Test of WebReader class (33)</a>
-→<a class="reference internal" href="#unit-test-of-action-class-hierarchy-36">Unit Test of Action class hierarchy (36)</a>
-→<a class="reference internal" href="#unit-test-of-application-class-41">Unit Test of Application class (41)</a>
-→<a class="reference internal" href="#unit-test-main-44">Unit Test main (44)</a>
+→ <a class="reference internal" href="#unit-test-overheads-imports-etc-42">Unit Test overheads: imports, etc. (42)</a>
+→ <a class="reference internal" href="#unit-test-of-emitter-class-hierarchy-2">Unit Test of Emitter class hierarchy (2)</a>
+→ <a class="reference internal" href="#unit-test-of-chunk-class-hierarchy-10">Unit Test of Chunk class hierarchy (10)</a>
+→ <a class="reference internal" href="#unit-test-of-command-class-hierarchy-22">Unit Test of Command class hierarchy (22)</a>
+→ <a class="reference internal" href="#unit-test-of-reference-class-hierarchy-31">Unit Test of Reference class hierarchy (31)</a>
+→ <a class="reference internal" href="#unit-test-of-web-class-32">Unit Test of Web class (32)</a>
+→ <a class="reference internal" href="#unit-test-of-webreader-class-33">Unit Test of WebReader class (33)</a>
+→ <a class="reference internal" href="#unit-test-of-action-class-hierarchy-36">Unit Test of Action class hierarchy (36)</a>
+→ <a class="reference internal" href="#unit-test-of-application-class-41">Unit Test of Application class (41)</a>
+→ <a class="reference internal" href="#unit-test-main-44">Unit Test main (44)</a>
 </pre>
 <!--  -->
 <div class="small docutils container">
@@ -571,13 +571,13 @@ which uses templates to generate proper markup, or tangled output which
 precisely follows the document structure.</p>
 <p class="rubric" id="unit-test-of-emitter-class-hierarchy-2">Unit Test of Emitter class hierarchy (2) =</p>
 <pre class="code literal-block">
-→<a class="reference internal" href="#unit-test-mock-chunk-class-4">Unit Test Mock Chunk class (4)</a>
-→<a class="reference internal" href="#unit-test-of-emitter-superclass-3">Unit Test of Emitter Superclass (3)</a>
-→<a class="reference internal" href="#unit-test-of-weaver-subclass-of-emitter-5">Unit Test of Weaver subclass of Emitter (5)</a>
-→<a class="reference internal" href="#unit-test-of-latex-subclass-of-emitter-6">Unit Test of LaTeX subclass of Emitter (6)</a>
-→<a class="reference internal" href="#unit-test-of-html-subclass-of-emitter-7">Unit Test of HTML subclass of Emitter (7)</a>
-→<a class="reference internal" href="#unit-test-of-tangler-subclass-of-emitter-8">Unit Test of Tangler subclass of Emitter (8)</a>
-→<a class="reference internal" href="#unit-test-of-tanglermake-subclass-of-emitter-9">Unit Test of TanglerMake subclass of Emitter (9)</a>
+→ <a class="reference internal" href="#unit-test-mock-chunk-class-4">Unit Test Mock Chunk class (4)</a>
+→ <a class="reference internal" href="#unit-test-of-emitter-superclass-3">Unit Test of Emitter Superclass (3)</a>
+→ <a class="reference internal" href="#unit-test-of-weaver-subclass-of-emitter-5">Unit Test of Weaver subclass of Emitter (5)</a>
+→ <a class="reference internal" href="#unit-test-of-latex-subclass-of-emitter-6">Unit Test of LaTeX subclass of Emitter (6)</a>
+→ <a class="reference internal" href="#unit-test-of-html-subclass-of-emitter-7">Unit Test of HTML subclass of Emitter (7)</a>
+→ <a class="reference internal" href="#unit-test-of-tangler-subclass-of-emitter-8">Unit Test of Tangler subclass of Emitter (8)</a>
+→ <a class="reference internal" href="#unit-test-of-tanglermake-subclass-of-emitter-9">Unit Test of TanglerMake subclass of Emitter (9)</a>
 </pre>
 <!--  -->
 <div class="small docutils container">
@@ -774,16 +774,16 @@ class TestWeaver(unittest.TestCase):
         result = self.output_path.read_text()
         expected = ('text with |char| untouched.\n'
              ':sample.out:\n'
-             '    →\\ `sample.out (1)`_\n'
+             '    → `sample.out (1)`_\n'
              ':named chunk:\n'
-             '    →\\ ` ()`_\n'
+             '    → ` ()`_\n'
              '\n'
              '\n'
              ':user_id_1:\n'
-             '    →\\ `named chunk (2)`_\n'
+             '    → `named chunk (2)`_\n'
              '\n'
              ':user_id_2:\n'
-             '    →\\ `named chunk (2)`_\n'
+             '    → `named chunk (2)`_\n'
              '\n'
              '\n'
             '..  _`sample.out (42)`:\n'
@@ -793,7 +793,7 @@ class TestWeaver(unittest.TestCase):
             '\n'
             '    \\|char\\| \\`code\\` \\*em\\* \\_em\\_\n'
             '    \n'
-            '    →\\ `named chunk (42)`_\n'
+            '    → `named chunk (42)`_\n'
             '..\n'
             '\n'
             '..  container:: small\n'
@@ -1017,11 +1017,11 @@ class TestTanglerMake(unittest.TestCase):
 of chunks that are used to produce the documentation and the source files.</p>
 <p class="rubric" id="unit-test-of-chunk-class-hierarchy-10">Unit Test of Chunk class hierarchy (10) =</p>
 <pre class="code literal-block">
-→<a class="reference internal" href="#unit-test-of-chunk-superclass-11">Unit Test of Chunk superclass (11)</a>
-→<a class="reference internal" href="#unit-test-of-namedchunk-subclass-18">Unit Test of NamedChunk subclass (18)</a>
-→<a class="reference internal" href="#unit-test-of-namedchunk-noindent-subclass-19">Unit Test of NamedChunk_Noindent subclass (19)</a>
-→<a class="reference internal" href="#unit-test-of-outputchunk-subclass-20">Unit Test of OutputChunk subclass (20)</a>
-→<a class="reference internal" href="#unit-test-of-nameddocumentchunk-subclass-21">Unit Test of NamedDocumentChunk subclass (21)</a>
+→ <a class="reference internal" href="#unit-test-of-chunk-superclass-11">Unit Test of Chunk superclass (11)</a>
+→ <a class="reference internal" href="#unit-test-of-namedchunk-subclass-18">Unit Test of NamedChunk subclass (18)</a>
+→ <a class="reference internal" href="#unit-test-of-namedchunk-noindent-subclass-19">Unit Test of NamedChunk_Noindent subclass (19)</a>
+→ <a class="reference internal" href="#unit-test-of-outputchunk-subclass-20">Unit Test of OutputChunk subclass (20)</a>
+→ <a class="reference internal" href="#unit-test-of-nameddocumentchunk-subclass-21">Unit Test of NamedDocumentChunk subclass (21)</a>
 </pre>
 <!--  -->
 <div class="small docutils container">
@@ -1132,13 +1132,13 @@ class TestChunk(unittest.TestCase):
         self.theChunk = pyweb.Chunk()
 
 
-→<a class="reference internal" href="#unit-test-of-chunk-construction-15">Unit Test of Chunk construction (15)</a>
+→ <a class="reference internal" href="#unit-test-of-chunk-construction-15">Unit Test of Chunk construction (15)</a>
 
 
-→<a class="reference internal" href="#unit-test-of-chunk-interrogation-16">Unit Test of Chunk interrogation (16)</a>
+→ <a class="reference internal" href="#unit-test-of-chunk-interrogation-16">Unit Test of Chunk interrogation (16)</a>
 
 
-→<a class="reference internal" href="#unit-test-of-chunk-properties-17">Unit Test of Chunk properties (17)</a>
+→ <a class="reference internal" href="#unit-test-of-chunk-properties-17">Unit Test of Chunk properties (17)</a>
 </pre>
 <!--  -->
 <div class="small docutils container">
@@ -1305,14 +1305,14 @@ class TestNamedDocumentChunk(unittest.TestCase):
 <h2><a class="toc-backref" href="#toc-entry-5">Command Tests</a></h2>
 <p class="rubric" id="unit-test-of-command-class-hierarchy-22">Unit Test of Command class hierarchy (22) =</p>
 <pre class="code literal-block">
-→<a class="reference internal" href="#unit-test-of-command-superclass-23">Unit Test of Command superclass (23)</a>
-→<a class="reference internal" href="#unit-test-of-textcommand-class-to-contain-a-document-text-block-24">Unit Test of TextCommand class to contain a document text block (24)</a>
-→<a class="reference internal" href="#unit-test-of-codecommand-class-to-contain-a-program-source-code-block-25">Unit Test of CodeCommand class to contain a program source code block (25)</a>
-→<a class="reference internal" href="#unit-test-of-xrefcommand-superclass-for-all-cross-reference-commands-26">Unit Test of XrefCommand superclass for all cross-reference commands (26)</a>
-→<a class="reference internal" href="#unit-test-of-filexrefcommand-class-for-an-output-file-cross-reference-27">Unit Test of FileXrefCommand class for an output file cross-reference (27)</a>
-→<a class="reference internal" href="#unit-test-of-macroxrefcommand-class-for-a-named-chunk-cross-reference-28">Unit Test of MacroXrefCommand class for a named chunk cross-reference (28)</a>
-→<a class="reference internal" href="#unit-test-of-useridxrefcommand-class-for-a-user-identifier-cross-reference-29">Unit Test of UserIdXrefCommand class for a user identifier cross-reference (29)</a>
-→<a class="reference internal" href="#unit-test-of-referencecommand-class-for-chunk-references-30">Unit Test of ReferenceCommand class for chunk references (30)</a>
+→ <a class="reference internal" href="#unit-test-of-command-superclass-23">Unit Test of Command superclass (23)</a>
+→ <a class="reference internal" href="#unit-test-of-textcommand-class-to-contain-a-document-text-block-24">Unit Test of TextCommand class to contain a document text block (24)</a>
+→ <a class="reference internal" href="#unit-test-of-codecommand-class-to-contain-a-program-source-code-block-25">Unit Test of CodeCommand class to contain a program source code block (25)</a>
+→ <a class="reference internal" href="#unit-test-of-xrefcommand-superclass-for-all-cross-reference-commands-26">Unit Test of XrefCommand superclass for all cross-reference commands (26)</a>
+→ <a class="reference internal" href="#unit-test-of-filexrefcommand-class-for-an-output-file-cross-reference-27">Unit Test of FileXrefCommand class for an output file cross-reference (27)</a>
+→ <a class="reference internal" href="#unit-test-of-macroxrefcommand-class-for-a-named-chunk-cross-reference-28">Unit Test of MacroXrefCommand class for a named chunk cross-reference (28)</a>
+→ <a class="reference internal" href="#unit-test-of-useridxrefcommand-class-for-a-user-identifier-cross-reference-29">Unit Test of UserIdXrefCommand class for a user identifier cross-reference (29)</a>
+→ <a class="reference internal" href="#unit-test-of-referencecommand-class-for-chunk-references-30">Unit Test of ReferenceCommand class for chunk references (30)</a>
 </pre>
 <!--  -->
 <div class="small docutils container">
@@ -1684,10 +1684,10 @@ class TestOptionParser_NamedChunk(unittest.TestCase):
 load, tangle, weave.</p>
 <p class="rubric" id="unit-test-of-action-class-hierarchy-36">Unit Test of Action class hierarchy (36) =</p>
 <pre class="code literal-block">
-→<a class="reference internal" href="#unit-test-of-action-sequence-class-37">Unit test of Action Sequence class (37)</a>
-→<a class="reference internal" href="#unit-test-of-loadaction-class-40">Unit test of LoadAction class (40)</a>
-→<a class="reference internal" href="#unit-test-of-tangleaction-class-39">Unit test of TangleAction class (39)</a>
-→<a class="reference internal" href="#unit-test-of-weaveraction-class-38">Unit test of WeaverAction class (38)</a>
+→ <a class="reference internal" href="#unit-test-of-action-sequence-class-37">Unit test of Action Sequence class (37)</a>
+→ <a class="reference internal" href="#unit-test-of-loadaction-class-40">Unit test of LoadAction class (40)</a>
+→ <a class="reference internal" href="#unit-test-of-tangleaction-class-39">Unit test of TangleAction class (39)</a>
+→ <a class="reference internal" href="#unit-test-of-weaveraction-class-38">Unit test of WeaverAction class (38)</a>
 </pre>
 <!--  -->
 <div class="small docutils container">
@@ -1866,15 +1866,15 @@ if __name__ == &quot;__main__&quot;:
 <p>We need to be able to load a web from one or more source files.</p>
 <p class="rubric" id="test-loader-py-45">test_loader.py (45) =</p>
 <pre class="code literal-block">
-→<a class="reference internal" href="#load-test-overheads-imports-etc-47">Load Test overheads: imports, etc. (47)</a>
+→ <a class="reference internal" href="#load-test-overheads-imports-etc-47">Load Test overheads: imports, etc. (47)</a>
 
-→<a class="reference internal" href="#load-test-superclass-to-refactor-common-setup-46">Load Test superclass to refactor common setup (46)</a>
+→ <a class="reference internal" href="#load-test-superclass-to-refactor-common-setup-46">Load Test superclass to refactor common setup (46)</a>
 
-→<a class="reference internal" href="#load-test-error-handling-with-a-few-common-syntax-errors-48">Load Test error handling with a few common syntax errors (48)</a>
+→ <a class="reference internal" href="#load-test-error-handling-with-a-few-common-syntax-errors-48">Load Test error handling with a few common syntax errors (48)</a>
 
-→<a class="reference internal" href="#load-test-include-processing-with-syntax-errors-50">Load Test include processing with syntax errors (50)</a>
+→ <a class="reference internal" href="#load-test-include-processing-with-syntax-errors-50">Load Test include processing with syntax errors (50)</a>
 
-→<a class="reference internal" href="#load-test-main-program-53">Load Test main program (53)</a>
+→ <a class="reference internal" href="#load-test-main-program-53">Load Test main program (53)</a>
 </pre>
 <!--  -->
 <div class="small docutils container">
@@ -1911,7 +1911,7 @@ from typing import ClassVar
 ∎ <em>Load Test overheads: imports, etc. (47)</em></div>
 <p class="rubric" id="load-test-error-handling-with-a-few-common-syntax-errors-48">Load Test error handling with a few common syntax errors (48) =</p>
 <pre class="code literal-block">
-→<a class="reference internal" href="#sample-document-1-with-correct-and-incorrect-syntax-49">Sample Document 1 with correct and incorrect syntax (49)</a>
+→ <a class="reference internal" href="#sample-document-1-with-correct-and-incorrect-syntax-49">Sample Document 1 with correct and incorrect syntax (49)</a>
 
 class Test_ParseErrors(ParseTestcase):
     text = test1_w
@@ -1956,7 +1956,7 @@ create a temporary file.  It's hard to mock the include processing,
 since it's a nested instance of the tokenizer.</p>
 <p class="rubric" id="load-test-include-processing-with-syntax-errors-50">Load Test include processing with syntax errors (50) =</p>
 <pre class="code literal-block">
-→<a class="reference internal" href="#sample-document-8-and-the-file-it-includes-51">Sample Document 8 and the file it includes (51)</a>
+→ <a class="reference internal" href="#sample-document-8-and-the-file-it-includes-51">Sample Document 8 and the file it includes (51)</a>
 
 class Test_IncludeParseErrors(ParseTestcase):
     text = test8_w
@@ -2034,15 +2034,15 @@ if __name__ == &quot;__main__&quot;:
 <p>We need to be able to tangle a web.</p>
 <p class="rubric" id="test-tangler-py-54">test_tangler.py (54) =</p>
 <pre class="code literal-block">
-→<a class="reference internal" href="#tangle-test-overheads-imports-etc-68">Tangle Test overheads: imports, etc. (68)</a>
-→<a class="reference internal" href="#tangle-test-superclass-to-refactor-common-setup-55">Tangle Test superclass to refactor common setup (55)</a>
-→<a class="reference internal" href="#tangle-test-semantic-error-2-56">Tangle Test semantic error 2 (56)</a>
-→<a class="reference internal" href="#tangle-test-semantic-error-3-58">Tangle Test semantic error 3 (58)</a>
-→<a class="reference internal" href="#tangle-test-semantic-error-4-60">Tangle Test semantic error 4 (60)</a>
-→<a class="reference internal" href="#tangle-test-semantic-error-5-62">Tangle Test semantic error 5 (62)</a>
-→<a class="reference internal" href="#tangle-test-semantic-error-6-64">Tangle Test semantic error 6 (64)</a>
-→<a class="reference internal" href="#tangle-test-include-error-7-66">Tangle Test include error 7 (66)</a>
-→<a class="reference internal" href="#tangle-test-main-program-69">Tangle Test main program (69)</a>
+→ <a class="reference internal" href="#tangle-test-overheads-imports-etc-68">Tangle Test overheads: imports, etc. (68)</a>
+→ <a class="reference internal" href="#tangle-test-superclass-to-refactor-common-setup-55">Tangle Test superclass to refactor common setup (55)</a>
+→ <a class="reference internal" href="#tangle-test-semantic-error-2-56">Tangle Test semantic error 2 (56)</a>
+→ <a class="reference internal" href="#tangle-test-semantic-error-3-58">Tangle Test semantic error 3 (58)</a>
+→ <a class="reference internal" href="#tangle-test-semantic-error-4-60">Tangle Test semantic error 4 (60)</a>
+→ <a class="reference internal" href="#tangle-test-semantic-error-5-62">Tangle Test semantic error 5 (62)</a>
+→ <a class="reference internal" href="#tangle-test-semantic-error-6-64">Tangle Test semantic error 6 (64)</a>
+→ <a class="reference internal" href="#tangle-test-include-error-7-66">Tangle Test include error 7 (66)</a>
+→ <a class="reference internal" href="#tangle-test-main-program-69">Tangle Test main program (69)</a>
 </pre>
 <!--  -->
 <div class="small docutils container">
@@ -2083,7 +2083,7 @@ class TangleTestcase(unittest.TestCase):
 ∎ <em>Tangle Test superclass to refactor common setup (55)</em></div>
 <p class="rubric" id="tangle-test-semantic-error-2-56">Tangle Test semantic error 2 (56) =</p>
 <pre class="code literal-block">
-→<a class="reference internal" href="#sample-document-2-57">Sample Document 2 (57)</a>
+→ <a class="reference internal" href="#sample-document-2-57">Sample Document 2 (57)</a>
 
 class Test_SemanticError_2(TangleTestcase):
     text = test2_w
@@ -2110,7 +2110,7 @@ Okay, now for some errors: no part2!
 ∎ <em>Sample Document 2 (57)</em></div>
 <p class="rubric" id="tangle-test-semantic-error-3-58">Tangle Test semantic error 3 (58) =</p>
 <pre class="code literal-block">
-→<a class="reference internal" href="#sample-document-3-59">Sample Document 3 (59)</a>
+→ <a class="reference internal" href="#sample-document-3-59">Sample Document 3 (59)</a>
 
 class Test_SemanticError_3(TangleTestcase):
     text = test3_w
@@ -2138,7 +2138,7 @@ Okay, now for some errors: attempt to tangle a cross-reference!
 ∎ <em>Sample Document 3 (59)</em></div>
 <p class="rubric" id="tangle-test-semantic-error-4-60">Tangle Test semantic error 4 (60) =</p>
 <pre class="code literal-block">
-→<a class="reference internal" href="#sample-document-4-61">Sample Document 4 (61)</a>
+→ <a class="reference internal" href="#sample-document-4-61">Sample Document 4 (61)</a>
 
 class Test_SemanticError_4(TangleTestcase):
     &quot;&quot;&quot;An optional feature of a Web.&quot;&quot;&quot;
@@ -2167,7 +2167,7 @@ Okay, now for some errors: attempt to weave but no full name for part1....
 ∎ <em>Sample Document 4 (61)</em></div>
 <p class="rubric" id="tangle-test-semantic-error-5-62">Tangle Test semantic error 5 (62) =</p>
 <pre class="code literal-block">
-→<a class="reference internal" href="#sample-document-5-63">Sample Document 5 (63)</a>
+→ <a class="reference internal" href="#sample-document-5-63">Sample Document 5 (63)</a>
 
 class Test_SemanticError_5(TangleTestcase):
     text = test5_w
@@ -2197,7 +2197,7 @@ Okay, now for some errors: part1... is ambiguous
 ∎ <em>Sample Document 5 (63)</em></div>
 <p class="rubric" id="tangle-test-semantic-error-6-64">Tangle Test semantic error 6 (64) =</p>
 <pre class="code literal-block">
-→<a class="reference internal" href="#sample-document-6-65">Sample Document 6 (65)</a>
+→ <a class="reference internal" href="#sample-document-6-65">Sample Document 6 (65)</a>
 
 class Test_SemanticError_6(TangleTestcase):
     text = test6_w
@@ -2233,7 +2233,7 @@ Okay, now for some warnings:
 ∎ <em>Sample Document 6 (65)</em></div>
 <p class="rubric" id="tangle-test-include-error-7-66">Tangle Test include error 7 (66) =</p>
 <pre class="code literal-block">
-→<a class="reference internal" href="#sample-document-7-and-it-s-included-file-67">Sample Document 7 and it's included file (67)</a>
+→ <a class="reference internal" href="#sample-document-7-and-it-s-included-file-67">Sample Document 7 and it's included file (67)</a>
 
 class Test_IncludeError_7(TangleTestcase):
     text = test7_w
@@ -2300,11 +2300,11 @@ if __name__ == &quot;__main__&quot;:
 <p>We need to be able to weave a document from one or more source files.</p>
 <p class="rubric" id="test-weaver-py-70">test_weaver.py (70) =</p>
 <pre class="code literal-block">
-→<a class="reference internal" href="#weave-test-overheads-imports-etc-78">Weave Test overheads: imports, etc. (78)</a>
-→<a class="reference internal" href="#weave-test-superclass-to-refactor-common-setup-71">Weave Test superclass to refactor common setup (71)</a>
-→<a class="reference internal" href="#weave-test-references-and-definitions-72">Weave Test references and definitions (72)</a>
-→<a class="reference internal" href="#weave-test-evaluation-of-expressions-76">Weave Test evaluation of expressions (76)</a>
-→<a class="reference internal" href="#weave-test-main-program-79">Weave Test main program (79)</a>
+→ <a class="reference internal" href="#weave-test-overheads-imports-etc-78">Weave Test overheads: imports, etc. (78)</a>
+→ <a class="reference internal" href="#weave-test-superclass-to-refactor-common-setup-71">Weave Test superclass to refactor common setup (71)</a>
+→ <a class="reference internal" href="#weave-test-references-and-definitions-72">Weave Test references and definitions (72)</a>
+→ <a class="reference internal" href="#weave-test-evaluation-of-expressions-76">Weave Test evaluation of expressions (76)</a>
+→ <a class="reference internal" href="#weave-test-main-program-79">Weave Test main program (79)</a>
 </pre>
 <!--  -->
 <div class="small docutils container">
@@ -2337,8 +2337,8 @@ class WeaveTestcase(unittest.TestCase):
 ∎ <em>Weave Test superclass to refactor common setup (71)</em></div>
 <p class="rubric" id="weave-test-references-and-definitions-72">Weave Test references and definitions (72) =</p>
 <pre class="code literal-block">
-→<a class="reference internal" href="#sample-document-0-73">Sample Document 0 (73)</a>
-→<a class="reference internal" href="#expected-output-0-74">Expected Output 0 (74)</a>
+→ <a class="reference internal" href="#sample-document-0-73">Sample Document 0 (73)</a>
+→ <a class="reference internal" href="#expected-output-0-74">Expected Output 0 (74)</a>
 
 class Test_RefDefWeave(WeaveTestcase):
     text = test0_w
@@ -2454,7 +2454,7 @@ test0_expected_debug = (
 to properly provide a consistent output from <tt class="docutils literal">time.asctime()</tt>.</p>
 <p class="rubric" id="weave-test-evaluation-of-expressions-76">Weave Test evaluation of expressions (76) =</p>
 <pre class="code literal-block">
-→<a class="reference internal" href="#sample-document-9-77">Sample Document 9 (77)</a>
+→ <a class="reference internal" href="#sample-document-9-77">Sample Document 9 (77)</a>
 
 from unittest.mock import Mock
 
@@ -2536,17 +2536,17 @@ if __name__ == &quot;__main__&quot;:
 <p>This gives us the following outline for the script testing.</p>
 <p class="rubric" id="test-scripts-py-80">test_scripts.py (80) =</p>
 <pre class="code literal-block">
-→<a class="reference internal" href="#script-test-overheads-imports-etc-85">Script Test overheads: imports, etc. (85)</a>
+→ <a class="reference internal" href="#script-test-overheads-imports-etc-85">Script Test overheads: imports, etc. (85)</a>
 
-→<a class="reference internal" href="#sample-web-file-to-test-with-81">Sample web file to test with (81)</a>
+→ <a class="reference internal" href="#sample-web-file-to-test-with-81">Sample web file to test with (81)</a>
 
-→<a class="reference internal" href="#superclass-for-test-cases-82">Superclass for test cases (82)</a>
+→ <a class="reference internal" href="#superclass-for-test-cases-82">Superclass for test cases (82)</a>
 
-→<a class="reference internal" href="#test-of-weave-py-83">Test of weave.py (83)</a>
+→ <a class="reference internal" href="#test-of-weave-py-83">Test of weave.py (83)</a>
 
-→<a class="reference internal" href="#test-of-tangle-py-84">Test of tangle.py (84)</a>
+→ <a class="reference internal" href="#test-of-tangle-py-84">Test of tangle.py (84)</a>
 
-→<a class="reference internal" href="#scripts-test-main-86">Scripts Test main (86)</a>
+→ <a class="reference internal" href="#scripts-test-main-86">Scripts Test main (86)</a>
 </pre>
 <!--  -->
 <div class="small docutils container">
@@ -2833,13 +2833,13 @@ div.document { width: 7in; }
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">test_unit.py:</th><td class="field-body">→<a class="reference internal" href="#test-unit-py-1">test_unit.py (1)</a>:test_loader.py:
-→<a class="reference internal" href="#test-loader-py-45">test_loader.py (45)</a>:test_tangler.py:
-→<a class="reference internal" href="#test-tangler-py-54">test_tangler.py (54)</a>:test_weaver.py:
-→<a class="reference internal" href="#test-weaver-py-70">test_weaver.py (70)</a>:test_scripts.py:
-→<a class="reference internal" href="#test-scripts-py-80">test_scripts.py (80)</a>:docutils.conf:
-→<a class="reference internal" href="#docutils-conf-87">docutils.conf (87)</a>:page-layout.css:
-→<a class="reference internal" href="#page-layout-css-88">page-layout.css (88)</a></td>
+<tr class="field"><th class="field-name">test_unit.py:</th><td class="field-body">→ <a class="reference internal" href="#test-unit-py-1">test_unit.py (1)</a>:test_loader.py:
+→ <a class="reference internal" href="#test-loader-py-45">test_loader.py (45)</a>:test_tangler.py:
+→ <a class="reference internal" href="#test-tangler-py-54">test_tangler.py (54)</a>:test_weaver.py:
+→ <a class="reference internal" href="#test-weaver-py-70">test_weaver.py (70)</a>:test_scripts.py:
+→ <a class="reference internal" href="#test-scripts-py-80">test_scripts.py (80)</a>:docutils.conf:
+→ <a class="reference internal" href="#docutils-conf-87">docutils.conf (87)</a>:page-layout.css:
+→ <a class="reference internal" href="#page-layout-css-88">page-layout.css (88)</a></td>
 </tr>
 </tbody>
 </table>
@@ -2851,233 +2851,233 @@ div.document { width: 7in; }
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field"><th class="field-name" colspan="2">Expected Output 0:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#expected-output-0-74">Expected Output 0 (74)</a>, →<a class="reference internal" href="#expected-output-0-75">Expected Output 0 (75)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#expected-output-0-74">Expected Output 0 (74)</a>, → <a class="reference internal" href="#expected-output-0-75">Expected Output 0 (75)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Load Test error handling with a few common syntax errors:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#load-test-error-handling-with-a-few-common-syntax-errors-48">Load Test error handling with a few common syntax errors (48)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#load-test-error-handling-with-a-few-common-syntax-errors-48">Load Test error handling with a few common syntax errors (48)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Load Test include processing with syntax errors:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#load-test-include-processing-with-syntax-errors-50">Load Test include processing with syntax errors (50)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#load-test-include-processing-with-syntax-errors-50">Load Test include processing with syntax errors (50)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Load Test main program:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#load-test-main-program-53">Load Test main program (53)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#load-test-main-program-53">Load Test main program (53)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Load Test overheads:</th></tr>
 <tr class="field"><td>&nbsp;</td><td class="field-body">imports, etc.:
-→<a class="reference internal" href="#load-test-overheads-imports-etc-47">Load Test overheads: imports, etc. (47)</a>, →<a class="reference internal" href="#load-test-overheads-imports-etc-52">Load Test overheads: imports, etc. (52)</a></td>
+→ <a class="reference internal" href="#load-test-overheads-imports-etc-47">Load Test overheads: imports, etc. (47)</a>, → <a class="reference internal" href="#load-test-overheads-imports-etc-52">Load Test overheads: imports, etc. (52)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Load Test superclass to refactor common setup:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#load-test-superclass-to-refactor-common-setup-46">Load Test superclass to refactor common setup (46)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#load-test-superclass-to-refactor-common-setup-46">Load Test superclass to refactor common setup (46)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Sample Document 0:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#sample-document-0-73">Sample Document 0 (73)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-0-73">Sample Document 0 (73)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Sample Document 1 with correct and incorrect syntax:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#sample-document-1-with-correct-and-incorrect-syntax-49">Sample Document 1 with correct and incorrect syntax (49)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-1-with-correct-and-incorrect-syntax-49">Sample Document 1 with correct and incorrect syntax (49)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Sample Document 2:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#sample-document-2-57">Sample Document 2 (57)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-2-57">Sample Document 2 (57)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Sample Document 3:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#sample-document-3-59">Sample Document 3 (59)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-3-59">Sample Document 3 (59)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Sample Document 4:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#sample-document-4-61">Sample Document 4 (61)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-4-61">Sample Document 4 (61)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Sample Document 5:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#sample-document-5-63">Sample Document 5 (63)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-5-63">Sample Document 5 (63)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Sample Document 6:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#sample-document-6-65">Sample Document 6 (65)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-6-65">Sample Document 6 (65)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Sample Document 7 and it's included file:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#sample-document-7-and-it-s-included-file-67">Sample Document 7 and it's included file (67)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-7-and-it-s-included-file-67">Sample Document 7 and it's included file (67)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Sample Document 8 and the file it includes:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#sample-document-8-and-the-file-it-includes-51">Sample Document 8 and the file it includes (51)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-8-and-the-file-it-includes-51">Sample Document 8 and the file it includes (51)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Sample Document 9:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#sample-document-9-77">Sample Document 9 (77)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-9-77">Sample Document 9 (77)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Sample web file to test with:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#sample-web-file-to-test-with-81">Sample web file to test with (81)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-web-file-to-test-with-81">Sample web file to test with (81)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Script Test overheads:</th></tr>
 <tr class="field"><td>&nbsp;</td><td class="field-body">imports, etc.:
-→<a class="reference internal" href="#script-test-overheads-imports-etc-85">Script Test overheads: imports, etc. (85)</a></td>
+→ <a class="reference internal" href="#script-test-overheads-imports-etc-85">Script Test overheads: imports, etc. (85)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Scripts Test main:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#scripts-test-main-86">Scripts Test main (86)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#scripts-test-main-86">Scripts Test main (86)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Superclass for test cases:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#superclass-for-test-cases-82">Superclass for test cases (82)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#superclass-for-test-cases-82">Superclass for test cases (82)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Tangle Test include error 7:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#tangle-test-include-error-7-66">Tangle Test include error 7 (66)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#tangle-test-include-error-7-66">Tangle Test include error 7 (66)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Tangle Test main program:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#tangle-test-main-program-69">Tangle Test main program (69)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#tangle-test-main-program-69">Tangle Test main program (69)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Tangle Test overheads:</th></tr>
 <tr class="field"><td>&nbsp;</td><td class="field-body">imports, etc.:
-→<a class="reference internal" href="#tangle-test-overheads-imports-etc-68">Tangle Test overheads: imports, etc. (68)</a></td>
+→ <a class="reference internal" href="#tangle-test-overheads-imports-etc-68">Tangle Test overheads: imports, etc. (68)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Tangle Test semantic error 2:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#tangle-test-semantic-error-2-56">Tangle Test semantic error 2 (56)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#tangle-test-semantic-error-2-56">Tangle Test semantic error 2 (56)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Tangle Test semantic error 3:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#tangle-test-semantic-error-3-58">Tangle Test semantic error 3 (58)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#tangle-test-semantic-error-3-58">Tangle Test semantic error 3 (58)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Tangle Test semantic error 4:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#tangle-test-semantic-error-4-60">Tangle Test semantic error 4 (60)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#tangle-test-semantic-error-4-60">Tangle Test semantic error 4 (60)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Tangle Test semantic error 5:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#tangle-test-semantic-error-5-62">Tangle Test semantic error 5 (62)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#tangle-test-semantic-error-5-62">Tangle Test semantic error 5 (62)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Tangle Test semantic error 6:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#tangle-test-semantic-error-6-64">Tangle Test semantic error 6 (64)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#tangle-test-semantic-error-6-64">Tangle Test semantic error 6 (64)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Tangle Test superclass to refactor common setup:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#tangle-test-superclass-to-refactor-common-setup-55">Tangle Test superclass to refactor common setup (55)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#tangle-test-superclass-to-refactor-common-setup-55">Tangle Test superclass to refactor common setup (55)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Test of tangle.py:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#test-of-tangle-py-84">Test of tangle.py (84)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#test-of-tangle-py-84">Test of tangle.py (84)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Test of weave.py:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#test-of-weave-py-83">Test of weave.py (83)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#test-of-weave-py-83">Test of weave.py (83)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test Mock Chunk class:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-mock-chunk-class-4">Unit Test Mock Chunk class (4)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-mock-chunk-class-4">Unit Test Mock Chunk class (4)</a></td>
 </tr>
-<tr class="field"><th class="field-name">Unit Test main:</th><td class="field-body">→<a class="reference internal" href="#unit-test-main-44">Unit Test main (44)</a></td>
+<tr class="field"><th class="field-name">Unit Test main:</th><td class="field-body">→ <a class="reference internal" href="#unit-test-main-44">Unit Test main (44)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of Action class hierarchy:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-action-class-hierarchy-36">Unit Test of Action class hierarchy (36)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-action-class-hierarchy-36">Unit Test of Action class hierarchy (36)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of Application class:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-application-class-41">Unit Test of Application class (41)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-application-class-41">Unit Test of Application class (41)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of Chunk class hierarchy:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-chunk-class-hierarchy-10">Unit Test of Chunk class hierarchy (10)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-chunk-class-hierarchy-10">Unit Test of Chunk class hierarchy (10)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of Chunk construction:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-chunk-construction-15">Unit Test of Chunk construction (15)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-chunk-construction-15">Unit Test of Chunk construction (15)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of Chunk interrogation:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-chunk-interrogation-16">Unit Test of Chunk interrogation (16)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-chunk-interrogation-16">Unit Test of Chunk interrogation (16)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of Chunk properties:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-chunk-properties-17">Unit Test of Chunk properties (17)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-chunk-properties-17">Unit Test of Chunk properties (17)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of Chunk superclass:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-chunk-superclass-11">Unit Test of Chunk superclass (11)</a>, →<a class="reference internal" href="#unit-test-of-chunk-superclass-12">Unit Test of Chunk superclass (12)</a>, →<a class="reference internal" href="#unit-test-of-chunk-superclass-13">Unit Test of Chunk superclass (13)</a>, →<a class="reference internal" href="#unit-test-of-chunk-superclass-14">Unit Test of Chunk superclass (14)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-chunk-superclass-11">Unit Test of Chunk superclass (11)</a>, → <a class="reference internal" href="#unit-test-of-chunk-superclass-12">Unit Test of Chunk superclass (12)</a>, → <a class="reference internal" href="#unit-test-of-chunk-superclass-13">Unit Test of Chunk superclass (13)</a>, → <a class="reference internal" href="#unit-test-of-chunk-superclass-14">Unit Test of Chunk superclass (14)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of CodeCommand class to contain a program source code block:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-codecommand-class-to-contain-a-program-source-code-block-25">Unit Test of CodeCommand class to contain a program source code block (25)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-codecommand-class-to-contain-a-program-source-code-block-25">Unit Test of CodeCommand class to contain a program source code block (25)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of Command class hierarchy:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-command-class-hierarchy-22">Unit Test of Command class hierarchy (22)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-command-class-hierarchy-22">Unit Test of Command class hierarchy (22)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of Command superclass:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-command-superclass-23">Unit Test of Command superclass (23)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-command-superclass-23">Unit Test of Command superclass (23)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of Emitter Superclass:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-emitter-superclass-3">Unit Test of Emitter Superclass (3)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-emitter-superclass-3">Unit Test of Emitter Superclass (3)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of Emitter class hierarchy:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-emitter-class-hierarchy-2">Unit Test of Emitter class hierarchy (2)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-emitter-class-hierarchy-2">Unit Test of Emitter class hierarchy (2)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of FileXrefCommand class for an output file cross-reference:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-filexrefcommand-class-for-an-output-file-cross-reference-27">Unit Test of FileXrefCommand class for an output file cross-reference (27)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-filexrefcommand-class-for-an-output-file-cross-reference-27">Unit Test of FileXrefCommand class for an output file cross-reference (27)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of HTML subclass of Emitter:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-html-subclass-of-emitter-7">Unit Test of HTML subclass of Emitter (7)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-html-subclass-of-emitter-7">Unit Test of HTML subclass of Emitter (7)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of LaTeX subclass of Emitter:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-latex-subclass-of-emitter-6">Unit Test of LaTeX subclass of Emitter (6)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-latex-subclass-of-emitter-6">Unit Test of LaTeX subclass of Emitter (6)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of MacroXrefCommand class for a named chunk cross-reference:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-macroxrefcommand-class-for-a-named-chunk-cross-reference-28">Unit Test of MacroXrefCommand class for a named chunk cross-reference (28)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-macroxrefcommand-class-for-a-named-chunk-cross-reference-28">Unit Test of MacroXrefCommand class for a named chunk cross-reference (28)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of NamedChunk subclass:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-namedchunk-subclass-18">Unit Test of NamedChunk subclass (18)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-namedchunk-subclass-18">Unit Test of NamedChunk subclass (18)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of NamedChunk_Noindent subclass:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-namedchunk-noindent-subclass-19">Unit Test of NamedChunk_Noindent subclass (19)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-namedchunk-noindent-subclass-19">Unit Test of NamedChunk_Noindent subclass (19)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of NamedDocumentChunk subclass:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-nameddocumentchunk-subclass-21">Unit Test of NamedDocumentChunk subclass (21)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-nameddocumentchunk-subclass-21">Unit Test of NamedDocumentChunk subclass (21)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of OutputChunk subclass:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-outputchunk-subclass-20">Unit Test of OutputChunk subclass (20)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-outputchunk-subclass-20">Unit Test of OutputChunk subclass (20)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of Reference class hierarchy:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-reference-class-hierarchy-31">Unit Test of Reference class hierarchy (31)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-reference-class-hierarchy-31">Unit Test of Reference class hierarchy (31)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of ReferenceCommand class for chunk references:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-referencecommand-class-for-chunk-references-30">Unit Test of ReferenceCommand class for chunk references (30)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-referencecommand-class-for-chunk-references-30">Unit Test of ReferenceCommand class for chunk references (30)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of Tangler subclass of Emitter:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-tangler-subclass-of-emitter-8">Unit Test of Tangler subclass of Emitter (8)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-tangler-subclass-of-emitter-8">Unit Test of Tangler subclass of Emitter (8)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of TanglerMake subclass of Emitter:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-tanglermake-subclass-of-emitter-9">Unit Test of TanglerMake subclass of Emitter (9)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-tanglermake-subclass-of-emitter-9">Unit Test of TanglerMake subclass of Emitter (9)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of TextCommand class to contain a document text block:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-textcommand-class-to-contain-a-document-text-block-24">Unit Test of TextCommand class to contain a document text block (24)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-textcommand-class-to-contain-a-document-text-block-24">Unit Test of TextCommand class to contain a document text block (24)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of UserIdXrefCommand class for a user identifier cross-reference:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-useridxrefcommand-class-for-a-user-identifier-cross-reference-29">Unit Test of UserIdXrefCommand class for a user identifier cross-reference (29)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-useridxrefcommand-class-for-a-user-identifier-cross-reference-29">Unit Test of UserIdXrefCommand class for a user identifier cross-reference (29)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of Weaver subclass of Emitter:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-weaver-subclass-of-emitter-5">Unit Test of Weaver subclass of Emitter (5)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-weaver-subclass-of-emitter-5">Unit Test of Weaver subclass of Emitter (5)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of Web class:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-web-class-32">Unit Test of Web class (32)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-web-class-32">Unit Test of Web class (32)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of WebReader class:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-webreader-class-33">Unit Test of WebReader class (33)</a>, →<a class="reference internal" href="#unit-test-of-webreader-class-34">Unit Test of WebReader class (34)</a>, →<a class="reference internal" href="#unit-test-of-webreader-class-35">Unit Test of WebReader class (35)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-webreader-class-33">Unit Test of WebReader class (33)</a>, → <a class="reference internal" href="#unit-test-of-webreader-class-34">Unit Test of WebReader class (34)</a>, → <a class="reference internal" href="#unit-test-of-webreader-class-35">Unit Test of WebReader class (35)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of XrefCommand superclass for all cross-reference commands:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-xrefcommand-superclass-for-all-cross-reference-commands-26">Unit Test of XrefCommand superclass for all cross-reference commands (26)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-xrefcommand-superclass-for-all-cross-reference-commands-26">Unit Test of XrefCommand superclass for all cross-reference commands (26)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test overheads:</th></tr>
 <tr class="field"><td>&nbsp;</td><td class="field-body">imports, etc.:
-→<a class="reference internal" href="#unit-test-overheads-imports-etc-42">Unit Test overheads: imports, etc. (42)</a>, →<a class="reference internal" href="#unit-test-overheads-imports-etc-43">Unit Test overheads: imports, etc. (43)</a></td>
+→ <a class="reference internal" href="#unit-test-overheads-imports-etc-42">Unit Test overheads: imports, etc. (42)</a>, → <a class="reference internal" href="#unit-test-overheads-imports-etc-43">Unit Test overheads: imports, etc. (43)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit test of Action Sequence class:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-action-sequence-class-37">Unit test of Action Sequence class (37)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-action-sequence-class-37">Unit test of Action Sequence class (37)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit test of LoadAction class:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-loadaction-class-40">Unit test of LoadAction class (40)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-loadaction-class-40">Unit test of LoadAction class (40)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit test of TangleAction class:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-tangleaction-class-39">Unit test of TangleAction class (39)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-tangleaction-class-39">Unit test of TangleAction class (39)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit test of WeaverAction class:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#unit-test-of-weaveraction-class-38">Unit test of WeaverAction class (38)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-weaveraction-class-38">Unit test of WeaverAction class (38)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Weave Test evaluation of expressions:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#weave-test-evaluation-of-expressions-76">Weave Test evaluation of expressions (76)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#weave-test-evaluation-of-expressions-76">Weave Test evaluation of expressions (76)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Weave Test main program:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#weave-test-main-program-79">Weave Test main program (79)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#weave-test-main-program-79">Weave Test main program (79)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Weave Test overheads:</th></tr>
 <tr class="field"><td>&nbsp;</td><td class="field-body">imports, etc.:
-→<a class="reference internal" href="#weave-test-overheads-imports-etc-78">Weave Test overheads: imports, etc. (78)</a></td>
+→ <a class="reference internal" href="#weave-test-overheads-imports-etc-78">Weave Test overheads: imports, etc. (78)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Weave Test references and definitions:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#weave-test-references-and-definitions-72">Weave Test references and definitions (72)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#weave-test-references-and-definitions-72">Weave Test references and definitions (72)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Weave Test superclass to refactor common setup:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→<a class="reference internal" href="#weave-test-superclass-to-refactor-common-setup-71">Weave Test superclass to refactor common setup (71)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#weave-test-superclass-to-refactor-common-setup-71">Weave Test superclass to refactor common setup (71)</a></td>
 </tr>
 </tbody>
 </table>
 <hr class="docutils" />
 <blockquote class="small">
-Created by src/pyweb.py at Sat Jul 16 11:53:06 2022.</blockquote>
+Created by src/pyweb.py at Sat Jul 16 12:18:35 2022.</blockquote>
 <p class="small">Source tests/pyweb_test.w modified Sat Jul  2 09:39:56 2022.</p>
 <blockquote class="small">
 <p>pyweb.__version__ '3.2'.</p>

@@ -1400,11 +1400,11 @@ data model for the source WEB of chunks.</p>
 <p>Here are some of the base classes that define
 the structure and meaning of a <code class="docutils literal notranslate"><span class="pre">.w</span></code> source file.</p>
 <p class="rubric" id="base-class-definitions-1">Base Class Definitions (1) =</p>
-<pre class="code literal-block"><code>→<a class="reference internal" href="#command-class-hierarchy-used-to-describe-individual-commands-in-a-chunk-6">Command class hierarchy -- used to describe individual commands in a chunk (6)</a>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#command-class-hierarchy-used-to-describe-individual-commands-in-a-chunk-6">Command class hierarchy -- used to describe individual commands in a chunk (6)</a>
 
-→<a class="reference internal" href="#chunk-class-hierarchy-used-to-describe-individual-chunks-4">Chunk class hierarchy -- used to describe individual chunks (4)</a>
+→ <a class="reference internal" href="#chunk-class-hierarchy-used-to-describe-individual-chunks-4">Chunk class hierarchy -- used to describe individual chunks (4)</a>
 
-→<a class="reference internal" href="#web-class-describes-the-overall-web-of-chunks-3">Web class -- describes the overall &quot;web&quot; of chunks (3)</a></code></pre>
+→ <a class="reference internal" href="#web-class-describes-the-overall-web-of-chunks-3">Web class -- describes the overall &quot;web&quot; of chunks (3)</a></code></pre>
 <div class="small docutils container">
 <p>∎ <em>Base Class Definitions (1)</em></p>
 </div>
@@ -1966,17 +1966,17 @@ This includes the necessary file naming, opening, writing and closing operations
 It also includes providing the correct markup for the file type.</p>
 <p>The reference class definitions are used by by the <code class="docutils literal notranslate"><span class="pre">Emitter</span></code> class, and needs to be defined first.</p>
 <p class="rubric" id="base-class-definitions-8">Base Class Definitions (8) +=</p>
-<pre class="code literal-block"><code>→<a class="reference internal" href="#reference-class-hierarchy-strategies-for-weaving-references-to-a-chunk-23">Reference class hierarchy - strategies for weaving references to a chunk (23)</a>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#reference-class-hierarchy-strategies-for-weaving-references-to-a-chunk-23">Reference class hierarchy - strategies for weaving references to a chunk (23)</a>
 
-→<a class="reference internal" href="#emitter-superclass-10">Emitter Superclass (10)</a>
+→ <a class="reference internal" href="#emitter-superclass-10">Emitter Superclass (10)</a>
 
-→<a class="reference internal" href="#quoting-rule-definitions-functions-used-by-templates-12">Quoting rule definitions -- functions used by templates (12)</a>
+→ <a class="reference internal" href="#quoting-rule-definitions-functions-used-by-templates-12">Quoting rule definitions -- functions used by templates (12)</a>
 
-→<a class="reference internal" href="#weaver-subclass-uses-jinja-templates-to-weave-documentation-11">Weaver Subclass -- Uses Jinja templates to weave documentation (11)</a>
+→ <a class="reference internal" href="#weaver-subclass-uses-jinja-templates-to-weave-documentation-11">Weaver Subclass -- Uses Jinja templates to weave documentation (11)</a>
 
-→<a class="reference internal" href="#tangler-subclass-emits-the-output-files-18">Tangler Subclass -- emits the output files (18)</a>
+→ <a class="reference internal" href="#tangler-subclass-emits-the-output-files-18">Tangler Subclass -- emits the output files (18)</a>
 
-→<a class="reference internal" href="#tanglermake-subclass-extends-tangler-to-avoid-touching-files-that-didn-t-change-22">TanglerMake Subclass -- extends Tangler to avoid touching files that didn't change (22)</a></code></pre>
+→ <a class="reference internal" href="#tanglermake-subclass-extends-tangler-to-avoid-touching-files-that-didn-t-change-22">TanglerMake Subclass -- extends Tangler to avoid touching files that didn't change (22)</a></code></pre>
 <div class="small docutils container">
 <p>∎ <em>Base Class Definitions (8)</em></p>
 </div>
@@ -2019,15 +2019,15 @@ part of the key into the template map. We expand this into <code class="docutils
 <li><p><code class="docutils literal notranslate"><span class="pre">rst-docutils</span></code> is an alias for the nosphinx option.</p></li>
 </ul>
 <p class="rubric" id="weaver-subclass-uses-jinja-templates-to-weave-documentation-11">Weaver Subclass – Uses Jinja templates to weave documentation (11) =</p>
-<pre class="code literal-block"><code>→<a class="reference internal" href="#debug-templates-these-display-debugging-information-13">Debug Templates -- these display debugging information (13)</a>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#debug-templates-these-display-debugging-information-13">Debug Templates -- these display debugging information (13)</a>
 
-→<a class="reference internal" href="#rst-templates-the-default-weave-output-14">RST Templates -- the default weave output (14)</a>
+→ <a class="reference internal" href="#rst-templates-the-default-weave-output-14">RST Templates -- the default weave output (14)</a>
 
-→<a class="reference internal" href="#html-templates-emit-html-weave-output-15">HTML Templates -- emit HTML weave output (15)</a>
+→ <a class="reference internal" href="#html-templates-emit-html-weave-output-15">HTML Templates -- emit HTML weave output (15)</a>
 
-→<a class="reference internal" href="#latex-templates-emit-latex-weave-output-16">LaTeX Templates -- emit LaTeX weave output (16)</a>
+→ <a class="reference internal" href="#latex-templates-emit-latex-weave-output-16">LaTeX Templates -- emit LaTeX weave output (16)</a>
 
-→<a class="reference internal" href="#common-base-template-this-is-used-for-all-weaving-17">Common base template -- this is used for ALL weaving (17)</a>
+→ <a class="reference internal" href="#common-base-template-this-is-used-for-all-weaving-17">Common base template -- this is used for ALL weaving (17)</a>
 
 class Weaver(Emitter):
     template_map = {
@@ -2218,7 +2218,7 @@ Note that code lines must be indented when using this markup.</p>
     {%- macro code(command) %}{% for line in command.text.splitlines() %}    {{line | quote_rules}}
     {% endfor -%}{% endmacro -%}
 
-    {%- macro ref(id) %}    \N{RIGHTWARDS ARROW}\ `{{id.full_name}} ({{id.seq}})`_{% endmacro -%}
+    {%- macro ref(id) %}    \N{RIGHTWARDS ARROW} `{{id.full_name}} ({{id.seq}})`_{% endmacro -%}
 
     {# When using Sphinx, this *could* be rst-class::, pure docutils uses container::#}
     {%- macro end_code(chunk) %}
@@ -2233,14 +2233,14 @@ Note that code lines must be indented when using this markup.</p>
     {%- macro file_xref(command) -%}
     {% for file in command.files -%}
     :{{file.name}}:
-        \N{RIGHTWARDS ARROW}\ `{{file.name}} ({{file.seq}})`_
+        \N{RIGHTWARDS ARROW} `{{file.name}} ({{file.seq}})`_
     {%- endfor %}
     {%- endmacro -%}
 
     {%- macro macro_xref(command) -%}
     {% for macro in command.macros -%}
     :{{macro.full_name}}:
-        {% for d in macro.def_list -%}\N{RIGHTWARDS ARROW}\ `{{d.full_name or d.name}} ({{d.seq}})`_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
+        {% for d in macro.def_list -%}\N{RIGHTWARDS ARROW} `{{d.full_name or d.name}} ({{d.seq}})`_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
 
     {% endfor %}
     {%- endmacro -%}
@@ -2248,7 +2248,7 @@ Note that code lines must be indented when using this markup.</p>
     {%- macro userid_xref(command) -%}
     {% for userid in command.userids -%}
     :{{userid.userid}}:
-        {% for r in userid.ref_list -%}\N{RIGHTWARDS ARROW}\ `{{r.full_name or r.name}} ({{r.seq}})`_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
+        {% for r in userid.ref_list -%}\N{RIGHTWARDS ARROW} `{{r.full_name or r.name}} ({{r.seq}})`_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
 
     {% endfor %}
     {%- endmacro -%}
@@ -2484,10 +2484,10 @@ to the additional parts of the definition.</p>
                 command.tangle(self, target)
 
 
-→<a class="reference internal" href="#emitter-write-a-block-of-code-with-proper-indents-19">Emitter write a block of code with proper indents (19)</a>
+→ <a class="reference internal" href="#emitter-write-a-block-of-code-with-proper-indents-19">Emitter write a block of code with proper indents (19)</a>
 
 
-→<a class="reference internal" href="#emitter-indent-control-set-clear-and-reset-20">Emitter indent control: set, clear and reset (20)</a></code></pre>
+→ <a class="reference internal" href="#emitter-indent-control-set-clear-and-reset-20">Emitter indent control: set, clear and reset (20)</a></code></pre>
 <div class="small docutils container">
 <p>∎ <em>Tangler Subclass – emits the output files (18)</em></p>
 </div>
@@ -2706,11 +2706,11 @@ to build a <code class="docutils literal notranslate"><span class="pre">Web</spa
 <li><p>The overall <code class="docutils literal notranslate"><span class="pre">WebReader</span></code> class.</p></li>
 </ul>
 <p class="rubric" id="base-class-definitions-26">Base Class Definitions (26) +=</p>
-<pre class="code literal-block"><code>→<a class="reference internal" href="#tokenizer-class-breaks-input-into-tokens-44">Tokenizer class - breaks input into tokens (44)</a>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#tokenizer-class-breaks-input-into-tokens-44">Tokenizer class - breaks input into tokens (44)</a>
 
-→<a class="reference internal" href="#option-parser-class-locates-optional-values-on-commands-46">Option Parser class - locates optional values on commands (46)</a>
+→ <a class="reference internal" href="#option-parser-class-locates-optional-values-on-commands-46">Option Parser class - locates optional values on commands (46)</a>
 
-→<a class="reference internal" href="#webreader-class-parses-the-input-file-building-the-web-structure-27">WebReader class - parses the input file, building the Web structure (27)</a></code></pre>
+→ <a class="reference internal" href="#webreader-class-parses-the-input-file-building-the-web-structure-27">WebReader class - parses the input file, building the Web structure (27)</a></code></pre>
 <div class="small docutils container">
 <p>∎ <em>Base Class Definitions (26)</em></p>
 </div>
@@ -2838,19 +2838,19 @@ when <code class="docutils literal notranslate"><span class="pre">load()</span><
         self.errors = 0
 
 
-→<a class="reference internal" href="#webreader-command-literals-42">WebReader command literals (42)</a>
+→ <a class="reference internal" href="#webreader-command-literals-42">WebReader command literals (42)</a>
 
     def __str__(self) -&gt; str:
         return self.__class__.__name__
 
 
-→<a class="reference internal" href="#webreader-location-in-the-input-stream-39">WebReader location in the input stream (39)</a>
+→ <a class="reference internal" href="#webreader-location-in-the-input-stream-39">WebReader location in the input stream (39)</a>
 
 
-→<a class="reference internal" href="#webreader-load-the-web-41">WebReader load the web (41)</a>
+→ <a class="reference internal" href="#webreader-load-the-web-41">WebReader load the web (41)</a>
 
 
-→<a class="reference internal" href="#webreader-handle-a-command-string-28">WebReader handle a command string (28)</a></code></pre>
+→ <a class="reference internal" href="#webreader-handle-a-command-string-28">WebReader handle a command string (28)</a></code></pre>
 <div class="small docutils container">
 <p>∎ <em>WebReader class - parses the input file, building the Web structure (27)</em></p>
 </div>
@@ -2888,19 +2888,19 @@ by <code class="docutils literal notranslate"><span class="pre">load()</span></c
     match token[:2]:
         case self.cmdo:
 
-→<a class="reference internal" href="#start-an-outputchunk-adding-it-to-the-web-29">start an OutputChunk, adding it to the web (29)</a>
+→ <a class="reference internal" href="#start-an-outputchunk-adding-it-to-the-web-29">start an OutputChunk, adding it to the web (29)</a>
         case self.cmdd:
 
-→<a class="reference internal" href="#start-a-namedchunk-or-nameddocumentchunk-adding-it-to-the-web-30">start a NamedChunk or NamedDocumentChunk, adding it to the web (30)</a>
+→ <a class="reference internal" href="#start-a-namedchunk-or-nameddocumentchunk-adding-it-to-the-web-30">start a NamedChunk or NamedDocumentChunk, adding it to the web (30)</a>
         case self.cmdi:
 
-→<a class="reference internal" href="#include-another-file-31">include another file (31)</a>
+→ <a class="reference internal" href="#include-another-file-31">include another file (31)</a>
         case self.cmdrcurl | self.cmdrbrak:
 
-→<a class="reference internal" href="#finish-a-chunk-start-a-new-chunk-adding-it-to-the-web-32">finish a chunk, start a new Chunk adding it to the web (32)</a>
+→ <a class="reference internal" href="#finish-a-chunk-start-a-new-chunk-adding-it-to-the-web-32">finish a chunk, start a new Chunk adding it to the web (32)</a>
         case self.cmdpipe:
 
-→<a class="reference internal" href="#assign-user-identifiers-to-the-current-chunk-33">assign user identifiers to the current chunk (33)</a>
+→ <a class="reference internal" href="#assign-user-identifiers-to-the-current-chunk-33">assign user identifiers to the current chunk (33)</a>
         case self.cmdf:
             self.content[-1].commands.append(FileXrefCommand(self.location()))
         case self.cmdm:
@@ -2909,13 +2909,13 @@ by <code class="docutils literal notranslate"><span class="pre">load()</span></c
             self.content[-1].commands.append(UserIdXrefCommand(self.location()))
         case self.cmdlangl:
 
-→<a class="reference internal" href="#add-a-reference-command-to-the-current-chunk-34">add a reference command to the current chunk (34)</a>
+→ <a class="reference internal" href="#add-a-reference-command-to-the-current-chunk-34">add a reference command to the current chunk (34)</a>
         case self.cmdlexpr:
 
-→<a class="reference internal" href="#add-an-expression-command-to-the-current-chunk-36">add an expression command to the current chunk (36)</a>
+→ <a class="reference internal" href="#add-an-expression-command-to-the-current-chunk-36">add an expression command to the current chunk (36)</a>
         case self.cmdcmd:
 
-→<a class="reference internal" href="#double-at-sign-replacement-append-this-character-to-previous-textcommand-37">double at-sign replacement, append this character to previous TextCommand (37)</a>
+→ <a class="reference internal" href="#double-at-sign-replacement-append-this-character-to-previous-textcommand-37">double at-sign replacement, append this character to previous TextCommand (37)</a>
         case self.cmdlcurl | self.cmdlbrak:
             # These should have been consumed as part of &#64;o and &#64;d parsing
             self.logger.error(&quot;Extra %r (possibly missing chunk name) near %r&quot;, token, self.location())
@@ -3563,11 +3563,11 @@ forest of <code class="docutils literal notranslate"><span class="pre">if</span>
 application.   A partner with this command hierarchy is the Application class
 that defines the application options, inputs and results.</p>
 <p class="rubric" id="action-class-hierarchy-used-to-describe-actions-of-the-application-50">Action class hierarchy – used to describe actions of the application (50) =</p>
-<pre class="code literal-block"><code>→<a class="reference internal" href="#action-superclass-has-common-features-of-all-actions-51">Action superclass has common features of all actions (51)</a>
-→<a class="reference internal" href="#actionsequence-subclass-that-holds-a-sequence-of-other-actions-54">ActionSequence subclass that holds a sequence of other actions (54)</a>
-→<a class="reference internal" href="#weaveaction-subclass-initiates-the-weave-action-57">WeaveAction subclass initiates the weave action (57)</a>
-→<a class="reference internal" href="#tangleaction-subclass-initiates-the-tangle-action-60">TangleAction subclass initiates the tangle action (60)</a>
-→<a class="reference internal" href="#loadaction-subclass-loads-the-document-web-63">LoadAction subclass loads the document web (63)</a></code></pre>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#action-superclass-has-common-features-of-all-actions-51">Action superclass has common features of all actions (51)</a>
+→ <a class="reference internal" href="#actionsequence-subclass-that-holds-a-sequence-of-other-actions-54">ActionSequence subclass that holds a sequence of other actions (54)</a>
+→ <a class="reference internal" href="#weaveaction-subclass-initiates-the-weave-action-57">WeaveAction subclass initiates the weave action (57)</a>
+→ <a class="reference internal" href="#tangleaction-subclass-initiates-the-tangle-action-60">TangleAction subclass initiates the tangle action (60)</a>
+→ <a class="reference internal" href="#loadaction-subclass-loads-the-document-web-63">LoadAction subclass loads the document web (63)</a></code></pre>
 <div class="small docutils container">
 <p>∎ <em>Action class hierarchy – used to describe actions of the application (50)</em></p>
 </div>
@@ -3614,10 +3614,10 @@ A LoadAction will update this with the <code class="docutils literal notranslate
         return f&quot;{self.name!s} [{self.options.web!s}]&quot;
 
 
-→<a class="reference internal" href="#action-call-method-actually-does-the-real-work-52">Action call method actually does the real work (52)</a>
+→ <a class="reference internal" href="#action-call-method-actually-does-the-real-work-52">Action call method actually does the real work (52)</a>
 
 
-→<a class="reference internal" href="#action-final-summary-of-what-was-done-53">Action final summary of what was done (53)</a></code></pre>
+→ <a class="reference internal" href="#action-final-summary-of-what-was-done-53">Action final summary of what was done (53)</a></code></pre>
 <div class="small docutils container">
 <p>∎ <em>Action superclass has common features of all actions (51)</em></p>
 </div>
@@ -3668,10 +3668,10 @@ an <code class="docutils literal notranslate"><span class="pre">append()</span><
         return &quot;; &quot;.join([str(x) for x in self.opSequence])
 
 
-→<a class="reference internal" href="#actionsequence-call-method-delegates-the-sequence-of-ations-55">ActionSequence call method delegates the sequence of ations (55)</a>
+→ <a class="reference internal" href="#actionsequence-call-method-delegates-the-sequence-of-ations-55">ActionSequence call method delegates the sequence of ations (55)</a>
 
 
-→<a class="reference internal" href="#actionsequence-summary-summarizes-each-step-56">ActionSequence summary summarizes each step (56)</a></code></pre>
+→ <a class="reference internal" href="#actionsequence-summary-summarizes-each-step-56">ActionSequence summary summarizes each step (56)</a></code></pre>
 <div class="small docutils container">
 <p>∎ <em>ActionSequence subclass that holds a sequence of other actions (54)</em></p>
 </div>
@@ -3718,10 +3718,10 @@ Otherwise, the <code class="docutils literal notranslate"><span class="pre">web.
         return f&quot;{self.name!s} [{self.options.web!s}, {self.options.theWeaver!s}]&quot;
 
 
-→<a class="reference internal" href="#weaveaction-call-method-to-pick-the-language-58">WeaveAction call method to pick the language (58)</a>
+→ <a class="reference internal" href="#weaveaction-call-method-to-pick-the-language-58">WeaveAction call method to pick the language (58)</a>
 
 
-→<a class="reference internal" href="#weaveaction-summary-of-language-choice-59">WeaveAction summary of language choice (59)</a></code></pre>
+→ <a class="reference internal" href="#weaveaction-summary-of-language-choice-59">WeaveAction summary of language choice (59)</a></code></pre>
 <div class="small docutils container">
 <p>∎ <em>WeaveAction subclass initiates the weave action (57)</em></p>
 </div>
@@ -3780,10 +3780,10 @@ are examined and a weaver is selected.</p>
         super().__init__(&quot;Tangle&quot;)
 
 
-→<a class="reference internal" href="#tangleaction-call-method-does-tangling-of-the-output-files-61">TangleAction call method does tangling of the output files (61)</a>
+→ <a class="reference internal" href="#tangleaction-call-method-does-tangling-of-the-output-files-61">TangleAction call method does tangling of the output files (61)</a>
 
 
-→<a class="reference internal" href="#tangleaction-summary-method-provides-total-lines-tangled-62">TangleAction summary method provides total lines tangled (62)</a></code></pre>
+→ <a class="reference internal" href="#tangleaction-summary-method-provides-total-lines-tangled-62">TangleAction summary method provides total lines tangled (62)</a></code></pre>
 <div class="small docutils container">
 <p>∎ <em>TangleAction subclass initiates the tangle action (60)</em></p>
 </div>
@@ -3836,10 +3836,10 @@ this class is part of any of the weave, tangle and “do everything” action.</
         return f&quot;Load [{self.webReader!s}, {self.options.web!s}]&quot;
 
 
-→<a class="reference internal" href="#loadaction-call-method-loads-the-input-files-64">LoadAction call method loads the input files (64)</a>
+→ <a class="reference internal" href="#loadaction-call-method-loads-the-input-files-64">LoadAction call method loads the input files (64)</a>
 
 
-→<a class="reference internal" href="#loadaction-summary-provides-lines-read-65">LoadAction summary provides lines read (65)</a></code></pre>
+→ <a class="reference internal" href="#loadaction-summary-provides-lines-read-65">LoadAction summary provides lines read (65)</a></code></pre>
 <div class="small docutils container">
 <p>∎ <em>LoadAction subclass loads the document web (63)</em></p>
 </div>
@@ -3947,13 +3947,13 @@ expected default behavior for this module when it is used as the main program.</
     def __init__(self) -&gt; None:
         self.logger = logging.getLogger(self.__class__.__qualname__)
 
-→<a class="reference internal" href="#application-default-options-68">Application default options (68)</a>
+→ <a class="reference internal" href="#application-default-options-68">Application default options (68)</a>
 
 
-→<a class="reference internal" href="#application-parse-command-line-69">Application parse command line (69)</a>
+→ <a class="reference internal" href="#application-parse-command-line-69">Application parse command line (69)</a>
 
 
-→<a class="reference internal" href="#application-class-process-all-files-70">Application class process all files (70)</a></code></pre>
+→ <a class="reference internal" href="#application-class-process-all-files-70">Application class process all files (70)</a></code></pre>
 <div class="small docutils container">
 <p>∎ <em>Application Class for overall CLI operation (67)</em></p>
 </div>
@@ -4296,14 +4296,14 @@ as a weaver template configuration file.</p>
 <h4><a class="toc-backref" href="#id61" role="doc-backlink"><strong>pyWeb</strong> Module File</a><a class="headerlink" href="#pyweb-module-file" title="Permalink to this heading">¶</a></h4>
 <p>The <strong>pyWeb</strong> application file is shown below:</p>
 <p class="rubric" id="pyweb-py-76">pyweb.py (76) =</p>
-<pre class="code literal-block"><code>→<a class="reference internal" href="#overheads-78">Overheads (78)</a>
-→<a class="reference internal" href="#imports-2">Imports (2)</a>
-→<a class="reference internal" href="#error-class-defines-the-errors-raised-49">Error class -- defines the errors raised (49)</a>
-→<a class="reference internal" href="#base-class-definitions-1">Base Class Definitions (1)</a>
-→<a class="reference internal" href="#action-class-hierarchy-used-to-describe-actions-of-the-application-50">Action class hierarchy -- used to describe actions of the application (50)</a>
-→<a class="reference internal" href="#application-class-for-overall-cli-operation-67">Application Class for overall CLI operation (67)</a>
-→<a class="reference internal" href="#logging-setup-72">Logging Setup (72)</a>
-→<a class="reference internal" href="#interface-functions-75">Interface Functions (75)</a>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#overheads-78">Overheads (78)</a>
+→ <a class="reference internal" href="#imports-2">Imports (2)</a>
+→ <a class="reference internal" href="#error-class-defines-the-errors-raised-49">Error class -- defines the errors raised (49)</a>
+→ <a class="reference internal" href="#base-class-definitions-1">Base Class Definitions (1)</a>
+→ <a class="reference internal" href="#action-class-hierarchy-used-to-describe-actions-of-the-application-50">Action class hierarchy -- used to describe actions of the application (50)</a>
+→ <a class="reference internal" href="#application-class-for-overall-cli-operation-67">Application Class for overall CLI operation (67)</a>
+→ <a class="reference internal" href="#logging-setup-72">Logging Setup (72)</a>
+→ <a class="reference internal" href="#interface-functions-75">Interface Functions (75)</a>
 
 if __name__ == &quot;__main__&quot;:
     with Logger(log_config):
@@ -4396,7 +4396,7 @@ pyweb.py, __version__='
 3.2'.
 ### From source
 impl.w modified
-Sat Jul 16 11:39:51 2022.
+Sat Jul 16 12:17:52 2022.
 ### In working directory '
 /Users/slott/Documents/Projects/py-web-tool/src'.</code></pre>
 <div class="small docutils container">
@@ -4496,11 +4496,11 @@ if __name__ == &quot;__main__&quot;:
 to define a customized set of templates for a different markup language.</p>
 <p>A customized weaver generally has three parts.</p>
 <p class="rubric" id="weave-py-82">weave.py (82) =</p>
-<pre class="code literal-block"><code>→<a class="reference internal" href="#weave-py-overheads-for-correct-operation-of-a-script-83">weave.py overheads for correct operation of a script (83)</a>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#weave-py-overheads-for-correct-operation-of-a-script-83">weave.py overheads for correct operation of a script (83)</a>
 
-→<a class="reference internal" href="#weave-py-custom-weaver-definition-to-customize-the-weaver-being-used-84">weave.py custom weaver definition to customize the Weaver being used (84)</a>
+→ <a class="reference internal" href="#weave-py-custom-weaver-definition-to-customize-the-weaver-being-used-84">weave.py custom weaver definition to customize the Weaver being used (84)</a>
 
-→<a class="reference internal" href="#weaver-py-processing-load-and-weave-the-document-85">weaver.py processing: load and weave the document (85)</a></code></pre>
+→ <a class="reference internal" href="#weaver-py-processing-load-and-weave-the-document-85">weaver.py processing: load and weave the document (85)</a></code></pre>
 <div class="small docutils container">
 <p>∎ <em>weave.py (82)</em></p>
 </div>
@@ -4749,10 +4749,10 @@ of the ReferenceCommand.</p></li>
 <h4><a class="toc-backref" href="#id71" role="doc-backlink">Files</a><a class="headerlink" href="#files" title="Permalink to this heading">¶</a></h4>
 <dl class="field-list simple">
 <dt class="field-odd">logging.toml<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#logging-toml-74">logging.toml (74)</a>:pyweb.py:
-→<a class="reference internal" href="#pyweb-py-76">pyweb.py (76)</a>:tangle.py:
-→<a class="reference internal" href="#tangle-py-81">tangle.py (81)</a>:weave.py:
-→<a class="reference internal" href="#weave-py-82">weave.py (82)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#logging-toml-74">logging.toml (74)</a>:pyweb.py:
+→ <a class="reference internal" href="#pyweb-py-76">pyweb.py (76)</a>:tangle.py:
+→ <a class="reference internal" href="#tangle-py-81">tangle.py (81)</a>:weave.py:
+→ <a class="reference internal" href="#weave-py-82">weave.py (82)</a></p>
 </dd>
 </dl>
 </section>
@@ -4760,186 +4760,186 @@ of the ReferenceCommand.</p></li>
 <h4><a class="toc-backref" href="#id72" role="doc-backlink">Macros</a><a class="headerlink" href="#macros" title="Permalink to this heading">¶</a></h4>
 <dl class="field-list simple">
 <dt class="field-odd">Action call method actually does the real work<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#action-call-method-actually-does-the-real-work-52">Action call method actually does the real work (52)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#action-call-method-actually-does-the-real-work-52">Action call method actually does the real work (52)</a></p>
 </dd>
 <dt class="field-even">Action class hierarchy – used to describe actions of the application<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#action-class-hierarchy-used-to-describe-actions-of-the-application-50">Action class hierarchy – used to describe actions of the application (50)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#action-class-hierarchy-used-to-describe-actions-of-the-application-50">Action class hierarchy – used to describe actions of the application (50)</a></p>
 </dd>
 <dt class="field-odd">Action final summary of what was done<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#action-final-summary-of-what-was-done-53">Action final summary of what was done (53)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#action-final-summary-of-what-was-done-53">Action final summary of what was done (53)</a></p>
 </dd>
 <dt class="field-even">Action superclass has common features of all actions<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#action-superclass-has-common-features-of-all-actions-51">Action superclass has common features of all actions (51)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#action-superclass-has-common-features-of-all-actions-51">Action superclass has common features of all actions (51)</a></p>
 </dd>
 <dt class="field-odd">ActionSequence call method delegates the sequence of ations<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#actionsequence-call-method-delegates-the-sequence-of-ations-55">ActionSequence call method delegates the sequence of ations (55)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#actionsequence-call-method-delegates-the-sequence-of-ations-55">ActionSequence call method delegates the sequence of ations (55)</a></p>
 </dd>
 <dt class="field-even">ActionSequence subclass that holds a sequence of other actions<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#actionsequence-subclass-that-holds-a-sequence-of-other-actions-54">ActionSequence subclass that holds a sequence of other actions (54)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#actionsequence-subclass-that-holds-a-sequence-of-other-actions-54">ActionSequence subclass that holds a sequence of other actions (54)</a></p>
 </dd>
 <dt class="field-odd">ActionSequence summary summarizes each step<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#actionsequence-summary-summarizes-each-step-56">ActionSequence summary summarizes each step (56)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#actionsequence-summary-summarizes-each-step-56">ActionSequence summary summarizes each step (56)</a></p>
 </dd>
 <dt class="field-even">Application Class for overall CLI operation<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#application-class-for-overall-cli-operation-67">Application Class for overall CLI operation (67)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#application-class-for-overall-cli-operation-67">Application Class for overall CLI operation (67)</a></p>
 </dd>
 <dt class="field-odd">Application class process all files<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#application-class-process-all-files-70">Application class process all files (70)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#application-class-process-all-files-70">Application class process all files (70)</a></p>
 </dd>
 <dt class="field-even">Application default options<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#application-default-options-68">Application default options (68)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#application-default-options-68">Application default options (68)</a></p>
 </dd>
 <dt class="field-odd">Application parse command line<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#application-parse-command-line-69">Application parse command line (69)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#application-parse-command-line-69">Application parse command line (69)</a></p>
 </dd>
 <dt class="field-even">Base Class Definitions<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#base-class-definitions-1">Base Class Definitions (1)</a>, →<a class="reference internal" href="#base-class-definitions-8">Base Class Definitions (8)</a>, →<a class="reference internal" href="#base-class-definitions-26">Base Class Definitions (26)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#base-class-definitions-1">Base Class Definitions (1)</a>, → <a class="reference internal" href="#base-class-definitions-8">Base Class Definitions (8)</a>, → <a class="reference internal" href="#base-class-definitions-26">Base Class Definitions (26)</a></p>
 </dd>
 <dt class="field-odd">Chunk class hierarchy – used to describe individual chunks<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#chunk-class-hierarchy-used-to-describe-individual-chunks-4">Chunk class hierarchy – used to describe individual chunks (4)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#chunk-class-hierarchy-used-to-describe-individual-chunks-4">Chunk class hierarchy – used to describe individual chunks (4)</a></p>
 </dd>
 <dt class="field-even">Command class hierarchy – used to describe individual commands in a chunk<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#command-class-hierarchy-used-to-describe-individual-commands-in-a-chunk-6">Command class hierarchy – used to describe individual commands in a chunk (6)</a>, →<a class="reference internal" href="#command-class-hierarchy-used-to-describe-individual-commands-in-a-chunk-7">Command class hierarchy – used to describe individual commands in a chunk (7)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#command-class-hierarchy-used-to-describe-individual-commands-in-a-chunk-6">Command class hierarchy – used to describe individual commands in a chunk (6)</a>, → <a class="reference internal" href="#command-class-hierarchy-used-to-describe-individual-commands-in-a-chunk-7">Command class hierarchy – used to describe individual commands in a chunk (7)</a></p>
 </dd>
 <dt class="field-odd">Common base template – this is used for ALL weaving<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#common-base-template-this-is-used-for-all-weaving-17">Common base template – this is used for ALL weaving (17)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#common-base-template-this-is-used-for-all-weaving-17">Common base template – this is used for ALL weaving (17)</a></p>
 </dd>
 <dt class="field-even">Debug Templates – these display debugging information<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#debug-templates-these-display-debugging-information-13">Debug Templates – these display debugging information (13)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#debug-templates-these-display-debugging-information-13">Debug Templates – these display debugging information (13)</a></p>
 </dd>
 <dt class="field-odd">Emitter Superclass<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#emitter-superclass-10">Emitter Superclass (10)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#emitter-superclass-10">Emitter Superclass (10)</a></p>
 </dd>
 <dt class="field-even">Emitter indent control<span class="colon">:</span></dt>
 <dd class="field-even"><p>set, clear and reset:
-→<a class="reference internal" href="#emitter-indent-control-set-clear-and-reset-20">Emitter indent control: set, clear and reset (20)</a></p>
+→ <a class="reference internal" href="#emitter-indent-control-set-clear-and-reset-20">Emitter indent control: set, clear and reset (20)</a></p>
 </dd>
 <dt class="field-odd">Emitter write a block of code with proper indents<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#emitter-write-a-block-of-code-with-proper-indents-19">Emitter write a block of code with proper indents (19)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#emitter-write-a-block-of-code-with-proper-indents-19">Emitter write a block of code with proper indents (19)</a></p>
 </dd>
 <dt class="field-even">Error class – defines the errors raised<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#error-class-defines-the-errors-raised-49">Error class – defines the errors raised (49)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#error-class-defines-the-errors-raised-49">Error class – defines the errors raised (49)</a></p>
 </dd>
 <dt class="field-odd">HTML Templates – emit HTML weave output<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#html-templates-emit-html-weave-output-15">HTML Templates – emit HTML weave output (15)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#html-templates-emit-html-weave-output-15">HTML Templates – emit HTML weave output (15)</a></p>
 </dd>
 <dt class="field-even">Imports<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#imports-2">Imports (2)</a>, →<a class="reference internal" href="#imports-5">Imports (5)</a>, →<a class="reference internal" href="#imports-9">Imports (9)</a>, →<a class="reference internal" href="#imports-21">Imports (21)</a>, →<a class="reference internal" href="#imports-35">Imports (35)</a>, →<a class="reference internal" href="#imports-40">Imports (40)</a>, →<a class="reference internal" href="#imports-43">Imports (43)</a>, →<a class="reference internal" href="#imports-45">Imports (45)</a>, →<a class="reference internal" href="#imports-66">Imports (66)</a>, →<a class="reference internal" href="#imports-71">Imports (71)</a>, →<a class="reference internal" href="#imports-77">Imports (77)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#imports-2">Imports (2)</a>, → <a class="reference internal" href="#imports-5">Imports (5)</a>, → <a class="reference internal" href="#imports-9">Imports (9)</a>, → <a class="reference internal" href="#imports-21">Imports (21)</a>, → <a class="reference internal" href="#imports-35">Imports (35)</a>, → <a class="reference internal" href="#imports-40">Imports (40)</a>, → <a class="reference internal" href="#imports-43">Imports (43)</a>, → <a class="reference internal" href="#imports-45">Imports (45)</a>, → <a class="reference internal" href="#imports-66">Imports (66)</a>, → <a class="reference internal" href="#imports-71">Imports (71)</a>, → <a class="reference internal" href="#imports-77">Imports (77)</a></p>
 </dd>
 <dt class="field-odd">Interface Functions<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#interface-functions-75">Interface Functions (75)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#interface-functions-75">Interface Functions (75)</a></p>
 </dd>
 <dt class="field-even">LaTeX Templates – emit LaTeX weave output<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#latex-templates-emit-latex-weave-output-16">LaTeX Templates – emit LaTeX weave output (16)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#latex-templates-emit-latex-weave-output-16">LaTeX Templates – emit LaTeX weave output (16)</a></p>
 </dd>
 <dt class="field-odd">LoadAction call method loads the input files<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#loadaction-call-method-loads-the-input-files-64">LoadAction call method loads the input files (64)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#loadaction-call-method-loads-the-input-files-64">LoadAction call method loads the input files (64)</a></p>
 </dd>
 <dt class="field-even">LoadAction subclass loads the document web<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#loadaction-subclass-loads-the-document-web-63">LoadAction subclass loads the document web (63)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#loadaction-subclass-loads-the-document-web-63">LoadAction subclass loads the document web (63)</a></p>
 </dd>
 <dt class="field-odd">LoadAction summary provides lines read<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#loadaction-summary-provides-lines-read-65">LoadAction summary provides lines read (65)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#loadaction-summary-provides-lines-read-65">LoadAction summary provides lines read (65)</a></p>
 </dd>
 <dt class="field-even">Logging Setup<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#logging-setup-72">Logging Setup (72)</a>, →<a class="reference internal" href="#logging-setup-73">Logging Setup (73)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#logging-setup-72">Logging Setup (72)</a>, → <a class="reference internal" href="#logging-setup-73">Logging Setup (73)</a></p>
 </dd>
 <dt class="field-odd">Option Parser class - locates optional values on commands<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#option-parser-class-locates-optional-values-on-commands-46">Option Parser class - locates optional values on commands (46)</a>, →<a class="reference internal" href="#option-parser-class-locates-optional-values-on-commands-47">Option Parser class - locates optional values on commands (47)</a>, →<a class="reference internal" href="#option-parser-class-locates-optional-values-on-commands-48">Option Parser class - locates optional values on commands (48)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#option-parser-class-locates-optional-values-on-commands-46">Option Parser class - locates optional values on commands (46)</a>, → <a class="reference internal" href="#option-parser-class-locates-optional-values-on-commands-47">Option Parser class - locates optional values on commands (47)</a>, → <a class="reference internal" href="#option-parser-class-locates-optional-values-on-commands-48">Option Parser class - locates optional values on commands (48)</a></p>
 </dd>
 <dt class="field-even">Overheads<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#overheads-78">Overheads (78)</a>, →<a class="reference internal" href="#overheads-79">Overheads (79)</a>, →<a class="reference internal" href="#overheads-80">Overheads (80)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#overheads-78">Overheads (78)</a>, → <a class="reference internal" href="#overheads-79">Overheads (79)</a>, → <a class="reference internal" href="#overheads-80">Overheads (80)</a></p>
 </dd>
 <dt class="field-odd">Quoting rule definitions – functions used by templates<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#quoting-rule-definitions-functions-used-by-templates-12">Quoting rule definitions – functions used by templates (12)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#quoting-rule-definitions-functions-used-by-templates-12">Quoting rule definitions – functions used by templates (12)</a></p>
 </dd>
 <dt class="field-even">RST Templates – the default weave output<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#rst-templates-the-default-weave-output-14">RST Templates – the default weave output (14)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#rst-templates-the-default-weave-output-14">RST Templates – the default weave output (14)</a></p>
 </dd>
 <dt class="field-odd">Reference class hierarchy - strategies for weaving references to a chunk<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#reference-class-hierarchy-strategies-for-weaving-references-to-a-chunk-23">Reference class hierarchy - strategies for weaving references to a chunk (23)</a>, →<a class="reference internal" href="#reference-class-hierarchy-strategies-for-weaving-references-to-a-chunk-24">Reference class hierarchy - strategies for weaving references to a chunk (24)</a>, →<a class="reference internal" href="#reference-class-hierarchy-strategies-for-weaving-references-to-a-chunk-25">Reference class hierarchy - strategies for weaving references to a chunk (25)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#reference-class-hierarchy-strategies-for-weaving-references-to-a-chunk-23">Reference class hierarchy - strategies for weaving references to a chunk (23)</a>, → <a class="reference internal" href="#reference-class-hierarchy-strategies-for-weaving-references-to-a-chunk-24">Reference class hierarchy - strategies for weaving references to a chunk (24)</a>, → <a class="reference internal" href="#reference-class-hierarchy-strategies-for-weaving-references-to-a-chunk-25">Reference class hierarchy - strategies for weaving references to a chunk (25)</a></p>
 </dd>
 <dt class="field-even">TangleAction call method does tangling of the output files<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#tangleaction-call-method-does-tangling-of-the-output-files-61">TangleAction call method does tangling of the output files (61)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#tangleaction-call-method-does-tangling-of-the-output-files-61">TangleAction call method does tangling of the output files (61)</a></p>
 </dd>
 <dt class="field-odd">TangleAction subclass initiates the tangle action<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#tangleaction-subclass-initiates-the-tangle-action-60">TangleAction subclass initiates the tangle action (60)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#tangleaction-subclass-initiates-the-tangle-action-60">TangleAction subclass initiates the tangle action (60)</a></p>
 </dd>
 <dt class="field-even">TangleAction summary method provides total lines tangled<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#tangleaction-summary-method-provides-total-lines-tangled-62">TangleAction summary method provides total lines tangled (62)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#tangleaction-summary-method-provides-total-lines-tangled-62">TangleAction summary method provides total lines tangled (62)</a></p>
 </dd>
 <dt class="field-odd">Tangler Subclass – emits the output files<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#tangler-subclass-emits-the-output-files-18">Tangler Subclass – emits the output files (18)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#tangler-subclass-emits-the-output-files-18">Tangler Subclass – emits the output files (18)</a></p>
 </dd>
 <dt class="field-even">TanglerMake Subclass – extends Tangler to avoid touching files that didn’t change<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#tanglermake-subclass-extends-tangler-to-avoid-touching-files-that-didn-t-change-22">TanglerMake Subclass – extends Tangler to avoid touching files that didn’t change (22)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#tanglermake-subclass-extends-tangler-to-avoid-touching-files-that-didn-t-change-22">TanglerMake Subclass – extends Tangler to avoid touching files that didn’t change (22)</a></p>
 </dd>
 <dt class="field-odd">Tokenizer class - breaks input into tokens<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#tokenizer-class-breaks-input-into-tokens-44">Tokenizer class - breaks input into tokens (44)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#tokenizer-class-breaks-input-into-tokens-44">Tokenizer class - breaks input into tokens (44)</a></p>
 </dd>
 <dt class="field-even">WeaveAction call method to pick the language<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#weaveaction-call-method-to-pick-the-language-58">WeaveAction call method to pick the language (58)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#weaveaction-call-method-to-pick-the-language-58">WeaveAction call method to pick the language (58)</a></p>
 </dd>
 <dt class="field-odd">WeaveAction subclass initiates the weave action<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#weaveaction-subclass-initiates-the-weave-action-57">WeaveAction subclass initiates the weave action (57)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#weaveaction-subclass-initiates-the-weave-action-57">WeaveAction subclass initiates the weave action (57)</a></p>
 </dd>
 <dt class="field-even">WeaveAction summary of language choice<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#weaveaction-summary-of-language-choice-59">WeaveAction summary of language choice (59)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#weaveaction-summary-of-language-choice-59">WeaveAction summary of language choice (59)</a></p>
 </dd>
 <dt class="field-odd">Weaver Subclass – Uses Jinja templates to weave documentation<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#weaver-subclass-uses-jinja-templates-to-weave-documentation-11">Weaver Subclass – Uses Jinja templates to weave documentation (11)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#weaver-subclass-uses-jinja-templates-to-weave-documentation-11">Weaver Subclass – Uses Jinja templates to weave documentation (11)</a></p>
 </dd>
 <dt class="field-even">Web class – describes the overall “web” of chunks<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#web-class-describes-the-overall-web-of-chunks-3">Web class – describes the overall “web” of chunks (3)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#web-class-describes-the-overall-web-of-chunks-3">Web class – describes the overall “web” of chunks (3)</a></p>
 </dd>
 <dt class="field-odd">WebReader class - parses the input file, building the Web structure<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#webreader-class-parses-the-input-file-building-the-web-structure-27">WebReader class - parses the input file, building the Web structure (27)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#webreader-class-parses-the-input-file-building-the-web-structure-27">WebReader class - parses the input file, building the Web structure (27)</a></p>
 </dd>
 <dt class="field-even">WebReader command literals<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#webreader-command-literals-42">WebReader command literals (42)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#webreader-command-literals-42">WebReader command literals (42)</a></p>
 </dd>
 <dt class="field-odd">WebReader handle a command string<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#webreader-handle-a-command-string-28">WebReader handle a command string (28)</a>, →<a class="reference internal" href="#webreader-handle-a-command-string-38">WebReader handle a command string (38)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#webreader-handle-a-command-string-28">WebReader handle a command string (28)</a>, → <a class="reference internal" href="#webreader-handle-a-command-string-38">WebReader handle a command string (38)</a></p>
 </dd>
 <dt class="field-even">WebReader load the web<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#webreader-load-the-web-41">WebReader load the web (41)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#webreader-load-the-web-41">WebReader load the web (41)</a></p>
 </dd>
 <dt class="field-odd">WebReader location in the input stream<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#webreader-location-in-the-input-stream-39">WebReader location in the input stream (39)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#webreader-location-in-the-input-stream-39">WebReader location in the input stream (39)</a></p>
 </dd>
 <dt class="field-even">add a reference command to the current chunk<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#add-a-reference-command-to-the-current-chunk-34">add a reference command to the current chunk (34)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#add-a-reference-command-to-the-current-chunk-34">add a reference command to the current chunk (34)</a></p>
 </dd>
 <dt class="field-odd">add an expression command to the current chunk<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#add-an-expression-command-to-the-current-chunk-36">add an expression command to the current chunk (36)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#add-an-expression-command-to-the-current-chunk-36">add an expression command to the current chunk (36)</a></p>
 </dd>
 <dt class="field-even">assign user identifiers to the current chunk<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#assign-user-identifiers-to-the-current-chunk-33">assign user identifiers to the current chunk (33)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#assign-user-identifiers-to-the-current-chunk-33">assign user identifiers to the current chunk (33)</a></p>
 </dd>
 <dt class="field-odd">double at-sign replacement, append this character to previous TextCommand<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#double-at-sign-replacement-append-this-character-to-previous-textcommand-37">double at-sign replacement, append this character to previous TextCommand (37)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#double-at-sign-replacement-append-this-character-to-previous-textcommand-37">double at-sign replacement, append this character to previous TextCommand (37)</a></p>
 </dd>
 <dt class="field-even">finish a chunk, start a new Chunk adding it to the web<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#finish-a-chunk-start-a-new-chunk-adding-it-to-the-web-32">finish a chunk, start a new Chunk adding it to the web (32)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#finish-a-chunk-start-a-new-chunk-adding-it-to-the-web-32">finish a chunk, start a new Chunk adding it to the web (32)</a></p>
 </dd>
 <dt class="field-odd">include another file<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#include-another-file-31">include another file (31)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#include-another-file-31">include another file (31)</a></p>
 </dd>
 <dt class="field-even">start a NamedChunk or NamedDocumentChunk, adding it to the web<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#start-a-namedchunk-or-nameddocumentchunk-adding-it-to-the-web-30">start a NamedChunk or NamedDocumentChunk, adding it to the web (30)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#start-a-namedchunk-or-nameddocumentchunk-adding-it-to-the-web-30">start a NamedChunk or NamedDocumentChunk, adding it to the web (30)</a></p>
 </dd>
 <dt class="field-odd">start an OutputChunk, adding it to the web<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#start-an-outputchunk-adding-it-to-the-web-29">start an OutputChunk, adding it to the web (29)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#start-an-outputchunk-adding-it-to-the-web-29">start an OutputChunk, adding it to the web (29)</a></p>
 </dd>
 <dt class="field-even">weave.py custom weaver definition to customize the Weaver being used<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#weave-py-custom-weaver-definition-to-customize-the-weaver-being-used-84">weave.py custom weaver definition to customize the Weaver being used (84)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#weave-py-custom-weaver-definition-to-customize-the-weaver-being-used-84">weave.py custom weaver definition to customize the Weaver being used (84)</a></p>
 </dd>
 <dt class="field-odd">weave.py overheads for correct operation of a script<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#weave-py-overheads-for-correct-operation-of-a-script-83">weave.py overheads for correct operation of a script (83)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#weave-py-overheads-for-correct-operation-of-a-script-83">weave.py overheads for correct operation of a script (83)</a></p>
 </dd>
 <dt class="field-even">weaver.py processing<span class="colon">:</span></dt>
 <dd class="field-even"><p>load and weave the document:
-→<a class="reference internal" href="#weaver-py-processing-load-and-weave-the-document-85">weaver.py processing: load and weave the document (85)</a></p>
+→ <a class="reference internal" href="#weaver-py-processing-load-and-weave-the-document-85">weaver.py processing: load and weave the document (85)</a></p>
 </dd>
 </dl>
 </section>
@@ -4947,142 +4947,142 @@ of the ReferenceCommand.</p></li>
 <h4><a class="toc-backref" href="#id73" role="doc-backlink">User Identifiers</a><a class="headerlink" href="#user-identifiers" title="Permalink to this heading">¶</a></h4>
 <dl class="field-list simple">
 <dt class="field-odd">Action<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#action-superclass-has-common-features-of-all-actions-51">Action superclass has common features of all actions (51)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#action-superclass-has-common-features-of-all-actions-51">Action superclass has common features of all actions (51)</a></p>
 </dd>
 <dt class="field-even">ActionSequence<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#actionsequence-subclass-that-holds-a-sequence-of-other-actions-54">ActionSequence subclass that holds a sequence of other actions (54)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#actionsequence-subclass-that-holds-a-sequence-of-other-actions-54">ActionSequence subclass that holds a sequence of other actions (54)</a></p>
 </dd>
 <dt class="field-odd">Application<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#application-class-for-overall-cli-operation-67">Application Class for overall CLI operation (67)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#application-class-for-overall-cli-operation-67">Application Class for overall CLI operation (67)</a></p>
 </dd>
 <dt class="field-even">Chunk<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#chunk-class-hierarchy-used-to-describe-individual-chunks-4">Chunk class hierarchy – used to describe individual chunks (4)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#chunk-class-hierarchy-used-to-describe-individual-chunks-4">Chunk class hierarchy – used to describe individual chunks (4)</a></p>
 </dd>
 <dt class="field-odd">Error<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#error-class-defines-the-errors-raised-49">Error class – defines the errors raised (49)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#error-class-defines-the-errors-raised-49">Error class – defines the errors raised (49)</a></p>
 </dd>
 <dt class="field-even">LoadAction<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#loadaction-subclass-loads-the-document-web-63">LoadAction subclass loads the document web (63)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#loadaction-subclass-loads-the-document-web-63">LoadAction subclass loads the document web (63)</a></p>
 </dd>
 <dt class="field-odd">NamedChunk<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#chunk-class-hierarchy-used-to-describe-individual-chunks-4">Chunk class hierarchy – used to describe individual chunks (4)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#chunk-class-hierarchy-used-to-describe-individual-chunks-4">Chunk class hierarchy – used to describe individual chunks (4)</a></p>
 </dd>
 <dt class="field-even">NamedChunk_Noindent<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#chunk-class-hierarchy-used-to-describe-individual-chunks-4">Chunk class hierarchy – used to describe individual chunks (4)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#chunk-class-hierarchy-used-to-describe-individual-chunks-4">Chunk class hierarchy – used to describe individual chunks (4)</a></p>
 </dd>
 <dt class="field-odd">NamedDocumentChunk<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#chunk-class-hierarchy-used-to-describe-individual-chunks-4">Chunk class hierarchy – used to describe individual chunks (4)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#chunk-class-hierarchy-used-to-describe-individual-chunks-4">Chunk class hierarchy – used to describe individual chunks (4)</a></p>
 </dd>
 <dt class="field-even">OutputChunk<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#chunk-class-hierarchy-used-to-describe-individual-chunks-4">Chunk class hierarchy – used to describe individual chunks (4)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#chunk-class-hierarchy-used-to-describe-individual-chunks-4">Chunk class hierarchy – used to describe individual chunks (4)</a></p>
 </dd>
 <dt class="field-odd">TangleAction<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#tangleaction-subclass-initiates-the-tangle-action-60">TangleAction subclass initiates the tangle action (60)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#tangleaction-subclass-initiates-the-tangle-action-60">TangleAction subclass initiates the tangle action (60)</a></p>
 </dd>
 <dt class="field-even">Tokenizer<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#tokenizer-class-breaks-input-into-tokens-44">Tokenizer class - breaks input into tokens (44)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#tokenizer-class-breaks-input-into-tokens-44">Tokenizer class - breaks input into tokens (44)</a></p>
 </dd>
 <dt class="field-odd">TypeId<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#command-class-hierarchy-used-to-describe-individual-commands-in-a-chunk-6">Command class hierarchy – used to describe individual commands in a chunk (6)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#command-class-hierarchy-used-to-describe-individual-commands-in-a-chunk-6">Command class hierarchy – used to describe individual commands in a chunk (6)</a></p>
 </dd>
 <dt class="field-even">TypeIdMeta<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#command-class-hierarchy-used-to-describe-individual-commands-in-a-chunk-6">Command class hierarchy – used to describe individual commands in a chunk (6)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#command-class-hierarchy-used-to-describe-individual-commands-in-a-chunk-6">Command class hierarchy – used to describe individual commands in a chunk (6)</a></p>
 </dd>
 <dt class="field-odd">WeaveAction<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#weaveaction-subclass-initiates-the-weave-action-57">WeaveAction subclass initiates the weave action (57)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#weaveaction-subclass-initiates-the-weave-action-57">WeaveAction subclass initiates the weave action (57)</a></p>
 </dd>
 <dt class="field-even">Web<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#web-class-describes-the-overall-web-of-chunks-3">Web class – describes the overall “web” of chunks (3)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#web-class-describes-the-overall-web-of-chunks-3">Web class – describes the overall “web” of chunks (3)</a></p>
 </dd>
 <dt class="field-odd">WebReader<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#webreader-class-parses-the-input-file-building-the-web-structure-27">WebReader class - parses the input file, building the Web structure (27)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#webreader-class-parses-the-input-file-building-the-web-structure-27">WebReader class - parses the input file, building the Web structure (27)</a></p>
 </dd>
 <dt class="field-even">__version__<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#overheads-80">Overheads (80)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#overheads-80">Overheads (80)</a></p>
 </dd>
 <dt class="field-odd">addIndent<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#emitter-indent-control-set-clear-and-reset-20">Emitter indent control: set, clear and reset (20)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#emitter-indent-control-set-clear-and-reset-20">Emitter indent control: set, clear and reset (20)</a></p>
 </dd>
 <dt class="field-even">argparse<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#imports-66">Imports (66)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#imports-66">Imports (66)</a></p>
 </dd>
 <dt class="field-odd">builtins<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#imports-35">Imports (35)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#imports-35">Imports (35)</a></p>
 </dd>
 <dt class="field-even">clrIndent<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#emitter-indent-control-set-clear-and-reset-20">Emitter indent control: set, clear and reset (20)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#emitter-indent-control-set-clear-and-reset-20">Emitter indent control: set, clear and reset (20)</a></p>
 </dd>
 <dt class="field-odd">codeBlock<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#emitter-write-a-block-of-code-with-proper-indents-19">Emitter write a block of code with proper indents (19)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#emitter-write-a-block-of-code-with-proper-indents-19">Emitter write a block of code with proper indents (19)</a></p>
 </dd>
 <dt class="field-even">datetime<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#imports-77">Imports (77)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#imports-77">Imports (77)</a></p>
 </dd>
 <dt class="field-odd">duration<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#action-final-summary-of-what-was-done-53">Action final summary of what was done (53)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#action-final-summary-of-what-was-done-53">Action final summary of what was done (53)</a></p>
 </dd>
 <dt class="field-even">expand<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#application-parse-command-line-69">Application parse command line (69)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#application-parse-command-line-69">Application parse command line (69)</a></p>
 </dd>
 <dt class="field-odd">expect<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#webreader-handle-a-command-string-38">WebReader handle a command string (38)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#webreader-handle-a-command-string-38">WebReader handle a command string (38)</a></p>
 </dd>
 <dt class="field-even">handleCommand<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#webreader-handle-a-command-string-28">WebReader handle a command string (28)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#webreader-handle-a-command-string-28">WebReader handle a command string (28)</a></p>
 </dd>
 <dt class="field-odd">load<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#webreader-load-the-web-41">WebReader load the web (41)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#webreader-load-the-web-41">WebReader load the web (41)</a></p>
 </dd>
 <dt class="field-even">location<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#webreader-location-in-the-input-stream-39">WebReader location in the input stream (39)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#webreader-location-in-the-input-stream-39">WebReader location in the input stream (39)</a></p>
 </dd>
 <dt class="field-odd">logging<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#imports-71">Imports (71)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#imports-71">Imports (71)</a></p>
 </dd>
 <dt class="field-even">logging.config<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#imports-71">Imports (71)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#imports-71">Imports (71)</a></p>
 </dd>
 <dt class="field-odd">os<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#imports-77">Imports (77)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#imports-77">Imports (77)</a></p>
 </dd>
 <dt class="field-even">parse<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#webreader-load-the-web-41">WebReader load the web (41)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#webreader-load-the-web-41">WebReader load the web (41)</a></p>
 </dd>
 <dt class="field-odd">parseArgs<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#application-parse-command-line-69">Application parse command line (69)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#application-parse-command-line-69">Application parse command line (69)</a></p>
 </dd>
 <dt class="field-even">perform<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#action-call-method-actually-does-the-real-work-52">Action call method actually does the real work (52)</a>, →<a class="reference internal" href="#actionsequence-call-method-delegates-the-sequence-of-ations-55">ActionSequence call method delegates the sequence of ations (55)</a>, →<a class="reference internal" href="#weaveaction-call-method-to-pick-the-language-58">WeaveAction call method to pick the language (58)</a>, →<a class="reference internal" href="#tangleaction-call-method-does-tangling-of-the-output-files-61">TangleAction call method does tangling of the output files (61)</a>, →<a class="reference internal" href="#loadaction-call-method-loads-the-input-files-64">LoadAction call method loads the input files (64)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#action-call-method-actually-does-the-real-work-52">Action call method actually does the real work (52)</a>, → <a class="reference internal" href="#actionsequence-call-method-delegates-the-sequence-of-ations-55">ActionSequence call method delegates the sequence of ations (55)</a>, → <a class="reference internal" href="#weaveaction-call-method-to-pick-the-language-58">WeaveAction call method to pick the language (58)</a>, → <a class="reference internal" href="#tangleaction-call-method-does-tangling-of-the-output-files-61">TangleAction call method does tangling of the output files (61)</a>, → <a class="reference internal" href="#loadaction-call-method-loads-the-input-files-64">LoadAction call method loads the input files (64)</a></p>
 </dd>
 <dt class="field-odd">platform<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#imports-35">Imports (35)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#imports-35">Imports (35)</a></p>
 </dd>
 <dt class="field-even">process<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#application-class-process-all-files-70">Application class process all files (70)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#application-class-process-all-files-70">Application class process all files (70)</a></p>
 </dd>
 <dt class="field-odd">re<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#imports-43">Imports (43)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#imports-43">Imports (43)</a></p>
 </dd>
 <dt class="field-even">resetIndent<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#emitter-indent-control-set-clear-and-reset-20">Emitter indent control: set, clear and reset (20)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#emitter-indent-control-set-clear-and-reset-20">Emitter indent control: set, clear and reset (20)</a></p>
 </dd>
 <dt class="field-odd">setIndent<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#emitter-indent-control-set-clear-and-reset-20">Emitter indent control: set, clear and reset (20)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#emitter-indent-control-set-clear-and-reset-20">Emitter indent control: set, clear and reset (20)</a></p>
 </dd>
 <dt class="field-even">shlex<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#imports-45">Imports (45)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#imports-45">Imports (45)</a></p>
 </dd>
 <dt class="field-odd">summary<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#action-final-summary-of-what-was-done-53">Action final summary of what was done (53)</a>, →<a class="reference internal" href="#actionsequence-summary-summarizes-each-step-56">ActionSequence summary summarizes each step (56)</a>, →<a class="reference internal" href="#weaveaction-summary-of-language-choice-59">WeaveAction summary of language choice (59)</a>, →<a class="reference internal" href="#tangleaction-summary-method-provides-total-lines-tangled-62">TangleAction summary method provides total lines tangled (62)</a>, →<a class="reference internal" href="#loadaction-summary-provides-lines-read-65">LoadAction summary provides lines read (65)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#action-final-summary-of-what-was-done-53">Action final summary of what was done (53)</a>, → <a class="reference internal" href="#actionsequence-summary-summarizes-each-step-56">ActionSequence summary summarizes each step (56)</a>, → <a class="reference internal" href="#weaveaction-summary-of-language-choice-59">WeaveAction summary of language choice (59)</a>, → <a class="reference internal" href="#tangleaction-summary-method-provides-total-lines-tangled-62">TangleAction summary method provides total lines tangled (62)</a>, → <a class="reference internal" href="#loadaction-summary-provides-lines-read-65">LoadAction summary provides lines read (65)</a></p>
 </dd>
 <dt class="field-even">sys<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#imports-35">Imports (35)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#imports-35">Imports (35)</a></p>
 </dd>
 <dt class="field-odd">time<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→<a class="reference internal" href="#imports-77">Imports (77)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#imports-77">Imports (77)</a></p>
 </dd>
 <dt class="field-even">types<span class="colon">:</span></dt>
-<dd class="field-even"><p>→<a class="reference internal" href="#imports-77">Imports (77)</a></p>
+<dd class="field-even"><p>→ <a class="reference internal" href="#imports-77">Imports (77)</a></p>
 </dd>
 </dl>
 <hr class="docutils" />
@@ -5090,7 +5090,7 @@ of the ReferenceCommand.</p></li>
 <dt class="sig sig-object py" id="small">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">small</span></span><a class="headerlink" href="#small" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
-<div><p>Created by pyweb.py at Sat Jul 16 12:07:44 2022.</p>
+<div><p>Created by pyweb.py at Sat Jul 16 12:18:44 2022.</p>
 </div></blockquote>
 <p>Source pyweb.w modified Sun Jul  3 13:07:49 2022.</p>
 <blockquote>

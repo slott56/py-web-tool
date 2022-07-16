@@ -174,16 +174,16 @@ This gives us the following outline for unit testing.
 ..  parsed-literal::
     :class: code
 
-    →\ `Unit Test overheads: imports, etc. (42)`_    
-    →\ `Unit Test of Emitter class hierarchy (2)`_    
-    →\ `Unit Test of Chunk class hierarchy (10)`_    
-    →\ `Unit Test of Command class hierarchy (22)`_    
-    →\ `Unit Test of Reference class hierarchy (31)`_    
-    →\ `Unit Test of Web class (32)`_    
-    →\ `Unit Test of WebReader class (33)`_    
-    →\ `Unit Test of Action class hierarchy (36)`_    
-    →\ `Unit Test of Application class (41)`_    
-    →\ `Unit Test main (44)`_    
+    → `Unit Test overheads: imports, etc. (42)`_    
+    → `Unit Test of Emitter class hierarchy (2)`_    
+    → `Unit Test of Chunk class hierarchy (10)`_    
+    → `Unit Test of Command class hierarchy (22)`_    
+    → `Unit Test of Reference class hierarchy (31)`_    
+    → `Unit Test of Web class (32)`_    
+    → `Unit Test of WebReader class (33)`_    
+    → `Unit Test of Action class hierarchy (36)`_    
+    → `Unit Test of Application class (41)`_    
+    → `Unit Test main (44)`_    
 
 ..
 
@@ -208,13 +208,13 @@ precisely follows the document structure.
     :class: code
 
     
-    →\ `Unit Test Mock Chunk class (4)`_    
-    →\ `Unit Test of Emitter Superclass (3)`_    
-    →\ `Unit Test of Weaver subclass of Emitter (5)`_    
-    →\ `Unit Test of LaTeX subclass of Emitter (6)`_    
-    →\ `Unit Test of HTML subclass of Emitter (7)`_    
-    →\ `Unit Test of Tangler subclass of Emitter (8)`_    
-    →\ `Unit Test of TanglerMake subclass of Emitter (9)`_    
+    → `Unit Test Mock Chunk class (4)`_    
+    → `Unit Test of Emitter Superclass (3)`_    
+    → `Unit Test of Weaver subclass of Emitter (5)`_    
+    → `Unit Test of LaTeX subclass of Emitter (6)`_    
+    → `Unit Test of HTML subclass of Emitter (7)`_    
+    → `Unit Test of Tangler subclass of Emitter (8)`_    
+    → `Unit Test of TanglerMake subclass of Emitter (9)`_    
 
 ..
 
@@ -447,16 +447,16 @@ The default Weaver is an Emitter that uses templates to produce RST markup.
             result = self.output\_path.read\_text()
             expected = ('text with \|char\| untouched.\\n'
                  ':sample.out:\\n'
-                 '    →\\\\ \`sample.out (1)\`\_\\n'
+                 '    → \`sample.out (1)\`\_\\n'
                  ':named chunk:\\n'
-                 '    →\\\\ \` ()\`\_\\n'
+                 '    → \` ()\`\_\\n'
                  '\\n'
                  '\\n'
                  ':user\_id\_1:\\n'
-                 '    →\\\\ \`named chunk (2)\`\_\\n'
+                 '    → \`named chunk (2)\`\_\\n'
                  '\\n'
                  ':user\_id\_2:\\n'
-                 '    →\\\\ \`named chunk (2)\`\_\\n'
+                 '    → \`named chunk (2)\`\_\\n'
                  '\\n'
                  '\\n'
                 '..  \_\`sample.out (42)\`:\\n'
@@ -466,7 +466,7 @@ The default Weaver is an Emitter that uses templates to produce RST markup.
                 '\\n'
                 '    \\\\\|char\\\\\| \\\\\`code\\\\\` \\\\\*em\\\\\* \\\\\_em\\\\\_\\n'
                 '    \\n'
-                '    →\\\\ \`named chunk (42)\`\_\\n'
+                '    → \`named chunk (42)\`\_\\n'
                 '..\\n'
                 '\\n'
                 '..  container:: small\\n'
@@ -751,11 +751,11 @@ of chunks that are used to produce the documentation and the source files.
     :class: code
 
     
-    →\ `Unit Test of Chunk superclass (11)`_    
-    →\ `Unit Test of NamedChunk subclass (18)`_    
-    →\ `Unit Test of NamedChunk_Noindent subclass (19)`_    
-    →\ `Unit Test of OutputChunk subclass (20)`_    
-    →\ `Unit Test of NamedDocumentChunk subclass (21)`_    
+    → `Unit Test of Chunk superclass (11)`_    
+    → `Unit Test of NamedChunk subclass (18)`_    
+    → `Unit Test of NamedChunk_Noindent subclass (19)`_    
+    → `Unit Test of OutputChunk subclass (20)`_    
+    → `Unit Test of NamedDocumentChunk subclass (21)`_    
 
 ..
 
@@ -915,13 +915,13 @@ A Chunk is built, interrogated and then emitted.
             self.theChunk = pyweb.Chunk()
             
         
-    →\ `Unit Test of Chunk construction (15)`_    
+    → `Unit Test of Chunk construction (15)`_    
         
         
-    →\ `Unit Test of Chunk interrogation (16)`_    
+    → `Unit Test of Chunk interrogation (16)`_    
         
         
-    →\ `Unit Test of Chunk properties (17)`_    
+    → `Unit Test of Chunk properties (17)`_    
 
 ..
 
@@ -1176,14 +1176,14 @@ Command Tests
     :class: code
 
      
-    →\ `Unit Test of Command superclass (23)`_    
-    →\ `Unit Test of TextCommand class to contain a document text block (24)`_    
-    →\ `Unit Test of CodeCommand class to contain a program source code block (25)`_    
-    →\ `Unit Test of XrefCommand superclass for all cross-reference commands (26)`_    
-    →\ `Unit Test of FileXrefCommand class for an output file cross-reference (27)`_    
-    →\ `Unit Test of MacroXrefCommand class for a named chunk cross-reference (28)`_    
-    →\ `Unit Test of UserIdXrefCommand class for a user identifier cross-reference (29)`_    
-    →\ `Unit Test of ReferenceCommand class for chunk references (30)`_    
+    → `Unit Test of Command superclass (23)`_    
+    → `Unit Test of TextCommand class to contain a document text block (24)`_    
+    → `Unit Test of CodeCommand class to contain a program source code block (25)`_    
+    → `Unit Test of XrefCommand superclass for all cross-reference commands (26)`_    
+    → `Unit Test of FileXrefCommand class for an output file cross-reference (27)`_    
+    → `Unit Test of MacroXrefCommand class for a named chunk cross-reference (28)`_    
+    → `Unit Test of UserIdXrefCommand class for a user identifier cross-reference (29)`_    
+    → `Unit Test of ReferenceCommand class for chunk references (30)`_    
 
 ..
 
@@ -1722,10 +1722,10 @@ load, tangle, weave.
     :class: code
 
      
-    →\ `Unit test of Action Sequence class (37)`_    
-    →\ `Unit test of LoadAction class (40)`_    
-    →\ `Unit test of TangleAction class (39)`_    
-    →\ `Unit test of WeaverAction class (38)`_    
+    → `Unit test of Action Sequence class (37)`_    
+    → `Unit test of LoadAction class (40)`_    
+    → `Unit test of TangleAction class (39)`_    
+    → `Unit test of WeaverAction class (38)`_    
 
 ..
 
@@ -2004,15 +2004,15 @@ We need to be able to load a web from one or more source files.
 ..  parsed-literal::
     :class: code
 
-    →\ `Load Test overheads: imports, etc. (47)`_    
+    → `Load Test overheads: imports, etc. (47)`_    
     
-    →\ `Load Test superclass to refactor common setup (46)`_    
+    → `Load Test superclass to refactor common setup (46)`_    
     
-    →\ `Load Test error handling with a few common syntax errors (48)`_    
+    → `Load Test error handling with a few common syntax errors (48)`_    
     
-    →\ `Load Test include processing with syntax errors (50)`_    
+    → `Load Test include processing with syntax errors (50)`_    
     
-    →\ `Load Test main program (53)`_    
+    → `Load Test main program (53)`_    
 
 ..
 
@@ -2082,7 +2082,7 @@ find an expected next token.
     :class: code
 
     
-    →\ `Sample Document 1 with correct and incorrect syntax (49)`_    
+    → `Sample Document 1 with correct and incorrect syntax (49)`_    
     
     class Test\_ParseErrors(ParseTestcase):
         text = test1\_w
@@ -2149,7 +2149,7 @@ since it's a nested instance of the tokenizer.
     :class: code
 
     
-    →\ `Sample Document 8 and the file it includes (51)`_    
+    → `Sample Document 8 and the file it includes (51)`_    
     
     class Test\_IncludeParseErrors(ParseTestcase):
         text = test8\_w
@@ -2270,15 +2270,15 @@ We need to be able to tangle a web.
 ..  parsed-literal::
     :class: code
 
-    →\ `Tangle Test overheads: imports, etc. (68)`_    
-    →\ `Tangle Test superclass to refactor common setup (55)`_    
-    →\ `Tangle Test semantic error 2 (56)`_    
-    →\ `Tangle Test semantic error 3 (58)`_    
-    →\ `Tangle Test semantic error 4 (60)`_    
-    →\ `Tangle Test semantic error 5 (62)`_    
-    →\ `Tangle Test semantic error 6 (64)`_    
-    →\ `Tangle Test include error 7 (66)`_    
-    →\ `Tangle Test main program (69)`_    
+    → `Tangle Test overheads: imports, etc. (68)`_    
+    → `Tangle Test superclass to refactor common setup (55)`_    
+    → `Tangle Test semantic error 2 (56)`_    
+    → `Tangle Test semantic error 3 (58)`_    
+    → `Tangle Test semantic error 4 (60)`_    
+    → `Tangle Test semantic error 5 (62)`_    
+    → `Tangle Test semantic error 6 (64)`_    
+    → `Tangle Test include error 7 (66)`_    
+    → `Tangle Test main program (69)`_    
 
 ..
 
@@ -2341,7 +2341,7 @@ exceptions raised.
     :class: code
 
     
-    →\ `Sample Document 2 (57)`_    
+    → `Sample Document 2 (57)`_    
     
     class Test\_SemanticError\_2(TangleTestcase):
         text = test2\_w
@@ -2388,7 +2388,7 @@ exceptions raised.
     :class: code
 
     
-    →\ `Sample Document 3 (59)`_    
+    → `Sample Document 3 (59)`_    
     
     class Test\_SemanticError\_3(TangleTestcase):
         text = test3\_w
@@ -2437,7 +2437,7 @@ exceptions raised.
     :class: code
 
     
-    →\ `Sample Document 4 (61)`_    
+    → `Sample Document 4 (61)`_    
     
     class Test\_SemanticError\_4(TangleTestcase):
         """An optional feature of a Web."""
@@ -2486,7 +2486,7 @@ exceptions raised.
     :class: code
 
     
-    →\ `Sample Document 5 (63)`_    
+    → `Sample Document 5 (63)`_    
     
     class Test\_SemanticError\_5(TangleTestcase):
         text = test5\_w
@@ -2536,7 +2536,7 @@ exceptions raised.
     :class: code
 
      
-    →\ `Sample Document 6 (65)`_    
+    → `Sample Document 6 (65)`_    
     
     class Test\_SemanticError\_6(TangleTestcase):
         text = test6\_w
@@ -2592,7 +2592,7 @@ exceptions raised.
     :class: code
 
     
-    →\ `Sample Document 7 and it's included file (67)`_    
+    → `Sample Document 7 and it's included file (67)`_    
     
     class Test\_IncludeError\_7(TangleTestcase):
         text = test7\_w
@@ -2700,11 +2700,11 @@ We need to be able to weave a document from one or more source files.
 ..  parsed-literal::
     :class: code
 
-    →\ `Weave Test overheads: imports, etc. (78)`_    
-    →\ `Weave Test superclass to refactor common setup (71)`_    
-    →\ `Weave Test references and definitions (72)`_    
-    →\ `Weave Test evaluation of expressions (76)`_    
-    →\ `Weave Test main program (79)`_    
+    → `Weave Test overheads: imports, etc. (78)`_    
+    → `Weave Test superclass to refactor common setup (71)`_    
+    → `Weave Test references and definitions (72)`_    
+    → `Weave Test evaluation of expressions (76)`_    
+    → `Weave Test main program (79)`_    
 
 ..
 
@@ -2758,8 +2758,8 @@ Weaving test cases have a common setup shown in this superclass.
     :class: code
 
     
-    →\ `Sample Document 0 (73)`_    
-    →\ `Expected Output 0 (74)`_    
+    → `Sample Document 0 (73)`_    
+    → `Expected Output 0 (74)`_    
     
     class Test\_RefDefWeave(WeaveTestcase):
         text = test0\_w
@@ -2916,7 +2916,7 @@ to properly provide a consistent output from ``time.asctime()``.
     :class: code
 
     
-    →\ `Sample Document 9 (77)`_    
+    → `Sample Document 9 (77)`_    
     
     from unittest.mock import Mock
     
@@ -3042,17 +3042,17 @@ This gives us the following outline for the script testing.
 ..  parsed-literal::
     :class: code
 
-    →\ `Script Test overheads: imports, etc. (85)`_    
+    → `Script Test overheads: imports, etc. (85)`_    
     
-    →\ `Sample web file to test with (81)`_    
+    → `Sample web file to test with (81)`_    
     
-    →\ `Superclass for test cases (82)`_    
+    → `Superclass for test cases (82)`_    
     
-    →\ `Test of weave.py (83)`_    
+    → `Test of weave.py (83)`_    
     
-    →\ `Test of tangle.py (84)`_    
+    → `Test of tangle.py (84)`_    
     
-    →\ `Scripts Test main (86)`_    
+    → `Scripts Test main (86)`_    
 
 ..
 
@@ -3430,235 +3430,235 @@ Files
 -----
 
 :test_unit.py:
-    →\ `test_unit.py (1)`_:test_loader.py:
-    →\ `test_loader.py (45)`_:test_tangler.py:
-    →\ `test_tangler.py (54)`_:test_weaver.py:
-    →\ `test_weaver.py (70)`_:test_scripts.py:
-    →\ `test_scripts.py (80)`_:docutils.conf:
-    →\ `docutils.conf (87)`_:page-layout.css:
-    →\ `page-layout.css (88)`_
+    → `test_unit.py (1)`_:test_loader.py:
+    → `test_loader.py (45)`_:test_tangler.py:
+    → `test_tangler.py (54)`_:test_weaver.py:
+    → `test_weaver.py (70)`_:test_scripts.py:
+    → `test_scripts.py (80)`_:docutils.conf:
+    → `docutils.conf (87)`_:page-layout.css:
+    → `page-layout.css (88)`_
 
 Macros
 ------
 
 :Expected Output 0:
-    →\ `Expected Output 0 (74)`_, →\ `Expected Output 0 (75)`_
+    → `Expected Output 0 (74)`_, → `Expected Output 0 (75)`_
 
 :Load Test error handling with a few common syntax errors:
-    →\ `Load Test error handling with a few common syntax errors (48)`_
+    → `Load Test error handling with a few common syntax errors (48)`_
 
 :Load Test include processing with syntax errors:
-    →\ `Load Test include processing with syntax errors (50)`_
+    → `Load Test include processing with syntax errors (50)`_
 
 :Load Test main program:
-    →\ `Load Test main program (53)`_
+    → `Load Test main program (53)`_
 
 :Load Test overheads: imports, etc.:
-    →\ `Load Test overheads: imports, etc. (47)`_, →\ `Load Test overheads: imports, etc. (52)`_
+    → `Load Test overheads: imports, etc. (47)`_, → `Load Test overheads: imports, etc. (52)`_
 
 :Load Test superclass to refactor common setup:
-    →\ `Load Test superclass to refactor common setup (46)`_
+    → `Load Test superclass to refactor common setup (46)`_
 
 :Sample Document 0:
-    →\ `Sample Document 0 (73)`_
+    → `Sample Document 0 (73)`_
 
 :Sample Document 1 with correct and incorrect syntax:
-    →\ `Sample Document 1 with correct and incorrect syntax (49)`_
+    → `Sample Document 1 with correct and incorrect syntax (49)`_
 
 :Sample Document 2:
-    →\ `Sample Document 2 (57)`_
+    → `Sample Document 2 (57)`_
 
 :Sample Document 3:
-    →\ `Sample Document 3 (59)`_
+    → `Sample Document 3 (59)`_
 
 :Sample Document 4:
-    →\ `Sample Document 4 (61)`_
+    → `Sample Document 4 (61)`_
 
 :Sample Document 5:
-    →\ `Sample Document 5 (63)`_
+    → `Sample Document 5 (63)`_
 
 :Sample Document 6:
-    →\ `Sample Document 6 (65)`_
+    → `Sample Document 6 (65)`_
 
 :Sample Document 7 and it's included file:
-    →\ `Sample Document 7 and it's included file (67)`_
+    → `Sample Document 7 and it's included file (67)`_
 
 :Sample Document 8 and the file it includes:
-    →\ `Sample Document 8 and the file it includes (51)`_
+    → `Sample Document 8 and the file it includes (51)`_
 
 :Sample Document 9:
-    →\ `Sample Document 9 (77)`_
+    → `Sample Document 9 (77)`_
 
 :Sample web file to test with:
-    →\ `Sample web file to test with (81)`_
+    → `Sample web file to test with (81)`_
 
 :Script Test overheads: imports, etc.:
-    →\ `Script Test overheads: imports, etc. (85)`_
+    → `Script Test overheads: imports, etc. (85)`_
 
 :Scripts Test main:
-    →\ `Scripts Test main (86)`_
+    → `Scripts Test main (86)`_
 
 :Superclass for test cases:
-    →\ `Superclass for test cases (82)`_
+    → `Superclass for test cases (82)`_
 
 :Tangle Test include error 7:
-    →\ `Tangle Test include error 7 (66)`_
+    → `Tangle Test include error 7 (66)`_
 
 :Tangle Test main program:
-    →\ `Tangle Test main program (69)`_
+    → `Tangle Test main program (69)`_
 
 :Tangle Test overheads: imports, etc.:
-    →\ `Tangle Test overheads: imports, etc. (68)`_
+    → `Tangle Test overheads: imports, etc. (68)`_
 
 :Tangle Test semantic error 2:
-    →\ `Tangle Test semantic error 2 (56)`_
+    → `Tangle Test semantic error 2 (56)`_
 
 :Tangle Test semantic error 3:
-    →\ `Tangle Test semantic error 3 (58)`_
+    → `Tangle Test semantic error 3 (58)`_
 
 :Tangle Test semantic error 4:
-    →\ `Tangle Test semantic error 4 (60)`_
+    → `Tangle Test semantic error 4 (60)`_
 
 :Tangle Test semantic error 5:
-    →\ `Tangle Test semantic error 5 (62)`_
+    → `Tangle Test semantic error 5 (62)`_
 
 :Tangle Test semantic error 6:
-    →\ `Tangle Test semantic error 6 (64)`_
+    → `Tangle Test semantic error 6 (64)`_
 
 :Tangle Test superclass to refactor common setup:
-    →\ `Tangle Test superclass to refactor common setup (55)`_
+    → `Tangle Test superclass to refactor common setup (55)`_
 
 :Test of tangle.py:
-    →\ `Test of tangle.py (84)`_
+    → `Test of tangle.py (84)`_
 
 :Test of weave.py:
-    →\ `Test of weave.py (83)`_
+    → `Test of weave.py (83)`_
 
 :Unit Test Mock Chunk class:
-    →\ `Unit Test Mock Chunk class (4)`_
+    → `Unit Test Mock Chunk class (4)`_
 
 :Unit Test main:
-    →\ `Unit Test main (44)`_
+    → `Unit Test main (44)`_
 
 :Unit Test of Action class hierarchy:
-    →\ `Unit Test of Action class hierarchy (36)`_
+    → `Unit Test of Action class hierarchy (36)`_
 
 :Unit Test of Application class:
-    →\ `Unit Test of Application class (41)`_
+    → `Unit Test of Application class (41)`_
 
 :Unit Test of Chunk class hierarchy:
-    →\ `Unit Test of Chunk class hierarchy (10)`_
+    → `Unit Test of Chunk class hierarchy (10)`_
 
 :Unit Test of Chunk construction:
-    →\ `Unit Test of Chunk construction (15)`_
+    → `Unit Test of Chunk construction (15)`_
 
 :Unit Test of Chunk interrogation:
-    →\ `Unit Test of Chunk interrogation (16)`_
+    → `Unit Test of Chunk interrogation (16)`_
 
 :Unit Test of Chunk properties:
-    →\ `Unit Test of Chunk properties (17)`_
+    → `Unit Test of Chunk properties (17)`_
 
 :Unit Test of Chunk superclass:
-    →\ `Unit Test of Chunk superclass (11)`_, →\ `Unit Test of Chunk superclass (12)`_, →\ `Unit Test of Chunk superclass (13)`_, →\ `Unit Test of Chunk superclass (14)`_
+    → `Unit Test of Chunk superclass (11)`_, → `Unit Test of Chunk superclass (12)`_, → `Unit Test of Chunk superclass (13)`_, → `Unit Test of Chunk superclass (14)`_
 
 :Unit Test of CodeCommand class to contain a program source code block:
-    →\ `Unit Test of CodeCommand class to contain a program source code block (25)`_
+    → `Unit Test of CodeCommand class to contain a program source code block (25)`_
 
 :Unit Test of Command class hierarchy:
-    →\ `Unit Test of Command class hierarchy (22)`_
+    → `Unit Test of Command class hierarchy (22)`_
 
 :Unit Test of Command superclass:
-    →\ `Unit Test of Command superclass (23)`_
+    → `Unit Test of Command superclass (23)`_
 
 :Unit Test of Emitter Superclass:
-    →\ `Unit Test of Emitter Superclass (3)`_
+    → `Unit Test of Emitter Superclass (3)`_
 
 :Unit Test of Emitter class hierarchy:
-    →\ `Unit Test of Emitter class hierarchy (2)`_
+    → `Unit Test of Emitter class hierarchy (2)`_
 
 :Unit Test of FileXrefCommand class for an output file cross-reference:
-    →\ `Unit Test of FileXrefCommand class for an output file cross-reference (27)`_
+    → `Unit Test of FileXrefCommand class for an output file cross-reference (27)`_
 
 :Unit Test of HTML subclass of Emitter:
-    →\ `Unit Test of HTML subclass of Emitter (7)`_
+    → `Unit Test of HTML subclass of Emitter (7)`_
 
 :Unit Test of LaTeX subclass of Emitter:
-    →\ `Unit Test of LaTeX subclass of Emitter (6)`_
+    → `Unit Test of LaTeX subclass of Emitter (6)`_
 
 :Unit Test of MacroXrefCommand class for a named chunk cross-reference:
-    →\ `Unit Test of MacroXrefCommand class for a named chunk cross-reference (28)`_
+    → `Unit Test of MacroXrefCommand class for a named chunk cross-reference (28)`_
 
 :Unit Test of NamedChunk subclass:
-    →\ `Unit Test of NamedChunk subclass (18)`_
+    → `Unit Test of NamedChunk subclass (18)`_
 
 :Unit Test of NamedChunk_Noindent subclass:
-    →\ `Unit Test of NamedChunk_Noindent subclass (19)`_
+    → `Unit Test of NamedChunk_Noindent subclass (19)`_
 
 :Unit Test of NamedDocumentChunk subclass:
-    →\ `Unit Test of NamedDocumentChunk subclass (21)`_
+    → `Unit Test of NamedDocumentChunk subclass (21)`_
 
 :Unit Test of OutputChunk subclass:
-    →\ `Unit Test of OutputChunk subclass (20)`_
+    → `Unit Test of OutputChunk subclass (20)`_
 
 :Unit Test of Reference class hierarchy:
-    →\ `Unit Test of Reference class hierarchy (31)`_
+    → `Unit Test of Reference class hierarchy (31)`_
 
 :Unit Test of ReferenceCommand class for chunk references:
-    →\ `Unit Test of ReferenceCommand class for chunk references (30)`_
+    → `Unit Test of ReferenceCommand class for chunk references (30)`_
 
 :Unit Test of Tangler subclass of Emitter:
-    →\ `Unit Test of Tangler subclass of Emitter (8)`_
+    → `Unit Test of Tangler subclass of Emitter (8)`_
 
 :Unit Test of TanglerMake subclass of Emitter:
-    →\ `Unit Test of TanglerMake subclass of Emitter (9)`_
+    → `Unit Test of TanglerMake subclass of Emitter (9)`_
 
 :Unit Test of TextCommand class to contain a document text block:
-    →\ `Unit Test of TextCommand class to contain a document text block (24)`_
+    → `Unit Test of TextCommand class to contain a document text block (24)`_
 
 :Unit Test of UserIdXrefCommand class for a user identifier cross-reference:
-    →\ `Unit Test of UserIdXrefCommand class for a user identifier cross-reference (29)`_
+    → `Unit Test of UserIdXrefCommand class for a user identifier cross-reference (29)`_
 
 :Unit Test of Weaver subclass of Emitter:
-    →\ `Unit Test of Weaver subclass of Emitter (5)`_
+    → `Unit Test of Weaver subclass of Emitter (5)`_
 
 :Unit Test of Web class:
-    →\ `Unit Test of Web class (32)`_
+    → `Unit Test of Web class (32)`_
 
 :Unit Test of WebReader class:
-    →\ `Unit Test of WebReader class (33)`_, →\ `Unit Test of WebReader class (34)`_, →\ `Unit Test of WebReader class (35)`_
+    → `Unit Test of WebReader class (33)`_, → `Unit Test of WebReader class (34)`_, → `Unit Test of WebReader class (35)`_
 
 :Unit Test of XrefCommand superclass for all cross-reference commands:
-    →\ `Unit Test of XrefCommand superclass for all cross-reference commands (26)`_
+    → `Unit Test of XrefCommand superclass for all cross-reference commands (26)`_
 
 :Unit Test overheads: imports, etc.:
-    →\ `Unit Test overheads: imports, etc. (42)`_, →\ `Unit Test overheads: imports, etc. (43)`_
+    → `Unit Test overheads: imports, etc. (42)`_, → `Unit Test overheads: imports, etc. (43)`_
 
 :Unit test of Action Sequence class:
-    →\ `Unit test of Action Sequence class (37)`_
+    → `Unit test of Action Sequence class (37)`_
 
 :Unit test of LoadAction class:
-    →\ `Unit test of LoadAction class (40)`_
+    → `Unit test of LoadAction class (40)`_
 
 :Unit test of TangleAction class:
-    →\ `Unit test of TangleAction class (39)`_
+    → `Unit test of TangleAction class (39)`_
 
 :Unit test of WeaverAction class:
-    →\ `Unit test of WeaverAction class (38)`_
+    → `Unit test of WeaverAction class (38)`_
 
 :Weave Test evaluation of expressions:
-    →\ `Weave Test evaluation of expressions (76)`_
+    → `Weave Test evaluation of expressions (76)`_
 
 :Weave Test main program:
-    →\ `Weave Test main program (79)`_
+    → `Weave Test main program (79)`_
 
 :Weave Test overheads: imports, etc.:
-    →\ `Weave Test overheads: imports, etc. (78)`_
+    → `Weave Test overheads: imports, etc. (78)`_
 
 :Weave Test references and definitions:
-    →\ `Weave Test references and definitions (72)`_
+    → `Weave Test references and definitions (72)`_
 
 :Weave Test superclass to refactor common setup:
-    →\ `Weave Test superclass to refactor common setup (71)`_
+    → `Weave Test superclass to refactor common setup (71)`_
 
 
 
@@ -3667,7 +3667,7 @@ Macros
 
 ..	class:: small
 
-	Created by src/pyweb.py at Sat Jul 16 11:53:06 2022.
+	Created by src/pyweb.py at Sat Jul 16 12:18:35 2022.
 
     Source tests/pyweb_test.w modified Sat Jul  2 09:39:56 2022.
 
