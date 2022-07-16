@@ -1,4 +1,4 @@
-pyWeb 3.1: In Python, Yet Another Literate Programming Tool
+pyWeb 3.2: In Python, Yet Another Literate Programming Tool
 
 Literate programming is an attempt to reconcile the opposing needs
 of clear presentation to people with the technical issues of 
