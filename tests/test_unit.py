@@ -211,7 +211,7 @@ class TestWeaver(unittest.TestCase):
             '    →\\ `named chunk (42)`_\n'
             '..\n'
             '\n'
-            '..  class:: small\n'
+            '..  container:: small\n'
             '\n'
             '    ∎ *sample.out (42)*\n'
             '\n'
@@ -226,7 +226,7 @@ class TestWeaver(unittest.TestCase):
             '\n'
             '..\n'
             '\n'
-            '..  class:: small\n'
+            '..  container:: small\n'
             '\n'
             '    ∎ *named chunk (42)*\n'
             '\n')

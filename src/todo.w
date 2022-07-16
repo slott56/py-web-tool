@@ -4,9 +4,7 @@
 To Do
 =======
 
-1.  Add a docutils plug-in for PlantUML. See https://gist.github.com/mastbaum/2655700 and https://plantuml.com/docutils.
-    
-#.  Separate TOML-based logging configuration file would be helpful. 
+1.  Separate TOML-based logging configuration file would be helpful. 
     Must be separate from template configuration.
 
 #.  Tangling can include non-woven content. More usefully, Weaving can exclude some chunks.

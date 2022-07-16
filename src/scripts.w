@@ -93,17 +93,18 @@ the Jinja ``{% macro %}`` definitions.
 This is used to update the superclass
 ``template_map``.
 
-Something like the following:
+Something like the following sets the macros in use.
 
 ..  parsed-literal::
 
-    self.template_map['html']['overrides'] = my_templates
+    self.template_map['html_macros'] = my_templates
+
+Any macro **not** defined gets a default implementation.
 
 @d weave.py custom weaver definition...
 @{
 class MyHTML(pyweb.Weaver):
     bootstrap_html = dedent("""
-    {%- from 'html_defaults' import text, begin_code, code, end_code, file_xref, macro_xref, userid_xref, ref, ref_list with context -%}
     {%- macro begin_code(chunk) %}
     <div class="card">
       <div class="card-header">

@@ -5,9 +5,8 @@ SOURCE_PYLPWEB = src/pyweb.w src/intro.w src/overview.w src/impl.w src/tests.w s
 TEST_PYLPWEB = tests/pyweb_test.w tests/intro.w tests/unit.w tests/func.w tests/scripts.w	
 EXAMPLES_PYLPWEB = examples/hello_world_latex.w examples/hello_world_rst.w ackermanns.w
 DOCUTILS_PYLPWEB = docutils.conf pyweb.css page-layout.css
-SOURCE_DIAGRAMS = src/context.png src/components.png src/code_model.png src/code_parser.png src/code_emitter.png src/code_application.png
 
-.PHONY : test diagrams doc build examples
+.PHONY : test doc build examples
 
 # Note the bootstrapping new version from version 3.1 as baseline.
 PYLPWEB_BOOTSTRAP=${PWD}/bootstrap/pyweb.py
@@ -18,7 +17,7 @@ test : $(SOURCE_PYLPWEB) $(TEST_PYLPWEB)
 	PYTHONPATH=${PWD}/src PYTHONHASHSEED=0 pytest -vv
 	python3 src/pyweb.py tests/pyweb_test.w -xt -o tests
 	rst2html.py tests/pyweb_test.rst tests/pyweb_test.html
-	mypy --strict --show-error-codes src
+	mypy --strict --show-error-codes --exclude 'conf\.py' src
 
 doc : src/pyweb.html
 
@@ -29,8 +28,9 @@ examples : examples/hello_world_latex.tex examples/hello_world_rst.html examples
 src/pyweb.py src/pyweb.rst : $(SOURCE_PYLPWEB)
 	cd src && python3 pyweb.py pyweb.w 
 
-src/pyweb.html : src/pyweb.rst $(DOCUTILS_PYLPWEB) $(SOURCE_DIAGRAMS)
-	rst2html.py $< $@
+src/pyweb.html : src/pyweb.rst $(DOCUTILS_PYLPWEB)
+	# rst2html.py $< $@
+	cd src && make html
          
 tests/pyweb_test.rst : src/pyweb.py $(TEST_PYLPWEB)
 	python3 src/pyweb.py tests/pyweb_test.w -o tests
@@ -60,8 +60,3 @@ examples/hw.rst : examples/hw.w
 
 examples/hw.html : examples/hw.rst $(DOCUTILS_PYLPWEB)
 	rst2html.py $< $@
-
-diagrams : $(SOURCE_DIAGRAMS)
-	
-$(SOURCE_DIAGRAMS) : src/c4_diagrams.uml
-	java -jar plantuml-1.2022.6.jar src/c4_diagrams.uml

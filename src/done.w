@@ -19,6 +19,9 @@ Changes for 3.2
 -   Created a better ``weave.py`` example that shows how to incorporate bootstrap CSS into HTML overrides.
     This also requires designing a more easily extended ``Weaver`` class.
 
+-   Use Sphinx for the main documentation generator. We still support ```rst2html.py``, and use 
+    it for test documentaion. Add the PlantUML extension for Sphinx to incorporate documentation.
+    
 Changes for 3.1
 
 -   Change to Python 3.10 as the supported version.

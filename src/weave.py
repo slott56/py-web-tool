@@ -12,7 +12,6 @@ import pyweb
 
 class MyHTML(pyweb.Weaver):
     bootstrap_html = dedent("""
-    {%- from 'html_defaults' import text, begin_code, code, end_code, file_xref, macro_xref, userid_xref, ref, ref_list with context -%}
     {%- macro begin_code(chunk) %}
     <div class="card">
       <div class="card-header">

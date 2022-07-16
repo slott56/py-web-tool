@@ -562,7 +562,8 @@ We'll decompose these into several hierarchies.</p>
 →<a class="reference internal" href="#unit-test-main-44">Unit Test main (44)</a>
 </pre>
 <!--  -->
-<p class="small">∎ <em>test_unit.py (1)</em></p>
+<div class="small docutils container">
+∎ <em>test_unit.py (1)</em></div>
 <div class="section" id="emitter-tests">
 <h2><a class="toc-backref" href="#toc-entry-3">Emitter Tests</a></h2>
 <p>The emitter class hierarchy produces output files; either woven output
@@ -579,7 +580,8 @@ precisely follows the document structure.</p>
 →<a class="reference internal" href="#unit-test-of-tanglermake-subclass-of-emitter-9">Unit Test of TanglerMake subclass of Emitter (9)</a>
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of Emitter class hierarchy (2)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of Emitter class hierarchy (2)</em></div>
 <p>The Emitter superclass is designed to be extended.  The test
 creates a subclass to exercise a few key features. The default
 emitter is Tangler-like.</p>
@@ -601,7 +603,8 @@ class TestEmitter(unittest.TestCase):
         self.assertEqual(self.emitter.output, self.output)
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of Emitter Superclass (3)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of Emitter Superclass (3)</em></div>
 <p>A mock Chunk is a Chunk-like object that we can use to test Weavers.</p>
 <p>Some tests will create multiple chunks. To keep their state separate,
 we define a function to return each mocked <tt class="docutils literal">Chunk</tt> instance as a new Mock
@@ -739,7 +742,8 @@ def mock_web() -&gt; pyweb.Web:
     return web
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test Mock Chunk class (4)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test Mock Chunk class (4)</em></div>
 <p>The default Weaver is an Emitter that uses templates to produce RST markup.</p>
 <p class="rubric" id="unit-test-of-weaver-subclass-of-emitter-5">Unit Test of Weaver subclass of Emitter (5) =</p>
 <pre class="code literal-block">
@@ -792,7 +796,7 @@ class TestWeaver(unittest.TestCase):
             '    →\\ `named chunk (42)`_\n'
             '..\n'
             '\n'
-            '..  class:: small\n'
+            '..  container:: small\n'
             '\n'
             '    ∎ *sample.out (42)*\n'
             '\n'
@@ -807,14 +811,15 @@ class TestWeaver(unittest.TestCase):
             '\n'
             '..\n'
             '\n'
-            '..  class:: small\n'
+            '..  container:: small\n'
             '\n'
             '    ∎ *named chunk (42)*\n'
             '\n')
         self.assertEqual(expected, result)
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of Weaver subclass of Emitter (5)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of Weaver subclass of Emitter (5)</em></div>
 <p>A significant fraction of the various subclasses of weaver are simply
 expansion of templates.  There's no real point in testing the template
 expansion, since that's more easily tested by running a document
@@ -859,12 +864,14 @@ class TestLaTeX(unittest.TestCase):
         self.assertEqual(expected, result)
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of LaTeX subclass of Emitter (6)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of LaTeX subclass of Emitter (6)</em></div>
 <p>We'll examine a few features of the HTML templates.</p>
 <p class="rubric" id="unit-test-of-html-subclass-of-emitter-7">Unit Test of HTML subclass of Emitter (7) =</p>
 <pre class="code literal-block">
 class TestHTML(unittest.TestCase):
     def setUp(self) -&gt; None:
+        self.maxDiff = None
         self.weaver = pyweb.Weaver( )
         self.weaver.set_markup(&quot;html&quot;)
         self.weaver.reference_style = pyweb.SimpleReference()
@@ -901,7 +908,8 @@ class TestHTML(unittest.TestCase):
         self.assertEqual(expected, result)
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of HTML subclass of Emitter (7)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of HTML subclass of Emitter (7)</em></div>
 <p>A Tangler emits the various named source files in proper format for the desired
 compiler and language.</p>
 <p class="rubric" id="unit-test-of-tangler-subclass-of-emitter-8">Unit Test of Tangler subclass of Emitter (8) =</p>
@@ -950,7 +958,8 @@ class TestTangler(unittest.TestCase):
         self.assertEqual(&quot;Begin\nMore Code\nEnd\n&quot;, output)
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of Tangler subclass of Emitter (8)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of Tangler subclass of Emitter (8)</em></div>
 <p>A TanglerMake uses a cheap hack to see if anything changed.
 It creates a temporary file and then does a complete (slow, expensive) file difference
 check.  If the file is different, the old version is replaced with
@@ -999,7 +1008,8 @@ class TestTanglerMake(unittest.TestCase):
         #self.assertNotEqual(self.time_original, self.output.stat().st_mtime)
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of TanglerMake subclass of Emitter (9)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of TanglerMake subclass of Emitter (9)</em></div>
 </div>
 <div class="section" id="chunk-tests">
 <h2><a class="toc-backref" href="#toc-entry-4">Chunk Tests</a></h2>
@@ -1014,7 +1024,8 @@ of chunks that are used to produce the documentation and the source files.</p>
 →<a class="reference internal" href="#unit-test-of-nameddocumentchunk-subclass-21">Unit Test of NamedDocumentChunk subclass (21)</a>
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of Chunk class hierarchy (10)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of Chunk class hierarchy (10)</em></div>
 <p>In order to test the Chunk superclass, we need several mock objects.
 A Chunk contains one or more commands.  A Chunk is a part of a Web.
 Also, a Chunk is processed by a Tangler or a Weaver.  We'll need
@@ -1033,7 +1044,8 @@ MockCommand = Mock(
 )
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of Chunk superclass (11)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of Chunk superclass (11)</em></div>
 <p>A MockWeb can contain a Chunk.</p>
 <p class="rubric" id="unit-test-of-chunk-superclass-12">Unit Test of Chunk superclass (12) +=</p>
 <pre class="code literal-block">
@@ -1063,7 +1075,8 @@ MockWeb = Mock(
 )
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of Chunk superclass (12)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of Chunk superclass (12)</em></div>
 <p>A MockWeaver or MockTangler appear to process a Chunk.
 We can interrogate the <tt class="docutils literal">mock_calls</tt> to be sure the right things were done.</p>
 <p>We need to permit <tt class="docutils literal">__enter__()</tt> and <tt class="docutils literal">__exit__()</tt>,
@@ -1109,7 +1122,8 @@ MockTangler = Mock(
 )
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of Chunk superclass (13)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of Chunk superclass (13)</em></div>
 <p>A Chunk is built, interrogated and then emitted.</p>
 <p class="rubric" id="unit-test-of-chunk-superclass-14">Unit Test of Chunk superclass (14) +=</p>
 <pre class="code literal-block">
@@ -1127,7 +1141,8 @@ class TestChunk(unittest.TestCase):
 →<a class="reference internal" href="#unit-test-of-chunk-properties-17">Unit Test of Chunk properties (17)</a>
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of Chunk superclass (14)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of Chunk superclass (14)</em></div>
 <p>Can we build a Chunk?</p>
 <p class="rubric" id="unit-test-of-chunk-construction-15">Unit Test of Chunk construction (15) =</p>
 <pre class="code literal-block">
@@ -1143,7 +1158,8 @@ def test_append_command_should_work(self) -&gt; None:
     self.assertEqual([cmd1, cmd2], self.theChunk.commands)
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of Chunk construction (15)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of Chunk construction (15)</em></div>
 <p>Can we interrogate a Chunk?</p>
 <p class="rubric" id="unit-test-of-chunk-interrogation-16">Unit Test of Chunk interrogation (16) =</p>
 <pre class="code literal-block">
@@ -1153,7 +1169,8 @@ def test_lineNumber_should_work(self) -&gt; None:
     self.assertEqual(314, self.theChunk.commands[0].lineNumber)
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of Chunk interrogation (16)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of Chunk interrogation (16)</em></div>
 <p>Can we emit a Chunk with a weaver or tangler?</p>
 <p class="rubric" id="unit-test-of-chunk-properties-17">Unit Test of Chunk properties (17) =</p>
 <pre class="code literal-block">
@@ -1168,7 +1185,8 @@ def test_properties(self) -&gt; None:
     self.assertFalse(self.theChunk.type_is('OutputChunk'))
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of Chunk properties (17)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of Chunk properties (17)</em></div>
 <p>The <tt class="docutils literal">NamedChunk</tt> is created by a <tt class="docutils literal">&#64;d</tt> command.
 Since it's named, it appears in the Web's index.  Also, it is woven
 and tangled differently than anonymous chunks.</p>
@@ -1196,7 +1214,8 @@ class TestNamedChunk(unittest.TestCase):
         self.assertFalse(self.theChunk.type_is(&quot;Chunk&quot;))
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of NamedChunk subclass (18)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of NamedChunk subclass (18)</em></div>
 <p class="rubric" id="unit-test-of-namedchunk-noindent-subclass-19">Unit Test of NamedChunk_Noindent subclass (19) =</p>
 <pre class="code literal-block">
 class TestNamedChunk_Noindent(unittest.TestCase):
@@ -1220,7 +1239,8 @@ class TestNamedChunk_Noindent(unittest.TestCase):
         self.assertFalse(self.theChunk.type_is(&quot;Chunk&quot;))
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of NamedChunk_Noindent subclass (19)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of NamedChunk_Noindent subclass (19)</em></div>
 <p>The <tt class="docutils literal">OutputChunk</tt> is created by a <tt class="docutils literal">&#64;o</tt> command.
 Since it's named, it appears in the Web's index.  Also, it is woven
 and tangled differently than anonymous chunks of text.
@@ -1250,7 +1270,8 @@ class TestOutputChunk(unittest.TestCase):
         self.assertFalse(self.theChunk.type_is(&quot;Chunk&quot;))
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of OutputChunk subclass (20)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of OutputChunk subclass (20)</em></div>
 <p>The <tt class="docutils literal">NamedDocumentChunk</tt> is a way to define substitutable text, similar to
 tabled code, but it applies to document chunks. It's not clear how useful this really
 is.</p>
@@ -1277,7 +1298,8 @@ class TestNamedDocumentChunk(unittest.TestCase):
         self.assertFalse(self.theChunk.type_is(&quot;OutputChunk&quot;))
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of NamedDocumentChunk subclass (21)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of NamedDocumentChunk subclass (21)</em></div>
 </div>
 <div class="section" id="command-tests">
 <h2><a class="toc-backref" href="#toc-entry-5">Command Tests</a></h2>
@@ -1293,7 +1315,8 @@ class TestNamedDocumentChunk(unittest.TestCase):
 →<a class="reference internal" href="#unit-test-of-referencecommand-class-for-chunk-references-30">Unit Test of ReferenceCommand class for chunk references (30)</a>
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of Command class hierarchy (22)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of Command class hierarchy (22)</em></div>
 <p>This Command superclass is essentially an inteface definition, it
 has no real testable features.</p>
 <p class="rubric" id="unit-test-of-command-superclass-23">Unit Test of Command superclass (23) =</p>
@@ -1301,7 +1324,8 @@ has no real testable features.</p>
 # No Tests
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of Command superclass (23)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of Command superclass (23)</em></div>
 <p>A <tt class="docutils literal">TextCommand</tt> object must be built from source text, interrogated, and emitted.
 A <tt class="docutils literal">TextCommand</tt> should not (generally) be created in a <tt class="docutils literal">Chunk</tt>, it should
 only be part of a <tt class="docutils literal">NamedChunk</tt> or <tt class="docutils literal">OutputChunk</tt>.</p>
@@ -1322,7 +1346,8 @@ class TestTextCommand(unittest.TestCase):
         tnglr.codeBlock.assert_called_once_with(sentinel.TARGET, 'Some text &amp; words in the document\n    ')
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of TextCommand class to contain a document text block (24)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of TextCommand class to contain a document text block (24)</em></div>
 <p>A <tt class="docutils literal">CodeCommand</tt> object is a <tt class="docutils literal">TextCommand</tt> with different processing for being emitted.
 It represents a block of code in a <tt class="docutils literal">NamedChunk</tt> or <tt class="docutils literal">OutputChunk</tt>.</p>
 <p class="rubric" id="unit-test-of-codecommand-class-to-contain-a-program-source-code-block-25">Unit Test of CodeCommand class to contain a program source code block (25) =</p>
@@ -1341,7 +1366,8 @@ class TestCodeCommand(unittest.TestCase):
         tnglr.codeBlock.assert_called_once_with(sentinel.TARGET, 'Some code in the document\n    ')
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of CodeCommand class to contain a program source code block (25)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of CodeCommand class to contain a program source code block (25)</em></div>
 <p>An <tt class="docutils literal">XrefCommand</tt> class (if defined) would be abstract. We could formalize this,
 but it seems easier to have a collection of <tt class="docutils literal">&#64;dataclass</tt> definitions a
 <tt class="docutils literal"><span class="pre">Union[...]</span></tt> type hint.</p>
@@ -1350,7 +1376,8 @@ but it seems easier to have a collection of <tt class="docutils literal">&#64;da
 # No Tests
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of XrefCommand superclass for all cross-reference commands (26)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of XrefCommand superclass for all cross-reference commands (26)</em></div>
 <p>The <tt class="docutils literal">FileXrefCommand</tt> command is expanded by a weaver to a list of <tt class="docutils literal">&#64;o</tt>
 locations.</p>
 <p class="rubric" id="unit-test-of-filexrefcommand-class-for-an-output-file-cross-reference-27">Unit Test of FileXrefCommand class for an output file cross-reference (27) =</p>
@@ -1375,7 +1402,8 @@ class TestFileXRefCommand(unittest.TestCase):
             pass
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of FileXrefCommand class for an output file cross-reference (27)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of FileXrefCommand class for an output file cross-reference (27)</em></div>
 <p>The <tt class="docutils literal">MacroXrefCommand</tt> command is expanded by a weaver to a list of all <tt class="docutils literal">&#64;d</tt>
 locations.</p>
 <p class="rubric" id="unit-test-of-macroxrefcommand-class-for-a-named-chunk-cross-reference-28">Unit Test of MacroXrefCommand class for a named chunk cross-reference (28) =</p>
@@ -1400,7 +1428,8 @@ class TestMacroXRefCommand(unittest.TestCase):
             pass
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of MacroXrefCommand class for a named chunk cross-reference (28)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of MacroXrefCommand class for a named chunk cross-reference (28)</em></div>
 <p>The <tt class="docutils literal">UserIdXrefCommand</tt> command is expanded by a weaver to a list of all <tt class="docutils literal">&#64;|</tt>
 names.</p>
 <p class="rubric" id="unit-test-of-useridxrefcommand-class-for-a-user-identifier-cross-reference-29">Unit Test of UserIdXrefCommand class for a user identifier cross-reference (29) =</p>
@@ -1425,7 +1454,8 @@ class TestUserIdXrefCommand(unittest.TestCase):
             pass
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of UserIdXrefCommand class for a user identifier cross-reference (29)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of UserIdXrefCommand class for a user identifier cross-reference (29)</em></div>
 <p>Instances of the <tt class="docutils literal">Reference</tt> command reflect <tt class="docutils literal">&#64;&lt; name &#64;&gt;</tt> locations in code.
 These require a context when tangling.
 The context helps provide the required indentation.
@@ -1468,7 +1498,8 @@ class TestReferenceCommand(unittest.TestCase):
         self.referenced_chunk.commands[0].tangle.assert_called_once_with(tnglr, sentinel.TARGET)
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of ReferenceCommand class for chunk references (30)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of ReferenceCommand class for chunk references (30)</em></div>
 </div>
 <div class="section" id="reference-tests">
 <h2><a class="toc-backref" href="#toc-entry-6">Reference Tests</a></h2>
@@ -1514,7 +1545,8 @@ class TestReference(unittest.TestCase):
         self.assertEqual(self.main, theList[1])
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of Reference class hierarchy (31)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of Reference class hierarchy (31)</em></div>
 </div>
 <div class="section" id="web-tests">
 <h2><a class="toc-backref" href="#toc-entry-7">Web Tests</a></h2>
@@ -1575,7 +1607,8 @@ class TestWebConstruction(unittest.TestCase):
         self.assertEqual([self.c1, self.c2, self.c3], self.web.chunks)
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of Web class (32)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of Web class (32)</em></div>
 </div>
 <div class="section" id="webreader-tests">
 <h2><a class="toc-backref" href="#toc-entry-8">WebReader Tests</a></h2>
@@ -1589,7 +1622,8 @@ proper sequence of tokens to parse the various kinds of Commands.</p>
 # Tested via functional tests
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of WebReader class (33)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of WebReader class (33)</em></div>
 <p>Some lower-level units: specifically the tokenizer and the option parser.</p>
 <p class="rubric" id="unit-test-of-webreader-class-34">Unit Test of WebReader class (34) +=</p>
 <pre class="code literal-block">
@@ -1605,7 +1639,8 @@ class TestTokenizer(unittest.TestCase):
         self.assertEqual(2, self.tokenizer.lineNumber)
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of WebReader class (34)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of WebReader class (34)</em></div>
 <p class="rubric" id="unit-test-of-webreader-class-35">Unit Test of WebReader class (35) +=</p>
 <pre class="code literal-block">
 class TestOptionParser_OutputChunk(unittest.TestCase):
@@ -1640,7 +1675,8 @@ class TestOptionParser_NamedChunk(unittest.TestCase):
         self.assertEqual({'argument': ['the', 'name', 'of', 'test2', 'chunk...']}, options2)
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of WebReader class (35)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of WebReader class (35)</em></div>
 </div>
 <div class="section" id="action-tests">
 <h2><a class="toc-backref" href="#toc-entry-9">Action Tests</a></h2>
@@ -1654,7 +1690,8 @@ load, tangle, weave.</p>
 →<a class="reference internal" href="#unit-test-of-weaveraction-class-38">Unit test of WeaverAction class (38)</a>
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of Action class hierarchy (36)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of Action class hierarchy (36)</em></div>
 <p><strong>TODO:</strong> Replace with Mock</p>
 <p class="rubric" id="unit-test-of-action-sequence-class-37">Unit test of Action Sequence class (37) =</p>
 <pre class="code literal-block">
@@ -1672,7 +1709,8 @@ class TestActionSequence(unittest.TestCase):
         self.assertEqual(self.a2.call_count, 1)
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit test of Action Sequence class (37)</em></p>
+<div class="small docutils container">
+∎ <em>Unit test of Action Sequence class (37)</em></div>
 <p class="rubric" id="unit-test-of-weaveraction-class-38">Unit test of WeaverAction class (38) =</p>
 <pre class="code literal-block">
 class TestWeaveAction(unittest.TestCase):
@@ -1692,7 +1730,8 @@ class TestWeaveAction(unittest.TestCase):
         self.assertEqual(self.weaver.emit.mock_calls, [call(self.web)])
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit test of WeaverAction class (38)</em></p>
+<div class="small docutils container">
+∎ <em>Unit test of WeaverAction class (38)</em></div>
 <p class="rubric" id="unit-test-of-tangleaction-class-39">Unit test of TangleAction class (39) =</p>
 <pre class="code literal-block">
 class TestTangleAction(unittest.TestCase):
@@ -1711,7 +1750,8 @@ class TestTangleAction(unittest.TestCase):
         self.assertEqual(self.tangler.emit.mock_calls, [call(self.web)])
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit test of TangleAction class (39)</em></p>
+<div class="small docutils container">
+∎ <em>Unit test of TangleAction class (39)</em></div>
 <p>The mocked <tt class="docutils literal">WebReader</tt> must provide an <tt class="docutils literal">errors</tt> property to the <tt class="docutils literal">LoadAction</tt> instance.</p>
 <p class="rubric" id="unit-test-of-loadaction-class-40">Unit test of LoadAction class (40) =</p>
 <pre class="code literal-block">
@@ -1746,7 +1786,8 @@ class TestLoadAction(unittest.TestCase):
         self.webReader.source.assert_not_called()  # Deprecated
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit test of LoadAction class (40)</em></p>
+<div class="small docutils container">
+∎ <em>Unit test of LoadAction class (40)</em></div>
 </div>
 <div class="section" id="application-tests">
 <h2><a class="toc-backref" href="#toc-entry-10">Application Tests</a></h2>
@@ -1758,7 +1799,8 @@ It's easier to simply run the various use cases.</p>
 # TODO Test Application class
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test of Application class (41)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test of Application class (41)</em></div>
 </div>
 <div class="section" id="overheads-and-main-script">
 <h2><a class="toc-backref" href="#toc-entry-11">Overheads and Main Script</a></h2>
@@ -1785,7 +1827,8 @@ import warnings
 import pyweb
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test overheads: imports, etc. (42)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test overheads: imports, etc. (42)</em></div>
 <p>One more overhead is a function we can inject into selected subclasses
 of <tt class="docutils literal">unittest.TestCase</tt>. This is monkeypatch feature that seems useful.</p>
 <p class="rubric" id="unit-test-overheads-imports-etc-43">Unit Test overheads: imports, etc. (43) +=</p>
@@ -1794,7 +1837,8 @@ def rstrip_lines(source: str) -&gt; list[str]:
     return list(l.rstrip() for l in source.splitlines())
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test overheads: imports, etc. (43)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test overheads: imports, etc. (43)</em></div>
 <p class="rubric" id="unit-test-main-44">Unit Test main (44) =</p>
 <pre class="code literal-block">
 if __name__ == &quot;__main__&quot;:
@@ -1802,7 +1846,8 @@ if __name__ == &quot;__main__&quot;:
     unittest.main()
 </pre>
 <!--  -->
-<p class="small">∎ <em>Unit Test main (44)</em></p>
+<div class="small docutils container">
+∎ <em>Unit Test main (44)</em></div>
 <p>We run the default <tt class="docutils literal">unittest.main()</tt> to execute the entire suite of tests.</p>
 </div>
 </div>
@@ -1832,7 +1877,8 @@ if __name__ == &quot;__main__&quot;:
 →<a class="reference internal" href="#load-test-main-program-53">Load Test main program (53)</a>
 </pre>
 <!--  -->
-<p class="small">∎ <em>test_loader.py (45)</em></p>
+<div class="small docutils container">
+∎ <em>test_loader.py (45)</em></div>
 <p>Parsing test cases have a common setup shown in this superclass.</p>
 <p>By using some class-level variables <tt class="docutils literal">text</tt>,
 <tt class="docutils literal">file_path</tt>, we can simply provide a file-like
@@ -1848,7 +1894,8 @@ class ParseTestcase(unittest.TestCase):
         self.rdr = pyweb.WebReader()
 </pre>
 <!--  -->
-<p class="small">∎ <em>Load Test superclass to refactor common setup (46)</em></p>
+<div class="small docutils container">
+∎ <em>Load Test superclass to refactor common setup (46)</em></div>
 <p>There are a lot of specific parsing exceptions which can be thrown.
 We'll cover most of the cases with a quick check for a failure to
 find an expected next token.</p>
@@ -1860,7 +1907,8 @@ from textwrap import dedent
 from typing import ClassVar
 </pre>
 <!--  -->
-<p class="small">∎ <em>Load Test overheads: imports, etc. (47)</em></p>
+<div class="small docutils container">
+∎ <em>Load Test overheads: imports, etc. (47)</em></div>
 <p class="rubric" id="load-test-error-handling-with-a-few-common-syntax-errors-48">Load Test error handling with a few common syntax errors (48) =</p>
 <pre class="code literal-block">
 →<a class="reference internal" href="#sample-document-1-with-correct-and-incorrect-syntax-49">Sample Document 1 with correct and incorrect syntax (49)</a>
@@ -1881,7 +1929,8 @@ class Test_ParseErrors(ParseTestcase):
         )
 </pre>
 <!--  -->
-<p class="small">∎ <em>Load Test error handling with a few common syntax errors (48)</em></p>
+<div class="small docutils container">
+∎ <em>Load Test error handling with a few common syntax errors (48)</em></div>
 <p class="rubric" id="sample-document-1-with-correct-and-incorrect-syntax-49">Sample Document 1 with correct and incorrect syntax (49) =</p>
 <pre class="code literal-block">
 test1_w = &quot;&quot;&quot;Some anonymous chunk
@@ -1896,7 +1945,8 @@ Okay, now for an error.
 &quot;&quot;&quot;
 </pre>
 <!--  -->
-<p class="small">∎ <em>Sample Document 1 with correct and incorrect syntax (49)</em></p>
+<div class="small docutils container">
+∎ <em>Sample Document 1 with correct and incorrect syntax (49)</em></div>
 <p>All of the parsing exceptions should be correctly identified with
 any included file.
 We'll cover most of the cases with a quick check for a failure to
@@ -1929,7 +1979,8 @@ class Test_IncludeParseErrors(ParseTestcase):
         Path('test8_inc.tmp').unlink()
 </pre>
 <!--  -->
-<p class="small">∎ <em>Load Test include processing with syntax errors (50)</em></p>
+<div class="small docutils container">
+∎ <em>Load Test include processing with syntax errors (50)</em></div>
 <p>The sample document must reference the correct name that will
 be given to the included document by <tt class="docutils literal">setUp</tt>.</p>
 <p class="rubric" id="sample-document-8-and-the-file-it-includes-51">Sample Document 8 and the file it includes (51) =</p>
@@ -1947,7 +1998,8 @@ And now for an error - incorrect syntax in an included file!
 &quot;&quot;&quot;
 </pre>
 <!--  -->
-<p class="small">∎ <em>Sample Document 8 and the file it includes (51)</em></p>
+<div class="small docutils container">
+∎ <em>Sample Document 8 and the file it includes (51)</em></div>
 <p>&lt;p&gt;The overheads for a Python unittest.&lt;/p&gt;</p>
 <p class="rubric" id="load-test-overheads-imports-etc-52">Load Test overheads: imports, etc. (52) +=</p>
 <pre class="code literal-block">
@@ -1964,7 +2016,8 @@ import unittest
 import pyweb
 </pre>
 <!--  -->
-<p class="small">∎ <em>Load Test overheads: imports, etc. (52)</em></p>
+<div class="small docutils container">
+∎ <em>Load Test overheads: imports, etc. (52)</em></div>
 <p>A main program that configures logging and then runs the test.</p>
 <p class="rubric" id="load-test-main-program-53">Load Test main program (53) =</p>
 <pre class="code literal-block">
@@ -1973,7 +2026,8 @@ if __name__ == &quot;__main__&quot;:
     unittest.main()
 </pre>
 <!--  -->
-<p class="small">∎ <em>Load Test main program (53)</em></p>
+<div class="small docutils container">
+∎ <em>Load Test main program (53)</em></div>
 </div>
 <div class="section" id="tests-for-tangling">
 <h2><a class="toc-backref" href="#toc-entry-14">Tests for Tangling</a></h2>
@@ -1991,7 +2045,8 @@ if __name__ == &quot;__main__&quot;:
 →<a class="reference internal" href="#tangle-test-main-program-69">Tangle Test main program (69)</a>
 </pre>
 <!--  -->
-<p class="small">∎ <em>test_tangler.py (54)</em></p>
+<div class="small docutils container">
+∎ <em>test_tangler.py (54)</em></div>
 <p>Tangling test cases have a common setup and teardown shown in this superclass.
 Since tangling must produce a file, it's helpful to remove the file that gets created.
 The essential test case is to load and attempt to tangle, checking the
@@ -2024,7 +2079,8 @@ class TangleTestcase(unittest.TestCase):
             pass  # If the test fails, nothing to remove...
 </pre>
 <!--  -->
-<p class="small">∎ <em>Tangle Test superclass to refactor common setup (55)</em></p>
+<div class="small docutils container">
+∎ <em>Tangle Test superclass to refactor common setup (55)</em></div>
 <p class="rubric" id="tangle-test-semantic-error-2-56">Tangle Test semantic error 2 (56) =</p>
 <pre class="code literal-block">
 →<a class="reference internal" href="#sample-document-2-57">Sample Document 2 (57)</a>
@@ -2036,7 +2092,8 @@ class Test_SemanticError_2(TangleTestcase):
         self.tangle_and_check_exception(&quot;Attempt to tangle an undefined Chunk, 'part2'&quot;)
 </pre>
 <!--  -->
-<p class="small">∎ <em>Tangle Test semantic error 2 (56)</em></p>
+<div class="small docutils container">
+∎ <em>Tangle Test semantic error 2 (56)</em></div>
 <p class="rubric" id="sample-document-2-57">Sample Document 2 (57) =</p>
 <pre class="code literal-block">
 test2_w = &quot;&quot;&quot;Some anonymous chunk
@@ -2049,7 +2106,8 @@ Okay, now for some errors: no part2!
 &quot;&quot;&quot;
 </pre>
 <!--  -->
-<p class="small">∎ <em>Sample Document 2 (57)</em></p>
+<div class="small docutils container">
+∎ <em>Sample Document 2 (57)</em></div>
 <p class="rubric" id="tangle-test-semantic-error-3-58">Tangle Test semantic error 3 (58) =</p>
 <pre class="code literal-block">
 →<a class="reference internal" href="#sample-document-3-59">Sample Document 3 (59)</a>
@@ -2061,7 +2119,8 @@ class Test_SemanticError_3(TangleTestcase):
         self.tangle_and_check_exception(&quot;Illegal tangling of a cross reference command.&quot;)
 </pre>
 <!--  -->
-<p class="small">∎ <em>Tangle Test semantic error 3 (58)</em></p>
+<div class="small docutils container">
+∎ <em>Tangle Test semantic error 3 (58)</em></div>
 <p class="rubric" id="sample-document-3-59">Sample Document 3 (59) =</p>
 <pre class="code literal-block">
 test3_w = &quot;&quot;&quot;Some anonymous chunk
@@ -2075,7 +2134,8 @@ Okay, now for some errors: attempt to tangle a cross-reference!
 &quot;&quot;&quot;
 </pre>
 <!--  -->
-<p class="small">∎ <em>Sample Document 3 (59)</em></p>
+<div class="small docutils container">
+∎ <em>Sample Document 3 (59)</em></div>
 <p class="rubric" id="tangle-test-semantic-error-4-60">Tangle Test semantic error 4 (60) =</p>
 <pre class="code literal-block">
 →<a class="reference internal" href="#sample-document-4-61">Sample Document 4 (61)</a>
@@ -2088,7 +2148,8 @@ class Test_SemanticError_4(TangleTestcase):
         self.tangle_and_check_exception(&quot;No full name for 'part1...'&quot;)
 </pre>
 <!--  -->
-<p class="small">∎ <em>Tangle Test semantic error 4 (60)</em></p>
+<div class="small docutils container">
+∎ <em>Tangle Test semantic error 4 (60)</em></div>
 <p class="rubric" id="sample-document-4-61">Sample Document 4 (61) =</p>
 <pre class="code literal-block">
 test4_w = &quot;&quot;&quot;Some anonymous chunk
@@ -2102,7 +2163,8 @@ Okay, now for some errors: attempt to weave but no full name for part1....
 &quot;&quot;&quot;
 </pre>
 <!--  -->
-<p class="small">∎ <em>Sample Document 4 (61)</em></p>
+<div class="small docutils container">
+∎ <em>Sample Document 4 (61)</em></div>
 <p class="rubric" id="tangle-test-semantic-error-5-62">Tangle Test semantic error 5 (62) =</p>
 <pre class="code literal-block">
 →<a class="reference internal" href="#sample-document-5-63">Sample Document 5 (63)</a>
@@ -2114,7 +2176,8 @@ class Test_SemanticError_5(TangleTestcase):
         self.tangle_and_check_exception(&quot;Ambiguous abbreviation 'part1...', matches ['part1a', 'part1b']&quot;)
 </pre>
 <!--  -->
-<p class="small">∎ <em>Tangle Test semantic error 5 (62)</em></p>
+<div class="small docutils container">
+∎ <em>Tangle Test semantic error 5 (62)</em></div>
 <p class="rubric" id="sample-document-5-63">Sample Document 5 (63) =</p>
 <pre class="code literal-block">
 test5_w = &quot;&quot;&quot;
@@ -2130,7 +2193,8 @@ Okay, now for some errors: part1... is ambiguous
 &quot;&quot;&quot;
 </pre>
 <!--  -->
-<p class="small">∎ <em>Sample Document 5 (63)</em></p>
+<div class="small docutils container">
+∎ <em>Sample Document 5 (63)</em></div>
 <p class="rubric" id="tangle-test-semantic-error-6-64">Tangle Test semantic error 6 (64) =</p>
 <pre class="code literal-block">
 →<a class="reference internal" href="#sample-document-6-65">Sample Document 6 (65)</a>
@@ -2148,7 +2212,8 @@ class Test_SemanticError_6(TangleTestcase):
         self.assertEqual({'part1a', 'part1...'}, self.tangler.reference_names)
 </pre>
 <!--  -->
-<p class="small">∎ <em>Tangle Test semantic error 6 (64)</em></p>
+<div class="small docutils container">
+∎ <em>Tangle Test semantic error 6 (64)</em></div>
 <p class="rubric" id="sample-document-6-65">Sample Document 6 (65) =</p>
 <pre class="code literal-block">
 test6_w = &quot;&quot;&quot;Some anonymous chunk
@@ -2164,7 +2229,8 @@ Okay, now for some warnings:
 &quot;&quot;&quot;
 </pre>
 <!--  -->
-<p class="small">∎ <em>Sample Document 6 (65)</em></p>
+<div class="small docutils container">
+∎ <em>Sample Document 6 (65)</em></div>
 <p class="rubric" id="tangle-test-include-error-7-66">Tangle Test include error 7 (66) =</p>
 <pre class="code literal-block">
 →<a class="reference internal" href="#sample-document-7-and-it-s-included-file-67">Sample Document 7 and it's included file (67)</a>
@@ -2186,7 +2252,8 @@ class Test_IncludeError_7(TangleTestcase):
         super().tearDown()
 </pre>
 <!--  -->
-<p class="small">∎ <em>Tangle Test include error 7 (66)</em></p>
+<div class="small docutils container">
+∎ <em>Tangle Test include error 7 (66)</em></div>
 <p class="rubric" id="sample-document-7-and-it-s-included-file-67">Sample Document 7 and it's included file (67) =</p>
 <pre class="code literal-block">
 test7_w = &quot;&quot;&quot;
@@ -2200,7 +2267,8 @@ A final anonymous chunk from test7.w
 test7_inc_w = &quot;&quot;&quot;The test7a.tmp chunk for test7.w&quot;&quot;&quot;
 </pre>
 <!--  -->
-<p class="small">∎ <em>Sample Document 7 and it's included file (67)</em></p>
+<div class="small docutils container">
+∎ <em>Sample Document 7 and it's included file (67)</em></div>
 <p class="rubric" id="tangle-test-overheads-imports-etc-68">Tangle Test overheads: imports, etc. (68) =</p>
 <pre class="code literal-block">
 &quot;&quot;&quot;Tangler tests exercise various semantic features.&quot;&quot;&quot;
@@ -2214,7 +2282,8 @@ import unittest
 import pyweb
 </pre>
 <!--  -->
-<p class="small">∎ <em>Tangle Test overheads: imports, etc. (68)</em></p>
+<div class="small docutils container">
+∎ <em>Tangle Test overheads: imports, etc. (68)</em></div>
 <p class="rubric" id="tangle-test-main-program-69">Tangle Test main program (69) =</p>
 <pre class="code literal-block">
 if __name__ == &quot;__main__&quot;:
@@ -2223,7 +2292,8 @@ if __name__ == &quot;__main__&quot;:
     unittest.main()
 </pre>
 <!--  -->
-<p class="small">∎ <em>Tangle Test main program (69)</em></p>
+<div class="small docutils container">
+∎ <em>Tangle Test main program (69)</em></div>
 </div>
 <div class="section" id="tests-for-weaving">
 <h2><a class="toc-backref" href="#toc-entry-15">Tests for Weaving</a></h2>
@@ -2237,7 +2307,8 @@ if __name__ == &quot;__main__&quot;:
 →<a class="reference internal" href="#weave-test-main-program-79">Weave Test main program (79)</a>
 </pre>
 <!--  -->
-<p class="small">∎ <em>test_weaver.py (70)</em></p>
+<div class="small docutils container">
+∎ <em>test_weaver.py (70)</em></div>
 <p>Weaving test cases have a common setup shown in this superclass.</p>
 <p class="rubric" id="weave-test-superclass-to-refactor-common-setup-71">Weave Test superclass to refactor common setup (71) =</p>
 <pre class="code literal-block">
@@ -2262,7 +2333,8 @@ class WeaveTestcase(unittest.TestCase):
             pass
 </pre>
 <!--  -->
-<p class="small">∎ <em>Weave Test superclass to refactor common setup (71)</em></p>
+<div class="small docutils container">
+∎ <em>Weave Test superclass to refactor common setup (71)</em></div>
 <p class="rubric" id="weave-test-references-and-definitions-72">Weave Test references and definitions (72) =</p>
 <pre class="code literal-block">
 →<a class="reference internal" href="#sample-document-0-73">Sample Document 0 (73)</a>
@@ -2300,7 +2372,8 @@ class Test_RefDefWeave(WeaveTestcase):
         self.assertEqual(test0_expected_debug, actual)
 </pre>
 <!--  -->
-<p class="small">∎ <em>Weave Test references and definitions (72)</em></p>
+<div class="small docutils container">
+∎ <em>Weave Test references and definitions (72)</em></div>
 <p class="rubric" id="sample-document-0-73">Sample Document 0 (73) =</p>
 <pre class="code literal-block">
 test0_w = &quot;&quot;&quot;&lt;html&gt;
@@ -2326,7 +2399,8 @@ for i in range(24):
 &quot;&quot;&quot;
 </pre>
 <!--  -->
-<p class="small">∎ <em>Sample Document 0 (73)</em></p>
+<div class="small docutils container">
+∎ <em>Sample Document 0 (73)</em></div>
 <p class="rubric" id="expected-output-0-74">Expected Output 0 (74) =</p>
 <pre class="code literal-block">
 test0_expected_html = &quot;&quot;&quot;&lt;html&gt;
@@ -2359,7 +2433,8 @@ for i in range(24):
 &quot;&quot;&quot;
 </pre>
 <!--  -->
-<p class="small">∎ <em>Expected Output 0 (74)</em></p>
+<div class="small docutils container">
+∎ <em>Expected Output 0 (74)</em></div>
 <p class="rubric" id="expected-output-0-75">Expected Output 0 (75) +=</p>
 <pre class="code literal-block">
 test0_expected_debug = (
@@ -2373,7 +2448,8 @@ test0_expected_debug = (
     )
 </pre>
 <!--  -->
-<p class="small">∎ <em>Expected Output 0 (75)</em></p>
+<div class="small docutils container">
+∎ <em>Expected Output 0 (75)</em></div>
 <p>Note that this really requires a mocked <tt class="docutils literal">time</tt> module in order
 to properly provide a consistent output from <tt class="docutils literal">time.asctime()</tt>.</p>
 <p class="rubric" id="weave-test-evaluation-of-expressions-76">Weave Test evaluation of expressions (76) =</p>
@@ -2405,7 +2481,8 @@ class TestEvaluations(WeaveTestcase):
         self.assertEqual(f'CWD = {os.getcwd()}', actual[4])
 </pre>
 <!--  -->
-<p class="small">∎ <em>Weave Test evaluation of expressions (76)</em></p>
+<div class="small docutils container">
+∎ <em>Weave Test evaluation of expressions (76)</em></div>
 <p class="rubric" id="sample-document-9-77">Sample Document 9 (77) =</p>
 <pre class="code literal-block">
 test9_w= &quot;&quot;&quot;An anonymous chunk.
@@ -2416,7 +2493,8 @@ CWD = &#64;(os.path.realpath('.')&#64;)
 &quot;&quot;&quot;
 </pre>
 <!--  -->
-<p class="small">∎ <em>Sample Document 9 (77)</em></p>
+<div class="small docutils container">
+∎ <em>Sample Document 9 (77)</em></div>
 <p class="rubric" id="weave-test-overheads-imports-etc-78">Weave Test overheads: imports, etc. (78) =</p>
 <pre class="code literal-block">
 &quot;&quot;&quot;Weaver tests exercise various weaving features.&quot;&quot;&quot;
@@ -2433,7 +2511,8 @@ import unittest
 import pyweb
 </pre>
 <!--  -->
-<p class="small">∎ <em>Weave Test overheads: imports, etc. (78)</em></p>
+<div class="small docutils container">
+∎ <em>Weave Test overheads: imports, etc. (78)</em></div>
 <p class="rubric" id="weave-test-main-program-79">Weave Test main program (79) =</p>
 <pre class="code literal-block">
 if __name__ == &quot;__main__&quot;:
@@ -2441,7 +2520,8 @@ if __name__ == &quot;__main__&quot;:
     unittest.main()
 </pre>
 <!--  -->
-<p class="small">∎ <em>Weave Test main program (79)</em></p>
+<div class="small docutils container">
+∎ <em>Weave Test main program (79)</em></div>
 </div>
 </div>
 <div class="section" id="additional-scripts-testing">
@@ -2469,7 +2549,8 @@ if __name__ == &quot;__main__&quot;:
 →<a class="reference internal" href="#scripts-test-main-86">Scripts Test main (86)</a>
 </pre>
 <!--  -->
-<p class="small">∎ <em>test_scripts.py (80)</em></p>
+<div class="small docutils container">
+∎ <em>test_scripts.py (80)</em></div>
 <div class="section" id="sample-web-file">
 <h2><a class="toc-backref" href="#toc-entry-17">Sample Web File</a></h2>
 <p>This is a web <tt class="docutils literal">.w</tt> file to create a document and tangle a small file.</p>
@@ -2511,7 +2592,8 @@ sample = textwrap.dedent(&quot;&quot;&quot;
     &quot;&quot;&quot;)
 </pre>
 <!--  -->
-<p class="small">∎ <em>Sample web file to test with (81)</em></p>
+<div class="small docutils container">
+∎ <em>Sample web file to test with (81)</em></div>
 </div>
 <div class="section" id="superclass-for-test-cases">
 <h2><a class="toc-backref" href="#toc-entry-18">Superclass for test cases</a></h2>
@@ -2523,6 +2605,7 @@ class SampleWeb(unittest.TestCase):
     def setUp(self) -&gt; None:
         self.sample_path = Path(&quot;test_sample.w&quot;)
         self.sample_path.write_text(sample)
+        self.maxDiff = None
 
     def tearDown(self) -&gt; None:
         self.sample_path.unlink()
@@ -2531,12 +2614,13 @@ class SampleWeb(unittest.TestCase):
         &quot;&quot;&quot;Skips blank lines and trailing whitespace that (generally) aren't problems when weaving.&quot;&quot;&quot;
         def non_blank(line: str) -&gt; bool:
             return len(line) &gt; 0
-        first_nb = list(filter(non_blank, (line.rstrip() for line in first.splitlines())))
-        second_nb = list(filter(non_blank, (line.rstrip() for line in second.splitlines())))
-        self.assertListEqual(first_nb, second_nb, msg)
+        first_nb = '\n'.join(filter(non_blank, (line.rstrip() for line in first.splitlines())))
+        second_nb = '\n'.join(filter(non_blank, (line.rstrip() for line in second.splitlines())))
+        self.assertEqual(first_nb, second_nb, msg)
 </pre>
 <!--  -->
-<p class="small">∎ <em>Superclass for test cases (82)</em></p>
+<div class="small docutils container">
+∎ <em>Superclass for test cases (82)</em></div>
 </div>
 <div class="section" id="weave-script-test">
 <h2><a class="toc-backref" href="#toc-entry-19">Weave Script Test</a></h2>
@@ -2544,8 +2628,7 @@ class SampleWeb(unittest.TestCase):
 This could be altered to check a few features of the weave file rather than compare the entire file.</p>
 <p class="rubric" id="test-of-weave-py-83">Test of weave.py (83) =</p>
 <pre class="code literal-block">
-expected_weave = ('\n'
-    '&lt;!doctype html&gt;\n'
+expected_weave = ('&lt;!doctype html&gt;\n'
     '&lt;html lang=&quot;en&quot;&gt;\n'
     '  &lt;head&gt;\n'
     '    &lt;meta charset=&quot;utf-8&quot;&gt;\n'
@@ -2556,58 +2639,59 @@ expected_weave = ('\n'
     '    &lt;h1&gt;Sample HTML web file&lt;/h1&gt;\n'
     &quot;    &lt;p&gt;We're avoiding using Python specifically.\n&quot;
     '    This hints at other languages being tangled by this tool.&lt;/p&gt;\n'
-    '\n'
-    '\n'
-    '&lt;a name=&quot;pyweb_1&quot;&gt;&lt;/a&gt;\n'
-    &quot;&lt;!--line number ('test_sample.w', 16)--&gt;\n&quot;
-    '&lt;p&gt;&lt;em&gt;sample_tangle.code (1)&lt;/em&gt; =&lt;/p&gt;\n'
-    '&lt;pre&gt;&lt;code&gt;\n'
-    '\n'
-    '        \n'
+    '&lt;div class=&quot;card&quot;&gt;\n'
+    '  &lt;div class=&quot;card-header&quot;&gt;\n'
+    '    &lt;a type=&quot;button&quot; class=&quot;btn btn-primary&quot; name=&quot;pyweb_1&quot;&gt;&lt;/a&gt;\n'
+    &quot;    &lt;!--line number ('test_sample.w', 16)--&gt;\n&quot;
+    '    &lt;p class=&quot;small&quot;&gt;&lt;em&gt;sample_tangle.code (1)&lt;/em&gt; =&lt;/p&gt;\n'
+    '   &lt;/div&gt;\n'
+    '  &lt;div class=&quot;card-body&quot;&gt;\n'
+    '    &lt;pre&gt;&lt;code&gt;\n'
     '&amp;rarr;&lt;a href=&quot;#pyweb_2&quot;&gt;&lt;em&gt;preamble (2)&lt;/em&gt;&lt;/a&gt;\n'
     '&amp;rarr;&lt;a href=&quot;#pyweb_3&quot;&gt;&lt;em&gt;body (3)&lt;/em&gt;&lt;/a&gt;\n'
-    '\n'
-    '        \n'
-    '&lt;/code&gt;&lt;/pre&gt;\n'
-    '&lt;p&gt;&amp;#8718; &lt;em&gt;sample_tangle.code (1)&lt;/em&gt;.\n'
-    '&lt;/p&gt; \n'
-    '\n'
-    '\n'
-    '\n'
-    '&lt;a name=&quot;pyweb_2&quot;&gt;&lt;/a&gt;\n'
-    &quot;&lt;!--line number ('test_sample.w', 22)--&gt;\n&quot;
-    '&lt;p&gt;&lt;em&gt;preamble (2)&lt;/em&gt; =&lt;/p&gt;\n'
-    '&lt;pre&gt;&lt;code&gt;\n'
-    '\n'
-    '        \n'
+    '    &lt;/code&gt;&lt;/pre&gt;\n'
+    '  &lt;/div&gt;\n'
+    '&lt;div class=&quot;card-footer&quot;&gt;\n'
+    '  &lt;p&gt;&amp;#8718; &lt;em&gt;sample_tangle.code (1)&lt;/em&gt;.\n'
+    '  &lt;/p&gt;\n'
+    '&lt;/div&gt;\n'
+    '&lt;/div&gt;\n'
+    '&lt;div class=&quot;card&quot;&gt;\n'
+    '  &lt;div class=&quot;card-header&quot;&gt;\n'
+    '    &lt;a type=&quot;button&quot; class=&quot;btn btn-primary&quot; name=&quot;pyweb_2&quot;&gt;&lt;/a&gt;\n'
+    &quot;    &lt;!--line number ('test_sample.w', 22)--&gt;\n&quot;
+    '    &lt;p class=&quot;small&quot;&gt;&lt;em&gt;preamble (2)&lt;/em&gt; =&lt;/p&gt;\n'
+    '   &lt;/div&gt;\n'
+    '  &lt;div class=&quot;card-body&quot;&gt;\n'
+    '    &lt;pre&gt;&lt;code&gt;\n'
     '#include &amp;lt;stdio.h&amp;gt;\n'
-    '\n'
-    '        \n'
-    '&lt;/code&gt;&lt;/pre&gt;\n'
-    '&lt;p&gt;&amp;#8718; &lt;em&gt;preamble (2)&lt;/em&gt;.\n'
-    '&lt;/p&gt; \n'
-    '\n'
-    '\n'
-    '\n'
-    '&lt;a name=&quot;pyweb_3&quot;&gt;&lt;/a&gt;\n'
-    &quot;&lt;!--line number ('test_sample.w', 27)--&gt;\n&quot;
-    '&lt;p&gt;&lt;em&gt;body (3)&lt;/em&gt; =&lt;/p&gt;\n'
-    '&lt;pre&gt;&lt;code&gt;\n'
-    '\n'
-    '        \n'
+    '    &lt;/code&gt;&lt;/pre&gt;\n'
+    '  &lt;/div&gt;\n'
+    '&lt;div class=&quot;card-footer&quot;&gt;\n'
+    '  &lt;p&gt;&amp;#8718; &lt;em&gt;preamble (2)&lt;/em&gt;.\n'
+    '  &lt;/p&gt;\n'
+    '&lt;/div&gt;\n'
+    '&lt;/div&gt;\n'
+    '&lt;div class=&quot;card&quot;&gt;\n'
+    '  &lt;div class=&quot;card-header&quot;&gt;\n'
+    '    &lt;a type=&quot;button&quot; class=&quot;btn btn-primary&quot; name=&quot;pyweb_3&quot;&gt;&lt;/a&gt;\n'
+    &quot;    &lt;!--line number ('test_sample.w', 27)--&gt;\n&quot;
+    '    &lt;p class=&quot;small&quot;&gt;&lt;em&gt;body (3)&lt;/em&gt; =&lt;/p&gt;\n'
+    '   &lt;/div&gt;\n'
+    '  &lt;div class=&quot;card-body&quot;&gt;\n'
+    '    &lt;pre&gt;&lt;code&gt;\n'
     'int main() {\n'
     '    println(&amp;quot;Hello, World!&amp;quot;)\n'
     '}\n'
-    '\n'
-    '        \n'
-    '&lt;/code&gt;&lt;/pre&gt;\n'
-    '&lt;p&gt;&amp;#8718; &lt;em&gt;body (3)&lt;/em&gt;.\n'
-    '&lt;/p&gt; \n'
-    '\n'
-    '\n'
+    '    &lt;/code&gt;&lt;/pre&gt;\n'
+    '  &lt;/div&gt;\n'
+    '&lt;div class=&quot;card-footer&quot;&gt;\n'
+    '  &lt;p&gt;&amp;#8718; &lt;em&gt;body (3)&lt;/em&gt;.\n'
+    '  &lt;/p&gt;\n'
+    '&lt;/div&gt;\n'
+    '&lt;/div&gt;\n'
     '  &lt;/body&gt;\n'
-    '&lt;/html&gt;\n'
-)
+    '&lt;/html&gt;')
 
 class TestWeave(SampleWeb):
     def setUp(self) -&gt; None:
@@ -2625,7 +2709,8 @@ class TestWeave(SampleWeb):
         self.output.unlink()
 </pre>
 <!--  -->
-<p class="small">∎ <em>Test of weave.py (83)</em></p>
+<div class="small docutils container">
+∎ <em>Test of weave.py (83)</em></div>
 </div>
 <div class="section" id="tangle-script-test">
 <h2><a class="toc-backref" href="#toc-entry-20">Tangle Script Test</a></h2>
@@ -2658,7 +2743,8 @@ class TestTangle(SampleWeb):
         self.output.unlink()
 </pre>
 <!--  -->
-<p class="small">∎ <em>Test of tangle.py (84)</em></p>
+<div class="small docutils container">
+∎ <em>Test of tangle.py (84)</em></div>
 </div>
 <div class="section" id="overheads-and-main-script-1">
 <h2><a class="toc-backref" href="#toc-entry-21">Overheads and Main Script</a></h2>
@@ -2677,7 +2763,8 @@ import tangle
 import weave
 </pre>
 <!--  -->
-<p class="small">∎ <em>Script Test overheads: imports, etc. (85)</em></p>
+<div class="small docutils container">
+∎ <em>Script Test overheads: imports, etc. (85)</em></div>
 <p class="rubric" id="scripts-test-main-86">Scripts Test main (86) =</p>
 <pre class="code literal-block">
 if __name__ == &quot;__main__&quot;:
@@ -2685,7 +2772,8 @@ if __name__ == &quot;__main__&quot;:
     unittest.main()
 </pre>
 <!--  -->
-<p class="small">∎ <em>Scripts Test main (86)</em></p>
+<div class="small docutils container">
+∎ <em>Scripts Test main (86)</em></div>
 <p>We run the default <tt class="docutils literal">unittest.main()</tt> to execute the entire suite of tests.</p>
 <p>No Longer supported: &#64;i runner.w, using <strong>pytest</strong> seems better.</p>
 </div>
@@ -2708,7 +2796,8 @@ stylesheet-path: /Users/slott/miniconda3/envs/pywebtool/lib/python3.10/site-pack
 syntax-highlight: long
 </pre>
 <!--  -->
-<p class="small">∎ <em>docutils.conf (87)</em></p>
+<div class="small docutils container">
+∎ <em>docutils.conf (87)</em></div>
 <p><tt class="docutils literal"><span class="pre">page-layout.css</span></tt>  This tweaks one CSS to be sure that
 the resulting HTML pages are easier to read. These are minor
 tweaks to the default CSS.</p>
@@ -2733,7 +2822,8 @@ div.document { width: 7in; }
 }
 </pre>
 <!--  -->
-<p class="small">∎ <em>page-layout.css (88)</em></p>
+<div class="small docutils container">
+∎ <em>page-layout.css (88)</em></div>
 </div>
 <div class="section" id="indices">
 <h1><a class="toc-backref" href="#toc-entry-23">Indices</a></h1>
@@ -2987,7 +3077,7 @@ div.document { width: 7in; }
 </table>
 <hr class="docutils" />
 <blockquote class="small">
-Created by src/pyweb.py at Mon Jul  4 11:43:42 2022.</blockquote>
+Created by src/pyweb.py at Sat Jul 16 11:53:06 2022.</blockquote>
 <p class="small">Source tests/pyweb_test.w modified Sat Jul  2 09:39:56 2022.</p>
 <blockquote class="small">
 <p>pyweb.__version__ '3.2'.</p>
