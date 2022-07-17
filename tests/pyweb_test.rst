@@ -1232,10 +1232,13 @@ only be part of a ``NamedChunk`` or ``OutputChunk``.
             self.assertTrue(self.cmd.typeid.TextCommand)
             self.assertEqual(("sample.w", 314), self.cmd.location)
                  
-        def test\_tangle\_should\_work(self) -> None:
+        def test\_tangle\_should\_error(self) -> None:
             tnglr = MockTangler()
-            self.cmd.tangle(tnglr, sentinel.TARGET)
-            tnglr.codeBlock.assert\_called\_once\_with(sentinel.TARGET, 'Some text & words in the document\\n    ')
+            with self.assertRaises(pyweb.Error) as exc\_info:
+                self.cmd.tangle(tnglr, sentinel.TARGET)
+            assert exc\_info.exception.args == (
+                "attempt to tangle a text block ('sample.w', 314) 'Some text & words in the [...]'",
+            )
 
 ..
 
@@ -3667,7 +3670,7 @@ Macros
 
 ..	class:: small
 
-	Created by src/pyweb.py at Sat Jul 16 12:18:35 2022.
+	Created by src/pyweb.py at Sun Jul 17 14:57:40 2022.
 
     Source tests/pyweb_test.w modified Sat Jul  2 09:39:56 2022.
 

@@ -6,7 +6,7 @@ TEST_PYLPWEB = tests/pyweb_test.w tests/intro.w tests/unit.w tests/func.w tests/
 EXAMPLES_PYLPWEB = examples/hello_world_latex.w examples/hello_world_rst.w ackermanns.w
 DOCUTILS_PYLPWEB = docutils.conf pyweb.css page-layout.css
 
-.PHONY : test doc build examples
+.PHONY : test doc build examples tox
 
 # Note the bootstrapping new version from version 3.1 as baseline.
 PYLPWEB_BOOTSTRAP=${PWD}/bootstrap/pyweb.py
@@ -60,3 +60,6 @@ examples/hw.rst : examples/hw.w
 
 examples/hw.html : examples/hw.rst $(DOCUTILS_PYLPWEB)
 	rst2html.py $< $@
+
+tox:
+	tox

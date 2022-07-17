@@ -1340,10 +1340,13 @@ class TestTextCommand(unittest.TestCase):
         self.assertTrue(self.cmd.typeid.TextCommand)
         self.assertEqual((&quot;sample.w&quot;, 314), self.cmd.location)
 
-    def test_tangle_should_work(self) -&gt; None:
+    def test_tangle_should_error(self) -&gt; None:
         tnglr = MockTangler()
-        self.cmd.tangle(tnglr, sentinel.TARGET)
-        tnglr.codeBlock.assert_called_once_with(sentinel.TARGET, 'Some text &amp; words in the document\n    ')
+        with self.assertRaises(pyweb.Error) as exc_info:
+            self.cmd.tangle(tnglr, sentinel.TARGET)
+        assert exc_info.exception.args == (
+            &quot;attempt to tangle a text block ('sample.w', 314) 'Some text &amp; words in the [...]'&quot;,
+        )
 </pre>
 <!--  -->
 <div class="small docutils container">
@@ -3077,7 +3080,7 @@ div.document { width: 7in; }
 </table>
 <hr class="docutils" />
 <blockquote class="small">
-Created by src/pyweb.py at Sat Jul 16 12:18:35 2022.</blockquote>
+Created by src/pyweb.py at Sun Jul 17 14:57:40 2022.</blockquote>
 <p class="small">Source tests/pyweb_test.w modified Sat Jul  2 09:39:56 2022.</p>
 <blockquote class="small">
 <p>pyweb.__version__ '3.2'.</p>

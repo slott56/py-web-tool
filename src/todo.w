@@ -4,14 +4,20 @@
 To Do
 =======
 
-1.  Separate TOML-based logging configuration file would be helpful. 
-    Must be separate from template configuration.
+1.  Refactor the way text is handled in ``WebReader``. 
+    The ``double at-sign replacement...`` section should be a feature
+    of ``Chunk``. The ``add an expression command...`` should use it, also.
+   
+#.  Implement the Reference Strategy in the Weaver.
 
+#.  Finish implementing the separate TOML-based logging configuration file. 
+    Must be separate from template configuration.
+ 
 #.  Tangling can include non-woven content. More usefully, Weaving can exclude some chunks.
     The use case is a book chapter with test cases that are **not** woven into the text.
     Add an option to define tangle-only chunks that are NOT woven into the final document. 
     
-#.  Update the ``-indent`` option on @@d chunks to accept a numeric argument with the 
+#.  Update the ``-indent`` option on ``@@d`` chunks to accept a numeric argument with the 
     specific indentation value. This becomes a kind of "noindent" with a given
     value. The ``-noindent`` would then be the same as ``-indent 0``.  
     Currently, `-indent` and `-noindent` are true/false flags. 

@@ -606,10 +606,13 @@ class TestTextCommand(unittest.TestCase):
         self.assertTrue(self.cmd.typeid.TextCommand)
         self.assertEqual(("sample.w", 314), self.cmd.location)
              
-    def test_tangle_should_work(self) -> None:
+    def test_tangle_should_error(self) -> None:
         tnglr = MockTangler()
-        self.cmd.tangle(tnglr, sentinel.TARGET)
-        tnglr.codeBlock.assert_called_once_with(sentinel.TARGET, 'Some text & words in the document\n    ')
+        with self.assertRaises(pyweb.Error) as exc_info:
+            self.cmd.tangle(tnglr, sentinel.TARGET)
+        assert exc_info.exception.args == (
+            "attempt to tangle a text block ('sample.w', 314) 'Some text & words in the [...]'",
+        )
 
 
 class TestCodeCommand(unittest.TestCase):

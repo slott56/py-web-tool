@@ -32,7 +32,7 @@ Create WEB File
 See `The py-web-tool Markup Language`_ for more details on the language.
 For a simple example, we'll use the following WEB file: ``examples/hw.w``.
 
-..  parsed-literal
+..  parsed-literal::
 
     ###########
     Hello World
@@ -112,7 +112,7 @@ Running **py-web-tool** to Tangle and Weave
 Assuming that you have marked ``pyweb.py`` as executable,
 you do the following:
 
-..  parsed-literal::
+..  code:: bash
 
     python -m pyweb examples/hw.w -o examples
 
@@ -132,10 +132,10 @@ Currently, the following command line options are accepted.
 :-s:
     Silent operation.
 
-:-c\ *x*:
+:-c *x*:
     Change the command character from ``@@`` to ``*x*``.
 
-:-w\ *weaver*:
+:-w *weaver*:
     Choose a particular documentation weaver template. Currently the choices
     are ``rst``, ``tex``, and ``html``.
 
@@ -145,7 +145,7 @@ Currently, the following command line options are accepted.
 :-xt:
     Exclude tangling.  This does weaving of the document file only.
 
-:-p\ *command*:
+:-p *command*:
     Permit errors in the given list of commands.  The most common
     version is ``-pi`` to permit errors in locating an include file.
     This is done in the following scenario: pass 1 uses ``-xw -pi`` to exclude
@@ -153,7 +153,7 @@ Currently, the following command line options are accepted.
     the tangled program is run to create test results; pass 2 uses
     ``-xt`` to exclude tangling and include the test results.
     
-:-o\ *directory*:
+:-o *directory*:
     The directory to which to write output files.
 
 Bootstrapping
@@ -176,7 +176,7 @@ The ``pyweb.py`` is the updated candidate release of **py-web-tool**.
 
 Similarly, the tests built from a ``.w`` files.
 
-..  parsed-literal::
+..  code:: bash
 
     python pyweb.py tests/pyweb_test.w -o tests
     PYTHONPATH=.. pytest
@@ -187,14 +187,29 @@ Dependencies
 
 **py-web-tool** requires Python 3.10 or newer.
 
-It uses Jinja2 for template processing.
+The following components are listed in the ``requirements.txt``
+file. These can be loaded via
 
-If you create RST output, you'll want to use ``docutils`` to translate
-the RST to HTML or LaTeX or any of the other formats supported by docutils.
-This is not a proper requirement to use the tool; it's a common
+..  code:: bash
+    
+    python -m pip install -r requirements.txt
+    
+This tool uses `Jinja <https://palletsprojects.com/p/jinja/>`_ for template processing.
+
+The `TOML <https://github.com/uiri/toml>`_ library is used to parse configuration files. 
+
+If you create RST output, you'll want to use either `docutils <https://docutils.sourceforge.io>`_ or `Sphinx <https://www.sphinx-doc.org/en/master/>`_ to translate
+the RST to HTML or LaTeX or any of the other formats supported by docutils or Sphinx.
+This is not a proper requirement to run the tool. It's a common
 part of an overall document production tool-chain.
 
-Tools like ``pytest`` and ``tox`` are also used for development.
+The overview contains PlantUML diagrams.
+See https://plantuml.com/ for more information.
+The `PlantUML for Sphinx <https://github.com/sphinx-contrib/plantuml>`_ plug-in
+can be used to render the diagrams automatically.
+
+For development, additional components
+like ``pytest``, ``tox``, and ``mypy`` are also used for development.
 
 More Advanced Usage
 ===================

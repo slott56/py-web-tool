@@ -30,11 +30,26 @@ The ``.w`` file has two tiers of markup in it.
     be RST, LaTeX, HTML, or some other markup language.
     
 The **py-web-tool** markup decomposes the source document a sequence of *Chunks*. 
-Each Chunk is one of the two kinds:
- 
--   program source code to be *tangled* and *woven*.
 
--   documentation to be *woven*.  
+..  uml::
+
+    object web
+    object chunk
+    object documentation
+    object "source code" as code
+    
+    web *-- chunk
+    chunk *-- documentation
+    chunk *-- code
+
+The Web chunks have the following two overall sets of features:
+ 
+-   Program source code to be *tangled* and *woven*. There are two important varieties: the "defined" chunks
+    that are named, and the "output" chunks that define a file to be written. Program code chunks can have references
+    to other defined code chunks. This permits created output files that tangled into a compiler-friendly
+    order, separate from the presentation.
+
+-   Documentation to be *woven*.  These are the blocks of text between commands.
 
 The bulk of the file is typically documentation chunks that describe the program in
 some publication-oriented markup language like RST, HTML, or LaTeX.
@@ -56,6 +71,8 @@ explicitly a code chunk is output without modification.
 
 All of the **py-web-tool** tags begin with ``@@``. This is sometimes called the command prefix.
 (This can be changed.) The tags were historically referred to as "commands."
+For Python decorators in particular, the symbol must be doubled, ``@@@@``, because
+all ``@@`` symbols are commands, irrespective of context.
 
 The *Structural* tags (historically called "major commands") partition the input and define the
 various chunks.  The *Inline* tags are (called "minor commands") are used to control the

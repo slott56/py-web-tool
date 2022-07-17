@@ -1,0 +1,15 @@
+@startuml
+    class Chunk {
+        name: str
+        seq: int
+        commands: list[Command]
+        options: list[str]
+        def_names: list[str]
+    }
+    
+    class OutputChunk
+    Chunk <|-- OutputChunk
+    
+    class NamedChunk
+    Chunk <|-- NamedChunk
+@enduml

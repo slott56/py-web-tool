@@ -28,25 +28,53 @@ Here's the overall Context Diagram for this.
     rectangle IDE {
         usecase "Create WEB" as UC_Create
         usecase "Run Tests" as UC_Test
+        usecase "Build Documentation" as UC_Doc
+        usecase "Build Application" as UC_App
     }
-    Dev --> UC_Tangle
-    Dev --> UC_Weave
+    database WEB
+    component App
+    folder Documentation
+    
     Dev --> UC_Create
     Dev --> UC_Test
+    Dev --> UC_Doc
+    Dev --> UC_App
     
-    UC_Test --> UC_Tangle
+    UC_Create --> WEB
+    WEB --> UC_Tangle
+    WEB --> UC_Weave
+    
+    UC_Tangle --> App
+    UC_Weave --> Documentation
+    
+    UC_Test ..> UC_Tangle
+    UC_Doc ..> UC_Weave
+    UC_App ..> UC_Tangle
 
+The idea here is a central WEB document contains both
+the application source code and the documentation that
+describes the code. The documentation can present
+information in an order that's meaningful and helpful
+to people; the tangling operation orders this for the benefit
+of compilers and tools. 
 
-Since this runs as part of an Development
-Environment, the container is the developer's desktop.
+Since this is often part of an Integrated Development
+Environment (IDE), the container for
+all of these software components is the developer's desktop.
+(We don't need a diagram for that.)
 
-Here's a summary of the components.
+Here's a summary of the application-level components.
+These are the most visible libraries and command-line applications.
 
 ..  uml::
 
     component pyweb
-    component jinja
+    package jinja
     pyweb ..> jinja
+    
+    package templates
+    pyweb *-- templates
+    jinja ..> templates
     
     component weave
     weave ..> pyweb
@@ -56,20 +84,75 @@ Here's a summary of the components.
 
 
 The ``weave`` and ``tangle`` are convenient
-scripts that invoke the underlying ``pyweb`` application.
-This uses Jinja2 to define the various templates
-for weaving the output documents.
+scripts that import and customize the underlying ``pyweb`` application.
+We've used the dotted "depends-on" arrow to depict this.
+The ``pyweb`` application depends on Jinja2 to define the various templates
+for weaving the output documents. 
+The ``pyweb`` application contains the templates; this is shown
+with a solid line.
 
-Overall Code
--------------
+We can modify the templates to alter the look and feel. The 
+supplied ``weave.py`` script shows how to do this.
+
+In many cases, the final production will multiple steps, 
+as shown below:
+
+..  uml::
+
+     database WEB
+     component pyweb
+     artifact ".rst File" as RST
+     component sphinx
+     artifact ".html File" as HTML
+     
+     WEB --> pyweb
+     pyweb --> RST
+     RST --> sphinx
+     sphinx --> HTML
+
+We can use **pyweb-tool** to create an ``.rst`` file
+with the documentation. This is then processed by Sphinx
+to inject a Sphinx theme and necessary CSS to make
+responsive web document(s). 
+
+This is often automated with a ``Makefile``.
+
+Overall Structure
+-----------------
 
 Generally, the code breaks into three functional areas
 
--   The core representation of a WEB
+-   The core representation of a WEB.
 
--   The parser to read the source WEB
+-   A parser to read the source WEB.
 
 -   The emitters to produce woven and tangled output, which include weavers and tanglers.
+
+We could depict it as follows:
+
+    
+..  uml:: 
+    
+    folder core {
+        class Web
+        class Chunk
+        abstract class Command
+        Web *-- "1..*" Chunk
+        Chunk *-- "1..*" Command
+    }
+    folder parser {
+        class WebReader
+        WebReader --> Web
+    }
+    folder emitters {
+        abstract class Emitter
+        class Tangler
+        class Weaver
+        Emitter <|-- Tangler
+        Emitter <|-- Weaver
+        Emitter --> Web
+    }
+
 
 We'll look at the core model, first.
 
@@ -82,8 +165,13 @@ The basic structure has three layers, as shown in the following diagram:
     
 ..  uml:: 
     
-    class Web
-    class Chunk
+    class Web << dataclass >> {
+        chunks: list[Chunk]
+    }
+    class Chunk {
+        name: str
+        commands: list[Command]
+    }
     abstract class Command
     
     Web *-- "1..*" Chunk
@@ -152,7 +240,7 @@ Reading and Parsing
 
     class Web
     class WebReader {
-        parse : Web
+        parse(source) : Web
     }
     WebReader ..> Web
     class Tokenizer 
@@ -244,13 +332,20 @@ The overall structure of the classes is shown in the following diagram.
     
     class Transitive
     ReferenceStyle <|-- Transitive
+    
+    class Template
+    Weaver --> Template
+    
+    class "Jinja Macro" as macro
+    Template *-- macro
 
-We'll look at weaving first, then tangling.
+We'll look at the weaving activity first, then
+the tangling activity.
 
 Weaving
 ---------
 
-The weaving operation depends on having a target document markup language.
+The weaving activity depends on having a target document markup language.
 There are several approaches to this problem.  
 
 -   We can use a markup language unique to **py-web-tool**.
@@ -291,7 +386,7 @@ can be added. The templates used to wrap code sections can be tweaked relatively
 Tangling
 ----------
 
-The tangling operation produces output files.  In other tools,
+The tangling activity produces output files.  In other tools,
 some care was taken to understand the source code context for tangling, and
 provide a correct indentation.  This required a command-line parameter
 to turn off indentation for languages like Fortran, where identation
