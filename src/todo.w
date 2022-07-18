@@ -3,16 +3,9 @@
  
 To Do
 =======
-
-1.  Refactor the way text is handled in ``WebReader``. 
-    The ``double at-sign replacement...`` section should be a feature
-    of ``Chunk``. The ``add an expression command...`` should use it, also.
    
-#.  Implement the Reference Strategy in the Weaver.
+1.  Implement the Reference Strategy in the Weaver.
 
-#.  Finish implementing the separate TOML-based logging configuration file. 
-    Must be separate from template configuration.
- 
 #.  Tangling can include non-woven content. More usefully, Weaving can exclude some chunks.
     The use case is a book chapter with test cases that are **not** woven into the text.
     Add an option to define tangle-only chunks that are NOT woven into the final document. 

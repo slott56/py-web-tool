@@ -35,7 +35,7 @@ from pathlib import Path
 import pyweb
 
 def main(source: Path) -> None:
-    with pyweb.Logger(pyweb.log_config):
+    with pyweb.Logger(pyweb.default_logging_config):
         logger = logging.getLogger(__file__)
     
         options = argparse.Namespace(
@@ -135,7 +135,7 @@ class MyHTML(pyweb.Weaver):
 @d weaver.py processing...
 @{
 def main(source: Path) -> None:
-    with pyweb.Logger(pyweb.log_config):
+    with pyweb.Logger(pyweb.default_logging_config):
         logger = logging.getLogger(__file__)
     
         options = argparse.Namespace(

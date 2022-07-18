@@ -13,6 +13,7 @@ PYLPWEB_BOOTSTRAP=${PWD}/bootstrap/pyweb.py
 
 test : $(SOURCE_PYLPWEB) $(TEST_PYLPWEB)
 	python3 $(PYLPWEB_BOOTSTRAP) -xw -v -o src src/pyweb.w 
+	# cp src/pyweb.toml pyweb.toml  # Can obliterate test setup...
 	python3 src/pyweb.py tests/pyweb_test.w -o tests
 	PYTHONPATH=${PWD}/src PYTHONHASHSEED=0 pytest -vv
 	python3 src/pyweb.py tests/pyweb_test.w -xt -o tests

@@ -174,16 +174,16 @@ This gives us the following outline for unit testing.
 ..  parsed-literal::
     :class: code
 
-    → `Unit Test overheads: imports, etc. (42)`_    
+    → `Unit Test overheads: imports, etc. (43)`_    
     → `Unit Test of Emitter class hierarchy (2)`_    
     → `Unit Test of Chunk class hierarchy (10)`_    
     → `Unit Test of Command class hierarchy (22)`_    
     → `Unit Test of Reference class hierarchy (31)`_    
     → `Unit Test of Web class (32)`_    
     → `Unit Test of WebReader class (33)`_    
-    → `Unit Test of Action class hierarchy (36)`_    
-    → `Unit Test of Application class (41)`_    
-    → `Unit Test main (44)`_    
+    → `Unit Test of Action class hierarchy (37)`_    
+    → `Unit Test of Application class (42)`_    
+    → `Unit Test main (45)`_    
 
 ..
 
@@ -1617,8 +1617,12 @@ Generally, this is tested separately through the functional tests.
 Those tests each present source files to be processed by the
 WebReader.
 
-We should test this through some clever mocks that produce the
-proper sequence of tokens to parse the various kinds of Commands.
+The ``WebReader`` is poorly designed for unit testing. 
+The various chunk and command classes are part of the ``WebReader``, and 
+new classes cannot be injected gracefully.
+
+Exacerbating this are two special cases: the ``@@`` and ``@(expr@)`` constructs
+are evaluated immediately, and don't create commands.
 
 
 ..  _`Unit Test of WebReader class (33)`:
@@ -1648,13 +1652,13 @@ Some lower-level units: specifically the tokenizer and the option parser.
     
     class TestTokenizer(unittest.TestCase):
         def test\_should\_split\_tokens(self) -> None:
-            input = io.StringIO("@@ word @{ @[ @< @>\\n@] @} @i @\| @m @f @u\\n")
+            input = io.StringIO("@@ word @{ @[ @< @>\\n@] @} @i @\| @m @f @u @( @)\\n")
             self.tokenizer = pyweb.Tokenizer(input)
             tokens = list(self.tokenizer)
-            self.assertEqual(24, len(tokens))
+            self.assertEqual(28, len(tokens))
             self.assertEqual( ['@@', ' word ', '@{', ' ', '@[', ' ', '@<', ' ', 
             '@>', '\\n', '@]', ' ', '@}', ' ', '@i', ' ', '@\|', ' ', '@m', ' ', 
-            '@f', ' ', '@u', '\\n'], tokens )
+            '@f', ' ', '@u', ' ', '@(', ' ', '@)', '\\n'], tokens )
             self.assertEqual(2, self.tokenizer.lineNumber)
 
 ..
@@ -1711,6 +1715,41 @@ Some lower-level units: specifically the tokenizer and the option parser.
 
 
 
+Testing the ``@@`` case and one of the ``@(expr@)`` cases.
+Need to test all the available variables: ``os.path``, ``os.getcwd``, ``os.name``, ``time``, ``datetime``, ``platform``, 
+``theWebReader``, ``theFile``, ``thisApplication``, ``version``, ``theLocation``.
+
+
+
+..  _`Unit Test of WebReader class (36)`:
+..  rubric:: Unit Test of WebReader class (36) +=
+..  parsed-literal::
+    :class: code
+
+    
+    class TestWebReader\_Immediate(unittest.TestCase):
+        def setUp(self) -> None:
+            self.reader = pyweb.WebReader()
+        
+        def test\_should\_build\_escape\_chunk(self):
+            chunks = self.reader.load(Path(), io.StringIO("Escape: @@ Example"))
+            self.assertEqual(1, len(chunks))
+            self.assertEqual(1, len(chunks[0].commands))
+            self.assertEqual("Escape: @ Example", chunks[0].commands[0].text)
+            
+        def test\_expressions(self):
+            chunks = self.reader.load(Path("sample.w"), io.StringIO("Filename: @(theFile@)"))
+            self.assertEqual(1, len(chunks))
+            self.assertEqual(1, len(chunks[0].commands))
+            self.assertEqual("Filename: sample.w", chunks[0].commands[0].text)
+
+..
+
+..  container:: small
+
+    ∎ *Unit Test of WebReader class (36)*
+
+
 
 Action Tests
 -------------
@@ -1719,30 +1758,30 @@ Each class is tested separately.  Sequence of some mocks,
 load, tangle, weave.  
 
 
-..  _`Unit Test of Action class hierarchy (36)`:
-..  rubric:: Unit Test of Action class hierarchy (36) =
+..  _`Unit Test of Action class hierarchy (37)`:
+..  rubric:: Unit Test of Action class hierarchy (37) =
 ..  parsed-literal::
     :class: code
 
      
-    → `Unit test of Action Sequence class (37)`_    
-    → `Unit test of LoadAction class (40)`_    
-    → `Unit test of TangleAction class (39)`_    
-    → `Unit test of WeaverAction class (38)`_    
+    → `Unit test of Action Sequence class (38)`_    
+    → `Unit test of LoadAction class (41)`_    
+    → `Unit test of TangleAction class (40)`_    
+    → `Unit test of WeaverAction class (39)`_    
 
 ..
 
 ..  container:: small
 
-    ∎ *Unit Test of Action class hierarchy (36)*
+    ∎ *Unit Test of Action class hierarchy (37)*
 
 
 
 **TODO:** Replace with Mock
 
 
-..  _`Unit test of Action Sequence class (37)`:
-..  rubric:: Unit test of Action Sequence class (37) =
+..  _`Unit test of Action Sequence class (38)`:
+..  rubric:: Unit test of Action Sequence class (38) =
 ..  parsed-literal::
     :class: code
 
@@ -1764,13 +1803,13 @@ load, tangle, weave.
 
 ..  container:: small
 
-    ∎ *Unit test of Action Sequence class (37)*
+    ∎ *Unit test of Action Sequence class (38)*
 
 
 
 
-..  _`Unit test of WeaverAction class (38)`:
-..  rubric:: Unit test of WeaverAction class (38) =
+..  _`Unit test of WeaverAction class (39)`:
+..  rubric:: Unit test of WeaverAction class (39) =
 ..  parsed-literal::
     :class: code
 
@@ -1795,13 +1834,13 @@ load, tangle, weave.
 
 ..  container:: small
 
-    ∎ *Unit test of WeaverAction class (38)*
+    ∎ *Unit test of WeaverAction class (39)*
 
 
 
 
-..  _`Unit test of TangleAction class (39)`:
-..  rubric:: Unit test of TangleAction class (39) =
+..  _`Unit test of TangleAction class (40)`:
+..  rubric:: Unit test of TangleAction class (40) =
 ..  parsed-literal::
     :class: code
 
@@ -1825,15 +1864,15 @@ load, tangle, weave.
 
 ..  container:: small
 
-    ∎ *Unit test of TangleAction class (39)*
+    ∎ *Unit test of TangleAction class (40)*
 
 
 
 The mocked ``WebReader`` must provide an ``errors`` property to the ``LoadAction`` instance.
 
 
-..  _`Unit test of LoadAction class (40)`:
-..  rubric:: Unit test of LoadAction class (40) =
+..  _`Unit test of LoadAction class (41)`:
+..  rubric:: Unit test of LoadAction class (41) =
 ..  parsed-literal::
     :class: code
 
@@ -1872,7 +1911,7 @@ The mocked ``WebReader`` must provide an ``errors`` property to the ``LoadAction
 
 ..  container:: small
 
-    ∎ *Unit test of LoadAction class (40)*
+    ∎ *Unit test of LoadAction class (41)*
 
 
 
@@ -1885,8 +1924,8 @@ It's easier to simply run the various use cases.
 **TODO:** Test Application class
 
 
-..  _`Unit Test of Application class (41)`:
-..  rubric:: Unit Test of Application class (41) =
+..  _`Unit Test of Application class (42)`:
+..  rubric:: Unit Test of Application class (42) =
 ..  parsed-literal::
     :class: code
 
@@ -1896,7 +1935,7 @@ It's easier to simply run the various use cases.
 
 ..  container:: small
 
-    ∎ *Unit Test of Application class (41)*
+    ∎ *Unit Test of Application class (42)*
 
 
 
@@ -1906,8 +1945,8 @@ Overheads and Main Script
 The boilerplate code for unit testing is the following.
 
 
-..  _`Unit Test overheads: imports, etc. (42)`:
-..  rubric:: Unit Test overheads: imports, etc. (42) =
+..  _`Unit Test overheads: imports, etc. (43)`:
+..  rubric:: Unit Test overheads: imports, etc. (43) =
 ..  parsed-literal::
     :class: code
 
@@ -1934,7 +1973,7 @@ The boilerplate code for unit testing is the following.
 
 ..  container:: small
 
-    ∎ *Unit Test overheads: imports, etc. (42)*
+    ∎ *Unit Test overheads: imports, etc. (43)*
 
 
 
@@ -1942,8 +1981,8 @@ One more overhead is a function we can inject into selected subclasses
 of ``unittest.TestCase``. This is monkeypatch feature that seems useful.
 
 
-..  _`Unit Test overheads: imports, etc. (43)`:
-..  rubric:: Unit Test overheads: imports, etc. (43) +=
+..  _`Unit Test overheads: imports, etc. (44)`:
+..  rubric:: Unit Test overheads: imports, etc. (44) +=
 ..  parsed-literal::
     :class: code
 
@@ -1955,13 +1994,13 @@ of ``unittest.TestCase``. This is monkeypatch feature that seems useful.
 
 ..  container:: small
 
-    ∎ *Unit Test overheads: imports, etc. (43)*
+    ∎ *Unit Test overheads: imports, etc. (44)*
 
 
 
 
-..  _`Unit Test main (44)`:
-..  rubric:: Unit Test main (44) =
+..  _`Unit Test main (45)`:
+..  rubric:: Unit Test main (45) =
 ..  parsed-literal::
     :class: code
 
@@ -1974,7 +2013,7 @@ of ``unittest.TestCase``. This is monkeypatch feature that seems useful.
 
 ..  container:: small
 
-    ∎ *Unit Test main (44)*
+    ∎ *Unit Test main (45)*
 
 
 
@@ -2002,26 +2041,26 @@ Tests for Loading
 We need to be able to load a web from one or more source files.
 
 
-..  _`test_loader.py (45)`:
-..  rubric:: test_loader.py (45) =
+..  _`test_loader.py (46)`:
+..  rubric:: test_loader.py (46) =
 ..  parsed-literal::
     :class: code
 
-    → `Load Test overheads: imports, etc. (47)`_    
+    → `Load Test overheads: imports, etc. (48)`_    
     
-    → `Load Test superclass to refactor common setup (46)`_    
+    → `Load Test superclass to refactor common setup (47)`_    
     
-    → `Load Test error handling with a few common syntax errors (48)`_    
+    → `Load Test error handling with a few common syntax errors (49)`_    
     
-    → `Load Test include processing with syntax errors (50)`_    
+    → `Load Test include processing with syntax errors (51)`_    
     
-    → `Load Test main program (53)`_    
+    → `Load Test main program (54)`_    
 
 ..
 
 ..  container:: small
 
-    ∎ *test_loader.py (45)*
+    ∎ *test_loader.py (46)*
 
 
 
@@ -2032,8 +2071,8 @@ By using some class-level variables ``text``,
 input object to the ``WebReader`` instance.
 
 
-..  _`Load Test superclass to refactor common setup (46)`:
-..  rubric:: Load Test superclass to refactor common setup (46) =
+..  _`Load Test superclass to refactor common setup (47)`:
+..  rubric:: Load Test superclass to refactor common setup (47) =
 ..  parsed-literal::
     :class: code
 
@@ -2050,7 +2089,7 @@ input object to the ``WebReader`` instance.
 
 ..  container:: small
 
-    ∎ *Load Test superclass to refactor common setup (46)*
+    ∎ *Load Test superclass to refactor common setup (47)*
 
 
 
@@ -2059,8 +2098,8 @@ We'll cover most of the cases with a quick check for a failure to
 find an expected next token.
 
 
-..  _`Load Test overheads: imports, etc. (47)`:
-..  rubric:: Load Test overheads: imports, etc. (47) =
+..  _`Load Test overheads: imports, etc. (48)`:
+..  rubric:: Load Test overheads: imports, etc. (48) =
 ..  parsed-literal::
     :class: code
 
@@ -2074,18 +2113,18 @@ find an expected next token.
 
 ..  container:: small
 
-    ∎ *Load Test overheads: imports, etc. (47)*
+    ∎ *Load Test overheads: imports, etc. (48)*
 
 
 
 
-..  _`Load Test error handling with a few common syntax errors (48)`:
-..  rubric:: Load Test error handling with a few common syntax errors (48) =
+..  _`Load Test error handling with a few common syntax errors (49)`:
+..  rubric:: Load Test error handling with a few common syntax errors (49) =
 ..  parsed-literal::
     :class: code
 
     
-    → `Sample Document 1 with correct and incorrect syntax (49)`_    
+    → `Sample Document 1 with correct and incorrect syntax (50)`_    
     
     class Test\_ParseErrors(ParseTestcase):
         text = test1\_w
@@ -2106,13 +2145,13 @@ find an expected next token.
 
 ..  container:: small
 
-    ∎ *Load Test error handling with a few common syntax errors (48)*
+    ∎ *Load Test error handling with a few common syntax errors (49)*
 
 
 
 
-..  _`Sample Document 1 with correct and incorrect syntax (49)`:
-..  rubric:: Sample Document 1 with correct and incorrect syntax (49) =
+..  _`Sample Document 1 with correct and incorrect syntax (50)`:
+..  rubric:: Sample Document 1 with correct and incorrect syntax (50) =
 ..  parsed-literal::
     :class: code
 
@@ -2132,7 +2171,7 @@ find an expected next token.
 
 ..  container:: small
 
-    ∎ *Sample Document 1 with correct and incorrect syntax (49)*
+    ∎ *Sample Document 1 with correct and incorrect syntax (50)*
 
 
 
@@ -2146,13 +2185,13 @@ create a temporary file.  It's hard to mock the include processing,
 since it's a nested instance of the tokenizer.
 
 
-..  _`Load Test include processing with syntax errors (50)`:
-..  rubric:: Load Test include processing with syntax errors (50) =
+..  _`Load Test include processing with syntax errors (51)`:
+..  rubric:: Load Test include processing with syntax errors (51) =
 ..  parsed-literal::
     :class: code
 
     
-    → `Sample Document 8 and the file it includes (51)`_    
+    → `Sample Document 8 and the file it includes (52)`_    
     
     class Test\_IncludeParseErrors(ParseTestcase):
         text = test8\_w
@@ -2178,7 +2217,7 @@ since it's a nested instance of the tokenizer.
 
 ..  container:: small
 
-    ∎ *Load Test include processing with syntax errors (50)*
+    ∎ *Load Test include processing with syntax errors (51)*
 
 
 
@@ -2186,8 +2225,8 @@ The sample document must reference the correct name that will
 be given to the included document by ``setUp``.
 
 
-..  _`Sample Document 8 and the file it includes (51)`:
-..  rubric:: Sample Document 8 and the file it includes (51) =
+..  _`Sample Document 8 and the file it includes (52)`:
+..  rubric:: Sample Document 8 and the file it includes (52) =
 ..  parsed-literal::
     :class: code
 
@@ -2208,15 +2247,15 @@ be given to the included document by ``setUp``.
 
 ..  container:: small
 
-    ∎ *Sample Document 8 and the file it includes (51)*
+    ∎ *Sample Document 8 and the file it includes (52)*
 
 
 
 <p>The overheads for a Python unittest.</p>
 
 
-..  _`Load Test overheads: imports, etc. (52)`:
-..  rubric:: Load Test overheads: imports, etc. (52) +=
+..  _`Load Test overheads: imports, etc. (53)`:
+..  rubric:: Load Test overheads: imports, etc. (53) +=
 ..  parsed-literal::
     :class: code
 
@@ -2237,15 +2276,15 @@ be given to the included document by ``setUp``.
 
 ..  container:: small
 
-    ∎ *Load Test overheads: imports, etc. (52)*
+    ∎ *Load Test overheads: imports, etc. (53)*
 
 
 
 A main program that configures logging and then runs the test.
 
 
-..  _`Load Test main program (53)`:
-..  rubric:: Load Test main program (53) =
+..  _`Load Test main program (54)`:
+..  rubric:: Load Test main program (54) =
 ..  parsed-literal::
     :class: code
 
@@ -2258,7 +2297,7 @@ A main program that configures logging and then runs the test.
 
 ..  container:: small
 
-    ∎ *Load Test main program (53)*
+    ∎ *Load Test main program (54)*
 
 
 
@@ -2268,26 +2307,26 @@ Tests for Tangling
 We need to be able to tangle a web.
 
 
-..  _`test_tangler.py (54)`:
-..  rubric:: test_tangler.py (54) =
+..  _`test_tangler.py (55)`:
+..  rubric:: test_tangler.py (55) =
 ..  parsed-literal::
     :class: code
 
-    → `Tangle Test overheads: imports, etc. (68)`_    
-    → `Tangle Test superclass to refactor common setup (55)`_    
-    → `Tangle Test semantic error 2 (56)`_    
-    → `Tangle Test semantic error 3 (58)`_    
-    → `Tangle Test semantic error 4 (60)`_    
-    → `Tangle Test semantic error 5 (62)`_    
-    → `Tangle Test semantic error 6 (64)`_    
-    → `Tangle Test include error 7 (66)`_    
-    → `Tangle Test main program (69)`_    
+    → `Tangle Test overheads: imports, etc. (69)`_    
+    → `Tangle Test superclass to refactor common setup (56)`_    
+    → `Tangle Test semantic error 2 (57)`_    
+    → `Tangle Test semantic error 3 (59)`_    
+    → `Tangle Test semantic error 4 (61)`_    
+    → `Tangle Test semantic error 5 (63)`_    
+    → `Tangle Test semantic error 6 (65)`_    
+    → `Tangle Test include error 7 (67)`_    
+    → `Tangle Test main program (70)`_    
 
 ..
 
 ..  container:: small
 
-    ∎ *test_tangler.py (54)*
+    ∎ *test_tangler.py (55)*
 
 
 
@@ -2298,8 +2337,8 @@ exceptions raised.
 
 
 
-..  _`Tangle Test superclass to refactor common setup (55)`:
-..  rubric:: Tangle Test superclass to refactor common setup (55) =
+..  _`Tangle Test superclass to refactor common setup (56)`:
+..  rubric:: Tangle Test superclass to refactor common setup (56) =
 ..  parsed-literal::
     :class: code
 
@@ -2333,18 +2372,18 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Tangle Test superclass to refactor common setup (55)*
+    ∎ *Tangle Test superclass to refactor common setup (56)*
 
 
 
 
-..  _`Tangle Test semantic error 2 (56)`:
-..  rubric:: Tangle Test semantic error 2 (56) =
+..  _`Tangle Test semantic error 2 (57)`:
+..  rubric:: Tangle Test semantic error 2 (57) =
 ..  parsed-literal::
     :class: code
 
     
-    → `Sample Document 2 (57)`_    
+    → `Sample Document 2 (58)`_    
     
     class Test\_SemanticError\_2(TangleTestcase):
         text = test2\_w
@@ -2356,13 +2395,13 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Tangle Test semantic error 2 (56)*
+    ∎ *Tangle Test semantic error 2 (57)*
 
 
 
 
-..  _`Sample Document 2 (57)`:
-..  rubric:: Sample Document 2 (57) =
+..  _`Sample Document 2 (58)`:
+..  rubric:: Sample Document 2 (58) =
 ..  parsed-literal::
     :class: code
 
@@ -2380,18 +2419,18 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Sample Document 2 (57)*
+    ∎ *Sample Document 2 (58)*
 
 
 
 
-..  _`Tangle Test semantic error 3 (58)`:
-..  rubric:: Tangle Test semantic error 3 (58) =
+..  _`Tangle Test semantic error 3 (59)`:
+..  rubric:: Tangle Test semantic error 3 (59) =
 ..  parsed-literal::
     :class: code
 
     
-    → `Sample Document 3 (59)`_    
+    → `Sample Document 3 (60)`_    
     
     class Test\_SemanticError\_3(TangleTestcase):
         text = test3\_w
@@ -2403,13 +2442,13 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Tangle Test semantic error 3 (58)*
+    ∎ *Tangle Test semantic error 3 (59)*
 
 
 
 
-..  _`Sample Document 3 (59)`:
-..  rubric:: Sample Document 3 (59) =
+..  _`Sample Document 3 (60)`:
+..  rubric:: Sample Document 3 (60) =
 ..  parsed-literal::
     :class: code
 
@@ -2428,19 +2467,19 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Sample Document 3 (59)*
+    ∎ *Sample Document 3 (60)*
 
 
 
 
 
-..  _`Tangle Test semantic error 4 (60)`:
-..  rubric:: Tangle Test semantic error 4 (60) =
+..  _`Tangle Test semantic error 4 (61)`:
+..  rubric:: Tangle Test semantic error 4 (61) =
 ..  parsed-literal::
     :class: code
 
     
-    → `Sample Document 4 (61)`_    
+    → `Sample Document 4 (62)`_    
     
     class Test\_SemanticError\_4(TangleTestcase):
         """An optional feature of a Web."""
@@ -2453,13 +2492,13 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Tangle Test semantic error 4 (60)*
+    ∎ *Tangle Test semantic error 4 (61)*
 
 
 
 
-..  _`Sample Document 4 (61)`:
-..  rubric:: Sample Document 4 (61) =
+..  _`Sample Document 4 (62)`:
+..  rubric:: Sample Document 4 (62) =
 ..  parsed-literal::
     :class: code
 
@@ -2478,18 +2517,18 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Sample Document 4 (61)*
+    ∎ *Sample Document 4 (62)*
 
 
 
 
-..  _`Tangle Test semantic error 5 (62)`:
-..  rubric:: Tangle Test semantic error 5 (62) =
+..  _`Tangle Test semantic error 5 (63)`:
+..  rubric:: Tangle Test semantic error 5 (63) =
 ..  parsed-literal::
     :class: code
 
     
-    → `Sample Document 5 (63)`_    
+    → `Sample Document 5 (64)`_    
     
     class Test\_SemanticError\_5(TangleTestcase):
         text = test5\_w
@@ -2501,13 +2540,13 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Tangle Test semantic error 5 (62)*
+    ∎ *Tangle Test semantic error 5 (63)*
 
 
 
 
-..  _`Sample Document 5 (63)`:
-..  rubric:: Sample Document 5 (63) =
+..  _`Sample Document 5 (64)`:
+..  rubric:: Sample Document 5 (64) =
 ..  parsed-literal::
     :class: code
 
@@ -2528,18 +2567,18 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Sample Document 5 (63)*
+    ∎ *Sample Document 5 (64)*
 
 
 
 
-..  _`Tangle Test semantic error 6 (64)`:
-..  rubric:: Tangle Test semantic error 6 (64) =
+..  _`Tangle Test semantic error 6 (65)`:
+..  rubric:: Tangle Test semantic error 6 (65) =
 ..  parsed-literal::
     :class: code
 
      
-    → `Sample Document 6 (65)`_    
+    → `Sample Document 6 (66)`_    
     
     class Test\_SemanticError\_6(TangleTestcase):
         text = test6\_w
@@ -2557,13 +2596,13 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Tangle Test semantic error 6 (64)*
+    ∎ *Tangle Test semantic error 6 (65)*
 
 
 
 
-..  _`Sample Document 6 (65)`:
-..  rubric:: Sample Document 6 (65) =
+..  _`Sample Document 6 (66)`:
+..  rubric:: Sample Document 6 (66) =
 ..  parsed-literal::
     :class: code
 
@@ -2584,18 +2623,18 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Sample Document 6 (65)*
+    ∎ *Sample Document 6 (66)*
 
 
 
 
-..  _`Tangle Test include error 7 (66)`:
-..  rubric:: Tangle Test include error 7 (66) =
+..  _`Tangle Test include error 7 (67)`:
+..  rubric:: Tangle Test include error 7 (67) =
 ..  parsed-literal::
     :class: code
 
     
-    → `Sample Document 7 and it's included file (67)`_    
+    → `Sample Document 7 and it's included file (68)`_    
     
     class Test\_IncludeError\_7(TangleTestcase):
         text = test7\_w
@@ -2617,13 +2656,13 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Tangle Test include error 7 (66)*
+    ∎ *Tangle Test include error 7 (67)*
 
 
 
 
-..  _`Sample Document 7 and it's included file (67)`:
-..  rubric:: Sample Document 7 and it's included file (67) =
+..  _`Sample Document 7 and it's included file (68)`:
+..  rubric:: Sample Document 7 and it's included file (68) =
 ..  parsed-literal::
     :class: code
 
@@ -2642,13 +2681,13 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Sample Document 7 and it's included file (67)*
+    ∎ *Sample Document 7 and it's included file (68)*
 
 
 
 
-..  _`Tangle Test overheads: imports, etc. (68)`:
-..  rubric:: Tangle Test overheads: imports, etc. (68) =
+..  _`Tangle Test overheads: imports, etc. (69)`:
+..  rubric:: Tangle Test overheads: imports, etc. (69) =
 ..  parsed-literal::
     :class: code
 
@@ -2667,13 +2706,13 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Tangle Test overheads: imports, etc. (68)*
+    ∎ *Tangle Test overheads: imports, etc. (69)*
 
 
 
 
-..  _`Tangle Test main program (69)`:
-..  rubric:: Tangle Test main program (69) =
+..  _`Tangle Test main program (70)`:
+..  rubric:: Tangle Test main program (70) =
 ..  parsed-literal::
     :class: code
 
@@ -2687,7 +2726,7 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Tangle Test main program (69)*
+    ∎ *Tangle Test main program (70)*
 
 
 
@@ -2698,30 +2737,30 @@ Tests for Weaving
 We need to be able to weave a document from one or more source files.
 
 
-..  _`test_weaver.py (70)`:
-..  rubric:: test_weaver.py (70) =
+..  _`test_weaver.py (71)`:
+..  rubric:: test_weaver.py (71) =
 ..  parsed-literal::
     :class: code
 
-    → `Weave Test overheads: imports, etc. (78)`_    
-    → `Weave Test superclass to refactor common setup (71)`_    
-    → `Weave Test references and definitions (72)`_    
-    → `Weave Test evaluation of expressions (76)`_    
-    → `Weave Test main program (79)`_    
+    → `Weave Test overheads: imports, etc. (79)`_    
+    → `Weave Test superclass to refactor common setup (72)`_    
+    → `Weave Test references and definitions (73)`_    
+    → `Weave Test evaluation of expressions (77)`_    
+    → `Weave Test main program (80)`_    
 
 ..
 
 ..  container:: small
 
-    ∎ *test_weaver.py (70)*
+    ∎ *test_weaver.py (71)*
 
 
 
 Weaving test cases have a common setup shown in this superclass.
 
 
-..  _`Weave Test superclass to refactor common setup (71)`:
-..  rubric:: Weave Test superclass to refactor common setup (71) =
+..  _`Weave Test superclass to refactor common setup (72)`:
+..  rubric:: Weave Test superclass to refactor common setup (72) =
 ..  parsed-literal::
     :class: code
 
@@ -2750,19 +2789,19 @@ Weaving test cases have a common setup shown in this superclass.
 
 ..  container:: small
 
-    ∎ *Weave Test superclass to refactor common setup (71)*
+    ∎ *Weave Test superclass to refactor common setup (72)*
 
 
 
 
-..  _`Weave Test references and definitions (72)`:
-..  rubric:: Weave Test references and definitions (72) =
+..  _`Weave Test references and definitions (73)`:
+..  rubric:: Weave Test references and definitions (73) =
 ..  parsed-literal::
     :class: code
 
     
-    → `Sample Document 0 (73)`_    
-    → `Expected Output 0 (74)`_    
+    → `Sample Document 0 (74)`_    
+    → `Expected Output 0 (75)`_    
     
     class Test\_RefDefWeave(WeaveTestcase):
         text = test0\_w
@@ -2799,13 +2838,13 @@ Weaving test cases have a common setup shown in this superclass.
 
 ..  container:: small
 
-    ∎ *Weave Test references and definitions (72)*
+    ∎ *Weave Test references and definitions (73)*
 
 
 
 
-..  _`Sample Document 0 (73)`:
-..  rubric:: Sample Document 0 (73) =
+..  _`Sample Document 0 (74)`:
+..  rubric:: Sample Document 0 (74) =
 ..  parsed-literal::
     :class: code
 
@@ -2836,13 +2875,13 @@ Weaving test cases have a common setup shown in this superclass.
 
 ..  container:: small
 
-    ∎ *Sample Document 0 (73)*
+    ∎ *Sample Document 0 (74)*
 
 
 
 
-..  _`Expected Output 0 (74)`:
-..  rubric:: Expected Output 0 (74) =
+..  _`Expected Output 0 (75)`:
+..  rubric:: Expected Output 0 (75) =
 ..  parsed-literal::
     :class: code
 
@@ -2880,13 +2919,13 @@ Weaving test cases have a common setup shown in this superclass.
 
 ..  container:: small
 
-    ∎ *Expected Output 0 (74)*
+    ∎ *Expected Output 0 (75)*
 
 
 
 
-..  _`Expected Output 0 (75)`:
-..  rubric:: Expected Output 0 (75) +=
+..  _`Expected Output 0 (76)`:
+..  rubric:: Expected Output 0 (76) +=
 ..  parsed-literal::
     :class: code
 
@@ -2905,7 +2944,7 @@ Weaving test cases have a common setup shown in this superclass.
 
 ..  container:: small
 
-    ∎ *Expected Output 0 (75)*
+    ∎ *Expected Output 0 (76)*
 
 
 
@@ -2913,13 +2952,13 @@ Note that this really requires a mocked ``time`` module in order
 to properly provide a consistent output from ``time.asctime()``.
 
 
-..  _`Weave Test evaluation of expressions (76)`:
-..  rubric:: Weave Test evaluation of expressions (76) =
+..  _`Weave Test evaluation of expressions (77)`:
+..  rubric:: Weave Test evaluation of expressions (77) =
 ..  parsed-literal::
     :class: code
 
     
-    → `Sample Document 9 (77)`_    
+    → `Sample Document 9 (78)`_    
     
     from unittest.mock import Mock
     
@@ -2949,13 +2988,13 @@ to properly provide a consistent output from ``time.asctime()``.
 
 ..  container:: small
 
-    ∎ *Weave Test evaluation of expressions (76)*
+    ∎ *Weave Test evaluation of expressions (77)*
 
 
 
 
-..  _`Sample Document 9 (77)`:
-..  rubric:: Sample Document 9 (77) =
+..  _`Sample Document 9 (78)`:
+..  rubric:: Sample Document 9 (78) =
 ..  parsed-literal::
     :class: code
 
@@ -2971,13 +3010,13 @@ to properly provide a consistent output from ``time.asctime()``.
 
 ..  container:: small
 
-    ∎ *Sample Document 9 (77)*
+    ∎ *Sample Document 9 (78)*
 
 
 
 
-..  _`Weave Test overheads: imports, etc. (78)`:
-..  rubric:: Weave Test overheads: imports, etc. (78) =
+..  _`Weave Test overheads: imports, etc. (79)`:
+..  rubric:: Weave Test overheads: imports, etc. (79) =
 ..  parsed-literal::
     :class: code
 
@@ -2999,13 +3038,13 @@ to properly provide a consistent output from ``time.asctime()``.
 
 ..  container:: small
 
-    ∎ *Weave Test overheads: imports, etc. (78)*
+    ∎ *Weave Test overheads: imports, etc. (79)*
 
 
 
 
-..  _`Weave Test main program (79)`:
-..  rubric:: Weave Test main program (79) =
+..  _`Weave Test main program (80)`:
+..  rubric:: Weave Test main program (80) =
 ..  parsed-literal::
     :class: code
 
@@ -3018,7 +3057,7 @@ to properly provide a consistent output from ``time.asctime()``.
 
 ..  container:: small
 
-    ∎ *Weave Test main program (79)*
+    ∎ *Weave Test main program (80)*
 
 
 
@@ -3040,28 +3079,28 @@ These need their own test cases.
 This gives us the following outline for the script testing.
 
 
-..  _`test_scripts.py (80)`:
-..  rubric:: test_scripts.py (80) =
+..  _`test_scripts.py (81)`:
+..  rubric:: test_scripts.py (81) =
 ..  parsed-literal::
     :class: code
 
-    → `Script Test overheads: imports, etc. (85)`_    
+    → `Script Test overheads: imports, etc. (86)`_    
     
-    → `Sample web file to test with (81)`_    
+    → `Sample web file to test with (82)`_    
     
-    → `Superclass for test cases (82)`_    
+    → `Superclass for test cases (83)`_    
     
-    → `Test of weave.py (83)`_    
+    → `Test of weave.py (84)`_    
     
-    → `Test of tangle.py (84)`_    
+    → `Test of tangle.py (85)`_    
     
-    → `Scripts Test main (86)`_    
+    → `Scripts Test main (87)`_    
 
 ..
 
 ..  container:: small
 
-    ∎ *test_scripts.py (80)*
+    ∎ *test_scripts.py (81)*
 
 
 
@@ -3071,8 +3110,8 @@ Sample Web File
 This is a web ``.w`` file to create a document and tangle a small file.
 
 
-..  _`Sample web file to test with (81)`:
-..  rubric:: Sample web file to test with (81) =
+..  _`Sample web file to test with (82)`:
+..  rubric:: Sample web file to test with (82) =
 ..  parsed-literal::
     :class: code
 
@@ -3116,7 +3155,7 @@ This is a web ``.w`` file to create a document and tangle a small file.
 
 ..  container:: small
 
-    ∎ *Sample web file to test with (81)*
+    ∎ *Sample web file to test with (82)*
 
 
 
@@ -3127,8 +3166,8 @@ This superclass definition creates a consistent test fixture for both test cases
 The sample ``test_sample.w`` file is created and removed after the test.
 
 
-..  _`Superclass for test cases (82)`:
-..  rubric:: Superclass for test cases (82) =
+..  _`Superclass for test cases (83)`:
+..  rubric:: Superclass for test cases (83) =
 ..  parsed-literal::
     :class: code
 
@@ -3154,7 +3193,7 @@ The sample ``test_sample.w`` file is created and removed after the test.
 
 ..  container:: small
 
-    ∎ *Superclass for test cases (82)*
+    ∎ *Superclass for test cases (83)*
 
 
 
@@ -3165,8 +3204,8 @@ We check the weave output to be sure it's what we expected.
 This could be altered to check a few features of the weave file rather than compare the entire file.
 
 
-..  _`Test of weave.py (83)`:
-..  rubric:: Test of weave.py (83) =
+..  _`Test of weave.py (84)`:
+..  rubric:: Test of weave.py (84) =
 ..  parsed-literal::
     :class: code
 
@@ -3255,7 +3294,7 @@ This could be altered to check a few features of the weave file rather than comp
 
 ..  container:: small
 
-    ∎ *Test of weave.py (83)*
+    ∎ *Test of weave.py (84)*
 
 
 
@@ -3265,8 +3304,8 @@ Tangle Script Test
 We check the tangle output to be sure it's what we expected. 
 
 
-..  _`Test of tangle.py (84)`:
-..  rubric:: Test of tangle.py (84) =
+..  _`Test of tangle.py (85)`:
+..  rubric:: Test of tangle.py (85) =
 ..  parsed-literal::
     :class: code
 
@@ -3301,7 +3340,7 @@ We check the tangle output to be sure it's what we expected.
 
 ..  container:: small
 
-    ∎ *Test of tangle.py (84)*
+    ∎ *Test of tangle.py (85)*
 
 
 
@@ -3312,8 +3351,8 @@ This is typical of the other test modules. We provide a unittest runner
 here in case we want to run these tests in isolation.
 
 
-..  _`Script Test overheads: imports, etc. (85)`:
-..  rubric:: Script Test overheads: imports, etc. (85) =
+..  _`Script Test overheads: imports, etc. (86)`:
+..  rubric:: Script Test overheads: imports, etc. (86) =
 ..  parsed-literal::
     :class: code
 
@@ -3331,13 +3370,13 @@ here in case we want to run these tests in isolation.
 
 ..  container:: small
 
-    ∎ *Script Test overheads: imports, etc. (85)*
+    ∎ *Script Test overheads: imports, etc. (86)*
 
 
 
 
-..  _`Scripts Test main (86)`:
-..  rubric:: Scripts Test main (86) =
+..  _`Scripts Test main (87)`:
+..  rubric:: Scripts Test main (87) =
 ..  parsed-literal::
     :class: code
 
@@ -3350,7 +3389,7 @@ here in case we want to run these tests in isolation.
 
 ..  container:: small
 
-    ∎ *Scripts Test main (86)*
+    ∎ *Scripts Test main (87)*
 
 
 
@@ -3369,8 +3408,8 @@ These are clones of what's in the ``src`` directory.
 	The default CSS file may need to be customized.
 
 
-..  _`docutils.conf (87)`:
-..  rubric:: docutils.conf (87) =
+..  _`docutils.conf (88)`:
+..  rubric:: docutils.conf (88) =
 ..  parsed-literal::
     :class: code
 
@@ -3385,7 +3424,7 @@ These are clones of what's in the ``src`` directory.
 
 ..  container:: small
 
-    ∎ *docutils.conf (87)*
+    ∎ *docutils.conf (88)*
 
 
 
@@ -3394,8 +3433,8 @@ the resulting HTML pages are easier to read. These are minor
 tweaks to the default CSS.
 
 
-..  _`page-layout.css (88)`:
-..  rubric:: page-layout.css (88) =
+..  _`page-layout.css (89)`:
+..  rubric:: page-layout.css (89) =
 ..  parsed-literal::
     :class: code
 
@@ -3421,7 +3460,7 @@ tweaks to the default CSS.
 
 ..  container:: small
 
-    ∎ *page-layout.css (88)*
+    ∎ *page-layout.css (89)*
 
 
 
@@ -3434,120 +3473,120 @@ Files
 
 :test_unit.py:
     → `test_unit.py (1)`_:test_loader.py:
-    → `test_loader.py (45)`_:test_tangler.py:
-    → `test_tangler.py (54)`_:test_weaver.py:
-    → `test_weaver.py (70)`_:test_scripts.py:
-    → `test_scripts.py (80)`_:docutils.conf:
-    → `docutils.conf (87)`_:page-layout.css:
-    → `page-layout.css (88)`_
+    → `test_loader.py (46)`_:test_tangler.py:
+    → `test_tangler.py (55)`_:test_weaver.py:
+    → `test_weaver.py (71)`_:test_scripts.py:
+    → `test_scripts.py (81)`_:docutils.conf:
+    → `docutils.conf (88)`_:page-layout.css:
+    → `page-layout.css (89)`_
 
 Macros
 ------
 
 :Expected Output 0:
-    → `Expected Output 0 (74)`_, → `Expected Output 0 (75)`_
+    → `Expected Output 0 (75)`_, → `Expected Output 0 (76)`_
 
 :Load Test error handling with a few common syntax errors:
-    → `Load Test error handling with a few common syntax errors (48)`_
+    → `Load Test error handling with a few common syntax errors (49)`_
 
 :Load Test include processing with syntax errors:
-    → `Load Test include processing with syntax errors (50)`_
+    → `Load Test include processing with syntax errors (51)`_
 
 :Load Test main program:
-    → `Load Test main program (53)`_
+    → `Load Test main program (54)`_
 
 :Load Test overheads: imports, etc.:
-    → `Load Test overheads: imports, etc. (47)`_, → `Load Test overheads: imports, etc. (52)`_
+    → `Load Test overheads: imports, etc. (48)`_, → `Load Test overheads: imports, etc. (53)`_
 
 :Load Test superclass to refactor common setup:
-    → `Load Test superclass to refactor common setup (46)`_
+    → `Load Test superclass to refactor common setup (47)`_
 
 :Sample Document 0:
-    → `Sample Document 0 (73)`_
+    → `Sample Document 0 (74)`_
 
 :Sample Document 1 with correct and incorrect syntax:
-    → `Sample Document 1 with correct and incorrect syntax (49)`_
+    → `Sample Document 1 with correct and incorrect syntax (50)`_
 
 :Sample Document 2:
-    → `Sample Document 2 (57)`_
+    → `Sample Document 2 (58)`_
 
 :Sample Document 3:
-    → `Sample Document 3 (59)`_
+    → `Sample Document 3 (60)`_
 
 :Sample Document 4:
-    → `Sample Document 4 (61)`_
+    → `Sample Document 4 (62)`_
 
 :Sample Document 5:
-    → `Sample Document 5 (63)`_
+    → `Sample Document 5 (64)`_
 
 :Sample Document 6:
-    → `Sample Document 6 (65)`_
+    → `Sample Document 6 (66)`_
 
 :Sample Document 7 and it's included file:
-    → `Sample Document 7 and it's included file (67)`_
+    → `Sample Document 7 and it's included file (68)`_
 
 :Sample Document 8 and the file it includes:
-    → `Sample Document 8 and the file it includes (51)`_
+    → `Sample Document 8 and the file it includes (52)`_
 
 :Sample Document 9:
-    → `Sample Document 9 (77)`_
+    → `Sample Document 9 (78)`_
 
 :Sample web file to test with:
-    → `Sample web file to test with (81)`_
+    → `Sample web file to test with (82)`_
 
 :Script Test overheads: imports, etc.:
-    → `Script Test overheads: imports, etc. (85)`_
+    → `Script Test overheads: imports, etc. (86)`_
 
 :Scripts Test main:
-    → `Scripts Test main (86)`_
+    → `Scripts Test main (87)`_
 
 :Superclass for test cases:
-    → `Superclass for test cases (82)`_
+    → `Superclass for test cases (83)`_
 
 :Tangle Test include error 7:
-    → `Tangle Test include error 7 (66)`_
+    → `Tangle Test include error 7 (67)`_
 
 :Tangle Test main program:
-    → `Tangle Test main program (69)`_
+    → `Tangle Test main program (70)`_
 
 :Tangle Test overheads: imports, etc.:
-    → `Tangle Test overheads: imports, etc. (68)`_
+    → `Tangle Test overheads: imports, etc. (69)`_
 
 :Tangle Test semantic error 2:
-    → `Tangle Test semantic error 2 (56)`_
+    → `Tangle Test semantic error 2 (57)`_
 
 :Tangle Test semantic error 3:
-    → `Tangle Test semantic error 3 (58)`_
+    → `Tangle Test semantic error 3 (59)`_
 
 :Tangle Test semantic error 4:
-    → `Tangle Test semantic error 4 (60)`_
+    → `Tangle Test semantic error 4 (61)`_
 
 :Tangle Test semantic error 5:
-    → `Tangle Test semantic error 5 (62)`_
+    → `Tangle Test semantic error 5 (63)`_
 
 :Tangle Test semantic error 6:
-    → `Tangle Test semantic error 6 (64)`_
+    → `Tangle Test semantic error 6 (65)`_
 
 :Tangle Test superclass to refactor common setup:
-    → `Tangle Test superclass to refactor common setup (55)`_
+    → `Tangle Test superclass to refactor common setup (56)`_
 
 :Test of tangle.py:
-    → `Test of tangle.py (84)`_
+    → `Test of tangle.py (85)`_
 
 :Test of weave.py:
-    → `Test of weave.py (83)`_
+    → `Test of weave.py (84)`_
 
 :Unit Test Mock Chunk class:
     → `Unit Test Mock Chunk class (4)`_
 
 :Unit Test main:
-    → `Unit Test main (44)`_
+    → `Unit Test main (45)`_
 
 :Unit Test of Action class hierarchy:
-    → `Unit Test of Action class hierarchy (36)`_
+    → `Unit Test of Action class hierarchy (37)`_
 
 :Unit Test of Application class:
-    → `Unit Test of Application class (41)`_
+    → `Unit Test of Application class (42)`_
 
 :Unit Test of Chunk class hierarchy:
     → `Unit Test of Chunk class hierarchy (10)`_
@@ -3628,40 +3667,40 @@ Macros
     → `Unit Test of Web class (32)`_
 
 :Unit Test of WebReader class:
-    → `Unit Test of WebReader class (33)`_, → `Unit Test of WebReader class (34)`_, → `Unit Test of WebReader class (35)`_
+    → `Unit Test of WebReader class (33)`_, → `Unit Test of WebReader class (34)`_, → `Unit Test of WebReader class (35)`_, → `Unit Test of WebReader class (36)`_
 
 :Unit Test of XrefCommand superclass for all cross-reference commands:
     → `Unit Test of XrefCommand superclass for all cross-reference commands (26)`_
 
 :Unit Test overheads: imports, etc.:
-    → `Unit Test overheads: imports, etc. (42)`_, → `Unit Test overheads: imports, etc. (43)`_
+    → `Unit Test overheads: imports, etc. (43)`_, → `Unit Test overheads: imports, etc. (44)`_
 
 :Unit test of Action Sequence class:
-    → `Unit test of Action Sequence class (37)`_
+    → `Unit test of Action Sequence class (38)`_
 
 :Unit test of LoadAction class:
-    → `Unit test of LoadAction class (40)`_
+    → `Unit test of LoadAction class (41)`_
 
 :Unit test of TangleAction class:
-    → `Unit test of TangleAction class (39)`_
+    → `Unit test of TangleAction class (40)`_
 
 :Unit test of WeaverAction class:
-    → `Unit test of WeaverAction class (38)`_
+    → `Unit test of WeaverAction class (39)`_
 
 :Weave Test evaluation of expressions:
-    → `Weave Test evaluation of expressions (76)`_
+    → `Weave Test evaluation of expressions (77)`_
 
 :Weave Test main program:
-    → `Weave Test main program (79)`_
+    → `Weave Test main program (80)`_
 
 :Weave Test overheads: imports, etc.:
-    → `Weave Test overheads: imports, etc. (78)`_
+    → `Weave Test overheads: imports, etc. (79)`_
 
 :Weave Test references and definitions:
-    → `Weave Test references and definitions (72)`_
+    → `Weave Test references and definitions (73)`_
 
 :Weave Test superclass to refactor common setup:
-    → `Weave Test superclass to refactor common setup (71)`_
+    → `Weave Test superclass to refactor common setup (72)`_
 
 
 
@@ -3670,7 +3709,7 @@ Macros
 
 ..	class:: small
 
-	Created by src/pyweb.py at Sun Jul 17 14:57:40 2022.
+	Created by src/pyweb.py at Mon Jul 18 09:45:50 2022.
 
     Source tests/pyweb_test.w modified Sat Jul  2 09:39:56 2022.
 

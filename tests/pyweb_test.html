@@ -550,16 +550,16 @@ We'll decompose these into several hierarchies.</p>
 <p>This gives us the following outline for unit testing.</p>
 <p class="rubric" id="test-unit-py-1">test_unit.py (1) =</p>
 <pre class="code literal-block">
-→ <a class="reference internal" href="#unit-test-overheads-imports-etc-42">Unit Test overheads: imports, etc. (42)</a>
+→ <a class="reference internal" href="#unit-test-overheads-imports-etc-43">Unit Test overheads: imports, etc. (43)</a>
 → <a class="reference internal" href="#unit-test-of-emitter-class-hierarchy-2">Unit Test of Emitter class hierarchy (2)</a>
 → <a class="reference internal" href="#unit-test-of-chunk-class-hierarchy-10">Unit Test of Chunk class hierarchy (10)</a>
 → <a class="reference internal" href="#unit-test-of-command-class-hierarchy-22">Unit Test of Command class hierarchy (22)</a>
 → <a class="reference internal" href="#unit-test-of-reference-class-hierarchy-31">Unit Test of Reference class hierarchy (31)</a>
 → <a class="reference internal" href="#unit-test-of-web-class-32">Unit Test of Web class (32)</a>
 → <a class="reference internal" href="#unit-test-of-webreader-class-33">Unit Test of WebReader class (33)</a>
-→ <a class="reference internal" href="#unit-test-of-action-class-hierarchy-36">Unit Test of Action class hierarchy (36)</a>
-→ <a class="reference internal" href="#unit-test-of-application-class-41">Unit Test of Application class (41)</a>
-→ <a class="reference internal" href="#unit-test-main-44">Unit Test main (44)</a>
+→ <a class="reference internal" href="#unit-test-of-action-class-hierarchy-37">Unit Test of Action class hierarchy (37)</a>
+→ <a class="reference internal" href="#unit-test-of-application-class-42">Unit Test of Application class (42)</a>
+→ <a class="reference internal" href="#unit-test-main-45">Unit Test main (45)</a>
 </pre>
 <!--  -->
 <div class="small docutils container">
@@ -1618,8 +1618,11 @@ class TestWebConstruction(unittest.TestCase):
 <p>Generally, this is tested separately through the functional tests.
 Those tests each present source files to be processed by the
 WebReader.</p>
-<p>We should test this through some clever mocks that produce the
-proper sequence of tokens to parse the various kinds of Commands.</p>
+<p>The <tt class="docutils literal">WebReader</tt> is poorly designed for unit testing.
+The various chunk and command classes are part of the <tt class="docutils literal">WebReader</tt>, and
+new classes cannot be injected gracefully.</p>
+<p>Exacerbating this are two special cases: the <tt class="docutils literal">&#64;&#64;</tt> and <tt class="docutils literal">&#64;(expr&#64;)</tt> constructs
+are evaluated immediately, and don't create commands.</p>
 <p class="rubric" id="unit-test-of-webreader-class-33">Unit Test of WebReader class (33) =</p>
 <pre class="code literal-block">
 # Tested via functional tests
@@ -1632,13 +1635,13 @@ proper sequence of tokens to parse the various kinds of Commands.</p>
 <pre class="code literal-block">
 class TestTokenizer(unittest.TestCase):
     def test_should_split_tokens(self) -&gt; None:
-        input = io.StringIO(&quot;&#64;&#64; word &#64;{ &#64;[ &#64;&lt; &#64;&gt;\n&#64;] &#64;} &#64;i &#64;| &#64;m &#64;f &#64;u\n&quot;)
+        input = io.StringIO(&quot;&#64;&#64; word &#64;{ &#64;[ &#64;&lt; &#64;&gt;\n&#64;] &#64;} &#64;i &#64;| &#64;m &#64;f &#64;u &#64;( &#64;)\n&quot;)
         self.tokenizer = pyweb.Tokenizer(input)
         tokens = list(self.tokenizer)
-        self.assertEqual(24, len(tokens))
+        self.assertEqual(28, len(tokens))
         self.assertEqual( ['&#64;&#64;', ' word ', '&#64;{', ' ', '&#64;[', ' ', '&#64;&lt;', ' ',
         '&#64;&gt;', '\n', '&#64;]', ' ', '&#64;}', ' ', '&#64;i', ' ', '&#64;|', ' ', '&#64;m', ' ',
-        '&#64;f', ' ', '&#64;u', '\n'], tokens )
+        '&#64;f', ' ', '&#64;u', ' ', '&#64;(', ' ', '&#64;)', '\n'], tokens )
         self.assertEqual(2, self.tokenizer.lineNumber)
 </pre>
 <!--  -->
@@ -1680,23 +1683,47 @@ class TestOptionParser_NamedChunk(unittest.TestCase):
 <!--  -->
 <div class="small docutils container">
 ∎ <em>Unit Test of WebReader class (35)</em></div>
+<p>Testing the <tt class="docutils literal">&#64;&#64;</tt> case and one of the <tt class="docutils literal">&#64;(expr&#64;)</tt> cases.
+Need to test all the available variables: <tt class="docutils literal">os.path</tt>, <tt class="docutils literal">os.getcwd</tt>, <tt class="docutils literal">os.name</tt>, <tt class="docutils literal">time</tt>, <tt class="docutils literal">datetime</tt>, <tt class="docutils literal">platform</tt>,
+<tt class="docutils literal">theWebReader</tt>, <tt class="docutils literal">theFile</tt>, <tt class="docutils literal">thisApplication</tt>, <tt class="docutils literal">version</tt>, <tt class="docutils literal">theLocation</tt>.</p>
+<p class="rubric" id="unit-test-of-webreader-class-36">Unit Test of WebReader class (36) +=</p>
+<pre class="code literal-block">
+class TestWebReader_Immediate(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.reader = pyweb.WebReader()
+
+    def test_should_build_escape_chunk(self):
+        chunks = self.reader.load(Path(), io.StringIO(&quot;Escape: &#64;&#64; Example&quot;))
+        self.assertEqual(1, len(chunks))
+        self.assertEqual(1, len(chunks[0].commands))
+        self.assertEqual(&quot;Escape: &#64; Example&quot;, chunks[0].commands[0].text)
+
+    def test_expressions(self):
+        chunks = self.reader.load(Path(&quot;sample.w&quot;), io.StringIO(&quot;Filename: &#64;(theFile&#64;)&quot;))
+        self.assertEqual(1, len(chunks))
+        self.assertEqual(1, len(chunks[0].commands))
+        self.assertEqual(&quot;Filename: sample.w&quot;, chunks[0].commands[0].text)
+</pre>
+<!--  -->
+<div class="small docutils container">
+∎ <em>Unit Test of WebReader class (36)</em></div>
 </div>
 <div class="section" id="action-tests">
 <h2><a class="toc-backref" href="#toc-entry-9">Action Tests</a></h2>
 <p>Each class is tested separately.  Sequence of some mocks,
 load, tangle, weave.</p>
-<p class="rubric" id="unit-test-of-action-class-hierarchy-36">Unit Test of Action class hierarchy (36) =</p>
+<p class="rubric" id="unit-test-of-action-class-hierarchy-37">Unit Test of Action class hierarchy (37) =</p>
 <pre class="code literal-block">
-→ <a class="reference internal" href="#unit-test-of-action-sequence-class-37">Unit test of Action Sequence class (37)</a>
-→ <a class="reference internal" href="#unit-test-of-loadaction-class-40">Unit test of LoadAction class (40)</a>
-→ <a class="reference internal" href="#unit-test-of-tangleaction-class-39">Unit test of TangleAction class (39)</a>
-→ <a class="reference internal" href="#unit-test-of-weaveraction-class-38">Unit test of WeaverAction class (38)</a>
+→ <a class="reference internal" href="#unit-test-of-action-sequence-class-38">Unit test of Action Sequence class (38)</a>
+→ <a class="reference internal" href="#unit-test-of-loadaction-class-41">Unit test of LoadAction class (41)</a>
+→ <a class="reference internal" href="#unit-test-of-tangleaction-class-40">Unit test of TangleAction class (40)</a>
+→ <a class="reference internal" href="#unit-test-of-weaveraction-class-39">Unit test of WeaverAction class (39)</a>
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Unit Test of Action class hierarchy (36)</em></div>
+∎ <em>Unit Test of Action class hierarchy (37)</em></div>
 <p><strong>TODO:</strong> Replace with Mock</p>
-<p class="rubric" id="unit-test-of-action-sequence-class-37">Unit test of Action Sequence class (37) =</p>
+<p class="rubric" id="unit-test-of-action-sequence-class-38">Unit test of Action Sequence class (38) =</p>
 <pre class="code literal-block">
 class TestActionSequence(unittest.TestCase):
     def setUp(self) -&gt; None:
@@ -1713,8 +1740,8 @@ class TestActionSequence(unittest.TestCase):
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Unit test of Action Sequence class (37)</em></div>
-<p class="rubric" id="unit-test-of-weaveraction-class-38">Unit test of WeaverAction class (38) =</p>
+∎ <em>Unit test of Action Sequence class (38)</em></div>
+<p class="rubric" id="unit-test-of-weaveraction-class-39">Unit test of WeaverAction class (39) =</p>
 <pre class="code literal-block">
 class TestWeaveAction(unittest.TestCase):
     def setUp(self) -&gt; None:
@@ -1734,8 +1761,8 @@ class TestWeaveAction(unittest.TestCase):
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Unit test of WeaverAction class (38)</em></div>
-<p class="rubric" id="unit-test-of-tangleaction-class-39">Unit test of TangleAction class (39) =</p>
+∎ <em>Unit test of WeaverAction class (39)</em></div>
+<p class="rubric" id="unit-test-of-tangleaction-class-40">Unit test of TangleAction class (40) =</p>
 <pre class="code literal-block">
 class TestTangleAction(unittest.TestCase):
     def setUp(self) -&gt; None:
@@ -1754,9 +1781,9 @@ class TestTangleAction(unittest.TestCase):
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Unit test of TangleAction class (39)</em></div>
+∎ <em>Unit test of TangleAction class (40)</em></div>
 <p>The mocked <tt class="docutils literal">WebReader</tt> must provide an <tt class="docutils literal">errors</tt> property to the <tt class="docutils literal">LoadAction</tt> instance.</p>
-<p class="rubric" id="unit-test-of-loadaction-class-40">Unit test of LoadAction class (40) =</p>
+<p class="rubric" id="unit-test-of-loadaction-class-41">Unit test of LoadAction class (41) =</p>
 <pre class="code literal-block">
 class TestLoadAction(unittest.TestCase):
     def setUp(self) -&gt; None:
@@ -1790,25 +1817,25 @@ class TestLoadAction(unittest.TestCase):
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Unit test of LoadAction class (40)</em></div>
+∎ <em>Unit test of LoadAction class (41)</em></div>
 </div>
 <div class="section" id="application-tests">
 <h2><a class="toc-backref" href="#toc-entry-10">Application Tests</a></h2>
 <p>As with testing WebReader, this requires extensive mocking.
 It's easier to simply run the various use cases.</p>
 <p><strong>TODO:</strong> Test Application class</p>
-<p class="rubric" id="unit-test-of-application-class-41">Unit Test of Application class (41) =</p>
+<p class="rubric" id="unit-test-of-application-class-42">Unit Test of Application class (42) =</p>
 <pre class="code literal-block">
 # TODO Test Application class
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Unit Test of Application class (41)</em></div>
+∎ <em>Unit Test of Application class (42)</em></div>
 </div>
 <div class="section" id="overheads-and-main-script">
 <h2><a class="toc-backref" href="#toc-entry-11">Overheads and Main Script</a></h2>
 <p>The boilerplate code for unit testing is the following.</p>
-<p class="rubric" id="unit-test-overheads-imports-etc-42">Unit Test overheads: imports, etc. (42) =</p>
+<p class="rubric" id="unit-test-overheads-imports-etc-43">Unit Test overheads: imports, etc. (43) =</p>
 <pre class="code literal-block">
 &quot;&quot;&quot;Unit tests.&quot;&quot;&quot;
 import argparse
@@ -1831,18 +1858,18 @@ import pyweb
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Unit Test overheads: imports, etc. (42)</em></div>
+∎ <em>Unit Test overheads: imports, etc. (43)</em></div>
 <p>One more overhead is a function we can inject into selected subclasses
 of <tt class="docutils literal">unittest.TestCase</tt>. This is monkeypatch feature that seems useful.</p>
-<p class="rubric" id="unit-test-overheads-imports-etc-43">Unit Test overheads: imports, etc. (43) +=</p>
+<p class="rubric" id="unit-test-overheads-imports-etc-44">Unit Test overheads: imports, etc. (44) +=</p>
 <pre class="code literal-block">
 def rstrip_lines(source: str) -&gt; list[str]:
     return list(l.rstrip() for l in source.splitlines())
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Unit Test overheads: imports, etc. (43)</em></div>
-<p class="rubric" id="unit-test-main-44">Unit Test main (44) =</p>
+∎ <em>Unit Test overheads: imports, etc. (44)</em></div>
+<p class="rubric" id="unit-test-main-45">Unit Test main (45) =</p>
 <pre class="code literal-block">
 if __name__ == &quot;__main__&quot;:
     logging.basicConfig(stream=sys.stdout, level=logging.WARN)
@@ -1850,7 +1877,7 @@ if __name__ == &quot;__main__&quot;:
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Unit Test main (44)</em></div>
+∎ <em>Unit Test main (45)</em></div>
 <p>We run the default <tt class="docutils literal">unittest.main()</tt> to execute the entire suite of tests.</p>
 </div>
 </div>
@@ -1867,26 +1894,26 @@ if __name__ == &quot;__main__&quot;:
 <div class="section" id="tests-for-loading">
 <h2><a class="toc-backref" href="#toc-entry-13">Tests for Loading</a></h2>
 <p>We need to be able to load a web from one or more source files.</p>
-<p class="rubric" id="test-loader-py-45">test_loader.py (45) =</p>
+<p class="rubric" id="test-loader-py-46">test_loader.py (46) =</p>
 <pre class="code literal-block">
-→ <a class="reference internal" href="#load-test-overheads-imports-etc-47">Load Test overheads: imports, etc. (47)</a>
+→ <a class="reference internal" href="#load-test-overheads-imports-etc-48">Load Test overheads: imports, etc. (48)</a>
 
-→ <a class="reference internal" href="#load-test-superclass-to-refactor-common-setup-46">Load Test superclass to refactor common setup (46)</a>
+→ <a class="reference internal" href="#load-test-superclass-to-refactor-common-setup-47">Load Test superclass to refactor common setup (47)</a>
 
-→ <a class="reference internal" href="#load-test-error-handling-with-a-few-common-syntax-errors-48">Load Test error handling with a few common syntax errors (48)</a>
+→ <a class="reference internal" href="#load-test-error-handling-with-a-few-common-syntax-errors-49">Load Test error handling with a few common syntax errors (49)</a>
 
-→ <a class="reference internal" href="#load-test-include-processing-with-syntax-errors-50">Load Test include processing with syntax errors (50)</a>
+→ <a class="reference internal" href="#load-test-include-processing-with-syntax-errors-51">Load Test include processing with syntax errors (51)</a>
 
-→ <a class="reference internal" href="#load-test-main-program-53">Load Test main program (53)</a>
+→ <a class="reference internal" href="#load-test-main-program-54">Load Test main program (54)</a>
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>test_loader.py (45)</em></div>
+∎ <em>test_loader.py (46)</em></div>
 <p>Parsing test cases have a common setup shown in this superclass.</p>
 <p>By using some class-level variables <tt class="docutils literal">text</tt>,
 <tt class="docutils literal">file_path</tt>, we can simply provide a file-like
 input object to the <tt class="docutils literal">WebReader</tt> instance.</p>
-<p class="rubric" id="load-test-superclass-to-refactor-common-setup-46">Load Test superclass to refactor common setup (46) =</p>
+<p class="rubric" id="load-test-superclass-to-refactor-common-setup-47">Load Test superclass to refactor common setup (47) =</p>
 <pre class="code literal-block">
 class ParseTestcase(unittest.TestCase):
     text: ClassVar[str]
@@ -1898,11 +1925,11 @@ class ParseTestcase(unittest.TestCase):
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Load Test superclass to refactor common setup (46)</em></div>
+∎ <em>Load Test superclass to refactor common setup (47)</em></div>
 <p>There are a lot of specific parsing exceptions which can be thrown.
 We'll cover most of the cases with a quick check for a failure to
 find an expected next token.</p>
-<p class="rubric" id="load-test-overheads-imports-etc-47">Load Test overheads: imports, etc. (47) =</p>
+<p class="rubric" id="load-test-overheads-imports-etc-48">Load Test overheads: imports, etc. (48) =</p>
 <pre class="code literal-block">
 import logging.handlers
 from pathlib import Path
@@ -1911,10 +1938,10 @@ from typing import ClassVar
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Load Test overheads: imports, etc. (47)</em></div>
-<p class="rubric" id="load-test-error-handling-with-a-few-common-syntax-errors-48">Load Test error handling with a few common syntax errors (48) =</p>
+∎ <em>Load Test overheads: imports, etc. (48)</em></div>
+<p class="rubric" id="load-test-error-handling-with-a-few-common-syntax-errors-49">Load Test error handling with a few common syntax errors (49) =</p>
 <pre class="code literal-block">
-→ <a class="reference internal" href="#sample-document-1-with-correct-and-incorrect-syntax-49">Sample Document 1 with correct and incorrect syntax (49)</a>
+→ <a class="reference internal" href="#sample-document-1-with-correct-and-incorrect-syntax-50">Sample Document 1 with correct and incorrect syntax (50)</a>
 
 class Test_ParseErrors(ParseTestcase):
     text = test1_w
@@ -1933,8 +1960,8 @@ class Test_ParseErrors(ParseTestcase):
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Load Test error handling with a few common syntax errors (48)</em></div>
-<p class="rubric" id="sample-document-1-with-correct-and-incorrect-syntax-49">Sample Document 1 with correct and incorrect syntax (49) =</p>
+∎ <em>Load Test error handling with a few common syntax errors (49)</em></div>
+<p class="rubric" id="sample-document-1-with-correct-and-incorrect-syntax-50">Sample Document 1 with correct and incorrect syntax (50) =</p>
 <pre class="code literal-block">
 test1_w = &quot;&quot;&quot;Some anonymous chunk
 &#64;o test1.tmp
@@ -1949,7 +1976,7 @@ Okay, now for an error.
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Sample Document 1 with correct and incorrect syntax (49)</em></div>
+∎ <em>Sample Document 1 with correct and incorrect syntax (50)</em></div>
 <p>All of the parsing exceptions should be correctly identified with
 any included file.
 We'll cover most of the cases with a quick check for a failure to
@@ -1957,9 +1984,9 @@ find an expected next token.</p>
 <p>In order to test the include file processing, we have to actually
 create a temporary file.  It's hard to mock the include processing,
 since it's a nested instance of the tokenizer.</p>
-<p class="rubric" id="load-test-include-processing-with-syntax-errors-50">Load Test include processing with syntax errors (50) =</p>
+<p class="rubric" id="load-test-include-processing-with-syntax-errors-51">Load Test include processing with syntax errors (51) =</p>
 <pre class="code literal-block">
-→ <a class="reference internal" href="#sample-document-8-and-the-file-it-includes-51">Sample Document 8 and the file it includes (51)</a>
+→ <a class="reference internal" href="#sample-document-8-and-the-file-it-includes-52">Sample Document 8 and the file it includes (52)</a>
 
 class Test_IncludeParseErrors(ParseTestcase):
     text = test8_w
@@ -1983,10 +2010,10 @@ class Test_IncludeParseErrors(ParseTestcase):
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Load Test include processing with syntax errors (50)</em></div>
+∎ <em>Load Test include processing with syntax errors (51)</em></div>
 <p>The sample document must reference the correct name that will
 be given to the included document by <tt class="docutils literal">setUp</tt>.</p>
-<p class="rubric" id="sample-document-8-and-the-file-it-includes-51">Sample Document 8 and the file it includes (51) =</p>
+<p class="rubric" id="sample-document-8-and-the-file-it-includes-52">Sample Document 8 and the file it includes (52) =</p>
 <pre class="code literal-block">
 test8_w = &quot;&quot;&quot;Some anonymous chunk.
 &#64;d title &#64;[the title of this document, defined with &#64;&#64;[ and &#64;&#64;]&#64;]
@@ -2002,9 +2029,9 @@ And now for an error - incorrect syntax in an included file!
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Sample Document 8 and the file it includes (51)</em></div>
+∎ <em>Sample Document 8 and the file it includes (52)</em></div>
 <p>&lt;p&gt;The overheads for a Python unittest.&lt;/p&gt;</p>
-<p class="rubric" id="load-test-overheads-imports-etc-52">Load Test overheads: imports, etc. (52) +=</p>
+<p class="rubric" id="load-test-overheads-imports-etc-53">Load Test overheads: imports, etc. (53) +=</p>
 <pre class="code literal-block">
 &quot;&quot;&quot;Loader and parsing tests.&quot;&quot;&quot;
 import io
@@ -2020,9 +2047,9 @@ import pyweb
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Load Test overheads: imports, etc. (52)</em></div>
+∎ <em>Load Test overheads: imports, etc. (53)</em></div>
 <p>A main program that configures logging and then runs the test.</p>
-<p class="rubric" id="load-test-main-program-53">Load Test main program (53) =</p>
+<p class="rubric" id="load-test-main-program-54">Load Test main program (54) =</p>
 <pre class="code literal-block">
 if __name__ == &quot;__main__&quot;:
     logging.basicConfig(stream=sys.stdout, level=logging.WARN)
@@ -2030,31 +2057,31 @@ if __name__ == &quot;__main__&quot;:
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Load Test main program (53)</em></div>
+∎ <em>Load Test main program (54)</em></div>
 </div>
 <div class="section" id="tests-for-tangling">
 <h2><a class="toc-backref" href="#toc-entry-14">Tests for Tangling</a></h2>
 <p>We need to be able to tangle a web.</p>
-<p class="rubric" id="test-tangler-py-54">test_tangler.py (54) =</p>
+<p class="rubric" id="test-tangler-py-55">test_tangler.py (55) =</p>
 <pre class="code literal-block">
-→ <a class="reference internal" href="#tangle-test-overheads-imports-etc-68">Tangle Test overheads: imports, etc. (68)</a>
-→ <a class="reference internal" href="#tangle-test-superclass-to-refactor-common-setup-55">Tangle Test superclass to refactor common setup (55)</a>
-→ <a class="reference internal" href="#tangle-test-semantic-error-2-56">Tangle Test semantic error 2 (56)</a>
-→ <a class="reference internal" href="#tangle-test-semantic-error-3-58">Tangle Test semantic error 3 (58)</a>
-→ <a class="reference internal" href="#tangle-test-semantic-error-4-60">Tangle Test semantic error 4 (60)</a>
-→ <a class="reference internal" href="#tangle-test-semantic-error-5-62">Tangle Test semantic error 5 (62)</a>
-→ <a class="reference internal" href="#tangle-test-semantic-error-6-64">Tangle Test semantic error 6 (64)</a>
-→ <a class="reference internal" href="#tangle-test-include-error-7-66">Tangle Test include error 7 (66)</a>
-→ <a class="reference internal" href="#tangle-test-main-program-69">Tangle Test main program (69)</a>
+→ <a class="reference internal" href="#tangle-test-overheads-imports-etc-69">Tangle Test overheads: imports, etc. (69)</a>
+→ <a class="reference internal" href="#tangle-test-superclass-to-refactor-common-setup-56">Tangle Test superclass to refactor common setup (56)</a>
+→ <a class="reference internal" href="#tangle-test-semantic-error-2-57">Tangle Test semantic error 2 (57)</a>
+→ <a class="reference internal" href="#tangle-test-semantic-error-3-59">Tangle Test semantic error 3 (59)</a>
+→ <a class="reference internal" href="#tangle-test-semantic-error-4-61">Tangle Test semantic error 4 (61)</a>
+→ <a class="reference internal" href="#tangle-test-semantic-error-5-63">Tangle Test semantic error 5 (63)</a>
+→ <a class="reference internal" href="#tangle-test-semantic-error-6-65">Tangle Test semantic error 6 (65)</a>
+→ <a class="reference internal" href="#tangle-test-include-error-7-67">Tangle Test include error 7 (67)</a>
+→ <a class="reference internal" href="#tangle-test-main-program-70">Tangle Test main program (70)</a>
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>test_tangler.py (54)</em></div>
+∎ <em>test_tangler.py (55)</em></div>
 <p>Tangling test cases have a common setup and teardown shown in this superclass.
 Since tangling must produce a file, it's helpful to remove the file that gets created.
 The essential test case is to load and attempt to tangle, checking the
 exceptions raised.</p>
-<p class="rubric" id="tangle-test-superclass-to-refactor-common-setup-55">Tangle Test superclass to refactor common setup (55) =</p>
+<p class="rubric" id="tangle-test-superclass-to-refactor-common-setup-56">Tangle Test superclass to refactor common setup (56) =</p>
 <pre class="code literal-block">
 class TangleTestcase(unittest.TestCase):
     text: ClassVar[str]
@@ -2083,10 +2110,10 @@ class TangleTestcase(unittest.TestCase):
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Tangle Test superclass to refactor common setup (55)</em></div>
-<p class="rubric" id="tangle-test-semantic-error-2-56">Tangle Test semantic error 2 (56) =</p>
+∎ <em>Tangle Test superclass to refactor common setup (56)</em></div>
+<p class="rubric" id="tangle-test-semantic-error-2-57">Tangle Test semantic error 2 (57) =</p>
 <pre class="code literal-block">
-→ <a class="reference internal" href="#sample-document-2-57">Sample Document 2 (57)</a>
+→ <a class="reference internal" href="#sample-document-2-58">Sample Document 2 (58)</a>
 
 class Test_SemanticError_2(TangleTestcase):
     text = test2_w
@@ -2096,8 +2123,8 @@ class Test_SemanticError_2(TangleTestcase):
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Tangle Test semantic error 2 (56)</em></div>
-<p class="rubric" id="sample-document-2-57">Sample Document 2 (57) =</p>
+∎ <em>Tangle Test semantic error 2 (57)</em></div>
+<p class="rubric" id="sample-document-2-58">Sample Document 2 (58) =</p>
 <pre class="code literal-block">
 test2_w = &quot;&quot;&quot;Some anonymous chunk
 &#64;o test2.tmp
@@ -2110,10 +2137,10 @@ Okay, now for some errors: no part2!
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Sample Document 2 (57)</em></div>
-<p class="rubric" id="tangle-test-semantic-error-3-58">Tangle Test semantic error 3 (58) =</p>
+∎ <em>Sample Document 2 (58)</em></div>
+<p class="rubric" id="tangle-test-semantic-error-3-59">Tangle Test semantic error 3 (59) =</p>
 <pre class="code literal-block">
-→ <a class="reference internal" href="#sample-document-3-59">Sample Document 3 (59)</a>
+→ <a class="reference internal" href="#sample-document-3-60">Sample Document 3 (60)</a>
 
 class Test_SemanticError_3(TangleTestcase):
     text = test3_w
@@ -2123,8 +2150,8 @@ class Test_SemanticError_3(TangleTestcase):
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Tangle Test semantic error 3 (58)</em></div>
-<p class="rubric" id="sample-document-3-59">Sample Document 3 (59) =</p>
+∎ <em>Tangle Test semantic error 3 (59)</em></div>
+<p class="rubric" id="sample-document-3-60">Sample Document 3 (60) =</p>
 <pre class="code literal-block">
 test3_w = &quot;&quot;&quot;Some anonymous chunk
 &#64;o test3.tmp
@@ -2138,10 +2165,10 @@ Okay, now for some errors: attempt to tangle a cross-reference!
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Sample Document 3 (59)</em></div>
-<p class="rubric" id="tangle-test-semantic-error-4-60">Tangle Test semantic error 4 (60) =</p>
+∎ <em>Sample Document 3 (60)</em></div>
+<p class="rubric" id="tangle-test-semantic-error-4-61">Tangle Test semantic error 4 (61) =</p>
 <pre class="code literal-block">
-→ <a class="reference internal" href="#sample-document-4-61">Sample Document 4 (61)</a>
+→ <a class="reference internal" href="#sample-document-4-62">Sample Document 4 (62)</a>
 
 class Test_SemanticError_4(TangleTestcase):
     &quot;&quot;&quot;An optional feature of a Web.&quot;&quot;&quot;
@@ -2152,8 +2179,8 @@ class Test_SemanticError_4(TangleTestcase):
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Tangle Test semantic error 4 (60)</em></div>
-<p class="rubric" id="sample-document-4-61">Sample Document 4 (61) =</p>
+∎ <em>Tangle Test semantic error 4 (61)</em></div>
+<p class="rubric" id="sample-document-4-62">Sample Document 4 (62) =</p>
 <pre class="code literal-block">
 test4_w = &quot;&quot;&quot;Some anonymous chunk
 &#64;o test4.tmp
@@ -2167,10 +2194,10 @@ Okay, now for some errors: attempt to weave but no full name for part1....
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Sample Document 4 (61)</em></div>
-<p class="rubric" id="tangle-test-semantic-error-5-62">Tangle Test semantic error 5 (62) =</p>
+∎ <em>Sample Document 4 (62)</em></div>
+<p class="rubric" id="tangle-test-semantic-error-5-63">Tangle Test semantic error 5 (63) =</p>
 <pre class="code literal-block">
-→ <a class="reference internal" href="#sample-document-5-63">Sample Document 5 (63)</a>
+→ <a class="reference internal" href="#sample-document-5-64">Sample Document 5 (64)</a>
 
 class Test_SemanticError_5(TangleTestcase):
     text = test5_w
@@ -2180,8 +2207,8 @@ class Test_SemanticError_5(TangleTestcase):
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Tangle Test semantic error 5 (62)</em></div>
-<p class="rubric" id="sample-document-5-63">Sample Document 5 (63) =</p>
+∎ <em>Tangle Test semantic error 5 (63)</em></div>
+<p class="rubric" id="sample-document-5-64">Sample Document 5 (64) =</p>
 <pre class="code literal-block">
 test5_w = &quot;&quot;&quot;
 Some anonymous chunk
@@ -2197,10 +2224,10 @@ Okay, now for some errors: part1... is ambiguous
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Sample Document 5 (63)</em></div>
-<p class="rubric" id="tangle-test-semantic-error-6-64">Tangle Test semantic error 6 (64) =</p>
+∎ <em>Sample Document 5 (64)</em></div>
+<p class="rubric" id="tangle-test-semantic-error-6-65">Tangle Test semantic error 6 (65) =</p>
 <pre class="code literal-block">
-→ <a class="reference internal" href="#sample-document-6-65">Sample Document 6 (65)</a>
+→ <a class="reference internal" href="#sample-document-6-66">Sample Document 6 (66)</a>
 
 class Test_SemanticError_6(TangleTestcase):
     text = test6_w
@@ -2216,8 +2243,8 @@ class Test_SemanticError_6(TangleTestcase):
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Tangle Test semantic error 6 (64)</em></div>
-<p class="rubric" id="sample-document-6-65">Sample Document 6 (65) =</p>
+∎ <em>Tangle Test semantic error 6 (65)</em></div>
+<p class="rubric" id="sample-document-6-66">Sample Document 6 (66) =</p>
 <pre class="code literal-block">
 test6_w = &quot;&quot;&quot;Some anonymous chunk
 &#64;o test6.tmp
@@ -2233,10 +2260,10 @@ Okay, now for some warnings:
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Sample Document 6 (65)</em></div>
-<p class="rubric" id="tangle-test-include-error-7-66">Tangle Test include error 7 (66) =</p>
+∎ <em>Sample Document 6 (66)</em></div>
+<p class="rubric" id="tangle-test-include-error-7-67">Tangle Test include error 7 (67) =</p>
 <pre class="code literal-block">
-→ <a class="reference internal" href="#sample-document-7-and-it-s-included-file-67">Sample Document 7 and it's included file (67)</a>
+→ <a class="reference internal" href="#sample-document-7-and-it-s-included-file-68">Sample Document 7 and it's included file (68)</a>
 
 class Test_IncludeError_7(TangleTestcase):
     text = test7_w
@@ -2256,8 +2283,8 @@ class Test_IncludeError_7(TangleTestcase):
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Tangle Test include error 7 (66)</em></div>
-<p class="rubric" id="sample-document-7-and-it-s-included-file-67">Sample Document 7 and it's included file (67) =</p>
+∎ <em>Tangle Test include error 7 (67)</em></div>
+<p class="rubric" id="sample-document-7-and-it-s-included-file-68">Sample Document 7 and it's included file (68) =</p>
 <pre class="code literal-block">
 test7_w = &quot;&quot;&quot;
 Some anonymous chunk.
@@ -2271,8 +2298,8 @@ test7_inc_w = &quot;&quot;&quot;The test7a.tmp chunk for test7.w&quot;&quot;&quo
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Sample Document 7 and it's included file (67)</em></div>
-<p class="rubric" id="tangle-test-overheads-imports-etc-68">Tangle Test overheads: imports, etc. (68) =</p>
+∎ <em>Sample Document 7 and it's included file (68)</em></div>
+<p class="rubric" id="tangle-test-overheads-imports-etc-69">Tangle Test overheads: imports, etc. (69) =</p>
 <pre class="code literal-block">
 &quot;&quot;&quot;Tangler tests exercise various semantic features.&quot;&quot;&quot;
 import io
@@ -2286,8 +2313,8 @@ import pyweb
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Tangle Test overheads: imports, etc. (68)</em></div>
-<p class="rubric" id="tangle-test-main-program-69">Tangle Test main program (69) =</p>
+∎ <em>Tangle Test overheads: imports, etc. (69)</em></div>
+<p class="rubric" id="tangle-test-main-program-70">Tangle Test main program (70) =</p>
 <pre class="code literal-block">
 if __name__ == &quot;__main__&quot;:
     import sys
@@ -2296,24 +2323,24 @@ if __name__ == &quot;__main__&quot;:
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Tangle Test main program (69)</em></div>
+∎ <em>Tangle Test main program (70)</em></div>
 </div>
 <div class="section" id="tests-for-weaving">
 <h2><a class="toc-backref" href="#toc-entry-15">Tests for Weaving</a></h2>
 <p>We need to be able to weave a document from one or more source files.</p>
-<p class="rubric" id="test-weaver-py-70">test_weaver.py (70) =</p>
+<p class="rubric" id="test-weaver-py-71">test_weaver.py (71) =</p>
 <pre class="code literal-block">
-→ <a class="reference internal" href="#weave-test-overheads-imports-etc-78">Weave Test overheads: imports, etc. (78)</a>
-→ <a class="reference internal" href="#weave-test-superclass-to-refactor-common-setup-71">Weave Test superclass to refactor common setup (71)</a>
-→ <a class="reference internal" href="#weave-test-references-and-definitions-72">Weave Test references and definitions (72)</a>
-→ <a class="reference internal" href="#weave-test-evaluation-of-expressions-76">Weave Test evaluation of expressions (76)</a>
-→ <a class="reference internal" href="#weave-test-main-program-79">Weave Test main program (79)</a>
+→ <a class="reference internal" href="#weave-test-overheads-imports-etc-79">Weave Test overheads: imports, etc. (79)</a>
+→ <a class="reference internal" href="#weave-test-superclass-to-refactor-common-setup-72">Weave Test superclass to refactor common setup (72)</a>
+→ <a class="reference internal" href="#weave-test-references-and-definitions-73">Weave Test references and definitions (73)</a>
+→ <a class="reference internal" href="#weave-test-evaluation-of-expressions-77">Weave Test evaluation of expressions (77)</a>
+→ <a class="reference internal" href="#weave-test-main-program-80">Weave Test main program (80)</a>
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>test_weaver.py (70)</em></div>
+∎ <em>test_weaver.py (71)</em></div>
 <p>Weaving test cases have a common setup shown in this superclass.</p>
-<p class="rubric" id="weave-test-superclass-to-refactor-common-setup-71">Weave Test superclass to refactor common setup (71) =</p>
+<p class="rubric" id="weave-test-superclass-to-refactor-common-setup-72">Weave Test superclass to refactor common setup (72) =</p>
 <pre class="code literal-block">
 class WeaveTestcase(unittest.TestCase):
     text: ClassVar[str]
@@ -2337,11 +2364,11 @@ class WeaveTestcase(unittest.TestCase):
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Weave Test superclass to refactor common setup (71)</em></div>
-<p class="rubric" id="weave-test-references-and-definitions-72">Weave Test references and definitions (72) =</p>
+∎ <em>Weave Test superclass to refactor common setup (72)</em></div>
+<p class="rubric" id="weave-test-references-and-definitions-73">Weave Test references and definitions (73) =</p>
 <pre class="code literal-block">
-→ <a class="reference internal" href="#sample-document-0-73">Sample Document 0 (73)</a>
-→ <a class="reference internal" href="#expected-output-0-74">Expected Output 0 (74)</a>
+→ <a class="reference internal" href="#sample-document-0-74">Sample Document 0 (74)</a>
+→ <a class="reference internal" href="#expected-output-0-75">Expected Output 0 (75)</a>
 
 class Test_RefDefWeave(WeaveTestcase):
     text = test0_w
@@ -2376,8 +2403,8 @@ class Test_RefDefWeave(WeaveTestcase):
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Weave Test references and definitions (72)</em></div>
-<p class="rubric" id="sample-document-0-73">Sample Document 0 (73) =</p>
+∎ <em>Weave Test references and definitions (73)</em></div>
+<p class="rubric" id="sample-document-0-74">Sample Document 0 (74) =</p>
 <pre class="code literal-block">
 test0_w = &quot;&quot;&quot;&lt;html&gt;
 &lt;head&gt;
@@ -2403,8 +2430,8 @@ for i in range(24):
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Sample Document 0 (73)</em></div>
-<p class="rubric" id="expected-output-0-74">Expected Output 0 (74) =</p>
+∎ <em>Sample Document 0 (74)</em></div>
+<p class="rubric" id="expected-output-0-75">Expected Output 0 (75) =</p>
 <pre class="code literal-block">
 test0_expected_html = &quot;&quot;&quot;&lt;html&gt;
 &lt;head&gt;
@@ -2437,8 +2464,8 @@ for i in range(24):
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Expected Output 0 (74)</em></div>
-<p class="rubric" id="expected-output-0-75">Expected Output 0 (75) +=</p>
+∎ <em>Expected Output 0 (75)</em></div>
+<p class="rubric" id="expected-output-0-76">Expected Output 0 (76) +=</p>
 <pre class="code literal-block">
 test0_expected_debug = (
     'text: TextCommand(text=\'&lt;html&gt;\\n&lt;head&gt;\\n    &lt;link rel=&quot;StyleSheet&quot; href=&quot;pyweb.css&quot; type=&quot;text/css&quot; /&gt;\\n&lt;/head&gt;\\n&lt;body&gt;\\n\', location=(\'test0.w\', 1))\n'
@@ -2452,12 +2479,12 @@ test0_expected_debug = (
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Expected Output 0 (75)</em></div>
+∎ <em>Expected Output 0 (76)</em></div>
 <p>Note that this really requires a mocked <tt class="docutils literal">time</tt> module in order
 to properly provide a consistent output from <tt class="docutils literal">time.asctime()</tt>.</p>
-<p class="rubric" id="weave-test-evaluation-of-expressions-76">Weave Test evaluation of expressions (76) =</p>
+<p class="rubric" id="weave-test-evaluation-of-expressions-77">Weave Test evaluation of expressions (77) =</p>
 <pre class="code literal-block">
-→ <a class="reference internal" href="#sample-document-9-77">Sample Document 9 (77)</a>
+→ <a class="reference internal" href="#sample-document-9-78">Sample Document 9 (78)</a>
 
 from unittest.mock import Mock
 
@@ -2485,8 +2512,8 @@ class TestEvaluations(WeaveTestcase):
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Weave Test evaluation of expressions (76)</em></div>
-<p class="rubric" id="sample-document-9-77">Sample Document 9 (77) =</p>
+∎ <em>Weave Test evaluation of expressions (77)</em></div>
+<p class="rubric" id="sample-document-9-78">Sample Document 9 (78) =</p>
 <pre class="code literal-block">
 test9_w= &quot;&quot;&quot;An anonymous chunk.
 Time = &#64;(time.asctime()&#64;)
@@ -2497,8 +2524,8 @@ CWD = &#64;(os.path.realpath('.')&#64;)
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Sample Document 9 (77)</em></div>
-<p class="rubric" id="weave-test-overheads-imports-etc-78">Weave Test overheads: imports, etc. (78) =</p>
+∎ <em>Sample Document 9 (78)</em></div>
+<p class="rubric" id="weave-test-overheads-imports-etc-79">Weave Test overheads: imports, etc. (79) =</p>
 <pre class="code literal-block">
 &quot;&quot;&quot;Weaver tests exercise various weaving features.&quot;&quot;&quot;
 import io
@@ -2515,8 +2542,8 @@ import pyweb
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Weave Test overheads: imports, etc. (78)</em></div>
-<p class="rubric" id="weave-test-main-program-79">Weave Test main program (79) =</p>
+∎ <em>Weave Test overheads: imports, etc. (79)</em></div>
+<p class="rubric" id="weave-test-main-program-80">Weave Test main program (80) =</p>
 <pre class="code literal-block">
 if __name__ == &quot;__main__&quot;:
     logging.basicConfig(stream=sys.stderr, level=logging.WARN)
@@ -2524,7 +2551,7 @@ if __name__ == &quot;__main__&quot;:
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Weave Test main program (79)</em></div>
+∎ <em>Weave Test main program (80)</em></div>
 </div>
 </div>
 <div class="section" id="additional-scripts-testing">
@@ -2537,27 +2564,27 @@ if __name__ == &quot;__main__&quot;:
 </ul>
 <p>These need their own test cases.</p>
 <p>This gives us the following outline for the script testing.</p>
-<p class="rubric" id="test-scripts-py-80">test_scripts.py (80) =</p>
+<p class="rubric" id="test-scripts-py-81">test_scripts.py (81) =</p>
 <pre class="code literal-block">
-→ <a class="reference internal" href="#script-test-overheads-imports-etc-85">Script Test overheads: imports, etc. (85)</a>
+→ <a class="reference internal" href="#script-test-overheads-imports-etc-86">Script Test overheads: imports, etc. (86)</a>
 
-→ <a class="reference internal" href="#sample-web-file-to-test-with-81">Sample web file to test with (81)</a>
+→ <a class="reference internal" href="#sample-web-file-to-test-with-82">Sample web file to test with (82)</a>
 
-→ <a class="reference internal" href="#superclass-for-test-cases-82">Superclass for test cases (82)</a>
+→ <a class="reference internal" href="#superclass-for-test-cases-83">Superclass for test cases (83)</a>
 
-→ <a class="reference internal" href="#test-of-weave-py-83">Test of weave.py (83)</a>
+→ <a class="reference internal" href="#test-of-weave-py-84">Test of weave.py (84)</a>
 
-→ <a class="reference internal" href="#test-of-tangle-py-84">Test of tangle.py (84)</a>
+→ <a class="reference internal" href="#test-of-tangle-py-85">Test of tangle.py (85)</a>
 
-→ <a class="reference internal" href="#scripts-test-main-86">Scripts Test main (86)</a>
+→ <a class="reference internal" href="#scripts-test-main-87">Scripts Test main (87)</a>
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>test_scripts.py (80)</em></div>
+∎ <em>test_scripts.py (81)</em></div>
 <div class="section" id="sample-web-file">
 <h2><a class="toc-backref" href="#toc-entry-17">Sample Web File</a></h2>
 <p>This is a web <tt class="docutils literal">.w</tt> file to create a document and tangle a small file.</p>
-<p class="rubric" id="sample-web-file-to-test-with-81">Sample web file to test with (81) =</p>
+<p class="rubric" id="sample-web-file-to-test-with-82">Sample web file to test with (82) =</p>
 <pre class="code literal-block">
 sample = textwrap.dedent(&quot;&quot;&quot;
     &lt;!doctype html&gt;
@@ -2596,13 +2623,13 @@ sample = textwrap.dedent(&quot;&quot;&quot;
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Sample web file to test with (81)</em></div>
+∎ <em>Sample web file to test with (82)</em></div>
 </div>
 <div class="section" id="superclass-for-test-cases">
 <h2><a class="toc-backref" href="#toc-entry-18">Superclass for test cases</a></h2>
 <p>This superclass definition creates a consistent test fixture for both test cases.
 The sample <tt class="docutils literal">test_sample.w</tt> file is created and removed after the test.</p>
-<p class="rubric" id="superclass-for-test-cases-82">Superclass for test cases (82) =</p>
+<p class="rubric" id="superclass-for-test-cases-83">Superclass for test cases (83) =</p>
 <pre class="code literal-block">
 class SampleWeb(unittest.TestCase):
     def setUp(self) -&gt; None:
@@ -2623,13 +2650,13 @@ class SampleWeb(unittest.TestCase):
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Superclass for test cases (82)</em></div>
+∎ <em>Superclass for test cases (83)</em></div>
 </div>
 <div class="section" id="weave-script-test">
 <h2><a class="toc-backref" href="#toc-entry-19">Weave Script Test</a></h2>
 <p>We check the weave output to be sure it's what we expected.
 This could be altered to check a few features of the weave file rather than compare the entire file.</p>
-<p class="rubric" id="test-of-weave-py-83">Test of weave.py (83) =</p>
+<p class="rubric" id="test-of-weave-py-84">Test of weave.py (84) =</p>
 <pre class="code literal-block">
 expected_weave = ('&lt;!doctype html&gt;\n'
     '&lt;html lang=&quot;en&quot;&gt;\n'
@@ -2713,12 +2740,12 @@ class TestWeave(SampleWeb):
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Test of weave.py (83)</em></div>
+∎ <em>Test of weave.py (84)</em></div>
 </div>
 <div class="section" id="tangle-script-test">
 <h2><a class="toc-backref" href="#toc-entry-20">Tangle Script Test</a></h2>
 <p>We check the tangle output to be sure it's what we expected.</p>
-<p class="rubric" id="test-of-tangle-py-84">Test of tangle.py (84) =</p>
+<p class="rubric" id="test-of-tangle-py-85">Test of tangle.py (85) =</p>
 <pre class="code literal-block">
 expected_tangle = textwrap.dedent(&quot;&quot;&quot;
 
@@ -2747,13 +2774,13 @@ class TestTangle(SampleWeb):
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Test of tangle.py (84)</em></div>
+∎ <em>Test of tangle.py (85)</em></div>
 </div>
 <div class="section" id="overheads-and-main-script-1">
 <h2><a class="toc-backref" href="#toc-entry-21">Overheads and Main Script</a></h2>
 <p>This is typical of the other test modules. We provide a unittest runner
 here in case we want to run these tests in isolation.</p>
-<p class="rubric" id="script-test-overheads-imports-etc-85">Script Test overheads: imports, etc. (85) =</p>
+<p class="rubric" id="script-test-overheads-imports-etc-86">Script Test overheads: imports, etc. (86) =</p>
 <pre class="code literal-block">
 &quot;&quot;&quot;Script tests.&quot;&quot;&quot;
 import logging
@@ -2767,8 +2794,8 @@ import weave
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Script Test overheads: imports, etc. (85)</em></div>
-<p class="rubric" id="scripts-test-main-86">Scripts Test main (86) =</p>
+∎ <em>Script Test overheads: imports, etc. (86)</em></div>
+<p class="rubric" id="scripts-test-main-87">Scripts Test main (87) =</p>
 <pre class="code literal-block">
 if __name__ == &quot;__main__&quot;:
     logging.basicConfig(stream=sys.stdout, level=logging.WARN)
@@ -2776,7 +2803,7 @@ if __name__ == &quot;__main__&quot;:
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>Scripts Test main (86)</em></div>
+∎ <em>Scripts Test main (87)</em></div>
 <p>We run the default <tt class="docutils literal">unittest.main()</tt> to execute the entire suite of tests.</p>
 <p>No Longer supported: &#64;i runner.w, using <strong>pytest</strong> seems better.</p>
 </div>
@@ -2789,7 +2816,7 @@ These are clones of what's in the <tt class="docutils literal">src</tt> director
 <dt><tt class="docutils literal">docutils.conf</tt> defines two CSS files to use.</dt>
 <dd>The default CSS file may need to be customized.</dd>
 </dl>
-<p class="rubric" id="docutils-conf-87">docutils.conf (87) =</p>
+<p class="rubric" id="docutils-conf-88">docutils.conf (88) =</p>
 <pre class="code literal-block">
 # docutils.conf
 
@@ -2800,11 +2827,11 @@ syntax-highlight: long
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>docutils.conf (87)</em></div>
+∎ <em>docutils.conf (88)</em></div>
 <p><tt class="docutils literal"><span class="pre">page-layout.css</span></tt>  This tweaks one CSS to be sure that
 the resulting HTML pages are easier to read. These are minor
 tweaks to the default CSS.</p>
-<p class="rubric" id="page-layout-css-88">page-layout.css (88) =</p>
+<p class="rubric" id="page-layout-css-89">page-layout.css (89) =</p>
 <pre class="code literal-block">
 /* Page layout tweaks */
 div.document { width: 7in; }
@@ -2826,7 +2853,7 @@ div.document { width: 7in; }
 </pre>
 <!--  -->
 <div class="small docutils container">
-∎ <em>page-layout.css (88)</em></div>
+∎ <em>page-layout.css (89)</em></div>
 </div>
 <div class="section" id="indices">
 <h1><a class="toc-backref" href="#toc-entry-23">Indices</a></h1>
@@ -2837,12 +2864,12 @@ div.document { width: 7in; }
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field"><th class="field-name">test_unit.py:</th><td class="field-body">→ <a class="reference internal" href="#test-unit-py-1">test_unit.py (1)</a>:test_loader.py:
-→ <a class="reference internal" href="#test-loader-py-45">test_loader.py (45)</a>:test_tangler.py:
-→ <a class="reference internal" href="#test-tangler-py-54">test_tangler.py (54)</a>:test_weaver.py:
-→ <a class="reference internal" href="#test-weaver-py-70">test_weaver.py (70)</a>:test_scripts.py:
-→ <a class="reference internal" href="#test-scripts-py-80">test_scripts.py (80)</a>:docutils.conf:
-→ <a class="reference internal" href="#docutils-conf-87">docutils.conf (87)</a>:page-layout.css:
-→ <a class="reference internal" href="#page-layout-css-88">page-layout.css (88)</a></td>
+→ <a class="reference internal" href="#test-loader-py-46">test_loader.py (46)</a>:test_tangler.py:
+→ <a class="reference internal" href="#test-tangler-py-55">test_tangler.py (55)</a>:test_weaver.py:
+→ <a class="reference internal" href="#test-weaver-py-71">test_weaver.py (71)</a>:test_scripts.py:
+→ <a class="reference internal" href="#test-scripts-py-81">test_scripts.py (81)</a>:docutils.conf:
+→ <a class="reference internal" href="#docutils-conf-88">docutils.conf (88)</a>:page-layout.css:
+→ <a class="reference internal" href="#page-layout-css-89">page-layout.css (89)</a></td>
 </tr>
 </tbody>
 </table>
@@ -2854,111 +2881,111 @@ div.document { width: 7in; }
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field"><th class="field-name" colspan="2">Expected Output 0:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#expected-output-0-74">Expected Output 0 (74)</a>, → <a class="reference internal" href="#expected-output-0-75">Expected Output 0 (75)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#expected-output-0-75">Expected Output 0 (75)</a>, → <a class="reference internal" href="#expected-output-0-76">Expected Output 0 (76)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Load Test error handling with a few common syntax errors:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#load-test-error-handling-with-a-few-common-syntax-errors-48">Load Test error handling with a few common syntax errors (48)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#load-test-error-handling-with-a-few-common-syntax-errors-49">Load Test error handling with a few common syntax errors (49)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Load Test include processing with syntax errors:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#load-test-include-processing-with-syntax-errors-50">Load Test include processing with syntax errors (50)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#load-test-include-processing-with-syntax-errors-51">Load Test include processing with syntax errors (51)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Load Test main program:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#load-test-main-program-53">Load Test main program (53)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#load-test-main-program-54">Load Test main program (54)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Load Test overheads:</th></tr>
 <tr class="field"><td>&nbsp;</td><td class="field-body">imports, etc.:
-→ <a class="reference internal" href="#load-test-overheads-imports-etc-47">Load Test overheads: imports, etc. (47)</a>, → <a class="reference internal" href="#load-test-overheads-imports-etc-52">Load Test overheads: imports, etc. (52)</a></td>
+→ <a class="reference internal" href="#load-test-overheads-imports-etc-48">Load Test overheads: imports, etc. (48)</a>, → <a class="reference internal" href="#load-test-overheads-imports-etc-53">Load Test overheads: imports, etc. (53)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Load Test superclass to refactor common setup:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#load-test-superclass-to-refactor-common-setup-46">Load Test superclass to refactor common setup (46)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#load-test-superclass-to-refactor-common-setup-47">Load Test superclass to refactor common setup (47)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Sample Document 0:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-0-73">Sample Document 0 (73)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-0-74">Sample Document 0 (74)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Sample Document 1 with correct and incorrect syntax:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-1-with-correct-and-incorrect-syntax-49">Sample Document 1 with correct and incorrect syntax (49)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-1-with-correct-and-incorrect-syntax-50">Sample Document 1 with correct and incorrect syntax (50)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Sample Document 2:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-2-57">Sample Document 2 (57)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-2-58">Sample Document 2 (58)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Sample Document 3:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-3-59">Sample Document 3 (59)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-3-60">Sample Document 3 (60)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Sample Document 4:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-4-61">Sample Document 4 (61)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-4-62">Sample Document 4 (62)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Sample Document 5:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-5-63">Sample Document 5 (63)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-5-64">Sample Document 5 (64)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Sample Document 6:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-6-65">Sample Document 6 (65)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-6-66">Sample Document 6 (66)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Sample Document 7 and it's included file:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-7-and-it-s-included-file-67">Sample Document 7 and it's included file (67)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-7-and-it-s-included-file-68">Sample Document 7 and it's included file (68)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Sample Document 8 and the file it includes:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-8-and-the-file-it-includes-51">Sample Document 8 and the file it includes (51)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-8-and-the-file-it-includes-52">Sample Document 8 and the file it includes (52)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Sample Document 9:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-9-77">Sample Document 9 (77)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-document-9-78">Sample Document 9 (78)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Sample web file to test with:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-web-file-to-test-with-81">Sample web file to test with (81)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#sample-web-file-to-test-with-82">Sample web file to test with (82)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Script Test overheads:</th></tr>
 <tr class="field"><td>&nbsp;</td><td class="field-body">imports, etc.:
-→ <a class="reference internal" href="#script-test-overheads-imports-etc-85">Script Test overheads: imports, etc. (85)</a></td>
+→ <a class="reference internal" href="#script-test-overheads-imports-etc-86">Script Test overheads: imports, etc. (86)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Scripts Test main:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#scripts-test-main-86">Scripts Test main (86)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#scripts-test-main-87">Scripts Test main (87)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Superclass for test cases:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#superclass-for-test-cases-82">Superclass for test cases (82)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#superclass-for-test-cases-83">Superclass for test cases (83)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Tangle Test include error 7:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#tangle-test-include-error-7-66">Tangle Test include error 7 (66)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#tangle-test-include-error-7-67">Tangle Test include error 7 (67)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Tangle Test main program:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#tangle-test-main-program-69">Tangle Test main program (69)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#tangle-test-main-program-70">Tangle Test main program (70)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Tangle Test overheads:</th></tr>
 <tr class="field"><td>&nbsp;</td><td class="field-body">imports, etc.:
-→ <a class="reference internal" href="#tangle-test-overheads-imports-etc-68">Tangle Test overheads: imports, etc. (68)</a></td>
+→ <a class="reference internal" href="#tangle-test-overheads-imports-etc-69">Tangle Test overheads: imports, etc. (69)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Tangle Test semantic error 2:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#tangle-test-semantic-error-2-56">Tangle Test semantic error 2 (56)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#tangle-test-semantic-error-2-57">Tangle Test semantic error 2 (57)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Tangle Test semantic error 3:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#tangle-test-semantic-error-3-58">Tangle Test semantic error 3 (58)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#tangle-test-semantic-error-3-59">Tangle Test semantic error 3 (59)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Tangle Test semantic error 4:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#tangle-test-semantic-error-4-60">Tangle Test semantic error 4 (60)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#tangle-test-semantic-error-4-61">Tangle Test semantic error 4 (61)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Tangle Test semantic error 5:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#tangle-test-semantic-error-5-62">Tangle Test semantic error 5 (62)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#tangle-test-semantic-error-5-63">Tangle Test semantic error 5 (63)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Tangle Test semantic error 6:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#tangle-test-semantic-error-6-64">Tangle Test semantic error 6 (64)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#tangle-test-semantic-error-6-65">Tangle Test semantic error 6 (65)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Tangle Test superclass to refactor common setup:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#tangle-test-superclass-to-refactor-common-setup-55">Tangle Test superclass to refactor common setup (55)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#tangle-test-superclass-to-refactor-common-setup-56">Tangle Test superclass to refactor common setup (56)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Test of tangle.py:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#test-of-tangle-py-84">Test of tangle.py (84)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#test-of-tangle-py-85">Test of tangle.py (85)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Test of weave.py:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#test-of-weave-py-83">Test of weave.py (83)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#test-of-weave-py-84">Test of weave.py (84)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test Mock Chunk class:</th></tr>
 <tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-mock-chunk-class-4">Unit Test Mock Chunk class (4)</a></td>
 </tr>
-<tr class="field"><th class="field-name">Unit Test main:</th><td class="field-body">→ <a class="reference internal" href="#unit-test-main-44">Unit Test main (44)</a></td>
+<tr class="field"><th class="field-name">Unit Test main:</th><td class="field-body">→ <a class="reference internal" href="#unit-test-main-45">Unit Test main (45)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of Action class hierarchy:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-action-class-hierarchy-36">Unit Test of Action class hierarchy (36)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-action-class-hierarchy-37">Unit Test of Action class hierarchy (37)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of Application class:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-application-class-41">Unit Test of Application class (41)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-application-class-42">Unit Test of Application class (42)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of Chunk class hierarchy:</th></tr>
 <tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-chunk-class-hierarchy-10">Unit Test of Chunk class hierarchy (10)</a></td>
@@ -3039,48 +3066,48 @@ div.document { width: 7in; }
 <tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-web-class-32">Unit Test of Web class (32)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of WebReader class:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-webreader-class-33">Unit Test of WebReader class (33)</a>, → <a class="reference internal" href="#unit-test-of-webreader-class-34">Unit Test of WebReader class (34)</a>, → <a class="reference internal" href="#unit-test-of-webreader-class-35">Unit Test of WebReader class (35)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-webreader-class-33">Unit Test of WebReader class (33)</a>, → <a class="reference internal" href="#unit-test-of-webreader-class-34">Unit Test of WebReader class (34)</a>, → <a class="reference internal" href="#unit-test-of-webreader-class-35">Unit Test of WebReader class (35)</a>, → <a class="reference internal" href="#unit-test-of-webreader-class-36">Unit Test of WebReader class (36)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test of XrefCommand superclass for all cross-reference commands:</th></tr>
 <tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-xrefcommand-superclass-for-all-cross-reference-commands-26">Unit Test of XrefCommand superclass for all cross-reference commands (26)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit Test overheads:</th></tr>
 <tr class="field"><td>&nbsp;</td><td class="field-body">imports, etc.:
-→ <a class="reference internal" href="#unit-test-overheads-imports-etc-42">Unit Test overheads: imports, etc. (42)</a>, → <a class="reference internal" href="#unit-test-overheads-imports-etc-43">Unit Test overheads: imports, etc. (43)</a></td>
+→ <a class="reference internal" href="#unit-test-overheads-imports-etc-43">Unit Test overheads: imports, etc. (43)</a>, → <a class="reference internal" href="#unit-test-overheads-imports-etc-44">Unit Test overheads: imports, etc. (44)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit test of Action Sequence class:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-action-sequence-class-37">Unit test of Action Sequence class (37)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-action-sequence-class-38">Unit test of Action Sequence class (38)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit test of LoadAction class:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-loadaction-class-40">Unit test of LoadAction class (40)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-loadaction-class-41">Unit test of LoadAction class (41)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit test of TangleAction class:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-tangleaction-class-39">Unit test of TangleAction class (39)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-tangleaction-class-40">Unit test of TangleAction class (40)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Unit test of WeaverAction class:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-weaveraction-class-38">Unit test of WeaverAction class (38)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#unit-test-of-weaveraction-class-39">Unit test of WeaverAction class (39)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Weave Test evaluation of expressions:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#weave-test-evaluation-of-expressions-76">Weave Test evaluation of expressions (76)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#weave-test-evaluation-of-expressions-77">Weave Test evaluation of expressions (77)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Weave Test main program:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#weave-test-main-program-79">Weave Test main program (79)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#weave-test-main-program-80">Weave Test main program (80)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Weave Test overheads:</th></tr>
 <tr class="field"><td>&nbsp;</td><td class="field-body">imports, etc.:
-→ <a class="reference internal" href="#weave-test-overheads-imports-etc-78">Weave Test overheads: imports, etc. (78)</a></td>
+→ <a class="reference internal" href="#weave-test-overheads-imports-etc-79">Weave Test overheads: imports, etc. (79)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Weave Test references and definitions:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#weave-test-references-and-definitions-72">Weave Test references and definitions (72)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#weave-test-references-and-definitions-73">Weave Test references and definitions (73)</a></td>
 </tr>
 <tr class="field"><th class="field-name" colspan="2">Weave Test superclass to refactor common setup:</th></tr>
-<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#weave-test-superclass-to-refactor-common-setup-71">Weave Test superclass to refactor common setup (71)</a></td>
+<tr class="field"><td>&nbsp;</td><td class="field-body">→ <a class="reference internal" href="#weave-test-superclass-to-refactor-common-setup-72">Weave Test superclass to refactor common setup (72)</a></td>
 </tr>
 </tbody>
 </table>
 <hr class="docutils" />
 <blockquote class="small">
-Created by src/pyweb.py at Sun Jul 17 14:57:40 2022.</blockquote>
+Created by src/pyweb.py at Mon Jul 18 09:45:50 2022.</blockquote>
 <p class="small">Source tests/pyweb_test.w modified Sat Jul  2 09:39:56 2022.</p>
 <blockquote class="small">
 <p>pyweb.__version__ '3.2'.</p>

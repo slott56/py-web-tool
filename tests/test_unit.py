@@ -798,13 +798,13 @@ class TestWebConstruction(unittest.TestCase):
 
 class TestTokenizer(unittest.TestCase):
     def test_should_split_tokens(self) -> None:
-        input = io.StringIO("@@ word @{ @[ @< @>\n@] @} @i @| @m @f @u\n")
+        input = io.StringIO("@@ word @{ @[ @< @>\n@] @} @i @| @m @f @u @( @)\n")
         self.tokenizer = pyweb.Tokenizer(input)
         tokens = list(self.tokenizer)
-        self.assertEqual(24, len(tokens))
+        self.assertEqual(28, len(tokens))
         self.assertEqual( ['@@', ' word ', '@{', ' ', '@[', ' ', '@<', ' ', 
         '@>', '\n', '@]', ' ', '@}', ' ', '@i', ' ', '@|', ' ', '@m', ' ', 
-        '@f', ' ', '@u', '\n'], tokens )
+        '@f', ' ', '@u', ' ', '@(', ' ', '@)', '\n'], tokens )
         self.assertEqual(2, self.tokenizer.lineNumber)
 
 class TestOptionParser_OutputChunk(unittest.TestCase):
@@ -837,6 +837,22 @@ class TestOptionParser_NamedChunk(unittest.TestCase):
         text2 = " the name of test2 chunk... "
         options2 = self.option_parser.parse(text2)
         self.assertEqual({'argument': ['the', 'name', 'of', 'test2', 'chunk...']}, options2)
+
+class TestWebReader_Immediate(unittest.TestCase):
+    def setUp(self) -> None:
+        self.reader = pyweb.WebReader()
+    
+    def test_should_build_escape_chunk(self):
+        chunks = self.reader.load(Path(), io.StringIO("Escape: @@ Example"))
+        self.assertEqual(1, len(chunks))
+        self.assertEqual(1, len(chunks[0].commands))
+        self.assertEqual("Escape: @ Example", chunks[0].commands[0].text)
+        
+    def test_expressions(self):
+        chunks = self.reader.load(Path("sample.w"), io.StringIO("Filename: @(theFile@)"))
+        self.assertEqual(1, len(chunks))
+        self.assertEqual(1, len(chunks[0].commands))
+        self.assertEqual("Filename: sample.w", chunks[0].commands[0].text)
 
  
 

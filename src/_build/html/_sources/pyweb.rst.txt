@@ -2079,18 +2079,18 @@ A ``Chunk`` can be woven or tangled to create output.
 These subclasss reflect three kinds of content in the WEB source document:
 
 -  ``Chunk`` is the anonymous text context. 
-        The body generally becomes a ``TextCommand``.
+        Text in the body generally becomes a ``TextCommand``.
         Also, the various XREF commands (``@m``, ``@f``, ``@u``) can *only* appear here.
         In principle, a ``@< reference @>`` can appear in text. 
         It must name a ``@d name @[...@]`` NamedDocumentChunk, which is expanded in place, not linked.
 
 -  ``OutputChunk`` is the ``@o`` context. 
-        The body becomes a ``CodeCommand``.
+        Text in the body becomes a ``CodeCommand``.
         Any ``@< reference @>`` will be expanded when tangling, but become a link when weaving.
         This defines an output file.
 
 -  ``NamedChunk`` is the ``@d`` context. 
-        The body becomes a ``CodeCommand``.
+        Text in the body becomes a ``CodeCommand``.
         Any ``@< reference @>`` will be expanded when tangling, but become a link when weaving.
 
 Most of the attributes are pushed up to the superclass. This makes type checking the complex
@@ -2166,11 +2166,21 @@ are implemented in a separate language with their own processing rules.
         def location(self) -> tuple[str, int]:
             return self.commands[0].location
     
+        def add\_text(self, text: str, location: tuple[str, int]) -> "Chunk":
+            if self.commands and self.commands[-1].typeid.TextCommand:
+                cast(HasText, self.commands[-1]).text += text
+            else:
+                # Empty list OR previous command was not \`\`TextCommand\`\`
+                self.commands.append(TextCommand(text, location))
+            return self
+                 
         def type\_is(self, name: str) -> bool:
             """
             Instead of type name matching, we could check for these features:
             - has\_code() (i.e., NamedChunk and OutputChunk)
             - has\_text() (i.e., Chunk and NamedDocumentChunk)
+            This is for template rendering, where proper Liskov
+            Substitution is irrelevant.
             """
             return self.\_\_class\_\_.\_\_name\_\_ == name
 
@@ -2196,6 +2206,7 @@ a ``path`` property and not having a ``full_name`` property.
 
     
     class OutputChunk(Chunk):
+        """An output file."""
         @property
         def path(self) -> Path \| None:
             if self.name:
@@ -2207,13 +2218,30 @@ a ``path`` property and not having a ``full_name`` property.
         def full\_name(self) -> str \| None:
             return None
     
+        def add\_text(self, text: str, location: tuple[str, int]) -> Chunk:
+            if self.commands and self.commands[-1].typeid.CodeCommand:
+                cast(HasText, self.commands[-1]).text += text
+            else:
+                # Empty list OR previous command was not \`\`CodeCommand\`\`
+                self.commands.append(CodeCommand(text, location))
+            return self
+                 
     class NamedChunk(Chunk): 
-        pass
-    
-    class NamedChunk\_Noindent(Chunk): 
+        """A defined name with code."""
+        def add\_text(self, text: str, location: tuple[str, int]) -> Chunk:
+            if self.commands and self.commands[-1].typeid.CodeCommand:
+                cast(HasText, self.commands[-1]).text += text
+            else:
+                # Empty list OR previous command was not \`\`CodeCommand\`\`
+                self.commands.append(CodeCommand(text, location))
+            return self
+                 
+    class NamedChunk\_Noindent(Chunk):
+        """A defined name with code and the -noIndent option."""
         pass
     
     class NamedDocumentChunk(Chunk): 
+        """A defined name with text."""
         pass
     
 
@@ -3943,20 +3971,26 @@ The class has the following attributes:
         )
         
         # Configuration
-        command: str  #: The command prefix, default \`\`@\`\`.
-        permitList: list[str]  #: Permitted errors, usually @i commands
-        base\_path: Path  #: Working directory
-        tokenizer: Tokenizer  #: The tokenizer used to find commands
+        #: The command prefix, default \`\`@\`\`.
+        command: str 
+        #: Permitted errors, usually @i commands
+        permitList: list[str]
+        #: Working directory to resolve @i commands  
+        base\_path: Path  
+        #: The tokenizer used to find commands
+        tokenizer: Tokenizer  
+        # TODO: options parser class should be here, also.
         
         # State of the reader
-        parent: Optional["WebReader"]  #: Parent context for @i commands
-        filePath: Path  #: Input Path 
-        \_source: TextIO  #: Input file
-        content: list[Chunk]  #: The sequence of Chunk instances being built
+        #: Parent context for @i commands      
+        parent: Optional["WebReader"]
+        #: Input Path 
+        filePath: Path 
+        #: Input file-like object, default is self.filePath.open()
+        \_source: TextIO  
+        #: The sequence of Chunk instances being built
+        content: list[Chunk] 
         
-        #: The class to use when processing text.
-        text\_command: type[HasText]
-    
         def \_\_init\_\_(self, parent: Optional["WebReader"] = None) -> None:
             self.logger = logging.getLogger(self.\_\_class\_\_.\_\_qualname\_\_)
     
@@ -4119,7 +4153,6 @@ With some small additional changes, we could use ``OutputChunk(**options)``.
         comment\_end=''.join(options.get('end', "")),
     )
     self.content.append(new\_chunk)
-    self.text\_command = CodeCommand
     # capture an OutputChunk up to @}
 
 ..
@@ -4177,7 +4210,6 @@ If both are in the options, we should provide a warning.
     
     if new\_chunk:
         self.content.append(new\_chunk)
-    self.text\_command = CodeCommand
     # capture a NamedChunk up to @} or @]
 
 ..
@@ -4274,7 +4306,6 @@ For the base ``Chunk`` class, this would be false, but for all other subclasses 
     
     # Start a new context for text or commands \*after\* this command.
     self.content.append(Chunk())
-    self.text\_command = TextCommand
 
 ..
 
@@ -4426,8 +4457,7 @@ The ``os.getcwd()`` could be changed to ``os.path.realpath('.')``, but that seem
         self.logger.error('Failure to process %r: exception is %r', expression, exc)
         self.errors += 1
         result = f"@({expression!r}: Error {exc!r}@)"
-    cls = self.text\_command
-    self.content[-1].commands.append(cls(result, self.location()))
+    self.content[-1].add\_text(result, self.location())
 
 ..
 
@@ -4453,16 +4483,7 @@ create a new, empty ``TextCommand`` or ``CodeCommand``.
 
     
     self.logger.debug(f"double-command: {self.content[-1]=}")
-    cls = self.text\_command
-    if len(self.content[-1].commands) == 0:  
-        self.content[-1].commands.append(cls(self.command, self.location()))
-    else:
-        tail = self.content[-1].commands[-1]
-        if tail.typeid.CodeCommand or tail.typeid.TextCommand:
-            cast(HasText, tail).text += self.command
-        else:
-            # A non-text command: one of @< name @>, @f, @m, @u.
-            self.content[-1].commands.append(cls(self.command, self.location()))
+    self.content[-1].add\_text(self.command, self.location())
 
 ..
 
@@ -4572,7 +4593,6 @@ is that it's always loading a single top-level web.
         """
         self.filePath = filepath
         self.base\_path = self.filePath.parent
-        self.text\_command = TextCommand
     
         if source:
             self.\_source = source
@@ -4596,24 +4616,12 @@ is that it's always loading a single top-level web.
                     continue
                 else:
                     self.logger.error('Unknown @-command in input: %r near %r', token, self.location())
-                    cls = self.text\_command
-                    self.content[-1].commands.append(cls(token, self.location()))
+                    self.content[-1].add\_text(token, self.location())
                     
             elif token:
                 # Accumulate a non-empty block of text in the current chunk.
-                # Output Chunk and Named Chunk should have CodeCommand 
-                # Chunk should have TextCommand.
-                # Edge case is Chunk with no Command
-                if len(self.content[-1].commands) == 0:
-                    cls = self.text\_command
-                    self.content[-1].commands.append(cls(token, self.location()))
-                elif (tail := self.content[-1].commands[-1]) and (tail.typeid.CodeCommand or tail.typeid.TextCommand):
-                    cast(HasText, tail).text += token
-                else:
-                    # A non-text command: one of @< name @>, @f, @m, @u.
-                    cls = self.text\_command
-                    self.content[-1].commands.append(cls(token, self.location()))
-                
+                self.content[-1].add\_text(token, self.location())
+    
             else:
                 # Whitespace
                 pass
@@ -5707,7 +5715,7 @@ The configuration can be either a ``types.SimpleNamespace`` or an
 
     
     class Application:
-        def \_\_init\_\_(self) -> None:
+        def \_\_init\_\_(self, base\_config: dict[str, Any] \| None = None) -> None:
             self.logger = logging.getLogger(self.\_\_class\_\_.\_\_qualname\_\_)
             
     → `Application default options (78)`_    
@@ -6026,7 +6034,7 @@ used to gather additional information.
     :class: code
 
     
-    log\_config = {
+    default\_logging\_config = {
         'version': 1,
         'disable\_existing\_loggers': False, # Allow pre-existing loggers to work.
         'style': '{',
@@ -6054,7 +6062,6 @@ used to gather additional information.
             'TanglerMake': {'level': logging.INFO},
             'indent.TanglerMake': {'level': logging.INFO},
             'Web': {'level': logging.INFO},
-            'WebReader': {'level': logging.INFO},
             # Unit test requires this...
             'ReferenceCommand': {'level': logging.INFO},
         },
@@ -6068,52 +6075,52 @@ used to gather additional information.
 
 
 
-This seems a bit verbose. The following configuration file might be better.
+The above is wired into the application as a default. 
+Exposing this via a configuration file is better.
 
-**TODO:** Implement this
 
-
-..  _`logging.toml (84)`:
-..  rubric:: logging.toml (84) =
+..  _`pyweb.toml (84)`:
+..  rubric:: pyweb.toml (84) =
 ..  parsed-literal::
     :class: code
 
     
+    [pyweb]
+    # PyWeb options go here.
+    
+    [logging]
     version = 1
     disable\_existing\_loggers = false
     
-    [root]
+    [logging.root]
     handlers = [ "console",]
     level = "INFO"
     
-    [handlers.console]
+    [logging.handlers.console]
     class = "logging.StreamHandler"
     stream = "ext://sys.stderr"
     formatter = "basic"
     
-    [formatters.basic]
+    [logging.formatters.basic]
     format = "{levelname}:{name}:{message}"
     style = "{"
     
-    [loggers.Weaver]
+    [logging.loggers.Weaver]
     level = "INFO"
     
-    [loggers.WebReader]
+    [logging.loggers.WebReader]
     level = "INFO"
     
-    [loggers.Tangler]
+    [logging.loggers.Tangler]
     level = "INFO"
     
-    [loggers.TanglerMake]
+    [logging.loggers.TanglerMake]
     level = "INFO"
     
-    [loggers.indent.TanglerMake]
+    [logging.loggers.indent.TanglerMake]
     level = "INFO"
     
-    [loggers.WebReader]
-    level = "INFO"
-    
-    [loggers.ReferenceCommand]
+    [logging.loggers.ReferenceCommand]
     # Unit test requires this...
     level = "INFO"
     
@@ -6122,19 +6129,22 @@ This seems a bit verbose. The following configuration file might be better.
 
 ..  container:: small
 
-    ∎ *logging.toml (84)*
+    ∎ *pyweb.toml (84)*
 
 
 
-We can load this with 
+We can load this with something like the following:
 
 ..  parsed-literal::
 
-    log_config = toml.load(Path("logging.toml"))
+    config_path = Path("pyweb.toml")
+    with config_path.open() as config_file:
+        config = toml.load(config_file)
+    log_config = config.get('logging', {'version': 1, level=logging.INFO})
 
 This makes it slightly easier to add and change debuging alternatives.
-Rather then use the ``-v`` and ``-d`` options, a ``-l logging.toml`` 
-options can be used to provide non-default config values. 
+Rather then use the ``-v`` and ``-d`` options, the ``pyweb.toml`` 
+provides a complete logging config. 
 
 Also, we might want a decorator to define loggers more consistently for each class definition.
 
@@ -6158,8 +6168,8 @@ as a weaver template configuration file.
     :class: code
 
     
-    def main(argv: list[str] = sys.argv[1:]) -> None:
-        a = Application()
+    def main(argv: list[str] = sys.argv[1:], base\_config: dict[str, Any] \| None=None) -> None:
+        a = Application(base\_config)
         config = a.parseArgs(argv)
         a.process(config)
 
@@ -6192,8 +6202,16 @@ The **pyWeb** application file is shown below:
     → `Interface Functions (85)`_    
     
     if \_\_name\_\_ == "\_\_main\_\_":
+        config\_paths = Path("pyweb.toml"), Path.home()/"pyweb.toml"
+        base\_config: dict[str, Any] = {}
+        for cp in config\_paths:
+            if cp.exists():
+                with cp.open() as config\_file:
+                    base\_config = toml.load(config\_file)
+                break
+        log\_config = base\_config.get('logging', default\_logging\_config)
         with Logger(log\_config):
-            main()
+            main(base\_config=base\_config.get('pyweb', {}))
 
 ..
 
@@ -6254,6 +6272,7 @@ closer to where they're referenced.
     import os
     import time
     import datetime
+    import toml  # type: ignore [import]
     import types
     
 
@@ -6340,14 +6359,9 @@ source files.
     \_\_version\_\_ = """3.2"""
     
     ### DO NOT EDIT THIS FILE!
-    ### It was created by 
-    pyweb.py, \_\_version\_\_='
-    3.2'.
-    ### From source 
-    impl.w modified 
-    Sun Jul 17 14:55:54 2022.
-    ### In working directory '
-    /Users/slott/Documents/Projects/py-web-tool/src'.
+    ### It was created by pyweb.py, \_\_version\_\_='3.2'.
+    ### From source impl.w modified Mon Jul 18 09:42:53 2022.
+    ### In working directory '/Users/slott/Documents/Projects/py-web-tool/src'.
 
 ..
 
@@ -6452,7 +6466,7 @@ Note the general flow of this top-level script.
     import pyweb
     
     def main(source: Path) -> None:
-        with pyweb.Logger(pyweb.log\_config):
+        with pyweb.Logger(pyweb.default\_logging\_config):
             logger = logging.getLogger(\_\_file\_\_)
         
             options = argparse.Namespace(
@@ -6600,7 +6614,7 @@ Any macro **not** defined gets a default implementation.
 
     
     def main(source: Path) -> None:
-        with pyweb.Logger(pyweb.log\_config):
+        with pyweb.Logger(pyweb.default\_logging\_config):
             logger = logging.getLogger(\_\_file\_\_)
         
             options = argparse.Namespace(
@@ -6638,16 +6652,9 @@ Any macro **not** defined gets a default implementation.
  
 To Do
 =======
-
-1.  Refactor the way text is handled in ``WebReader``. 
-    The ``double at-sign replacement...`` section should be a feature
-    of ``Chunk``. The ``add an expression command...`` should use it, also.
    
-#.  Implement the Reference Strategy in the Weaver.
+1.  Implement the Reference Strategy in the Weaver.
 
-#.  Finish implementing the separate TOML-based logging configuration file. 
-    Must be separate from template configuration.
- 
 #.  Tangling can include non-woven content. More usefully, Weaving can exclude some chunks.
     The use case is a book chapter with test cases that are **not** woven into the text.
     Add an option to define tangle-only chunks that are NOT woven into the final document. 
@@ -6683,6 +6690,11 @@ Change Log
 
 Changes for 3.2
 
+-   Added a TOML-based configuration file with a ``[logging]`` section. 
+
+-   Incorporated Sphinx and PlantUML into the documentation.
+    Support continues for ```rst2html.py``. It's used for test documentaion. 
+
 -   Replaced weaving process with Jinja templates.
 
 -   Dramatic redesign to Class, Chunk, and Command class hierarchies.
@@ -6696,9 +6708,6 @@ Changes for 3.2
 
 -   Created a better ``weave.py`` example that shows how to incorporate bootstrap CSS into HTML overrides.
     This also requires designing a more easily extended ``Weaver`` class.
-
--   Use Sphinx for the main documentation generator. We still support ```rst2html.py``, and use 
-    it for test documentaion. Add the PlantUML extension for Sphinx to incorporate documentation.
     
 Changes for 3.1
 
@@ -6862,8 +6871,8 @@ Indices
 Files
 ------
 
-:logging.toml:
-    → `logging.toml (84)`_:pyweb.py:
+:pyweb.toml:
+    → `pyweb.toml (84)`_:pyweb.py:
     → `pyweb.py (86)`_:tangle.py:
     → `tangle.py (91)`_:weave.py:
     → `weave.py (92)`_
@@ -7209,6 +7218,9 @@ User Identifiers
 :time:
     → `Imports (87)`_
 
+:toml:
+    → `Imports (87)`_
+
 :types:
     → `Imports (87)`_
 
@@ -7219,7 +7231,7 @@ User Identifiers
 
 ..	class:: small
 
-	Created by pyweb.py at Sun Jul 17 14:56:42 2022.
+	Created by pyweb.py at Mon Jul 18 09:44:53 2022.
 
     Source pyweb.w modified Sun Jul  3 13:07:49 2022.
 

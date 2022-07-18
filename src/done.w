@@ -5,6 +5,11 @@ Change Log
 
 Changes for 3.2
 
+-   Added a TOML-based configuration file with a ``[logging]`` section. 
+
+-   Incorporated Sphinx and PlantUML into the documentation.
+    Support continues for ```rst2html.py``. It's used for test documentaion. 
+
 -   Replaced weaving process with Jinja templates.
 
 -   Dramatic redesign to Class, Chunk, and Command class hierarchies.
@@ -18,9 +23,6 @@ Changes for 3.2
 
 -   Created a better ``weave.py`` example that shows how to incorporate bootstrap CSS into HTML overrides.
     This also requires designing a more easily extended ``Weaver`` class.
-
--   Use Sphinx for the main documentation generator. We still support ```rst2html.py``, and use 
-    it for test documentaion. Add the PlantUML extension for Sphinx to incorporate documentation.
     
 Changes for 3.1
 

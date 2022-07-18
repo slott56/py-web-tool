@@ -1134,8 +1134,12 @@ Generally, this is tested separately through the functional tests.
 Those tests each present source files to be processed by the
 WebReader.
 
-We should test this through some clever mocks that produce the
-proper sequence of tokens to parse the various kinds of Commands.
+The ``WebReader`` is poorly designed for unit testing. 
+The various chunk and command classes are part of the ``WebReader``, and 
+new classes cannot be injected gracefully.
+
+Exacerbating this are two special cases: the ``@@@@`` and ``@@(expr@@)`` constructs
+are evaluated immediately, and don't create commands.
 
 @d Unit Test of WebReader... @{
 # Tested via functional tests
@@ -1146,13 +1150,13 @@ Some lower-level units: specifically the tokenizer and the option parser.
 @d Unit Test of WebReader... @{
 class TestTokenizer(unittest.TestCase):
     def test_should_split_tokens(self) -> None:
-        input = io.StringIO("@@@@ word @@{ @@[ @@< @@>\n@@] @@} @@i @@| @@m @@f @@u\n")
+        input = io.StringIO("@@@@ word @@{ @@[ @@< @@>\n@@] @@} @@i @@| @@m @@f @@u @@( @@)\n")
         self.tokenizer = pyweb.Tokenizer(input)
         tokens = list(self.tokenizer)
-        self.assertEqual(24, len(tokens))
+        self.assertEqual(28, len(tokens))
         self.assertEqual( ['@@@@', ' word ', '@@{', ' ', '@@[', ' ', '@@<', ' ', 
         '@@>', '\n', '@@]', ' ', '@@}', ' ', '@@i', ' ', '@@|', ' ', '@@m', ' ', 
-        '@@f', ' ', '@@u', '\n'], tokens )
+        '@@f', ' ', '@@u', ' ', '@@(', ' ', '@@)', '\n'], tokens )
         self.assertEqual(2, self.tokenizer.lineNumber)
 @}
 
@@ -1189,6 +1193,28 @@ class TestOptionParser_NamedChunk(unittest.TestCase):
         self.assertEqual({'argument': ['the', 'name', 'of', 'test2', 'chunk...']}, options2)
 @}
 
+Testing the ``@@@@`` case and one of the ``@@(expr@@)`` cases.
+Need to test all the available variables: ``os.path``, ``os.getcwd``, ``os.name``, ``time``, ``datetime``, ``platform``, 
+``theWebReader``, ``theFile``, ``thisApplication``, ``version``, ``theLocation``.
+
+
+@d Unit Test of WebReader... @{
+class TestWebReader_Immediate(unittest.TestCase):
+    def setUp(self) -> None:
+        self.reader = pyweb.WebReader()
+    
+    def test_should_build_escape_chunk(self):
+        chunks = self.reader.load(Path(), io.StringIO("Escape: @@@@ Example"))
+        self.assertEqual(1, len(chunks))
+        self.assertEqual(1, len(chunks[0].commands))
+        self.assertEqual("Escape: @ Example", chunks[0].commands[0].text)
+        
+    def test_expressions(self):
+        chunks = self.reader.load(Path("sample.w"), io.StringIO("Filename: @@(theFile@@)"))
+        self.assertEqual(1, len(chunks))
+        self.assertEqual(1, len(chunks[0].commands))
+        self.assertEqual("Filename: sample.w", chunks[0].commands[0].text)
+@}
 
 Action Tests
 -------------

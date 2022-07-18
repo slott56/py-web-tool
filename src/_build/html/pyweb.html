@@ -1898,7 +1898,7 @@ Chunk &lt;|-- NamedChunk"/>
 <p>These subclasss reflect three kinds of content in the WEB source document:</p>
 <ul class="simple">
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">Chunk</span></code> is the anonymous text context.</dt><dd><p>The body generally becomes a <code class="docutils literal notranslate"><span class="pre">TextCommand</span></code>.
+<dt><code class="docutils literal notranslate"><span class="pre">Chunk</span></code> is the anonymous text context.</dt><dd><p>Text in the body generally becomes a <code class="docutils literal notranslate"><span class="pre">TextCommand</span></code>.
 Also, the various XREF commands (<code class="docutils literal notranslate"><span class="pre">&#64;m</span></code>, <code class="docutils literal notranslate"><span class="pre">&#64;f</span></code>, <code class="docutils literal notranslate"><span class="pre">&#64;u</span></code>) can <em>only</em> appear here.
 In principle, a <code class="docutils literal notranslate"><span class="pre">&#64;&lt;</span> <span class="pre">reference</span> <span class="pre">&#64;&gt;</span></code> can appear in text.
 It must name a <code class="docutils literal notranslate"><span class="pre">&#64;d</span> <span class="pre">name</span> <span class="pre">&#64;[...&#64;]</span></code> NamedDocumentChunk, which is expanded in place, not linked.</p>
@@ -1906,14 +1906,14 @@ It must name a <code class="docutils literal notranslate"><span class="pre">&#64
 </dl>
 </li>
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">OutputChunk</span></code> is the <code class="docutils literal notranslate"><span class="pre">&#64;o</span></code> context.</dt><dd><p>The body becomes a <code class="docutils literal notranslate"><span class="pre">CodeCommand</span></code>.
+<dt><code class="docutils literal notranslate"><span class="pre">OutputChunk</span></code> is the <code class="docutils literal notranslate"><span class="pre">&#64;o</span></code> context.</dt><dd><p>Text in the body becomes a <code class="docutils literal notranslate"><span class="pre">CodeCommand</span></code>.
 Any <code class="docutils literal notranslate"><span class="pre">&#64;&lt;</span> <span class="pre">reference</span> <span class="pre">&#64;&gt;</span></code> will be expanded when tangling, but become a link when weaving.
 This defines an output file.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">NamedChunk</span></code> is the <code class="docutils literal notranslate"><span class="pre">&#64;d</span></code> context.</dt><dd><p>The body becomes a <code class="docutils literal notranslate"><span class="pre">CodeCommand</span></code>.
+<dt><code class="docutils literal notranslate"><span class="pre">NamedChunk</span></code> is the <code class="docutils literal notranslate"><span class="pre">&#64;d</span></code> context.</dt><dd><p>Text in the body becomes a <code class="docutils literal notranslate"><span class="pre">CodeCommand</span></code>.
 Any <code class="docutils literal notranslate"><span class="pre">&#64;&lt;</span> <span class="pre">reference</span> <span class="pre">&#64;&gt;</span></code> will be expanded when tangling, but become a link when weaving.</p>
 </dd>
 </dl>
@@ -1983,11 +1983,21 @@ class Chunk:
     def location(self) -&gt; tuple[str, int]:
         return self.commands[0].location
 
+    def add_text(self, text: str, location: tuple[str, int]) -&gt; &quot;Chunk&quot;:
+        if self.commands and self.commands[-1].typeid.TextCommand:
+            cast(HasText, self.commands[-1]).text += text
+        else:
+            # Empty list OR previous command was not ``TextCommand``
+            self.commands.append(TextCommand(text, location))
+        return self
+
     def type_is(self, name: str) -&gt; bool:
         &quot;&quot;&quot;
         Instead of type name matching, we could check for these features:
         - has_code() (i.e., NamedChunk and OutputChunk)
         - has_text() (i.e., Chunk and NamedDocumentChunk)
+        This is for template rendering, where proper Liskov
+        Substitution is irrelevant.
         &quot;&quot;&quot;
         return self.__class__.__name__ == name</code></pre>
 <div class="small docutils container">
@@ -1999,6 +2009,7 @@ that permits customization in the template rendering process.</p>
 a <code class="docutils literal notranslate"><span class="pre">path</span></code> property and not having a <code class="docutils literal notranslate"><span class="pre">full_name</span></code> property.</p>
 <p class="rubric" id="chunk-class-hierarchy-used-to-describe-individual-chunks-9">Chunk class hierarchy – used to describe individual chunks (9) +=</p>
 <pre class="code literal-block"><code>class OutputChunk(Chunk):
+    &quot;&quot;&quot;An output file.&quot;&quot;&quot;
     &#64;property
     def path(self) -&gt; Path | None:
         if self.name:
@@ -2010,13 +2021,30 @@ a <code class="docutils literal notranslate"><span class="pre">path</span></code
     def full_name(self) -&gt; str | None:
         return None
 
+    def add_text(self, text: str, location: tuple[str, int]) -&gt; Chunk:
+        if self.commands and self.commands[-1].typeid.CodeCommand:
+            cast(HasText, self.commands[-1]).text += text
+        else:
+            # Empty list OR previous command was not ``CodeCommand``
+            self.commands.append(CodeCommand(text, location))
+        return self
+
 class NamedChunk(Chunk):
-    pass
+    &quot;&quot;&quot;A defined name with code.&quot;&quot;&quot;
+    def add_text(self, text: str, location: tuple[str, int]) -&gt; Chunk:
+        if self.commands and self.commands[-1].typeid.CodeCommand:
+            cast(HasText, self.commands[-1]).text += text
+        else:
+            # Empty list OR previous command was not ``CodeCommand``
+            self.commands.append(CodeCommand(text, location))
+        return self
 
 class NamedChunk_Noindent(Chunk):
+    &quot;&quot;&quot;A defined name with code and the -noIndent option.&quot;&quot;&quot;
     pass
 
 class NamedDocumentChunk(Chunk):
+    &quot;&quot;&quot;A defined name with text.&quot;&quot;&quot;
     pass</code></pre>
 <div class="small docutils container">
 <p>∎ <em>Chunk class hierarchy – used to describe individual chunks (9)</em></p>
@@ -3328,19 +3356,25 @@ when <code class="docutils literal notranslate"><span class="pre">load()</span><
     )
 
     # Configuration
-    command: str  #: The command prefix, default ``&#64;``.
-    permitList: list[str]  #: Permitted errors, usually &#64;i commands
-    base_path: Path  #: Working directory
-    tokenizer: Tokenizer  #: The tokenizer used to find commands
+    #: The command prefix, default ``&#64;``.
+    command: str
+    #: Permitted errors, usually &#64;i commands
+    permitList: list[str]
+    #: Working directory to resolve &#64;i commands
+    base_path: Path
+    #: The tokenizer used to find commands
+    tokenizer: Tokenizer
+    # TODO: options parser class should be here, also.
 
     # State of the reader
-    parent: Optional[&quot;WebReader&quot;]  #: Parent context for &#64;i commands
-    filePath: Path  #: Input Path
-    _source: TextIO  #: Input file
-    content: list[Chunk]  #: The sequence of Chunk instances being built
-
-    #: The class to use when processing text.
-    text_command: type[HasText]
+    #: Parent context for &#64;i commands
+    parent: Optional[&quot;WebReader&quot;]
+    #: Input Path
+    filePath: Path
+    #: Input file-like object, default is self.filePath.open()
+    _source: TextIO
+    #: The sequence of Chunk instances being built
+    content: list[Chunk]
 
     def __init__(self, parent: Optional[&quot;WebReader&quot;] = None) -&gt; None:
         self.logger = logging.getLogger(self.__class__.__qualname__)
@@ -3468,7 +3502,6 @@ new_chunk = OutputChunk(
     comment_end=''.join(options.get('end', &quot;&quot;)),
 )
 self.content.append(new_chunk)
-self.text_command = CodeCommand
 # capture an OutputChunk up to &#64;}</code></pre>
 <div class="small docutils container">
 <p>∎ <em>start an OutputChunk, adding it to the web (39)</em></p>
@@ -3508,7 +3541,6 @@ else:
 
 if new_chunk:
     self.content.append(new_chunk)
-self.text_command = CodeCommand
 # capture a NamedChunk up to &#64;} or &#64;]</code></pre>
 <div class="small docutils container">
 <p>∎ <em>start a NamedChunk or NamedDocumentChunk, adding it to the web (40)</em></p>
@@ -3572,8 +3604,7 @@ For the base <code class="docutils literal notranslate"><span class="pre">Chunk<
 <code class="docutils literal notranslate"><span class="pre">Chunk</span></code>, this would be true.</p>
 <p class="rubric" id="finish-a-chunk-start-a-new-chunk-adding-it-to-the-web-42">finish a chunk, start a new Chunk adding it to the web (42) =</p>
 <pre class="code literal-block"><code># Start a new context for text or commands *after* this command.
-self.content.append(Chunk())
-self.text_command = TextCommand</code></pre>
+self.content.append(Chunk())</code></pre>
 <div class="small docutils container">
 <p>∎ <em>finish a chunk, start a new Chunk adding it to the web (42)</em></p>
 </div>
@@ -3672,8 +3703,7 @@ except Exception as exc:
     self.logger.error('Failure to process %r: exception is %r', expression, exc)
     self.errors += 1
     result = f&quot;&#64;({expression!r}: Error {exc!r}&#64;)&quot;
-cls = self.text_command
-self.content[-1].commands.append(cls(result, self.location()))</code></pre>
+self.content[-1].add_text(result, self.location())</code></pre>
 <div class="small docutils container">
 <p>∎ <em>add an expression command to the current chunk (46)</em></p>
 </div>
@@ -3685,16 +3715,7 @@ create a new, empty <code class="docutils literal notranslate"><span class="pre"
 <p><strong>TODO:</strong> This should be a method of a Chunk – either append text, or append a command.</p>
 <p class="rubric" id="double-at-sign-replacement-append-this-character-to-previous-textcommand-47">double at-sign replacement, append this character to previous TextCommand (47) =</p>
 <pre class="code literal-block"><code>self.logger.debug(f&quot;double-command: {self.content[-1]=}&quot;)
-cls = self.text_command
-if len(self.content[-1].commands) == 0:
-    self.content[-1].commands.append(cls(self.command, self.location()))
-else:
-    tail = self.content[-1].commands[-1]
-    if tail.typeid.CodeCommand or tail.typeid.TextCommand:
-        cast(HasText, tail).text += self.command
-    else:
-        # A non-text command: one of &#64;&lt; name &#64;&gt;, &#64;f, &#64;m, &#64;u.
-        self.content[-1].commands.append(cls(self.command, self.location()))</code></pre>
+self.content[-1].add_text(self.command, self.location())</code></pre>
 <div class="small docutils container">
 <p>∎ <em>double at-sign replacement, append this character to previous TextCommand (47)</em></p>
 </div>
@@ -3755,7 +3776,6 @@ is that it’s always loading a single top-level web.</p>
     &quot;&quot;&quot;
     self.filePath = filepath
     self.base_path = self.filePath.parent
-    self.text_command = TextCommand
 
     if source:
         self._source = source
@@ -3779,23 +3799,11 @@ def parse_source(self) -&gt; None:
                 continue
             else:
                 self.logger.error('Unknown &#64;-command in input: %r near %r', token, self.location())
-                cls = self.text_command
-                self.content[-1].commands.append(cls(token, self.location()))
+                self.content[-1].add_text(token, self.location())
 
         elif token:
             # Accumulate a non-empty block of text in the current chunk.
-            # Output Chunk and Named Chunk should have CodeCommand
-            # Chunk should have TextCommand.
-            # Edge case is Chunk with no Command
-            if len(self.content[-1].commands) == 0:
-                cls = self.text_command
-                self.content[-1].commands.append(cls(token, self.location()))
-            elif (tail := self.content[-1].commands[-1]) and (tail.typeid.CodeCommand or tail.typeid.TextCommand):
-                cast(HasText, tail).text += token
-            else:
-                # A non-text command: one of &#64;&lt; name &#64;&gt;, &#64;f, &#64;m, &#64;u.
-                cls = self.text_command
-                self.content[-1].commands.append(cls(token, self.location()))
+            self.content[-1].add_text(token, self.location())
 
         else:
             # Whitespace
@@ -4480,7 +4488,7 @@ expected default behavior for this module when it is used as the main program.</
 </div>
 <p class="rubric" id="application-class-for-overall-cli-operation-77">Application Class for overall CLI operation (77) =</p>
 <pre class="code literal-block"><code>class Application:
-    def __init__(self) -&gt; None:
+    def __init__(self, base_config: dict[str, Any] | None = None) -&gt; None:
         self.logger = logging.getLogger(self.__class__.__qualname__)
 
 → <a class="reference internal" href="#application-default-options-78">Application default options (78)</a>
@@ -4719,7 +4727,7 @@ a formatter that matches the <code class="docutils literal notranslate"><span cl
 <p>This configuration dictionary defines the root logger plus some overrides for class loggers that might be
 used to gather additional information.</p>
 <p class="rubric" id="logging-setup-83">Logging Setup (83) +=</p>
-<pre class="code literal-block"><code>log_config = {
+<pre class="code literal-block"><code>default_logging_config = {
     'version': 1,
     'disable_existing_loggers': False, # Allow pre-existing loggers to work.
     'style': '{',
@@ -4747,7 +4755,6 @@ used to gather additional information.</p>
         'TanglerMake': {'level': logging.INFO},
         'indent.TanglerMake': {'level': logging.INFO},
         'Web': {'level': logging.INFO},
-        'WebReader': {'level': logging.INFO},
         # Unit test requires this...
         'ReferenceCommand': {'level': logging.INFO},
     },
@@ -4755,56 +4762,60 @@ used to gather additional information.</p>
 <div class="small docutils container">
 <p>∎ <em>Logging Setup (83)</em></p>
 </div>
-<p>This seems a bit verbose. The following configuration file might be better.</p>
-<p><strong>TODO:</strong> Implement this</p>
-<p class="rubric" id="logging-toml-84">logging.toml (84) =</p>
-<pre class="code literal-block"><code>version = 1
+<p>The above is wired into the application as a default.
+Exposing this via a configuration file is better.</p>
+<p class="rubric" id="pyweb-toml-84">pyweb.toml (84) =</p>
+<pre class="code literal-block"><code>[pyweb]
+# PyWeb options go here.
+
+[logging]
+version = 1
 disable_existing_loggers = false
 
-[root]
+[logging.root]
 handlers = [ &quot;console&quot;,]
 level = &quot;INFO&quot;
 
-[handlers.console]
+[logging.handlers.console]
 class = &quot;logging.StreamHandler&quot;
 stream = &quot;ext://sys.stderr&quot;
 formatter = &quot;basic&quot;
 
-[formatters.basic]
+[logging.formatters.basic]
 format = &quot;{levelname}:{name}:{message}&quot;
 style = &quot;{&quot;
 
-[loggers.Weaver]
+[logging.loggers.Weaver]
 level = &quot;INFO&quot;
 
-[loggers.WebReader]
+[logging.loggers.WebReader]
 level = &quot;INFO&quot;
 
-[loggers.Tangler]
+[logging.loggers.Tangler]
 level = &quot;INFO&quot;
 
-[loggers.TanglerMake]
+[logging.loggers.TanglerMake]
 level = &quot;INFO&quot;
 
-[loggers.indent.TanglerMake]
+[logging.loggers.indent.TanglerMake]
 level = &quot;INFO&quot;
 
-[loggers.WebReader]
-level = &quot;INFO&quot;
-
-[loggers.ReferenceCommand]
+[logging.loggers.ReferenceCommand]
 # Unit test requires this...
 level = &quot;INFO&quot;</code></pre>
 <div class="small docutils container">
-<p>∎ <em>logging.toml (84)</em></p>
+<p>∎ <em>pyweb.toml (84)</em></p>
 </div>
-<p>We can load this with</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">log_config</span> <span class="o">=</span> <span class="n">toml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;logging.toml&quot;</span><span class="p">))</span>
+<p>We can load this with something like the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;pyweb.toml&quot;</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">config_path</span><span class="o">.</span><span class="n">open</span><span class="p">()</span> <span class="k">as</span> <span class="n">config_file</span><span class="p">:</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">toml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
+<span class="n">log_config</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;logging&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">})</span>
 </pre></div>
 </div>
 <p>This makes it slightly easier to add and change debuging alternatives.
-Rather then use the <code class="docutils literal notranslate"><span class="pre">-v</span></code> and <code class="docutils literal notranslate"><span class="pre">-d</span></code> options, a <code class="docutils literal notranslate"><span class="pre">-l</span> <span class="pre">logging.toml</span></code>
-options can be used to provide non-default config values.</p>
+Rather then use the <code class="docutils literal notranslate"><span class="pre">-v</span></code> and <code class="docutils literal notranslate"><span class="pre">-d</span></code> options, the <code class="docutils literal notranslate"><span class="pre">pyweb.toml</span></code>
+provides a complete logging config.</p>
 <p>Also, we might want a decorator to define loggers more consistently for each class definition.</p>
 </section>
 <section id="the-main-function">
@@ -4817,12 +4828,10 @@ This two-step process allows for some dependency injection to customize argument
 <p>We might also want to parse a logging configuration file, as well
 as a weaver template configuration file.</p>
 <p class="rubric" id="interface-functions-85">Interface Functions (85) =</p>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="n">a</span> <span class="o">=</span> <span class="n">Application</span><span class="p">()</span>
-    <span class="n">config</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">parseArgs</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
-    <span class="n">a</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-</pre></div>
-</div>
+<pre class="code literal-block"><code>def main(argv: list[str] = sys.argv[1:], base_config: dict[str, Any] | None=None) -&gt; None:
+    a = Application(base_config)
+    config = a.parseArgs(argv)
+    a.process(config)</code></pre>
 <div class="small docutils container">
 <p>∎ <em>Interface Functions (85)</em></p>
 </div>
@@ -4842,8 +4851,16 @@ as a weaver template configuration file.</p>
 → <a class="reference internal" href="#interface-functions-85">Interface Functions (85)</a>
 
 if __name__ == &quot;__main__&quot;:
+    config_paths = Path(&quot;pyweb.toml&quot;), Path.home()/&quot;pyweb.toml&quot;
+    base_config: dict[str, Any] = {}
+    for cp in config_paths:
+        if cp.exists():
+            with cp.open() as config_file:
+                base_config = toml.load(config_file)
+            break
+    log_config = base_config.get('logging', default_logging_config)
     with Logger(log_config):
-        main()</code></pre>
+        main(base_config=base_config.get('pyweb', {}))</code></pre>
 <div class="small docutils container">
 <p>∎ <em>pyweb.py (86)</em></p>
 </div>
@@ -4879,6 +4896,7 @@ as well as log messages.</p></li>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">toml</span>  <span class="c1"># type: ignore [import]</span>
 <span class="kn">import</span> <span class="nn">types</span>
 </pre></div>
 </div>
@@ -4927,14 +4945,9 @@ source files.</p>
 <pre class="code literal-block"><code>__version__ = &quot;&quot;&quot;3.2&quot;&quot;&quot;
 
 ### DO NOT EDIT THIS FILE!
-### It was created by
-pyweb.py, __version__='
-3.2'.
-### From source
-impl.w modified
-Sun Jul 17 14:55:54 2022.
-### In working directory '
-/Users/slott/Documents/Projects/py-web-tool/src'.</code></pre>
+### It was created by pyweb.py, __version__='3.2'.
+### From source impl.w modified Mon Jul 18 09:42:53 2022.
+### In working directory '/Users/slott/Documents/Projects/py-web-tool/src'.</code></pre>
 <div class="small docutils container">
 <p>∎ <em>Overheads (90)</em></p>
 </div>
@@ -5001,7 +5014,7 @@ from pathlib import Path
 import pyweb
 
 def main(source: Path) -&gt; None:
-    with pyweb.Logger(pyweb.log_config):
+    with pyweb.Logger(pyweb.default_logging_config):
         logger = logging.getLogger(__file__)
 
         options = argparse.Namespace(
@@ -5098,7 +5111,7 @@ This is used to update the superclass
 </div>
 <p class="rubric" id="weaver-py-processing-load-and-weave-the-document-95">weaver.py processing: load and weave the document (95) =</p>
 <pre class="code literal-block"><code>def main(source: Path) -&gt; None:
-    with pyweb.Logger(pyweb.log_config):
+    with pyweb.Logger(pyweb.default_logging_config):
         logger = logging.getLogger(__file__)
 
         options = argparse.Namespace(
@@ -5129,12 +5142,7 @@ if __name__ == &quot;__main__&quot;:
 <section id="to-do">
 <h3><a class="toc-backref" href="#id82" role="doc-backlink">To Do</a><a class="headerlink" href="#to-do" title="Permalink to this heading">¶</a></h3>
 <ol class="arabic simple">
-<li><p>Refactor the way text is handled in <code class="docutils literal notranslate"><span class="pre">WebReader</span></code>.
-The <code class="docutils literal notranslate"><span class="pre">double</span> <span class="pre">at-sign</span> <span class="pre">replacement...</span></code> section should be a feature
-of <code class="docutils literal notranslate"><span class="pre">Chunk</span></code>. The <code class="docutils literal notranslate"><span class="pre">add</span> <span class="pre">an</span> <span class="pre">expression</span> <span class="pre">command...</span></code> should use it, also.</p></li>
 <li><p>Implement the Reference Strategy in the Weaver.</p></li>
-<li><p>Finish implementing the separate TOML-based logging configuration file.
-Must be separate from template configuration.</p></li>
 <li><p>Tangling can include non-woven content. More usefully, Weaving can exclude some chunks.
 The use case is a book chapter with test cases that are <strong>not</strong> woven into the text.
 Add an option to define tangle-only chunks that are NOT woven into the final document.</p></li>
@@ -5161,6 +5169,9 @@ leads to the question of why nest <code class="docutils literal notranslate"><sp
 <h3><a class="toc-backref" href="#id83" role="doc-backlink">Change Log</a><a class="headerlink" href="#change-log" title="Permalink to this heading">¶</a></h3>
 <p>Changes for 3.2</p>
 <ul class="simple">
+<li><p>Added a TOML-based configuration file with a <code class="docutils literal notranslate"><span class="pre">[logging]</span></code> section.</p></li>
+<li><p>Incorporated Sphinx and PlantUML into the documentation.
+Support continues for <code class="docutils literal notranslate"><span class="pre">`rst2html.py</span></code>. It’s used for test documentaion.</p></li>
 <li><p>Replaced weaving process with Jinja templates.</p></li>
 <li><p>Dramatic redesign to Class, Chunk, and Command class hierarchies.</p></li>
 <li><p>Dramatic redesign to Emitters to switch to using Jinja templates.
@@ -5170,8 +5181,6 @@ pushes some processing into the template.</p></li>
 <li><p>Removed <code class="docutils literal notranslate"><span class="pre">'\N{LOZENGE}'</span></code> (borrowed from Interscript) and use the <code class="docutils literal notranslate"><span class="pre">'\N{END</span> <span class="pre">OF</span> <span class="pre">PROOF}'</span></code> symbol instead.</p></li>
 <li><p>Created a better <code class="docutils literal notranslate"><span class="pre">weave.py</span></code> example that shows how to incorporate bootstrap CSS into HTML overrides.
 This also requires designing a more easily extended <code class="docutils literal notranslate"><span class="pre">Weaver</span></code> class.</p></li>
-<li><p>Use Sphinx for the main documentation generator. We still support <code class="docutils literal notranslate"><span class="pre">`rst2html.py</span></code>, and use
-it for test documentaion. Add the PlantUML extension for Sphinx to incorporate documentation.</p></li>
 </ul>
 <p>Changes for 3.1</p>
 <ul class="simple">
@@ -5288,8 +5297,8 @@ of the ReferenceCommand.</p></li>
 <section id="files">
 <h4><a class="toc-backref" href="#id85" role="doc-backlink">Files</a><a class="headerlink" href="#files" title="Permalink to this heading">¶</a></h4>
 <dl class="field-list simple">
-<dt class="field-odd">logging.toml<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→ <a class="reference internal" href="#logging-toml-84">logging.toml (84)</a>:pyweb.py:
+<dt class="field-odd">pyweb.toml<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#pyweb-toml-84">pyweb.toml (84)</a>:pyweb.py:
 → <a class="reference internal" href="#pyweb-py-86">pyweb.py (86)</a>:tangle.py:
 → <a class="reference internal" href="#tangle-py-91">tangle.py (91)</a>:weave.py:
 → <a class="reference internal" href="#weave-py-92">weave.py (92)</a></p>
@@ -5639,8 +5648,11 @@ of the ReferenceCommand.</p></li>
 <dt class="field-odd">time<span class="colon">:</span></dt>
 <dd class="field-odd"><p>→ <a class="reference internal" href="#imports-87">Imports (87)</a></p>
 </dd>
-<dt class="field-even">types<span class="colon">:</span></dt>
+<dt class="field-even">toml<span class="colon">:</span></dt>
 <dd class="field-even"><p>→ <a class="reference internal" href="#imports-87">Imports (87)</a></p>
+</dd>
+<dt class="field-odd">types<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#imports-87">Imports (87)</a></p>
 </dd>
 </dl>
 <hr class="docutils" />
@@ -5648,7 +5660,7 @@ of the ReferenceCommand.</p></li>
 <dt class="sig sig-object py" id="small">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">small</span></span><a class="headerlink" href="#small" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
-<div><p>Created by pyweb.py at Sun Jul 17 14:56:42 2022.</p>
+<div><p>Created by pyweb.py at Mon Jul 18 09:44:53 2022.</p>
 </div></blockquote>
 <p>Source pyweb.w modified Sun Jul  3 13:07:49 2022.</p>
 <blockquote>

@@ -47,6 +47,7 @@ import logging.config
 import os
 import time
 import datetime
+import toml  # type: ignore [import]
 import types
 
 
@@ -286,15 +287,26 @@ class Chunk:
     def location(self) -> tuple[str, int]:
         return self.commands[0].location
 
+    def add_text(self, text: str, location: tuple[str, int]) -> "Chunk":
+        if self.commands and self.commands[-1].typeid.TextCommand:
+            cast(HasText, self.commands[-1]).text += text
+        else:
+            # Empty list OR previous command was not ``TextCommand``
+            self.commands.append(TextCommand(text, location))
+        return self
+             
     def type_is(self, name: str) -> bool:
         """
         Instead of type name matching, we could check for these features:
         - has_code() (i.e., NamedChunk and OutputChunk)
         - has_text() (i.e., Chunk and NamedDocumentChunk)
+        This is for template rendering, where proper Liskov
+        Substitution is irrelevant.
         """
         return self.__class__.__name__ == name
 
 class OutputChunk(Chunk):
+    """An output file."""
     @property
     def path(self) -> Path | None:
         if self.name:
@@ -306,13 +318,30 @@ class OutputChunk(Chunk):
     def full_name(self) -> str | None:
         return None
 
+    def add_text(self, text: str, location: tuple[str, int]) -> Chunk:
+        if self.commands and self.commands[-1].typeid.CodeCommand:
+            cast(HasText, self.commands[-1]).text += text
+        else:
+            # Empty list OR previous command was not ``CodeCommand``
+            self.commands.append(CodeCommand(text, location))
+        return self
+             
 class NamedChunk(Chunk): 
-    pass
-
-class NamedChunk_Noindent(Chunk): 
+    """A defined name with code."""
+    def add_text(self, text: str, location: tuple[str, int]) -> Chunk:
+        if self.commands and self.commands[-1].typeid.CodeCommand:
+            cast(HasText, self.commands[-1]).text += text
+        else:
+            # Empty list OR previous command was not ``CodeCommand``
+            self.commands.append(CodeCommand(text, location))
+        return self
+             
+class NamedChunk_Noindent(Chunk):
+    """A defined name with code and the -noIndent option."""
     pass
 
 class NamedDocumentChunk(Chunk): 
+    """A defined name with text."""
     pass
 
 
@@ -1096,20 +1125,26 @@ class WebReader:
     )
     
     # Configuration
-    command: str  #: The command prefix, default ``@``.
-    permitList: list[str]  #: Permitted errors, usually @i commands
-    base_path: Path  #: Working directory
-    tokenizer: Tokenizer  #: The tokenizer used to find commands
+    #: The command prefix, default ``@``.
+    command: str 
+    #: Permitted errors, usually @i commands
+    permitList: list[str]
+    #: Working directory to resolve @i commands  
+    base_path: Path  
+    #: The tokenizer used to find commands
+    tokenizer: Tokenizer  
+    # TODO: options parser class should be here, also.
     
     # State of the reader
-    parent: Optional["WebReader"]  #: Parent context for @i commands
-    filePath: Path  #: Input Path 
-    _source: TextIO  #: Input file
-    content: list[Chunk]  #: The sequence of Chunk instances being built
+    #: Parent context for @i commands      
+    parent: Optional["WebReader"]
+    #: Input Path 
+    filePath: Path 
+    #: Input file-like object, default is self.filePath.open()
+    _source: TextIO  
+    #: The sequence of Chunk instances being built
+    content: list[Chunk] 
     
-    #: The class to use when processing text.
-    text_command: type[HasText]
-
     def __init__(self, parent: Optional["WebReader"] = None) -> None:
         self.logger = logging.getLogger(self.__class__.__qualname__)
 
@@ -1167,7 +1202,6 @@ class WebReader:
         """
         self.filePath = filepath
         self.base_path = self.filePath.parent
-        self.text_command = TextCommand
     
         if source:
             self._source = source
@@ -1191,24 +1225,12 @@ class WebReader:
                     continue
                 else:
                     self.logger.error('Unknown @-command in input: %r near %r', token, self.location())
-                    cls = self.text_command
-                    self.content[-1].commands.append(cls(token, self.location()))
+                    self.content[-1].add_text(token, self.location())
                     
             elif token:
                 # Accumulate a non-empty block of text in the current chunk.
-                # Output Chunk and Named Chunk should have CodeCommand 
-                # Chunk should have TextCommand.
-                # Edge case is Chunk with no Command
-                if len(self.content[-1].commands) == 0:
-                    cls = self.text_command
-                    self.content[-1].commands.append(cls(token, self.location()))
-                elif (tail := self.content[-1].commands[-1]) and (tail.typeid.CodeCommand or tail.typeid.TextCommand):
-                    cast(HasText, tail).text += token
-                else:
-                    # A non-text command: one of @< name @>, @f, @m, @u.
-                    cls = self.text_command
-                    self.content[-1].commands.append(cls(token, self.location()))
-                
+                self.content[-1].add_text(token, self.location())
+    
             else:
                 # Whitespace
                 pass
@@ -1235,7 +1257,6 @@ class WebReader:
                     comment_end=''.join(options.get('end', "")),
                 )
                 self.content.append(new_chunk)
-                self.text_command = CodeCommand
                 # capture an OutputChunk up to @}
     
             case self.cmdd:
@@ -1260,7 +1281,6 @@ class WebReader:
                 
                 if new_chunk:
                     self.content.append(new_chunk)
-                self.text_command = CodeCommand
                 # capture a NamedChunk up to @} or @]
     
             case self.cmdi:
@@ -1292,7 +1312,6 @@ class WebReader:
                                 
                 # Start a new context for text or commands *after* this command.
                 self.content.append(Chunk())
-                self.text_command = TextCommand
     
             case self.cmdpipe:
                                 
@@ -1354,22 +1373,12 @@ class WebReader:
                     self.logger.error('Failure to process %r: exception is %r', expression, exc)
                     self.errors += 1
                     result = f"@({expression!r}: Error {exc!r}@)"
-                cls = self.text_command
-                self.content[-1].commands.append(cls(result, self.location()))
+                self.content[-1].add_text(result, self.location())
     
             case self.cmdcmd:
                                 
                 self.logger.debug(f"double-command: {self.content[-1]=}")
-                cls = self.text_command
-                if len(self.content[-1].commands) == 0:  
-                    self.content[-1].commands.append(cls(self.command, self.location()))
-                else:
-                    tail = self.content[-1].commands[-1]
-                    if tail.typeid.CodeCommand or tail.typeid.TextCommand:
-                        cast(HasText, tail).text += self.command
-                    else:
-                        # A non-text command: one of @< name @>, @f, @m, @u.
-                        self.content[-1].commands.append(cls(self.command, self.location()))
+                self.content[-1].add_text(self.command, self.location())
     
             case self.cmdlcurl | self.cmdlbrak:
                 # These should have been consumed as part of @o and @d parsing
@@ -1578,7 +1587,7 @@ class LoadAction(Action):
 
 
 class Application:
-    def __init__(self) -> None:
+    def __init__(self, base_config: dict[str, Any] | None = None) -> None:
         self.logger = logging.getLogger(self.__class__.__qualname__)
                 
         self.defaults = argparse.Namespace(
@@ -1693,7 +1702,7 @@ class Logger:
         logging.shutdown()
         return False
 
-log_config = {
+default_logging_config = {
     'version': 1,
     'disable_existing_loggers': False, # Allow pre-existing loggers to work.
     'style': '{',
@@ -1721,19 +1730,26 @@ log_config = {
         'TanglerMake': {'level': logging.INFO},
         'indent.TanglerMake': {'level': logging.INFO},
         'Web': {'level': logging.INFO},
-        'WebReader': {'level': logging.INFO},
         # Unit test requires this...
         'ReferenceCommand': {'level': logging.INFO},
     },
 }
 
 
-def main(argv: list[str] = sys.argv[1:]) -> None:
-    a = Application()
+def main(argv: list[str] = sys.argv[1:], base_config: dict[str, Any] | None=None) -> None:
+    a = Application(base_config)
     config = a.parseArgs(argv)
     a.process(config)
 
 
 if __name__ == "__main__":
+    config_paths = Path("pyweb.toml"), Path.home()/"pyweb.toml"
+    base_config: dict[str, Any] = {}
+    for cp in config_paths:
+        if cp.exists():
+            with cp.open() as config_file:
+                base_config = toml.load(config_file)
+            break
+    log_config = base_config.get('logging', default_logging_config)
     with Logger(log_config):
-        main()
+        main(base_config=base_config.get('pyweb', {}))
