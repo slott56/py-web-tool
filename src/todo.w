@@ -8,8 +8,6 @@ To Do
     Two forms for this: top-down ``→ Named (1) / → Sub-Named (2) / → Sub-Sub-Named (3)``,
     and bottom-up ``→ Sub-Sub-Named (3) ∈ → Sub-Named (2) ∈ → Named (1)``.
 
-#.  Replace ``OptionParser`` with ``argparse.ArgumentParser``.
-
 #.  Tangling can include non-woven content. More usefully, Weaving can exclude some chunks.
     The use case is a book chapter with test cases that are **not** woven into the text.
     See https://github.com/slott56/py-web-tool/wiki/Tangle-only-Output

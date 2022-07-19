@@ -5,6 +5,7 @@ import logging
 import os
 from pathlib import Path
 import re
+import shlex
 import string
 import sys
 import textwrap
@@ -828,34 +829,29 @@ class TestTokenizer(unittest.TestCase):
 
 class TestOptionParser_OutputChunk(unittest.TestCase):
     def setUp(self) -> None:
-        self.option_parser = pyweb.OptionParser(        
-            pyweb.OptionDef("-start", nargs=1, default=None),
-            pyweb.OptionDef("-end", nargs=1, default=""),
-            pyweb.OptionDef("argument", nargs='*'),
-        )
+        rdr = pyweb.WebReader()
+        self.option_parser = rdr.output_option_parser
     def test_with_options_should_parse(self) -> None:
         text1 = " -start /* -end */ something.css "
-        options1 = self.option_parser.parse(text1)
-        self.assertEqual({'-end': ['*/'], '-start': ['/*'], 'argument': ['something.css']}, options1)
+        options1 = self.option_parser.parse_args(shlex.split(text1))
+        self.assertEqual(argparse.Namespace(start='/*', end='*/', argument=['something.css']), options1)
     def test_without_options_should_parse(self) -> None:
         text2 = " something.py "
-        options2 = self.option_parser.parse(text2)
-        self.assertEqual({'argument': ['something.py']}, options2)
+        options2 = self.option_parser.parse_args(shlex.split(text2))
+        self.assertEqual(argparse. Namespace(start=None, end='', argument=['something.py']), options2)
         
 class TestOptionParser_NamedChunk(unittest.TestCase):
     def setUp(self) -> None:
-        self.option_parser = pyweb.OptionParser(        pyweb.OptionDef( "-indent", nargs=0),
-        pyweb.OptionDef("-noindent", nargs=0),
-        pyweb.OptionDef("argument", nargs='*'),
-        )
+        rdr = pyweb.WebReader()
+        self.option_parser = rdr.definition_option_parser        
     def test_with_options_should_parse(self) -> None:
         text1 = " -indent the name of test1 chunk... "
-        options1 = self.option_parser.parse(text1)
-        self.assertEqual({'-indent': [], 'argument': ['the', 'name', 'of', 'test1', 'chunk...']}, options1)
+        options1 = self.option_parser.parse_args(shlex.split(text1))
+        self.assertEqual(argparse.Namespace(argument=['the', 'name', 'of', 'test1', 'chunk...'], indent=True, noindent=False), options1)
     def test_without_options_should_parse(self) -> None:
         text2 = " the name of test2 chunk... "
-        options2 = self.option_parser.parse(text2)
-        self.assertEqual({'argument': ['the', 'name', 'of', 'test2', 'chunk...']}, options2)
+        options2 = self.option_parser.parse_args(shlex.split(text2))
+        self.assertEqual(argparse.Namespace(argument=['the', 'name', 'of', 'test2', 'chunk...'], indent=False, noindent=False), options2)
 
 class TestWebReader_Immediate(unittest.TestCase):
     def setUp(self) -> None:

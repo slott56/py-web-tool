@@ -5,6 +5,9 @@ Change Log
 
 Changes for 3.2
 
+-   Replaced home-brewed ``OptionParser`` with ``argparse.ArgumentParser``.
+    Now the options for ``@@d`` and ``@@o`` can be *much* more flexible.
+
 -   Added the transitive path of references as a Chunk property.
     Removes ``SimpleReference`` and ``TransitiveReference`` classes,
     and the associated "reference_style" attribute of a ``Weaver``.

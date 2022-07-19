@@ -1701,34 +1701,29 @@ Used by     → <a class="reference internal" href="#test-unit-py-1">test_unit.p
 <pre class="code literal-block">
 class TestOptionParser_OutputChunk(unittest.TestCase):
     def setUp(self) -&gt; None:
-        self.option_parser = pyweb.OptionParser(
-            pyweb.OptionDef(&quot;-start&quot;, nargs=1, default=None),
-            pyweb.OptionDef(&quot;-end&quot;, nargs=1, default=&quot;&quot;),
-            pyweb.OptionDef(&quot;argument&quot;, nargs='*'),
-        )
+        rdr = pyweb.WebReader()
+        self.option_parser = rdr.output_option_parser
     def test_with_options_should_parse(self) -&gt; None:
         text1 = &quot; -start /* -end */ something.css &quot;
-        options1 = self.option_parser.parse(text1)
-        self.assertEqual({'-end': ['*/'], '-start': ['/*'], 'argument': ['something.css']}, options1)
+        options1 = self.option_parser.parse_args(shlex.split(text1))
+        self.assertEqual(argparse.Namespace(start='/*', end='*/', argument=['something.css']), options1)
     def test_without_options_should_parse(self) -&gt; None:
         text2 = &quot; something.py &quot;
-        options2 = self.option_parser.parse(text2)
-        self.assertEqual({'argument': ['something.py']}, options2)
+        options2 = self.option_parser.parse_args(shlex.split(text2))
+        self.assertEqual(argparse. Namespace(start=None, end='', argument=['something.py']), options2)
 
 class TestOptionParser_NamedChunk(unittest.TestCase):
     def setUp(self) -&gt; None:
-        self.option_parser = pyweb.OptionParser(        pyweb.OptionDef( &quot;-indent&quot;, nargs=0),
-        pyweb.OptionDef(&quot;-noindent&quot;, nargs=0),
-        pyweb.OptionDef(&quot;argument&quot;, nargs='*'),
-        )
+        rdr = pyweb.WebReader()
+        self.option_parser = rdr.definition_option_parser
     def test_with_options_should_parse(self) -&gt; None:
         text1 = &quot; -indent the name of test1 chunk... &quot;
-        options1 = self.option_parser.parse(text1)
-        self.assertEqual({'-indent': [], 'argument': ['the', 'name', 'of', 'test1', 'chunk...']}, options1)
+        options1 = self.option_parser.parse_args(shlex.split(text1))
+        self.assertEqual(argparse.Namespace(argument=['the', 'name', 'of', 'test1', 'chunk...'], indent=True, noindent=False), options1)
     def test_without_options_should_parse(self) -&gt; None:
         text2 = &quot; the name of test2 chunk... &quot;
-        options2 = self.option_parser.parse(text2)
-        self.assertEqual({'argument': ['the', 'name', 'of', 'test2', 'chunk...']}, options2)
+        options2 = self.option_parser.parse_args(shlex.split(text2))
+        self.assertEqual(argparse.Namespace(argument=['the', 'name', 'of', 'test2', 'chunk...'], indent=False, noindent=False), options2)
 </pre>
 <!--  -->
 <div class="small docutils container">
@@ -1902,6 +1897,7 @@ import logging
 import os
 from pathlib import Path
 import re
+import shlex
 import string
 import sys
 import textwrap
@@ -3204,7 +3200,7 @@ div.document { width: 7in; }
 </table>
 <hr class="docutils" />
 <blockquote class="small">
-Created by src/pyweb.py at Tue Jul 19 13:20:10 2022.</blockquote>
+Created by src/pyweb.py at Tue Jul 19 14:29:45 2022.</blockquote>
 <p class="small">Source tests/pyweb_test.w modified Sat Jul  2 09:39:56 2022.</p>
 <blockquote class="small">
 <p>pyweb.__version__ '3.2'.</p>

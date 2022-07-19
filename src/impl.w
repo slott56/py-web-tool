@@ -38,10 +38,7 @@ The broad outline of the presentation is as follows:
     -   `The WebReader class`_ which parses the Web structure.
     
     -   `The Tokenizer class`_ which tokenizes the raw input.
-    
-    -   `The Option Parser Class`_ which tokenizes just the arguments to ``@@d`` and ``@@o``
-        commands.
-    
+        
 -   Other application components:
         
     -   `Error Class`_ defines an application-specific exception.
@@ -1837,14 +1834,10 @@ There are three tiers to the input parsing:
     class Tokenizer <<Iterator>> {
         __next__(self) : str
     }
-    
-    class OptionParser {
-        parse(str) : list[str]
-    }
-    
+        
     WebReader --> Tokenizer
     WebReader --> WebReader : "parent"
-    WebReader --> OptionParser
+    WebReader --> argparse.ArgumentParser
     
 We'll start with the ``WebReader`` class definition
 
@@ -1852,8 +1845,6 @@ We'll start with the ``WebReader`` class definition
 @d Base Class Definitions
 @{
 @<Tokenizer class - breaks input into tokens@>
-
-@<Option Parser class - locates optional values on commands@>
 
 @<WebReader class - parses the input file, building the Web structure@>
 @}
@@ -1903,13 +1894,13 @@ The commands have three general types:
 -   "Content" commands generate woven content. These include 
     the various cross-reference commands (``@@f``, ``@@m`` and ``@@u``).  
 
-There are two class-level ``OptionParser`` instances used by this class.
+There are two class-level ``argparse.ArgumentParser`` instances used by this class.
 
 :output_option_parser:
-    An ``OptionParser`` used to parse the ``@@o`` command's options.
+    An ``argparse.ArgumentParser`` used to parse the ``@@o`` command's options.
     
 :definition_option_parser:
-    An ``OptionParser`` used to parse the ``@@d`` command's options.
+    An ``argparse.ArgumentParser`` used to parse the ``@@d`` command's options.
 
 The class has the following attributes:
 
@@ -1944,19 +1935,6 @@ The class has the following attributes:
 class WebReader:
     """Parse an input file, creating Chunks and Commands."""
 
-    output_option_parser = OptionParser(
-        OptionDef("-start", nargs=1, default=None),
-        OptionDef("-end", nargs=1, default=""),
-        OptionDef("argument", nargs='*'),
-    )
-
-    # TODO: Allow a numeric argument value in ``-indent``
-    definition_option_parser = OptionParser(
-        OptionDef("-indent", nargs=0),
-        OptionDef("-noindent", nargs=0),
-        OptionDef("argument", nargs='*'),
-    )
-    
     # Configuration
     #: The command prefix, default ``@@``.
     command: str 
@@ -1979,6 +1957,17 @@ class WebReader:
     
     def __init__(self, parent: Optional["WebReader"] = None) -> None:
         self.logger = logging.getLogger(self.__class__.__qualname__)
+
+        self.output_option_parser = argparse.ArgumentParser(add_help=False, exit_on_error=False)
+        self.output_option_parser.add_argument("-start", dest='start', type=str, default=None)
+        self.output_option_parser.add_argument("-end", dest='end', type=str, default="")
+        self.output_option_parser.add_argument("argument", type=str, nargs="*")
+
+        # TODO: Allow a numeric argument value in ``-indent``
+        self.definition_option_parser = argparse.ArgumentParser(add_help=False, exit_on_error=False)
+        self.definition_option_parser.add_argument("-indent", dest='indent', action='store_true', default=False)
+        self.definition_option_parser.add_argument("-noindent", dest='noindent', action='store_true', default=False)
+        self.definition_option_parser.add_argument("argument", type=str, nargs="*")
 
         # Configuration comes from the parent or defaults if there is no parent.
         self.parent = parent
@@ -2087,20 +2076,20 @@ We use the first two tokens to name the ``OutputChunk``.  We expect
 the ``@@{`` separator.  We then attach all subsequent commands
 to this chunk while waiting for the final ``@@}`` token to end the chunk.
 
-We'll use an ``OptionParser`` to locate the optional parameters.  This will then let
+We'll use an ``ArgumentParser`` to locate the optional parameters.  This will then let
 us build an appropriate instance of ``OutputChunk``.
 
 With some small additional changes, we could use ``OutputChunk(**options)``.
     
 @d start an OutputChunk...
 @{
-args = next(self.tokenizer)
+arg_str = next(self.tokenizer)
 self.expect({self.cmdlcurl})
-options = self.output_option_parser.parse(args)
+options = self.output_option_parser.parse_args(shlex.split(arg_str))
 new_chunk = OutputChunk(
-    name=' '.join(options['argument']),
-    comment_start=''.join(options.get('start', "# ")),
-    comment_end=''.join(options.get('end', "")),
+    name=' '.join(options.argument),
+    comment_start=options.start if '-start' in options else "# ",
+    comment_end=options.end if '-end' in options else "",
 )
 self.content.append(new_chunk)
 # capture an OutputChunk up to @@}
@@ -2115,7 +2104,7 @@ We then attach all subsequent commands
 to this chunk while waiting for the final ``@@}`` or ``@@]`` token to 
 end the chunk.
 
-We'll use an ``OptionParser`` to locate the optional parameter of ``-noindent``.
+We'll use an ``ArgumentParser`` to locate the optional parameter of ``-noindent``.
 
 **TODO:** Extend this to support ``-indent`` *number*
 
@@ -2128,15 +2117,15 @@ If both are in the options, we should provide a warning.
 
 @d start a NamedChunk...
 @{
-args = next(self.tokenizer)
+arg_str = next(self.tokenizer)
 brack = self.expect({self.cmdlcurl, self.cmdlbrak})
-options = self.output_option_parser.parse(args)
-name = ' '.join(options['argument'])
+options = self.definition_option_parser.parse_args(shlex.split(arg_str))
+name = ' '.join(options.argument)
 
 if brack == self.cmdlbrak:
     new_chunk = NamedDocumentChunk(name)
 elif brack == self.cmdlcurl:
-    if '-noindent' in options:
+    if 'noindent' in options and options.noindent:
         new_chunk = NamedChunk_Noindent(name)
     else:
         new_chunk = NamedChunk(name)
@@ -2535,134 +2524,6 @@ class Tokenizer(Iterator[str]):
 @| Tokenizer
 @}
 
-The Option Parser Class
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-For some commands (``@@d`` and ``@@o``) we have options as well as the chunk name
-or file name. This roughly parallels the way Tcl or the shell works.
-
-The two examples are 
-
--   ``@@o`` which has an optional ``-start`` and ``-end`` that are used to 
-    provide comment bracketing information. For example:
-    
-    ``@@0 -start /* -end */ something.css``
-    
-    Provides two options in addition to the required filename.
-    
--   ``@@d`` which has an optional ``-noident`` or ``-indent`` that is used to
-    provide the indentation rules for this chunk. Some chunks are not indented 
-    automatically. It's up to the author to get the indentation right. This is
-    used in the case of a Python """ string that would be ruined by indentation.
-    
-To handle this, we have a separate lexical scanner and parser for these
-two commands.
-
-@d Imports
-@{import shlex
-@| shlex
-@}
-
-Here's how we can define an option.
-
-..  parsed-literal::
-
-    OptionParser(
-        OptionDef("-start", nargs=1, default=None),
-        OptionDef("-end", nargs=1, default=""),
-        OptionDef("-indent", nargs=0), # A default
-        OptionDef("-noindent", nargs=0),
-        OptionDef("argument", nargs='*'),
-        )
-        
-The idea is to parallel ``argparse.add_argument()`` syntax.
-
-@d Option Parser class...
-@{
-class ParseError(Exception): pass
-@}
-
-@d Option Parser class...
-@{
-class OptionDef:
-    def __init__(self, name: str, **kw: Any) -> None:
-        self.name = name
-        self.__dict__.update(kw)
-@}
-
-The parser breaks the text into words using ``shelex`` rules. 
-It then steps through the words, accumulating the options and the
-final argument value.
-
-@d Option Parser class...
-@{
-class OptionParser:
-    def __init__(self, *arg_defs: Any) -> None:
-        self.args = dict((arg.name, arg) for arg in arg_defs)
-        self.trailers = [k for k in self.args.keys() if not k.startswith('-')]
-        
-    def parse(self, text: str) -> dict[str, list[str]]:
-        try:
-            word_iter = iter(shlex.split(text))
-        except ValueError as e:
-            raise Error(f"Error parsing options in {text!r}")
-        options = dict(self._group(word_iter))
-        return options
-        
-    def _group(self, word_iter: Iterator[str]) -> Iterator[tuple[str, list[str]]]:
-        option: str | None
-        value: list[str]
-        final: list[str]
-        option, value, final = None, [], []
-        for word in word_iter:
-            if word == '--':
-                if option:
-                    yield option, value
-                try:
-                    final = [next(word_iter)] 
-                except StopIteration:
-                    final = []  # Special case of '--' at the end.
-                break
-            elif word.startswith('-'):
-                if word in self.args:
-                    if option: 
-                        yield option, value
-                    option, value = word, []
-                else:
-                    raise ParseError(f"Unknown option {word!r}")
-            else:
-                if option:
-                    if self.args[option].nargs == len(value):
-                        yield option, value
-                        final = [word]
-                        break
-                    else:                
-                        value.append(word)
-                else:
-                    final = [word]
-                    break
-        # In principle, we step through the trailers based on nargs counts.
-        for word in word_iter:
-            final.append(word)
-        yield self.trailers[0], final
-@}
-
-In principle, we step through the trailers based on ``nargs`` counts.
-Since we only ever have the one trailer, we can skate by without checking the number of args.
-
-The processing becomes a bit more complex to capture the positional arguments, in order.
-Then we'd have something like this. (Untested, incomplete, just hand-waving.)
-
-..  parsed-literal::
-
-    trailers = self.trailers[:] # Stateful shallow copy
-    for word in word_iter:
-        if len(final) == trailers[-1].nargs:  # nargs=='*' vs. nargs=int??
-            yield trailers[0], " ".join(final)
-            final = 0
-            trailers.pop(0)
-    yield trailers[0], " ".join(final)
-    
 Other Application Components
 ----------------------------
 
@@ -3181,7 +3042,8 @@ The configuration can be either a ``types.SimpleNamespace`` or an
 
 @d Imports
 @{import argparse
-@| argparse
+import shlex
+@| argparse shlex
 @}
 
 @d Application Class for overall CLI operation
