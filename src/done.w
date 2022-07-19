@@ -5,12 +5,19 @@ Change Log
 
 Changes for 3.2
 
+-   Added the transitive path of references as a Chunk property.
+    Removes ``SimpleReference`` and ``TransitiveReference`` classes,
+    and the associated "reference_style" attribute of a ``Weaver``.
+    To show transitive references, a revised ``code_end`` template is required.
+
 -   Added a TOML-based configuration file with a ``[logging]`` section. 
 
 -   Incorporated Sphinx and PlantUML into the documentation.
     Support continues for ```rst2html.py``. It's used for test documentaion. 
+    See https://github.com/slott56/py-web-tool/wiki/PlantUML-support-for-RST-%5BCompleted%5D
 
--   Replaced weaving process with Jinja templates.
+-   Replaced weaving process with Jinja templates. 
+    See https://github.com/slott56/py-web-tool/wiki/Jinja-Template-for-Weaving-%5BCompleted%5D
 
 -   Dramatic redesign to Class, Chunk, and Command class hierarchies.
 

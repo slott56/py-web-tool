@@ -263,7 +263,7 @@ class Chunk:
     #: Count of references to this Chunk.
     references: int = field(init=False, default=0)
     
-    #: Reference to this chunk.
+    #: The immediate reference to this chunk.
     referencedBy: Optional["Chunk"] = field(init=False, default=None)
     
     #: Weak reference to the ``Web`` containing this ``Chunk``.
@@ -287,6 +287,13 @@ class Chunk:
     def location(self) -> tuple[str, int]:
         return self.commands[0].location
 
+    @property
+    def transitive_referencedBy(self) -> list["Chunk"]:
+        if self.referencedBy:
+            return [self.referencedBy] + self.referencedBy.transitive_referencedBy
+        else:
+            return []
+        
     def add_text(self, text: str, location: tuple[str, int]) -> "Chunk":
         if self.commands and self.commands[-1].typeid.TextCommand:
             cast(HasText, self.commands[-1]).text += text
@@ -414,7 +421,9 @@ class Web:
             # TODO: Accumulate all chunks that contribute to a named file...
 
         # Pass 4 -- set referencedBy a command in a chunk.
-        # NOTE: Assuming single references *only*
+        # ONLY set this in references embedded in named chunk or output chunk.
+        # In a generic Chunk (which is text) there's no anchor to refer to.
+        # NOTE: Assume single references *only*
         # We should raise an exception when updating a non-None referencedBy value.
         # Or incrementing ref_chunk.references > 1.
         for c in named_chunks:
@@ -523,41 +532,6 @@ class Web:
 
 
 
-class Reference(abc.ABC):
-    def __init__(self) -> None:
-        self.logger = logging.getLogger(self.__class__.__qualname__)
-        
-    @abc.abstractmethod
-    def chunkReferencedBy(self, aChunk: Chunk) -> list[Chunk]:
-        """Return a list of Chunks."""
-        ...
-
-class SimpleReference(Reference):
-    def chunkReferencedBy(self, aChunk: Chunk) -> list[Chunk]:
-        if aChunk.referencedBy:
-            return [aChunk.referencedBy]
-        return []
-
-class TransitiveReference(Reference):
-    def chunkReferencedBy(self, aChunk: Chunk) -> list[Chunk]:
-        refBy = aChunk.referencedBy
-        if refBy:
-            all_refs = list(self.allParentsOf(refBy))
-            self.logger.debug("References: %r(%d) %r", aChunk.name, aChunk.seq, all_refs)
-            return all_refs
-        else:
-            return []
-        
-    @staticmethod
-    def allParentsOf(chunk: Chunk | None, depth: int = 0) -> Iterator[Chunk]:
-        """Transitive closure of parents via recursive ascent.
-        """
-        if chunk:
-            yield chunk
-            yield from TransitiveReference.allParentsOf(chunk.referencedBy, depth+1)
- 
-
-
 class Emitter(abc.ABC):
     def __init__(self, output: Path): 
         self.logger = logging.getLogger(self.__class__.__qualname__)
@@ -641,7 +615,7 @@ rst_weaver_template = dedent("""
     {%- macro code(command) %}{% for line in command.text.splitlines() %}    {{line | quote_rules}}
     {% endfor -%}{% endmacro -%}
     
-    {%- macro ref(id) %}    \N{RIGHTWARDS ARROW} `{{id.full_name}} ({{id.seq}})`_{% endmacro -%}
+    {%- macro ref(id) %}    \N{RIGHTWARDS ARROW} `{{id.full_name or id.name}} ({{id.seq}})`_{% endmacro -%}
     
     {# When using Sphinx, this *could* be rst-class::, pure docutils uses container::#}
     {%- macro end_code(chunk) %}
@@ -649,7 +623,8 @@ rst_weaver_template = dedent("""
     
     ..  container:: small
     
-        \N{END OF PROOF} *{{chunk.full_name or chunk.name}} ({{chunk.seq}})*
+        \N{END OF PROOF} *{{chunk.full_name or chunk.name}} ({{chunk.seq}})*.
+        {% if chunk.referencedBy %}Used by {{ref(chunk.referencedBy)}}.{% endif %}
         
     {% endmacro -%}
     
@@ -719,11 +694,12 @@ html_weaver_template = dedent("""\
     
     {%- macro code(command) -%}{{command.text | quote_rules}}{%- endmacro -%}
     
-    {%- macro ref(id) %}&rarr;<a href="#pyweb_{{id.seq}}"><em>{{id.full_name}} ({{id.seq}})</em></a>{% endmacro -%}
+    {%- macro ref(id) %}&rarr;<a href="#pyweb_{{id.seq}}"><em>{{id.full_name or id.name}} ({{id.seq}})</em></a>{% endmacro -%}
     
     {%- macro end_code(chunk) %}
     </code></pre>
     <p>&#8718; <em>{{chunk.full_name or chunk.name}} ({{chunk.seq}})</em>.
+    {% if chunk.referencedBy %}Used by {{ref(chunk.referencedBy)}}.{% endif %}
     </p> 
     {% endmacro -%}
     
@@ -784,7 +760,7 @@ latex_weaver_template = dedent("""\
     
     {%- macro code(command) -%}{{command.text | quote_rules}}{%- endmacro -%}
     
-    {%- macro ref(id) %}$$\\rightarrow$$ Code Example {{id.full_name}} ({{id.seq}}){% endmacro -%}
+    {%- macro ref(id) %}$$\\rightarrow$$ Code Example {{id.full_name or id.name}} ({{id.seq}}){% endmacro -%}
     
     {%- macro end_code(chunk) %}
     \\end{Verbatim}
@@ -1133,7 +1109,6 @@ class WebReader:
     base_path: Path  
     #: The tokenizer used to find commands
     tokenizer: Tokenizer  
-    # TODO: options parser class should be here, also.
     
     # State of the reader
     #: Parent context for @i commands      
@@ -1484,7 +1459,6 @@ class WeaveAction(Action):
             # Examine first few chars of first chunk of web to determine language
             self.options.weaver = self.options.web.language() 
             self.logger.info("Using %s", self.options.theWeaver)
-        self.options.theWeaver.reference_style = self.options.reference_style
         self.options.theWeaver.output = self.options.output
         try:
             self.options.theWeaver.set_markup(self.options.weaver)
@@ -1622,7 +1596,6 @@ class Application:
         p.add_argument("-w", "--weaver", dest="weaver", action="store")
         p.add_argument("-x", "--except", dest="skip", action="store", choices=('w', 't'))
         p.add_argument("-p", "--permit", dest="permit", action="store")
-        p.add_argument("-r", "--reference", dest="reference", action="store", choices=('t', 's'))
         p.add_argument("-n", "--linenumbers", dest="tangler_line_numbers", action="store_true")
         p.add_argument("-o", "--output", dest="output", action="store", type=Path)
         p.add_argument("-V", "--Version", action='version', version=f"py-web-tool pyweb.py {__version__}")
@@ -1635,14 +1608,6 @@ class Application:
         """Translate the argument values from simple text to useful objects.
         Weaver. Tangler. WebReader.
         """
-        match config.reference:
-            case 't':
-                config.reference_style = TransitiveReference() 
-            case 's':
-                config.reference_style = SimpleReference()
-            case _:
-                raise Error("Improper configuration")
-    
         # Weaver & Tangler
         config.theWeaver = Weaver(config.output)
         config.theTangler = TanglerMake(config.output)

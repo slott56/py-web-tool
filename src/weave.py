@@ -52,7 +52,6 @@ def main(source: Path) -> None:
             command='@',
             permitList=[],
             tangler_line_numbers=False,
-            reference_style=pyweb.SimpleReference(),
             webReader=pyweb.WebReader(),
             
             theWeaver=MyHTML(),  # Customize with a specific Weaver subclass

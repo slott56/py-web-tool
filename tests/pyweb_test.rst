@@ -177,8 +177,8 @@ This gives us the following outline for unit testing.
     → `Unit Test overheads: imports, etc. (43)`_    
     → `Unit Test of Emitter class hierarchy (2)`_    
     → `Unit Test of Chunk class hierarchy (10)`_    
-    → `Unit Test of Command class hierarchy (22)`_    
-    → `Unit Test of Reference class hierarchy (31)`_    
+    → `Unit Test of Chunk References (22)`_    
+    → `Unit Test of Command class hierarchy (23)`_    
     → `Unit Test of Web class (32)`_    
     → `Unit Test of WebReader class (33)`_    
     → `Unit Test of Action class hierarchy (37)`_    
@@ -189,7 +189,8 @@ This gives us the following outline for unit testing.
 
 ..  container:: small
 
-    ∎ *test_unit.py (1)*
+    ∎ *test_unit.py (1)*.
+    
 
 
 
@@ -220,7 +221,8 @@ precisely follows the document structure.
 
 ..  container:: small
 
-    ∎ *Unit Test of Emitter class hierarchy (2)*
+    ∎ *Unit Test of Emitter class hierarchy (2)*.
+    Used by     → `test_unit.py (1)`_.
 
 
 
@@ -254,7 +256,8 @@ emitter is Tangler-like.
 
 ..  container:: small
 
-    ∎ *Unit Test of Emitter Superclass (3)*
+    ∎ *Unit Test of Emitter Superclass (3)*.
+    Used by     → `Unit Test of Emitter class hierarchy (2)`_.
 
 
 
@@ -317,86 +320,89 @@ test strategy.
         mock\_ref = Mock(typeid=pyweb.TypeId(), full\_name="named chunk", seq=42)
         mock\_ref.typeid.\_\_set\_name\_\_(pyweb.ReferenceCommand, "typeid")
         mock\_ref.name = "named..."
+        
+        c\_0 = Mock(
+            name="mock Chunk",
+            type\_is=Mock(side\_effect = lambda n: n == "Chunk"),
+            commands=[
+                Mock(
+                    typeid=pyweb.TypeId().\_\_set\_name\_\_(pyweb.TextCommand, "typeid"),
+                    text="text with \|char\| untouched.",
+                ),
+                Mock(
+                    typeid=pyweb.TypeId().\_\_set\_name\_\_(pyweb.TextCommand, "typeid"),
+                    text="\\n",
+                ),
+                Mock(
+                    typeid=pyweb.TypeId().\_\_set\_name\_\_(pyweb.FileXrefCommand, "typeid"),
+                    location=1,
+                    files=[mock\_file],
+                ),
+                Mock(
+                    typeid=pyweb.TypeId().\_\_set\_name\_\_(pyweb.TextCommand, "typeid"),
+                    text="\\n",
+                ),
+                Mock(
+                    typeid=pyweb.TypeId().\_\_set\_name\_\_(pyweb.MacroXrefCommand, "typeid"),
+                    location=2,
+                    macros=[mock\_output],
+                ),
+                Mock(
+                    typeid=pyweb.TypeId().\_\_set\_name\_\_(pyweb.TextCommand, "typeid"),
+                    text="\\n",
+                ),
+                Mock(
+                    typeid=pyweb.TypeId().\_\_set\_name\_\_(pyweb.UserIdXrefCommand, "typeid"),
+                    location=3,
+                    userids=[mock\_uid\_1, mock\_uid\_2]
+                ),
+            ],
+            referencedBy=None,
+        )
+        c\_1 = Mock(
+            name="mock OutputChunk",
+            type\_is=Mock(side\_effect = lambda n: n == "OutputChunk"),
+            seq=42,
+            full\_name="sample.out",
+            commands=[
+                Mock(
+                    typeid=pyweb.TypeId().\_\_set\_name\_\_(pyweb.CodeCommand, "typeid"),
+                    text="\|char\| \`code\` \*em\* \_em\_",
+                    tangle=Mock(side\_effect=tangle\_method),
+                ),
+                Mock(
+                    typeid=pyweb.TypeId().\_\_set\_name\_\_(pyweb.CodeCommand, "typeid"),
+                    text="\\n",
+                    tangle=Mock(),
+                ),
+                mock\_ref,
+            ],
+            def\_names=["some\_name"],
+            referencedBy=None,
+        )
+        c\_2 = Mock(
+            name="mock NamedChunk",
+            type\_is=Mock(side\_effect = lambda n: n == "NamedChunk"),
+            seq=42,
+            full\_name="named chunk",
+            commands=[
+                Mock(
+                    typeid=pyweb.TypeId().\_\_set\_name\_\_(pyweb.CodeCommand, "typeid"),
+                    text="\|char\| \`code\` \*em\* \_em\_",
+                ),
+                Mock(
+                    typeid=pyweb.TypeId().\_\_set\_name\_\_(pyweb.CodeCommand, "typeid"),
+                    text="\\n",
+                    tangle=Mock(),
+                ),
+            ],
+            def\_names=["another\_name"],
+            referencedBy=c\_1
+        )
         web = Mock(
             name="mock web",
             web\_path=Path("TestWeaver.w"),
-            chunks=[
-                Mock(
-                    name="mock Chunk",
-                    type\_is=Mock(side\_effect = lambda n: n == "Chunk"),
-                    commands=[
-                        Mock(
-                            typeid=pyweb.TypeId().\_\_set\_name\_\_(pyweb.TextCommand, "typeid"),
-                            text="text with \|char\| untouched.",
-                        ),
-                        Mock(
-                            typeid=pyweb.TypeId().\_\_set\_name\_\_(pyweb.TextCommand, "typeid"),
-                            text="\\n",
-                        ),
-                        Mock(
-                            typeid=pyweb.TypeId().\_\_set\_name\_\_(pyweb.FileXrefCommand, "typeid"),
-                            location=1,
-                            files=[mock\_file],
-                        ),
-                        Mock(
-                            typeid=pyweb.TypeId().\_\_set\_name\_\_(pyweb.TextCommand, "typeid"),
-                            text="\\n",
-                        ),
-                        Mock(
-                            typeid=pyweb.TypeId().\_\_set\_name\_\_(pyweb.MacroXrefCommand, "typeid"),
-                            location=2,
-                            macros=[mock\_output],
-                        ),
-                        Mock(
-                            typeid=pyweb.TypeId().\_\_set\_name\_\_(pyweb.TextCommand, "typeid"),
-                            text="\\n",
-                        ),
-                        Mock(
-                            typeid=pyweb.TypeId().\_\_set\_name\_\_(pyweb.UserIdXrefCommand, "typeid"),
-                            location=3,
-                            userids=[mock\_uid\_1, mock\_uid\_2]
-                        ),
-                    ],
-                ),
-                Mock(
-                    name="mock OutputChunk",
-                    type\_is=Mock(side\_effect = lambda n: n == "OutputChunk"),
-                    seq=42,
-                    full\_name="sample.out",
-                    commands=[
-                        Mock(
-                            typeid=pyweb.TypeId().\_\_set\_name\_\_(pyweb.CodeCommand, "typeid"),
-                            text="\|char\| \`code\` \*em\* \_em\_",
-                            tangle=Mock(side\_effect=tangle\_method),
-                        ),
-                        Mock(
-                            typeid=pyweb.TypeId().\_\_set\_name\_\_(pyweb.CodeCommand, "typeid"),
-                            text="\\n",
-                            tangle=Mock(),
-                        ),
-                        mock\_ref,
-                    ],
-                    def\_names = ["some\_name"],
-                ),
-                Mock(
-                    name="mock NamedChunk",
-                    type\_is=Mock(side\_effect = lambda n: n == "NamedChunk"),
-                    seq=42,
-                    full\_name="named chunk",
-                    commands=[
-                        Mock(
-                            typeid=pyweb.TypeId().\_\_set\_name\_\_(pyweb.CodeCommand, "typeid"),
-                            text="\|char\| \`code\` \*em\* \_em\_",
-                        ),
-                        Mock(
-                            typeid=pyweb.TypeId().\_\_set\_name\_\_(pyweb.CodeCommand, "typeid"),
-                            text="\\n",
-                            tangle=Mock(),
-                        ),
-                    ],
-                    def\_names = ["another\_name"]
-                ),
-            ],
+            chunks=[c\_0, c\_1, c\_2],
         )
         web.chunks[1].name="sample.out"
         web.chunks[2].name="named..."
@@ -407,7 +413,8 @@ test strategy.
 
 ..  container:: small
 
-    ∎ *Unit Test Mock Chunk class (4)*
+    ∎ *Unit Test Mock Chunk class (4)*.
+    Used by     → `Unit Test of Emitter class hierarchy (2)`_.
 
 
 
@@ -432,9 +439,10 @@ The default Weaver is an Emitter that uses templates to produce RST markup.
             self.filepath = Path.cwd()
             self.weaver = pyweb.Weaver(self.filepath)
             self.weaver.set\_markup("rst")
-            self.weaver.reference\_style = pyweb.SimpleReference()
+            # self.weaver.reference\_style = pyweb.SimpleReference()  # Remove this
             self.output\_path = self.filepath / "TestWeaver.rst"
             self.web = mock\_web()
+            self.maxDiff = None
             
         def tearDown(self) -> None:
             try:
@@ -471,7 +479,8 @@ The default Weaver is an Emitter that uses templates to produce RST markup.
                 '\\n'
                 '..  container:: small\\n'
                 '\\n'
-                '    ∎ \*sample.out (42)\*\\n'
+                '    ∎ \*sample.out (42)\*.\\n'
+                '    \\n'
                 '\\n'
                 '\\n'
                 '..  \_\`named chunk (42)\`:\\n'
@@ -486,7 +495,8 @@ The default Weaver is an Emitter that uses templates to produce RST markup.
                 '\\n'
                 '..  container:: small\\n'
                 '\\n'
-                '    ∎ \*named chunk (42)\*\\n'
+                '    ∎ \*named chunk (42)\*.\\n'
+                '    Used by     → \`sample.out (42)\`\_.\\n'
                 '\\n')
             self.assertEqual(expected, result)
 
@@ -494,7 +504,8 @@ The default Weaver is an Emitter that uses templates to produce RST markup.
 
 ..  container:: small
 
-    ∎ *Unit Test of Weaver subclass of Emitter (5)*
+    ∎ *Unit Test of Weaver subclass of Emitter (5)*.
+    Used by     → `Unit Test of Emitter class hierarchy (2)`_.
 
 
 
@@ -516,7 +527,7 @@ We'll examine a few features of the LaTeX templates.
         def setUp(self) -> None:
             self.weaver = pyweb.Weaver()
             self.weaver.set\_markup("tex")
-            self.weaver.reference\_style = pyweb.SimpleReference() 
+            # self.weaver.reference\_style = pyweb.SimpleReference()  # Remove this 
             self.filepath = Path("testweaver") 
             self.aFileChunk = MockChunk("File", 123, ("sample.w", 456))
             self.aFileChunk.referencedBy = [ ]
@@ -552,7 +563,8 @@ We'll examine a few features of the LaTeX templates.
 
 ..  container:: small
 
-    ∎ *Unit Test of LaTeX subclass of Emitter (6)*
+    ∎ *Unit Test of LaTeX subclass of Emitter (6)*.
+    Used by     → `Unit Test of Emitter class hierarchy (2)`_.
 
 
 
@@ -570,7 +582,7 @@ We'll examine a few features of the HTML templates.
             self.maxDiff = None
             self.weaver = pyweb.Weaver( )
             self.weaver.set\_markup("html")
-            self.weaver.reference\_style = pyweb.SimpleReference() 
+            # self.weaver.reference\_style = pyweb.SimpleReference()  # Remove this 
             self.filepath = Path("testweaver") 
             self.aFileChunk = MockChunk("File", 123, ("sample.w", 456))
             self.aFileChunk.referencedBy = []
@@ -596,10 +608,11 @@ We'll examine a few features of the HTML templates.
                 "<!--line number ('sample.w', 789)-->\\n"
                 '<p><em>Chunk (314)</em> =</p>\\n'
                 '<pre><code>',
-                 '\\n'
-                 '</code></pre>\\n'
-                 '<p>&#8718; <em>Chunk (314)</em>.\\n'
-                 '</p> \\n'
+                '\\n'
+                '</code></pre>\\n'
+                '<p>&#8718; <em>Chunk (314)</em>.\\n'
+                'Used by &rarr;<a href="#pyweb\_"><em> ()</em></a>.\\n'
+                '</p> \\n'
             ]
             self.assertEqual(expected, result)
     
@@ -608,7 +621,8 @@ We'll examine a few features of the HTML templates.
 
 ..  container:: small
 
-    ∎ *Unit Test of HTML subclass of Emitter (7)*
+    ∎ *Unit Test of HTML subclass of Emitter (7)*.
+    Used by     → `Unit Test of Emitter class hierarchy (2)`_.
 
 
 
@@ -669,7 +683,8 @@ compiler and language.
 
 ..  container:: small
 
-    ∎ *Unit Test of Tangler subclass of Emitter (8)*
+    ∎ *Unit Test of Tangler subclass of Emitter (8)*.
+    Used by     → `Unit Test of Emitter class hierarchy (2)`_.
 
 
 
@@ -733,7 +748,8 @@ untouched.
 
 ..  container:: small
 
-    ∎ *Unit Test of TanglerMake subclass of Emitter (9)*
+    ∎ *Unit Test of TanglerMake subclass of Emitter (9)*.
+    Used by     → `Unit Test of Emitter class hierarchy (2)`_.
 
 
 
@@ -761,7 +777,8 @@ of chunks that are used to produce the documentation and the source files.
 
 ..  container:: small
 
-    ∎ *Unit Test of Chunk class hierarchy (10)*
+    ∎ *Unit Test of Chunk class hierarchy (10)*.
+    Used by     → `test_unit.py (1)`_.
 
 
 
@@ -793,7 +810,8 @@ A MockCommand can be attached to a Chunk.
 
 ..  container:: small
 
-    ∎ *Unit Test of Chunk superclass (11)*
+    ∎ *Unit Test of Chunk superclass (11)*.
+    Used by     → `Unit Test of Chunk class hierarchy (10)`_.
 
 
 
@@ -836,7 +854,8 @@ A MockWeb can contain a Chunk.
 
 ..  container:: small
 
-    ∎ *Unit Test of Chunk superclass (12)*
+    ∎ *Unit Test of Chunk superclass (12)*.
+    Used by     → `Unit Test of Chunk class hierarchy (10)`_.
 
 
 
@@ -897,7 +916,8 @@ returns the context manager instance.
 
 ..  container:: small
 
-    ∎ *Unit Test of Chunk superclass (13)*
+    ∎ *Unit Test of Chunk superclass (13)*.
+    Used by     → `Unit Test of Chunk class hierarchy (10)`_.
 
 
 
@@ -927,7 +947,8 @@ A Chunk is built, interrogated and then emitted.
 
 ..  container:: small
 
-    ∎ *Unit Test of Chunk superclass (14)*
+    ∎ *Unit Test of Chunk superclass (14)*.
+    Used by     → `Unit Test of Chunk class hierarchy (10)`_.
 
 
 
@@ -955,7 +976,8 @@ Can we build a Chunk?
 
 ..  container:: small
 
-    ∎ *Unit Test of Chunk construction (15)*
+    ∎ *Unit Test of Chunk construction (15)*.
+    Used by     → `Unit Test of Chunk superclass (14)`_.
 
 
 
@@ -977,7 +999,8 @@ Can we interrogate a Chunk?
 
 ..  container:: small
 
-    ∎ *Unit Test of Chunk interrogation (16)*
+    ∎ *Unit Test of Chunk interrogation (16)*.
+    Used by     → `Unit Test of Chunk superclass (14)`_.
 
 
 
@@ -999,12 +1022,14 @@ Can we emit a Chunk with a weaver or tangler?
         self.assertIsNone(self.theChunk.path)
         self.assertTrue(self.theChunk.type\_is('Chunk'))
         self.assertFalse(self.theChunk.type\_is('OutputChunk'))
+        self.assertIsNone(self.theChunk.referencedBy)
 
 ..
 
 ..  container:: small
 
-    ∎ *Unit Test of Chunk properties (17)*
+    ∎ *Unit Test of Chunk properties (17)*.
+    Used by     → `Unit Test of Chunk superclass (14)`_.
 
 
 
@@ -1039,12 +1064,14 @@ and tangled differently than anonymous chunks.
             self.assertTrue(self.theChunk.type\_is("NamedChunk"))
             self.assertFalse(self.theChunk.type\_is("OutputChunk"))
             self.assertFalse(self.theChunk.type\_is("Chunk"))
+            self.assertIsNone(self.theChunk.referencedBy)
 
 ..
 
 ..  container:: small
 
-    ∎ *Unit Test of NamedChunk subclass (18)*
+    ∎ *Unit Test of NamedChunk subclass (18)*.
+    Used by     → `Unit Test of Chunk class hierarchy (10)`_.
 
 
 
@@ -1074,12 +1101,14 @@ and tangled differently than anonymous chunks.
             self.assertIsNone(self.theChunk.path)
             self.assertTrue(self.theChunk.type\_is("NamedChunk"))
             self.assertFalse(self.theChunk.type\_is("Chunk"))
+            self.assertIsNone(self.theChunk.referencedBy)
 
 ..
 
 ..  container:: small
 
-    ∎ *Unit Test of NamedChunk_Noindent subclass (19)*
+    ∎ *Unit Test of NamedChunk_Noindent subclass (19)*.
+    Used by     → `Unit Test of Chunk class hierarchy (10)`_.
 
 
 
@@ -1117,13 +1146,14 @@ This defines the files of tangled code.
             self.assertEqual(self.theChunk.path, Path("filename.out"))
             self.assertTrue(self.theChunk.type\_is("OutputChunk"))
             self.assertFalse(self.theChunk.type\_is("Chunk"))
-    
+            self.assertIsNone(self.theChunk.referencedBy)
 
 ..
 
 ..  container:: small
 
-    ∎ *Unit Test of OutputChunk subclass (20)*
+    ∎ *Unit Test of OutputChunk subclass (20)*.
+    Used by     → `Unit Test of Chunk class hierarchy (10)`_.
 
 
 
@@ -1157,12 +1187,83 @@ is.
             self.assertIsNone(self.theChunk.path)
             self.assertTrue(self.theChunk.type\_is("NamedDocumentChunk"))
             self.assertFalse(self.theChunk.type\_is("OutputChunk"))
+            self.assertIsNone(self.theChunk.referencedBy)
 
 ..
 
 ..  container:: small
 
-    ∎ *Unit Test of NamedDocumentChunk subclass (21)*
+    ∎ *Unit Test of NamedDocumentChunk subclass (21)*.
+    Used by     → `Unit Test of Chunk class hierarchy (10)`_.
+
+
+
+Chunk References Tests
+----------------------
+
+A Chunk's "referencedBy" attribute is set by the ``Web`` during
+the initialization processing.
+
+The test fixture is this
+
+..  parsed-literal::
+
+    @d main @{ @< parent @> @}
+    
+    @d parent @{ @< sub @> @}
+    
+    @d sub @{ something @}
+    
+The ``sub`` item is referenced by ``parent`` which is referenced by ``main``.
+
+The simple reference is ``sub`` referenced by ``parent``.
+
+The transitive references are ``sub`` referenced by ``parent`` which is referenced by ``main``.
+
+
+..  _`Unit Test of Chunk References (22)`:
+..  rubric:: Unit Test of Chunk References (22) =
+..  parsed-literal::
+    :class: code
+
+     
+    class TestReferences(unittest.TestCase):
+        def setUp(self) -> None:
+            self.web = MockWeb()
+            self.main = pyweb.NamedChunk("Main", 1)
+            self.main.referencedBy = None
+            self.main.web = Mock(return\_value=self.web)
+            self.parent = pyweb.NamedChunk("Parent", 2)
+            self.parent.referencedBy = self.main
+            self.parent.web = Mock(return\_value=self.web)
+            self.chunk = pyweb.NamedChunk("Sub", 3)
+            self.chunk.referencedBy = self.parent
+            self.chunk.web = Mock(return\_value=self.web)
+    
+        def test\_simple(self) -> None:
+            self.assertEqual(self.chunk.referencedBy, self.parent)
+            
+        def test\_transitive\_sub\_sub(self) -> None:
+            theList = self.chunk.transitive\_referencedBy
+            self.assertEqual(2, len(theList))
+            self.assertEqual(self.parent, theList[0])
+            self.assertEqual(self.main, theList[1])
+    
+        def test\_transitive\_sub(self) -> None:
+            theList = self.parent.transitive\_referencedBy
+            self.assertEqual(1, len(theList))
+            self.assertEqual(self.main, theList[0])
+    
+        def test\_transitive\_top(self) -> None:
+            theList = self.main.transitive\_referencedBy
+            self.assertEqual(0, len(theList))
+
+..
+
+..  container:: small
+
+    ∎ *Unit Test of Chunk References (22)*.
+    Used by     → `test_unit.py (1)`_.
 
 
 
@@ -1170,26 +1271,27 @@ Command Tests
 ---------------
 
 
-..  _`Unit Test of Command class hierarchy (22)`:
-..  rubric:: Unit Test of Command class hierarchy (22) =
+..  _`Unit Test of Command class hierarchy (23)`:
+..  rubric:: Unit Test of Command class hierarchy (23) =
 ..  parsed-literal::
     :class: code
 
      
-    → `Unit Test of Command superclass (23)`_    
-    → `Unit Test of TextCommand class to contain a document text block (24)`_    
-    → `Unit Test of CodeCommand class to contain a program source code block (25)`_    
-    → `Unit Test of XrefCommand superclass for all cross-reference commands (26)`_    
-    → `Unit Test of FileXrefCommand class for an output file cross-reference (27)`_    
-    → `Unit Test of MacroXrefCommand class for a named chunk cross-reference (28)`_    
-    → `Unit Test of UserIdXrefCommand class for a user identifier cross-reference (29)`_    
-    → `Unit Test of ReferenceCommand class for chunk references (30)`_    
+    → `Unit Test of Command superclass (24)`_    
+    → `Unit Test of TextCommand class to contain a document text block (25)`_    
+    → `Unit Test of CodeCommand class to contain a program source code block (26)`_    
+    → `Unit Test of XrefCommand superclass for all cross-reference commands (27)`_    
+    → `Unit Test of FileXrefCommand class for an output file cross-reference (28)`_    
+    → `Unit Test of MacroXrefCommand class for a named chunk cross-reference (29)`_    
+    → `Unit Test of UserIdXrefCommand class for a user identifier cross-reference (30)`_    
+    → `Unit Test of ReferenceCommand class for chunk references (31)`_    
 
 ..
 
 ..  container:: small
 
-    ∎ *Unit Test of Command class hierarchy (22)*
+    ∎ *Unit Test of Command class hierarchy (23)*.
+    Used by     → `test_unit.py (1)`_.
 
 
 
@@ -1197,8 +1299,8 @@ This Command superclass is essentially an inteface definition, it
 has no real testable features.
 
 
-..  _`Unit Test of Command superclass (23)`:
-..  rubric:: Unit Test of Command superclass (23) =
+..  _`Unit Test of Command superclass (24)`:
+..  rubric:: Unit Test of Command superclass (24) =
 ..  parsed-literal::
     :class: code
 
@@ -1208,7 +1310,8 @@ has no real testable features.
 
 ..  container:: small
 
-    ∎ *Unit Test of Command superclass (23)*
+    ∎ *Unit Test of Command superclass (24)*.
+    Used by     → `Unit Test of Command class hierarchy (23)`_.
 
 
 
@@ -1217,8 +1320,8 @@ A ``TextCommand`` should not (generally) be created in a ``Chunk``, it should
 only be part of a ``NamedChunk`` or ``OutputChunk``.
 
 
-..  _`Unit Test of TextCommand class to contain a document text block (24)`:
-..  rubric:: Unit Test of TextCommand class to contain a document text block (24) =
+..  _`Unit Test of TextCommand class to contain a document text block (25)`:
+..  rubric:: Unit Test of TextCommand class to contain a document text block (25) =
 ..  parsed-literal::
     :class: code
 
@@ -1244,7 +1347,8 @@ only be part of a ``NamedChunk`` or ``OutputChunk``.
 
 ..  container:: small
 
-    ∎ *Unit Test of TextCommand class to contain a document text block (24)*
+    ∎ *Unit Test of TextCommand class to contain a document text block (25)*.
+    Used by     → `Unit Test of Command class hierarchy (23)`_.
 
 
 
@@ -1252,8 +1356,8 @@ A ``CodeCommand`` object is a ``TextCommand`` with different processing for bein
 It represents a block of code in a ``NamedChunk`` or ``OutputChunk``. 
 
 
-..  _`Unit Test of CodeCommand class to contain a program source code block (25)`:
-..  rubric:: Unit Test of CodeCommand class to contain a program source code block (25) =
+..  _`Unit Test of CodeCommand class to contain a program source code block (26)`:
+..  rubric:: Unit Test of CodeCommand class to contain a program source code block (26) =
 ..  parsed-literal::
     :class: code
 
@@ -1275,7 +1379,8 @@ It represents a block of code in a ``NamedChunk`` or ``OutputChunk``.
 
 ..  container:: small
 
-    ∎ *Unit Test of CodeCommand class to contain a program source code block (25)*
+    ∎ *Unit Test of CodeCommand class to contain a program source code block (26)*.
+    Used by     → `Unit Test of Command class hierarchy (23)`_.
 
 
 
@@ -1285,8 +1390,8 @@ but it seems easier to have a collection of ``@dataclass`` definitions a
 
 
 
-..  _`Unit Test of XrefCommand superclass for all cross-reference commands (26)`:
-..  rubric:: Unit Test of XrefCommand superclass for all cross-reference commands (26) =
+..  _`Unit Test of XrefCommand superclass for all cross-reference commands (27)`:
+..  rubric:: Unit Test of XrefCommand superclass for all cross-reference commands (27) =
 ..  parsed-literal::
     :class: code
 
@@ -1296,7 +1401,8 @@ but it seems easier to have a collection of ``@dataclass`` definitions a
 
 ..  container:: small
 
-    ∎ *Unit Test of XrefCommand superclass for all cross-reference commands (26)*
+    ∎ *Unit Test of XrefCommand superclass for all cross-reference commands (27)*.
+    Used by     → `Unit Test of Command class hierarchy (23)`_.
 
 
 
@@ -1304,8 +1410,8 @@ The ``FileXrefCommand`` command is expanded by a weaver to a list of ``@o``
 locations.
 
 
-..  _`Unit Test of FileXrefCommand class for an output file cross-reference (27)`:
-..  rubric:: Unit Test of FileXrefCommand class for an output file cross-reference (27) =
+..  _`Unit Test of FileXrefCommand class for an output file cross-reference (28)`:
+..  rubric:: Unit Test of FileXrefCommand class for an output file cross-reference (28) =
 ..  parsed-literal::
     :class: code
 
@@ -1333,7 +1439,8 @@ locations.
 
 ..  container:: small
 
-    ∎ *Unit Test of FileXrefCommand class for an output file cross-reference (27)*
+    ∎ *Unit Test of FileXrefCommand class for an output file cross-reference (28)*.
+    Used by     → `Unit Test of Command class hierarchy (23)`_.
 
 
 
@@ -1341,8 +1448,8 @@ The ``MacroXrefCommand`` command is expanded by a weaver to a list of all ``@d``
 locations.
 
 
-..  _`Unit Test of MacroXrefCommand class for a named chunk cross-reference (28)`:
-..  rubric:: Unit Test of MacroXrefCommand class for a named chunk cross-reference (28) =
+..  _`Unit Test of MacroXrefCommand class for a named chunk cross-reference (29)`:
+..  rubric:: Unit Test of MacroXrefCommand class for a named chunk cross-reference (29) =
 ..  parsed-literal::
     :class: code
 
@@ -1370,7 +1477,8 @@ locations.
 
 ..  container:: small
 
-    ∎ *Unit Test of MacroXrefCommand class for a named chunk cross-reference (28)*
+    ∎ *Unit Test of MacroXrefCommand class for a named chunk cross-reference (29)*.
+    Used by     → `Unit Test of Command class hierarchy (23)`_.
 
 
 
@@ -1378,8 +1486,8 @@ The ``UserIdXrefCommand`` command is expanded by a weaver to a list of all ``@|`
 names.
 
 
-..  _`Unit Test of UserIdXrefCommand class for a user identifier cross-reference (29)`:
-..  rubric:: Unit Test of UserIdXrefCommand class for a user identifier cross-reference (29) =
+..  _`Unit Test of UserIdXrefCommand class for a user identifier cross-reference (30)`:
+..  rubric:: Unit Test of UserIdXrefCommand class for a user identifier cross-reference (30) =
 ..  parsed-literal::
     :class: code
 
@@ -1407,7 +1515,8 @@ names.
 
 ..  container:: small
 
-    ∎ *Unit Test of UserIdXrefCommand class for a user identifier cross-reference (29)*
+    ∎ *Unit Test of UserIdXrefCommand class for a user identifier cross-reference (30)*.
+    Used by     → `Unit Test of Command class hierarchy (23)`_.
 
 
 
@@ -1430,8 +1539,8 @@ This is a single Chunk with a reference to another Chunk.
 The ``Web`` class ``__post_init__`` sets the references and referencedBy attributes of each Chunk.
 
 
-..  _`Unit Test of ReferenceCommand class for chunk references (30)`:
-..  rubric:: Unit Test of ReferenceCommand class for chunk references (30) =
+..  _`Unit Test of ReferenceCommand class for chunk references (31)`:
+..  rubric:: Unit Test of ReferenceCommand class for chunk references (31) =
 ..  parsed-literal::
     :class: code
 
@@ -1466,72 +1575,9 @@ The ``Web`` class ``__post_init__`` sets the references and referencedBy attribu
 
 ..  container:: small
 
-    ∎ *Unit Test of ReferenceCommand class for chunk references (30)*
+    ∎ *Unit Test of ReferenceCommand class for chunk references (31)*.
+    Used by     → `Unit Test of Command class hierarchy (23)`_.
 
-
-
-Reference Tests
-----------------
-
-The Reference class implements one of two search strategies for 
-cross-references.  Either simple (or "immediate") or transitive.
-
-The superclass is little more than an interface definition,
-it's completely abstract.  The two subclasses differ in 
-a single method.
-
-The test fixture is this
-
-..  parsed-literal::
-
-    @d main @{ @< parent @> @}
-    
-    @d parent @{ @< sub @> @}
-    
-    @d sub @{ something @}
-    
-The ``sub`` item is used by ``parent`` which is used by ``main``.
-
-The simple reference is ``sub`` referenced by ``parent``.
-
-The transitive references are ``sub`` referenced by ``parent`` which is referenced by ``main``.
-
-
-
-..  _`Unit Test of Reference class hierarchy (31)`:
-..  rubric:: Unit Test of Reference class hierarchy (31) =
-..  parsed-literal::
-    :class: code
-
-     
-    class TestReference(unittest.TestCase):
-        def setUp(self) -> None:
-            self.web = MockWeb()
-            self.main = MockChunk("Main", 1, ("sample.w", 11))
-            self.main.referencedBy = None
-            self.parent = MockChunk("Parent", 2, ("sample.w", 11))
-            self.parent.referencedBy = self.main
-            self.chunk = MockChunk("Sub", 3, ("sample.w", 33))
-            self.chunk.referencedBy = self.parent
-            
-        def test\_simple\_should\_find\_one(self) -> None:
-            self.reference = pyweb.SimpleReference()
-            theList = self.reference.chunkReferencedBy(self.chunk)
-            self.assertEqual(1, len(theList))
-            self.assertEqual(self.parent, theList[0])
-            
-        def test\_transitive\_should\_find\_all(self) -> None:
-            self.reference = pyweb.TransitiveReference()
-            theList = self.reference.chunkReferencedBy(self.chunk)
-            self.assertEqual(2, len(theList))
-            self.assertEqual(self.parent, theList[0])
-            self.assertEqual(self.main, theList[1])
-
-..
-
-..  container:: small
-
-    ∎ *Unit Test of Reference class hierarchy (31)*
 
 
 
@@ -1604,7 +1650,8 @@ because some state is recorded in the Chunk instances.
 
 ..  container:: small
 
-    ∎ *Unit Test of Web class (32)*
+    ∎ *Unit Test of Web class (32)*.
+    Used by     → `test_unit.py (1)`_.
 
 
 
@@ -1637,7 +1684,8 @@ are evaluated immediately, and don't create commands.
 
 ..  container:: small
 
-    ∎ *Unit Test of WebReader class (33)*
+    ∎ *Unit Test of WebReader class (33)*.
+    Used by     → `test_unit.py (1)`_.
 
 
 
@@ -1665,7 +1713,8 @@ Some lower-level units: specifically the tokenizer and the option parser.
 
 ..  container:: small
 
-    ∎ *Unit Test of WebReader class (34)*
+    ∎ *Unit Test of WebReader class (34)*.
+    Used by     → `test_unit.py (1)`_.
 
 
 
@@ -1711,7 +1760,8 @@ Some lower-level units: specifically the tokenizer and the option parser.
 
 ..  container:: small
 
-    ∎ *Unit Test of WebReader class (35)*
+    ∎ *Unit Test of WebReader class (35)*.
+    Used by     → `test_unit.py (1)`_.
 
 
 
@@ -1747,7 +1797,8 @@ Need to test all the available variables: ``os.path``, ``os.getcwd``, ``os.name`
 
 ..  container:: small
 
-    ∎ *Unit Test of WebReader class (36)*
+    ∎ *Unit Test of WebReader class (36)*.
+    Used by     → `test_unit.py (1)`_.
 
 
 
@@ -1773,7 +1824,8 @@ load, tangle, weave.
 
 ..  container:: small
 
-    ∎ *Unit Test of Action class hierarchy (37)*
+    ∎ *Unit Test of Action class hierarchy (37)*.
+    Used by     → `test_unit.py (1)`_.
 
 
 
@@ -1803,7 +1855,8 @@ load, tangle, weave.
 
 ..  container:: small
 
-    ∎ *Unit test of Action Sequence class (38)*
+    ∎ *Unit test of Action Sequence class (38)*.
+    Used by     → `Unit Test of Action class hierarchy (37)`_.
 
 
 
@@ -1821,7 +1874,7 @@ load, tangle, weave.
             self.weaver = MockWeaver()
             self.options = argparse.Namespace( 
                 theWeaver=self.weaver,
-                reference\_style=pyweb.SimpleReference(),
+                # reference\_style=pyweb.SimpleReference(),  # Remove this
                 output=Path.cwd(),
                 web=self.web,
                 weaver='rst',
@@ -1834,7 +1887,8 @@ load, tangle, weave.
 
 ..  container:: small
 
-    ∎ *Unit test of WeaverAction class (39)*
+    ∎ *Unit test of WeaverAction class (39)*.
+    Used by     → `Unit Test of Action class hierarchy (37)`_.
 
 
 
@@ -1864,7 +1918,8 @@ load, tangle, weave.
 
 ..  container:: small
 
-    ∎ *Unit test of TangleAction class (40)*
+    ∎ *Unit test of TangleAction class (40)*.
+    Used by     → `Unit Test of Action class hierarchy (37)`_.
 
 
 
@@ -1911,7 +1966,8 @@ The mocked ``WebReader`` must provide an ``errors`` property to the ``LoadAction
 
 ..  container:: small
 
-    ∎ *Unit test of LoadAction class (41)*
+    ∎ *Unit test of LoadAction class (41)*.
+    Used by     → `Unit Test of Action class hierarchy (37)`_.
 
 
 
@@ -1935,7 +1991,8 @@ It's easier to simply run the various use cases.
 
 ..  container:: small
 
-    ∎ *Unit Test of Application class (42)*
+    ∎ *Unit Test of Application class (42)*.
+    Used by     → `test_unit.py (1)`_.
 
 
 
@@ -1973,7 +2030,8 @@ The boilerplate code for unit testing is the following.
 
 ..  container:: small
 
-    ∎ *Unit Test overheads: imports, etc. (43)*
+    ∎ *Unit Test overheads: imports, etc. (43)*.
+    Used by     → `test_unit.py (1)`_.
 
 
 
@@ -1994,7 +2052,8 @@ of ``unittest.TestCase``. This is monkeypatch feature that seems useful.
 
 ..  container:: small
 
-    ∎ *Unit Test overheads: imports, etc. (44)*
+    ∎ *Unit Test overheads: imports, etc. (44)*.
+    Used by     → `test_unit.py (1)`_.
 
 
 
@@ -2013,7 +2072,8 @@ of ``unittest.TestCase``. This is monkeypatch feature that seems useful.
 
 ..  container:: small
 
-    ∎ *Unit Test main (45)*
+    ∎ *Unit Test main (45)*.
+    Used by     → `test_unit.py (1)`_.
 
 
 
@@ -2060,7 +2120,8 @@ We need to be able to load a web from one or more source files.
 
 ..  container:: small
 
-    ∎ *test_loader.py (46)*
+    ∎ *test_loader.py (46)*.
+    
 
 
 
@@ -2089,7 +2150,8 @@ input object to the ``WebReader`` instance.
 
 ..  container:: small
 
-    ∎ *Load Test superclass to refactor common setup (47)*
+    ∎ *Load Test superclass to refactor common setup (47)*.
+    Used by     → `test_loader.py (46)`_.
 
 
 
@@ -2113,7 +2175,8 @@ find an expected next token.
 
 ..  container:: small
 
-    ∎ *Load Test overheads: imports, etc. (48)*
+    ∎ *Load Test overheads: imports, etc. (48)*.
+    Used by     → `test_loader.py (46)`_.
 
 
 
@@ -2145,7 +2208,8 @@ find an expected next token.
 
 ..  container:: small
 
-    ∎ *Load Test error handling with a few common syntax errors (49)*
+    ∎ *Load Test error handling with a few common syntax errors (49)*.
+    Used by     → `test_loader.py (46)`_.
 
 
 
@@ -2171,7 +2235,8 @@ find an expected next token.
 
 ..  container:: small
 
-    ∎ *Sample Document 1 with correct and incorrect syntax (50)*
+    ∎ *Sample Document 1 with correct and incorrect syntax (50)*.
+    Used by     → `Load Test error handling with a few common syntax errors (49)`_.
 
 
 
@@ -2217,7 +2282,8 @@ since it's a nested instance of the tokenizer.
 
 ..  container:: small
 
-    ∎ *Load Test include processing with syntax errors (51)*
+    ∎ *Load Test include processing with syntax errors (51)*.
+    Used by     → `test_loader.py (46)`_.
 
 
 
@@ -2247,7 +2313,8 @@ be given to the included document by ``setUp``.
 
 ..  container:: small
 
-    ∎ *Sample Document 8 and the file it includes (52)*
+    ∎ *Sample Document 8 and the file it includes (52)*.
+    Used by     → `Load Test include processing with syntax errors (51)`_.
 
 
 
@@ -2276,7 +2343,8 @@ be given to the included document by ``setUp``.
 
 ..  container:: small
 
-    ∎ *Load Test overheads: imports, etc. (53)*
+    ∎ *Load Test overheads: imports, etc. (53)*.
+    Used by     → `test_loader.py (46)`_.
 
 
 
@@ -2297,7 +2365,8 @@ A main program that configures logging and then runs the test.
 
 ..  container:: small
 
-    ∎ *Load Test main program (54)*
+    ∎ *Load Test main program (54)*.
+    Used by     → `test_loader.py (46)`_.
 
 
 
@@ -2326,7 +2395,8 @@ We need to be able to tangle a web.
 
 ..  container:: small
 
-    ∎ *test_tangler.py (55)*
+    ∎ *test_tangler.py (55)*.
+    
 
 
 
@@ -2372,7 +2442,8 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Tangle Test superclass to refactor common setup (56)*
+    ∎ *Tangle Test superclass to refactor common setup (56)*.
+    Used by     → `test_tangler.py (55)`_.
 
 
 
@@ -2395,7 +2466,8 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Tangle Test semantic error 2 (57)*
+    ∎ *Tangle Test semantic error 2 (57)*.
+    Used by     → `test_tangler.py (55)`_.
 
 
 
@@ -2419,7 +2491,8 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Sample Document 2 (58)*
+    ∎ *Sample Document 2 (58)*.
+    Used by     → `Tangle Test semantic error 2 (57)`_.
 
 
 
@@ -2442,7 +2515,8 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Tangle Test semantic error 3 (59)*
+    ∎ *Tangle Test semantic error 3 (59)*.
+    Used by     → `test_tangler.py (55)`_.
 
 
 
@@ -2467,7 +2541,8 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Sample Document 3 (60)*
+    ∎ *Sample Document 3 (60)*.
+    Used by     → `Tangle Test semantic error 3 (59)`_.
 
 
 
@@ -2492,7 +2567,8 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Tangle Test semantic error 4 (61)*
+    ∎ *Tangle Test semantic error 4 (61)*.
+    Used by     → `test_tangler.py (55)`_.
 
 
 
@@ -2517,7 +2593,8 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Sample Document 4 (62)*
+    ∎ *Sample Document 4 (62)*.
+    Used by     → `Tangle Test semantic error 4 (61)`_.
 
 
 
@@ -2540,7 +2617,8 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Tangle Test semantic error 5 (63)*
+    ∎ *Tangle Test semantic error 5 (63)*.
+    Used by     → `test_tangler.py (55)`_.
 
 
 
@@ -2567,7 +2645,8 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Sample Document 5 (64)*
+    ∎ *Sample Document 5 (64)*.
+    Used by     → `Tangle Test semantic error 5 (63)`_.
 
 
 
@@ -2596,7 +2675,8 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Tangle Test semantic error 6 (65)*
+    ∎ *Tangle Test semantic error 6 (65)*.
+    Used by     → `test_tangler.py (55)`_.
 
 
 
@@ -2623,7 +2703,8 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Sample Document 6 (66)*
+    ∎ *Sample Document 6 (66)*.
+    Used by     → `Tangle Test semantic error 6 (65)`_.
 
 
 
@@ -2656,7 +2737,8 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Tangle Test include error 7 (67)*
+    ∎ *Tangle Test include error 7 (67)*.
+    Used by     → `test_tangler.py (55)`_.
 
 
 
@@ -2681,7 +2763,8 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Sample Document 7 and it's included file (68)*
+    ∎ *Sample Document 7 and it's included file (68)*.
+    Used by     → `Tangle Test include error 7 (67)`_.
 
 
 
@@ -2706,7 +2789,8 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Tangle Test overheads: imports, etc. (69)*
+    ∎ *Tangle Test overheads: imports, etc. (69)*.
+    Used by     → `test_tangler.py (55)`_.
 
 
 
@@ -2726,7 +2810,8 @@ exceptions raised.
 
 ..  container:: small
 
-    ∎ *Tangle Test main program (70)*
+    ∎ *Tangle Test main program (70)*.
+    Used by     → `test_tangler.py (55)`_.
 
 
 
@@ -2752,7 +2837,8 @@ We need to be able to weave a document from one or more source files.
 
 ..  container:: small
 
-    ∎ *test_weaver.py (71)*
+    ∎ *test_weaver.py (71)*.
+    
 
 
 
@@ -2789,7 +2875,8 @@ Weaving test cases have a common setup shown in this superclass.
 
 ..  container:: small
 
-    ∎ *Weave Test superclass to refactor common setup (72)*
+    ∎ *Weave Test superclass to refactor common setup (72)*.
+    Used by     → `test_weaver.py (71)`_.
 
 
 
@@ -2816,7 +2903,6 @@ Weaving test cases have a common setup shown in this superclass.
             self.web.web\_path = self.file\_path
             doc = pyweb.Weaver( )
             doc.set\_markup("html")
-            doc.reference\_style = pyweb.SimpleReference() 
             doc.emit(self.web)
             actual = self.file\_path.with\_suffix(".html").read\_text()
             self.maxDiff = None
@@ -2828,7 +2914,6 @@ Weaving test cases have a common setup shown in this superclass.
             self.web.web\_path = self.file\_path
             doc = pyweb.Weaver( )
             doc.set\_markup("debug")
-            doc.reference\_style = pyweb.SimpleReference() 
             doc.emit(self.web)
             actual = self.file\_path.with\_suffix(".debug").read\_text()
             self.maxDiff = None
@@ -2838,7 +2923,8 @@ Weaving test cases have a common setup shown in this superclass.
 
 ..  container:: small
 
-    ∎ *Weave Test references and definitions (73)*
+    ∎ *Weave Test references and definitions (73)*.
+    Used by     → `test_weaver.py (71)`_.
 
 
 
@@ -2875,7 +2961,8 @@ Weaving test cases have a common setup shown in this superclass.
 
 ..  container:: small
 
-    ∎ *Sample Document 0 (74)*
+    ∎ *Sample Document 0 (74)*.
+    Used by     → `Weave Test references and definitions (73)`_.
 
 
 
@@ -2909,6 +2996,7 @@ Weaving test cases have a common setup shown in this superclass.
     
     </code></pre>
     <p>&#8718; <em>some code (1)</em>.
+    
     </p> 
     
     </body>
@@ -2919,7 +3007,8 @@ Weaving test cases have a common setup shown in this superclass.
 
 ..  container:: small
 
-    ∎ *Expected Output 0 (75)*
+    ∎ *Expected Output 0 (75)*.
+    Used by     → `Weave Test references and definitions (73)`_.
 
 
 
@@ -2944,7 +3033,8 @@ Weaving test cases have a common setup shown in this superclass.
 
 ..  container:: small
 
-    ∎ *Expected Output 0 (76)*
+    ∎ *Expected Output 0 (76)*.
+    Used by     → `Weave Test references and definitions (73)`_.
 
 
 
@@ -2974,7 +3064,6 @@ to properly provide a consistent output from ``time.asctime()``.
             self.web.web\_path = self.file\_path
             doc = pyweb.Weaver( )
             doc.set\_markup("html")
-            doc.reference\_style = pyweb.SimpleReference() 
             doc.emit(self.web)
             actual = self.file\_path.with\_suffix(".html").read\_text().splitlines()
             #print(actual)
@@ -2988,7 +3077,8 @@ to properly provide a consistent output from ``time.asctime()``.
 
 ..  container:: small
 
-    ∎ *Weave Test evaluation of expressions (77)*
+    ∎ *Weave Test evaluation of expressions (77)*.
+    Used by     → `test_weaver.py (71)`_.
 
 
 
@@ -3010,7 +3100,8 @@ to properly provide a consistent output from ``time.asctime()``.
 
 ..  container:: small
 
-    ∎ *Sample Document 9 (78)*
+    ∎ *Sample Document 9 (78)*.
+    Used by     → `Weave Test evaluation of expressions (77)`_.
 
 
 
@@ -3038,7 +3129,8 @@ to properly provide a consistent output from ``time.asctime()``.
 
 ..  container:: small
 
-    ∎ *Weave Test overheads: imports, etc. (79)*
+    ∎ *Weave Test overheads: imports, etc. (79)*.
+    Used by     → `test_weaver.py (71)`_.
 
 
 
@@ -3057,7 +3149,8 @@ to properly provide a consistent output from ``time.asctime()``.
 
 ..  container:: small
 
-    ∎ *Weave Test main program (80)*
+    ∎ *Weave Test main program (80)*.
+    Used by     → `test_weaver.py (71)`_.
 
 
 
@@ -3100,7 +3193,8 @@ This gives us the following outline for the script testing.
 
 ..  container:: small
 
-    ∎ *test_scripts.py (81)*
+    ∎ *test_scripts.py (81)*.
+    
 
 
 
@@ -3155,7 +3249,8 @@ This is a web ``.w`` file to create a document and tangle a small file.
 
 ..  container:: small
 
-    ∎ *Sample web file to test with (82)*
+    ∎ *Sample web file to test with (82)*.
+    Used by     → `test_scripts.py (81)`_.
 
 
 
@@ -3193,7 +3288,8 @@ The sample ``test_sample.w`` file is created and removed after the test.
 
 ..  container:: small
 
-    ∎ *Superclass for test cases (83)*
+    ∎ *Superclass for test cases (83)*.
+    Used by     → `test_scripts.py (81)`_.
 
 
 
@@ -3294,7 +3390,8 @@ This could be altered to check a few features of the weave file rather than comp
 
 ..  container:: small
 
-    ∎ *Test of weave.py (84)*
+    ∎ *Test of weave.py (84)*.
+    Used by     → `test_scripts.py (81)`_.
 
 
 
@@ -3340,7 +3437,8 @@ We check the tangle output to be sure it's what we expected.
 
 ..  container:: small
 
-    ∎ *Test of tangle.py (85)*
+    ∎ *Test of tangle.py (85)*.
+    Used by     → `test_scripts.py (81)`_.
 
 
 
@@ -3370,7 +3468,8 @@ here in case we want to run these tests in isolation.
 
 ..  container:: small
 
-    ∎ *Script Test overheads: imports, etc. (86)*
+    ∎ *Script Test overheads: imports, etc. (86)*.
+    Used by     → `test_scripts.py (81)`_.
 
 
 
@@ -3389,7 +3488,8 @@ here in case we want to run these tests in isolation.
 
 ..  container:: small
 
-    ∎ *Scripts Test main (87)*
+    ∎ *Scripts Test main (87)*.
+    Used by     → `test_scripts.py (81)`_.
 
 
 
@@ -3424,7 +3524,8 @@ These are clones of what's in the ``src`` directory.
 
 ..  container:: small
 
-    ∎ *docutils.conf (88)*
+    ∎ *docutils.conf (88)*.
+    
 
 
 
@@ -3460,7 +3561,8 @@ tweaks to the default CSS.
 
 ..  container:: small
 
-    ∎ *page-layout.css (89)*
+    ∎ *page-layout.css (89)*.
+    
 
 
 
@@ -3588,6 +3690,9 @@ Macros
 :Unit Test of Application class:
     → `Unit Test of Application class (42)`_
 
+:Unit Test of Chunk References:
+    → `Unit Test of Chunk References (22)`_
+
 :Unit Test of Chunk class hierarchy:
     → `Unit Test of Chunk class hierarchy (10)`_
 
@@ -3604,13 +3709,13 @@ Macros
     → `Unit Test of Chunk superclass (11)`_, → `Unit Test of Chunk superclass (12)`_, → `Unit Test of Chunk superclass (13)`_, → `Unit Test of Chunk superclass (14)`_
 
 :Unit Test of CodeCommand class to contain a program source code block:
-    → `Unit Test of CodeCommand class to contain a program source code block (25)`_
+    → `Unit Test of CodeCommand class to contain a program source code block (26)`_
 
 :Unit Test of Command class hierarchy:
-    → `Unit Test of Command class hierarchy (22)`_
+    → `Unit Test of Command class hierarchy (23)`_
 
 :Unit Test of Command superclass:
-    → `Unit Test of Command superclass (23)`_
+    → `Unit Test of Command superclass (24)`_
 
 :Unit Test of Emitter Superclass:
     → `Unit Test of Emitter Superclass (3)`_
@@ -3619,7 +3724,7 @@ Macros
     → `Unit Test of Emitter class hierarchy (2)`_
 
 :Unit Test of FileXrefCommand class for an output file cross-reference:
-    → `Unit Test of FileXrefCommand class for an output file cross-reference (27)`_
+    → `Unit Test of FileXrefCommand class for an output file cross-reference (28)`_
 
 :Unit Test of HTML subclass of Emitter:
     → `Unit Test of HTML subclass of Emitter (7)`_
@@ -3628,7 +3733,7 @@ Macros
     → `Unit Test of LaTeX subclass of Emitter (6)`_
 
 :Unit Test of MacroXrefCommand class for a named chunk cross-reference:
-    → `Unit Test of MacroXrefCommand class for a named chunk cross-reference (28)`_
+    → `Unit Test of MacroXrefCommand class for a named chunk cross-reference (29)`_
 
 :Unit Test of NamedChunk subclass:
     → `Unit Test of NamedChunk subclass (18)`_
@@ -3642,11 +3747,8 @@ Macros
 :Unit Test of OutputChunk subclass:
     → `Unit Test of OutputChunk subclass (20)`_
 
-:Unit Test of Reference class hierarchy:
-    → `Unit Test of Reference class hierarchy (31)`_
-
 :Unit Test of ReferenceCommand class for chunk references:
-    → `Unit Test of ReferenceCommand class for chunk references (30)`_
+    → `Unit Test of ReferenceCommand class for chunk references (31)`_
 
 :Unit Test of Tangler subclass of Emitter:
     → `Unit Test of Tangler subclass of Emitter (8)`_
@@ -3655,10 +3757,10 @@ Macros
     → `Unit Test of TanglerMake subclass of Emitter (9)`_
 
 :Unit Test of TextCommand class to contain a document text block:
-    → `Unit Test of TextCommand class to contain a document text block (24)`_
+    → `Unit Test of TextCommand class to contain a document text block (25)`_
 
 :Unit Test of UserIdXrefCommand class for a user identifier cross-reference:
-    → `Unit Test of UserIdXrefCommand class for a user identifier cross-reference (29)`_
+    → `Unit Test of UserIdXrefCommand class for a user identifier cross-reference (30)`_
 
 :Unit Test of Weaver subclass of Emitter:
     → `Unit Test of Weaver subclass of Emitter (5)`_
@@ -3670,7 +3772,7 @@ Macros
     → `Unit Test of WebReader class (33)`_, → `Unit Test of WebReader class (34)`_, → `Unit Test of WebReader class (35)`_, → `Unit Test of WebReader class (36)`_
 
 :Unit Test of XrefCommand superclass for all cross-reference commands:
-    → `Unit Test of XrefCommand superclass for all cross-reference commands (26)`_
+    → `Unit Test of XrefCommand superclass for all cross-reference commands (27)`_
 
 :Unit Test overheads: imports, etc.:
     → `Unit Test overheads: imports, etc. (43)`_, → `Unit Test overheads: imports, etc. (44)`_
@@ -3709,7 +3811,7 @@ Macros
 
 ..	class:: small
 
-	Created by src/pyweb.py at Mon Jul 18 09:45:50 2022.
+	Created by src/pyweb.py at Tue Jul 19 13:20:10 2022.
 
     Source tests/pyweb_test.w modified Sat Jul  2 09:39:56 2022.
 

@@ -97,8 +97,8 @@ This gives us the following outline for unit testing.
 @{@<Unit Test overheads: imports, etc.@>
 @<Unit Test of Emitter class hierarchy@>
 @<Unit Test of Chunk class hierarchy@>
+@<Unit Test of Chunk References@>
 @<Unit Test of Command class hierarchy@>
-@<Unit Test of Reference class hierarchy@>
 @<Unit Test of Web class@>
 @<Unit Test of WebReader class@>
 @<Unit Test of Action class hierarchy@>
@@ -199,86 +199,89 @@ def mock_web() -> pyweb.Web:
     mock_ref = Mock(typeid=pyweb.TypeId(), full_name="named chunk", seq=42)
     mock_ref.typeid.__set_name__(pyweb.ReferenceCommand, "typeid")
     mock_ref.name = "named..."
+    
+    c_0 = Mock(
+        name="mock Chunk",
+        type_is=Mock(side_effect = lambda n: n == "Chunk"),
+        commands=[
+            Mock(
+                typeid=pyweb.TypeId().__set_name__(pyweb.TextCommand, "typeid"),
+                text="text with |char| untouched.",
+            ),
+            Mock(
+                typeid=pyweb.TypeId().__set_name__(pyweb.TextCommand, "typeid"),
+                text="\n",
+            ),
+            Mock(
+                typeid=pyweb.TypeId().__set_name__(pyweb.FileXrefCommand, "typeid"),
+                location=1,
+                files=[mock_file],
+            ),
+            Mock(
+                typeid=pyweb.TypeId().__set_name__(pyweb.TextCommand, "typeid"),
+                text="\n",
+            ),
+            Mock(
+                typeid=pyweb.TypeId().__set_name__(pyweb.MacroXrefCommand, "typeid"),
+                location=2,
+                macros=[mock_output],
+            ),
+            Mock(
+                typeid=pyweb.TypeId().__set_name__(pyweb.TextCommand, "typeid"),
+                text="\n",
+            ),
+            Mock(
+                typeid=pyweb.TypeId().__set_name__(pyweb.UserIdXrefCommand, "typeid"),
+                location=3,
+                userids=[mock_uid_1, mock_uid_2]
+            ),
+        ],
+        referencedBy=None,
+    )
+    c_1 = Mock(
+        name="mock OutputChunk",
+        type_is=Mock(side_effect = lambda n: n == "OutputChunk"),
+        seq=42,
+        full_name="sample.out",
+        commands=[
+            Mock(
+                typeid=pyweb.TypeId().__set_name__(pyweb.CodeCommand, "typeid"),
+                text="|char| `code` *em* _em_",
+                tangle=Mock(side_effect=tangle_method),
+            ),
+            Mock(
+                typeid=pyweb.TypeId().__set_name__(pyweb.CodeCommand, "typeid"),
+                text="\n",
+                tangle=Mock(),
+            ),
+            mock_ref,
+        ],
+        def_names=["some_name"],
+        referencedBy=None,
+    )
+    c_2 = Mock(
+        name="mock NamedChunk",
+        type_is=Mock(side_effect = lambda n: n == "NamedChunk"),
+        seq=42,
+        full_name="named chunk",
+        commands=[
+            Mock(
+                typeid=pyweb.TypeId().__set_name__(pyweb.CodeCommand, "typeid"),
+                text="|char| `code` *em* _em_",
+            ),
+            Mock(
+                typeid=pyweb.TypeId().__set_name__(pyweb.CodeCommand, "typeid"),
+                text="\n",
+                tangle=Mock(),
+            ),
+        ],
+        def_names=["another_name"],
+        referencedBy=c_1
+    )
     web = Mock(
         name="mock web",
         web_path=Path("TestWeaver.w"),
-        chunks=[
-            Mock(
-                name="mock Chunk",
-                type_is=Mock(side_effect = lambda n: n == "Chunk"),
-                commands=[
-                    Mock(
-                        typeid=pyweb.TypeId().__set_name__(pyweb.TextCommand, "typeid"),
-                        text="text with |char| untouched.",
-                    ),
-                    Mock(
-                        typeid=pyweb.TypeId().__set_name__(pyweb.TextCommand, "typeid"),
-                        text="\n",
-                    ),
-                    Mock(
-                        typeid=pyweb.TypeId().__set_name__(pyweb.FileXrefCommand, "typeid"),
-                        location=1,
-                        files=[mock_file],
-                    ),
-                    Mock(
-                        typeid=pyweb.TypeId().__set_name__(pyweb.TextCommand, "typeid"),
-                        text="\n",
-                    ),
-                    Mock(
-                        typeid=pyweb.TypeId().__set_name__(pyweb.MacroXrefCommand, "typeid"),
-                        location=2,
-                        macros=[mock_output],
-                    ),
-                    Mock(
-                        typeid=pyweb.TypeId().__set_name__(pyweb.TextCommand, "typeid"),
-                        text="\n",
-                    ),
-                    Mock(
-                        typeid=pyweb.TypeId().__set_name__(pyweb.UserIdXrefCommand, "typeid"),
-                        location=3,
-                        userids=[mock_uid_1, mock_uid_2]
-                    ),
-                ],
-            ),
-            Mock(
-                name="mock OutputChunk",
-                type_is=Mock(side_effect = lambda n: n == "OutputChunk"),
-                seq=42,
-                full_name="sample.out",
-                commands=[
-                    Mock(
-                        typeid=pyweb.TypeId().__set_name__(pyweb.CodeCommand, "typeid"),
-                        text="|char| `code` *em* _em_",
-                        tangle=Mock(side_effect=tangle_method),
-                    ),
-                    Mock(
-                        typeid=pyweb.TypeId().__set_name__(pyweb.CodeCommand, "typeid"),
-                        text="\n",
-                        tangle=Mock(),
-                    ),
-                    mock_ref,
-                ],
-                def_names = ["some_name"],
-            ),
-            Mock(
-                name="mock NamedChunk",
-                type_is=Mock(side_effect = lambda n: n == "NamedChunk"),
-                seq=42,
-                full_name="named chunk",
-                commands=[
-                    Mock(
-                        typeid=pyweb.TypeId().__set_name__(pyweb.CodeCommand, "typeid"),
-                        text="|char| `code` *em* _em_",
-                    ),
-                    Mock(
-                        typeid=pyweb.TypeId().__set_name__(pyweb.CodeCommand, "typeid"),
-                        text="\n",
-                        tangle=Mock(),
-                    ),
-                ],
-                def_names = ["another_name"]
-            ),
-        ],
+        chunks=[c_0, c_1, c_2],
     )
     web.chunks[1].name="sample.out"
     web.chunks[2].name="named..."
@@ -301,9 +304,10 @@ class TestWeaver(unittest.TestCase):
         self.filepath = Path.cwd()
         self.weaver = pyweb.Weaver(self.filepath)
         self.weaver.set_markup("rst")
-        self.weaver.reference_style = pyweb.SimpleReference()
+        # self.weaver.reference_style = pyweb.SimpleReference()  # Remove this
         self.output_path = self.filepath / "TestWeaver.rst"
         self.web = mock_web()
+        self.maxDiff = None
         
     def tearDown(self) -> None:
         try:
@@ -340,7 +344,8 @@ class TestWeaver(unittest.TestCase):
             '\n'
             '..  container:: small\n'
             '\n'
-            '    ∎ *sample.out (42)*\n'
+            '    ∎ *sample.out (42)*.\n'
+            '    \n'
             '\n'
             '\n'
             '..  _`named chunk (42)`:\n'
@@ -355,7 +360,8 @@ class TestWeaver(unittest.TestCase):
             '\n'
             '..  container:: small\n'
             '\n'
-            '    ∎ *named chunk (42)*\n'
+            '    ∎ *named chunk (42)*.\n'
+            '    Used by     → `sample.out (42)`_.\n'
             '\n')
         self.assertEqual(expected, result)
 @}
@@ -372,7 +378,7 @@ class TestLaTeX(unittest.TestCase):
     def setUp(self) -> None:
         self.weaver = pyweb.Weaver()
         self.weaver.set_markup("tex")
-        self.weaver.reference_style = pyweb.SimpleReference() 
+        # self.weaver.reference_style = pyweb.SimpleReference()  # Remove this 
         self.filepath = Path("testweaver") 
         self.aFileChunk = MockChunk("File", 123, ("sample.w", 456))
         self.aFileChunk.referencedBy = [ ]
@@ -413,7 +419,7 @@ class TestHTML(unittest.TestCase):
         self.maxDiff = None
         self.weaver = pyweb.Weaver( )
         self.weaver.set_markup("html")
-        self.weaver.reference_style = pyweb.SimpleReference() 
+        # self.weaver.reference_style = pyweb.SimpleReference()  # Remove this 
         self.filepath = Path("testweaver") 
         self.aFileChunk = MockChunk("File", 123, ("sample.w", 456))
         self.aFileChunk.referencedBy = []
@@ -439,10 +445,11 @@ class TestHTML(unittest.TestCase):
             "<!--line number ('sample.w', 789)-->\n"
             '<p><em>Chunk (314)</em> =</p>\n'
             '<pre><code>',
-             '\n'
-             '</code></pre>\n'
-             '<p>&#8718; <em>Chunk (314)</em>.\n'
-             '</p> \n'
+            '\n'
+            '</code></pre>\n'
+            '<p>&#8718; <em>Chunk (314)</em>.\n'
+            'Used by &rarr;<a href="#pyweb_"><em> ()</em></a>.\n'
+            '</p> \n'
         ]
         self.assertEqual(expected, result)
 
@@ -718,6 +725,7 @@ def test_properties(self) -> None:
     self.assertIsNone(self.theChunk.path)
     self.assertTrue(self.theChunk.type_is('Chunk'))
     self.assertFalse(self.theChunk.type_is('OutputChunk'))
+    self.assertIsNone(self.theChunk.referencedBy)
 @}
 
 The ``NamedChunk`` is created by a ``@@d`` command.
@@ -745,6 +753,7 @@ class TestNamedChunk(unittest.TestCase):
         self.assertTrue(self.theChunk.type_is("NamedChunk"))
         self.assertFalse(self.theChunk.type_is("OutputChunk"))
         self.assertFalse(self.theChunk.type_is("Chunk"))
+        self.assertIsNone(self.theChunk.referencedBy)
 @}
 
 @d Unit Test of NamedChunk_Noindent subclass...
@@ -768,6 +777,7 @@ class TestNamedChunk_Noindent(unittest.TestCase):
         self.assertIsNone(self.theChunk.path)
         self.assertTrue(self.theChunk.type_is("NamedChunk"))
         self.assertFalse(self.theChunk.type_is("Chunk"))
+        self.assertIsNone(self.theChunk.referencedBy)
 @}
 
 
@@ -798,7 +808,7 @@ class TestOutputChunk(unittest.TestCase):
         self.assertEqual(self.theChunk.path, Path("filename.out"))
         self.assertTrue(self.theChunk.type_is("OutputChunk"))
         self.assertFalse(self.theChunk.type_is("Chunk"))
-
+        self.assertIsNone(self.theChunk.referencedBy)
 @}
 
 The ``NamedDocumentChunk`` is a way to define substitutable text, similar to
@@ -825,6 +835,62 @@ class TestNamedDocumentChunk(unittest.TestCase):
         self.assertIsNone(self.theChunk.path)
         self.assertTrue(self.theChunk.type_is("NamedDocumentChunk"))
         self.assertFalse(self.theChunk.type_is("OutputChunk"))
+        self.assertIsNone(self.theChunk.referencedBy)
+@}
+
+Chunk References Tests
+----------------------
+
+A Chunk's "referencedBy" attribute is set by the ``Web`` during
+the initialization processing.
+
+The test fixture is this
+
+..  parsed-literal::
+
+    @@d main @@{ @@< parent @@> @@}
+    
+    @@d parent @@{ @@< sub @@> @@}
+    
+    @@d sub @@{ something @@}
+    
+The ``sub`` item is referenced by ``parent`` which is referenced by ``main``.
+
+The simple reference is ``sub`` referenced by ``parent``.
+
+The transitive references are ``sub`` referenced by ``parent`` which is referenced by ``main``.
+
+@d Unit Test of Chunk References... @{ 
+class TestReferences(unittest.TestCase):
+    def setUp(self) -> None:
+        self.web = MockWeb()
+        self.main = pyweb.NamedChunk("Main", 1)
+        self.main.referencedBy = None
+        self.main.web = Mock(return_value=self.web)
+        self.parent = pyweb.NamedChunk("Parent", 2)
+        self.parent.referencedBy = self.main
+        self.parent.web = Mock(return_value=self.web)
+        self.chunk = pyweb.NamedChunk("Sub", 3)
+        self.chunk.referencedBy = self.parent
+        self.chunk.web = Mock(return_value=self.web)
+
+    def test_simple(self) -> None:
+        self.assertEqual(self.chunk.referencedBy, self.parent)
+        
+    def test_transitive_sub_sub(self) -> None:
+        theList = self.chunk.transitive_referencedBy
+        self.assertEqual(2, len(theList))
+        self.assertEqual(self.parent, theList[0])
+        self.assertEqual(self.main, theList[1])
+
+    def test_transitive_sub(self) -> None:
+        theList = self.parent.transitive_referencedBy
+        self.assertEqual(1, len(theList))
+        self.assertEqual(self.main, theList[0])
+
+    def test_transitive_top(self) -> None:
+        theList = self.main.transitive_referencedBy
+        self.assertEqual(0, len(theList))
 @}
 
 Command Tests
@@ -1012,57 +1078,6 @@ class TestReferenceCommand(unittest.TestCase):
         self.referenced_chunk.commands[0].tangle.assert_called_once_with(tnglr, sentinel.TARGET)
 @}
 
-Reference Tests
-----------------
-
-The Reference class implements one of two search strategies for 
-cross-references.  Either simple (or "immediate") or transitive.
-
-The superclass is little more than an interface definition,
-it's completely abstract.  The two subclasses differ in 
-a single method.
-
-The test fixture is this
-
-..  parsed-literal::
-
-    @@d main @@{ @@< parent @@> @@}
-    
-    @@d parent @@{ @@< sub @@> @@}
-    
-    @@d sub @@{ something @@}
-    
-The ``sub`` item is used by ``parent`` which is used by ``main``.
-
-The simple reference is ``sub`` referenced by ``parent``.
-
-The transitive references are ``sub`` referenced by ``parent`` which is referenced by ``main``.
-
-
-@d Unit Test of Reference class hierarchy... @{ 
-class TestReference(unittest.TestCase):
-    def setUp(self) -> None:
-        self.web = MockWeb()
-        self.main = MockChunk("Main", 1, ("sample.w", 11))
-        self.main.referencedBy = None
-        self.parent = MockChunk("Parent", 2, ("sample.w", 11))
-        self.parent.referencedBy = self.main
-        self.chunk = MockChunk("Sub", 3, ("sample.w", 33))
-        self.chunk.referencedBy = self.parent
-        
-    def test_simple_should_find_one(self) -> None:
-        self.reference = pyweb.SimpleReference()
-        theList = self.reference.chunkReferencedBy(self.chunk)
-        self.assertEqual(1, len(theList))
-        self.assertEqual(self.parent, theList[0])
-        
-    def test_transitive_should_find_all(self) -> None:
-        self.reference = pyweb.TransitiveReference()
-        theList = self.reference.chunkReferencedBy(self.chunk)
-        self.assertEqual(2, len(theList))
-        self.assertEqual(self.parent, theList[0])
-        self.assertEqual(self.main, theList[1])
-@}
 
 Web Tests
 -----------
@@ -1254,7 +1269,7 @@ class TestWeaveAction(unittest.TestCase):
         self.weaver = MockWeaver()
         self.options = argparse.Namespace( 
             theWeaver=self.weaver,
-            reference_style=pyweb.SimpleReference(),
+            # reference_style=pyweb.SimpleReference(),  # Remove this
             output=Path.cwd(),
             web=self.web,
             weaver='rst',

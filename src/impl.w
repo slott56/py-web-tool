@@ -32,13 +32,6 @@ The broad outline of the presentation is as follows:
          -  A ``Weaver`` creates documentation. The various Jinja-based templates
             are part of weaving.
          
-    -   `Reference Strategy`_ is a class hierarchy to define alternative ways to 
-        present cross-references among chunks.
-        These support the ``Weaver`` subclasses of the ``Emitters``.
-        We can have references resolved either transitively or simply. A transitive
-        reference becomes a list of parent ``NamedChunk`` instances. A simple reference
-        is the referenced ``NamedChunk``.
-
 -   `Input Parsing`_ covers deserialization from the source ``.w`` file
     to the base model of ``Web``, ``Chunk``, and ``Command``.
     
@@ -281,7 +274,9 @@ Once the initialization is complete, the ``Web`` instance can be woven or tangle
             # TODO: Accumulate all chunks that contribute to a named file...
 
         # Pass 4 -- set referencedBy a command in a chunk.
-        # NOTE: Assuming single references *only*
+        # ONLY set this in references embedded in named chunk or output chunk.
+        # In a generic Chunk (which is text) there's no anchor to refer to.
+        # NOTE: Assume single references *only*
         # We should raise an exception when updating a non-None referencedBy value.
         # Or incrementing ref_chunk.references > 1.
         for c in named_chunks:
@@ -509,7 +504,7 @@ class Chunk:
     #: Count of references to this Chunk.
     references: int = field(init=False, default=0)
     
-    #: Reference to this chunk.
+    #: The immediate reference to this chunk.
     referencedBy: Optional["Chunk"] = field(init=False, default=None)
     
     #: Weak reference to the ``Web`` containing this ``Chunk``.
@@ -533,6 +528,13 @@ class Chunk:
     def location(self) -> tuple[str, int]:
         return self.commands[0].location
 
+    @@property
+    def transitive_referencedBy(self) -> list["Chunk"]:
+        if self.referencedBy:
+            return [self.referencedBy] + self.referencedBy.transitive_referencedBy
+        else:
+            return []
+        
     def add_text(self, text: str, location: tuple[str, int]) -> "Chunk":
         if self.commands and self.commands[-1].typeid.TextCommand:
             cast(HasText, self.commands[-1]).text += text
@@ -1009,8 +1011,6 @@ are displayed.
 
 @d Base Class Definitions
 @{
-@<Reference class hierarchy - strategies for weaving references to a chunk@> 
-
 @<Emitter Superclass@>
 
 @<Weaver Subclass -- Uses Jinja templates to weave documentation@>
@@ -1188,6 +1188,123 @@ template languages. The idea is that
 a few characters must be escaped for
 proper presentation in the code sample sections.
 
+Common Base Template
+********************
+
+The common base template expands each chunk and each command in order.
+This involves some special case processing for ``OutputChunk`` and ``NamedChunk``
+which have a "wrapper" woven around the chunk's sequence of commands.
+
+This relies on a number of individual macros:
+
+-   text(command). Emits a block of text -- this should do *nothing* with the text. The author's original
+    markup passes through untouched.
+    
+-   begin_code(chunk). Starts a block of code, either ``@@d`` or ``@@o``.
+ 
+-   code(command). Emits a block fo code. This may require escapes for special characters that would break
+    the markup being used.
+    
+-   ref(command). Emits a reference to a named block of code. 
+
+-   end_code(chunk). Ends a block of code.
+
+-   file_xref(command). Emit the full ``@@f`` output, usually some kind of definition list.
+
+-   macro_xref(command). Emit the full ``@@m`` output, usually some kind of definition list.
+
+-   userid_xref(command). Emit the full ``@@u`` output, usually some kind of definition list.
+
+The ``ref()`` macro can also be used in the XREF output macros. It can also be used in the ``end_code()`` macro.
+After a block of code, some tools (like Interscript) will show where the block was referenced.
+
+There are several styles for the "referencedBy" information in a ``Chunk``.
+
+-   The immediate ``@@<name@@>`` Chunk.
+
+-   The entire transitive sequence of parents for the ``@@<name@@>`` Chunk. There
+    are two forms for this:
+    
+    -   Top-down path. ``→ Named (1) / → Sub-Named (2) / → Sub-Sub-Named (3)``.
+    
+    -   Bottom-up path.  ``→ Sub-Sub-Named (3) ∈ → Sub-Named (2) ∈ → Named (1)``.
+
+These require three distinct versions of the ``end_code()`` macro. This macro uses the ``transitive_referencedBy``
+propery of a ``Chunk`` producing a sequence of ``ref()`` values. 
+
+@d Common base template...
+@{
+base_template = dedent("""\
+    {%- from macros import text, begin_code, code, ref, end_code, file_xref, macro_xref, userid_xref -%}
+    {%- if not text is defined %}{%- from defaults import text -%}{%- endif -%}
+    {%- if not begin_code is defined %}{%- from defaults import begin_code -%}{%- endif -%}
+    {%- if not code is defined %}{%- from defaults import code -%}{%- endif -%}
+    {%- if not ref is defined %}{%- from defaults import ref -%}{%- endif -%}
+    {%- if not end_code is defined %}{%- from defaults import end_code -%}{%- endif -%}
+    {%- if not file_xref is defined %}{%- from defaults import file_xref -%}{%- endif -%}
+    {%- if not macro_xref is defined %}{%- from defaults import macro_xref -%}{%- endif -%}
+    {%- if not userid_xref is defined %}{%- from defaults import userid_xref -%}{%- endif -%}
+    {% for chunk in web.chunks -%}
+        {%- if chunk.type_is('OutputChunk') or chunk.type_is('NamedChunk') -%}
+            {{begin_code(chunk)}}
+            {%- for command in chunk.commands -%}
+                {%- if command.typeid.CodeCommand -%}{{code(command)}}
+                {%- elif command.typeid.ReferenceCommand -%}{{ref(command)}}
+                {%- endif -%}
+            {%- endfor -%}
+            {{end_code(chunk)}}
+        {%- elif chunk.type_is('Chunk') -%}
+            {%- for command in chunk.commands -%}
+                {%- if command.typeid.TextCommand %}{{text(command)}}
+                {%- elif command.typeid.ReferenceCommand %}{{ref(command)}}
+                {%- elif command.typeid.FileXrefCommand %}{{file_xref(command)}}
+                {%- elif command.typeid.MacroXrefCommand %}{{macro_xref(command)}}
+                {%- elif command.typeid.UserIdXrefCommand %}{{userid_xref(command)}}
+                {%- endif -%}
+            {%- endfor -%}
+        {%- endif -%}
+    {%- endfor %}
+""")
+@}
+
+**TODO:** Need to more gracefully handle the case where an output chunk
+has multiple definitions. 
+
+..  parsed-literal::
+
+    @@o x.y
+    @@{
+    ... part 1 ...
+    @@}
+    
+    @@o x.y
+    @@{
+    ... part 2 ...
+    @@}
+    
+The above should have the same output as the follow (more complex) alternative: 
+
+..  parsed-literal::
+
+    @@o x.y
+    @@{
+    @@<part 1@@>
+    @@<part 2@@>
+    @@}
+    
+    @@d part 1
+    @@{
+    ... part 1 ...
+    @@}
+
+    @@d part 2
+    @@{
+    ... part 2 ...
+    @@}
+
+Currently, we casually treat the first instance
+as the "definition", and don't provide references
+to the additional parts of the definition.
 
 Debug Template
 ***************
@@ -1271,7 +1388,7 @@ rst_weaver_template = dedent("""
     {%- macro code(command) %}{% for line in command.text.splitlines() %}    {{line | quote_rules}}
     {% endfor -%}{% endmacro -%}
     
-    {%- macro ref(id) %}    \N{RIGHTWARDS ARROW} `{{id.full_name}} ({{id.seq}})`_{% endmacro -%}
+    {%- macro ref(id) %}    \N{RIGHTWARDS ARROW} `{{id.full_name or id.name}} ({{id.seq}})`_{% endmacro -%}
     
     {# When using Sphinx, this *could* be rst-class::, pure docutils uses container::#}
     {%- macro end_code(chunk) %}
@@ -1279,7 +1396,8 @@ rst_weaver_template = dedent("""
     
     ..  container:: small
     
-        \N{END OF PROOF} *{{chunk.full_name or chunk.name}} ({{chunk.seq}})*
+        \N{END OF PROOF} *{{chunk.full_name or chunk.name}} ({{chunk.seq}})*.
+        {% if chunk.referencedBy %}Used by {{ref(chunk.referencedBy)}}.{% endif %}
         
     {% endmacro -%}
     
@@ -1358,11 +1476,12 @@ html_weaver_template = dedent("""\
     
     {%- macro code(command) -%}{{command.text | quote_rules}}{%- endmacro -%}
     
-    {%- macro ref(id) %}&rarr;<a href="#pyweb_{{id.seq}}"><em>{{id.full_name}} ({{id.seq}})</em></a>{% endmacro -%}
+    {%- macro ref(id) %}&rarr;<a href="#pyweb_{{id.seq}}"><em>{{id.full_name or id.name}} ({{id.seq}})</em></a>{% endmacro -%}
     
     {%- macro end_code(chunk) %}
     </code></pre>
     <p>&#8718; <em>{{chunk.full_name or chunk.name}} ({{chunk.seq}})</em>.
+    {% if chunk.referencedBy %}Used by {{ref(chunk.referencedBy)}}.{% endif %}
     </p> 
     {% endmacro -%}
     
@@ -1430,7 +1549,7 @@ latex_weaver_template = dedent("""\
     
     {%- macro code(command) -%}{{command.text | quote_rules}}{%- endmacro -%}
     
-    {%- macro ref(id) %}$$\\rightarrow$$ Code Example {{id.full_name}} ({{id.seq}}){% endmacro -%}
+    {%- macro ref(id) %}$$\\rightarrow$$ Code Example {{id.full_name or id.name}} ({{id.seq}}){% endmacro -%}
     
     {%- macro end_code(chunk) %}
     \\end{Verbatim}
@@ -1468,87 +1587,6 @@ tex_overrides_template = dedent("""\
     """)
 
 @}
-
-Base Template
-***************
-
-The common base template expands each chunk and each command in order.
-This involves some special case processing for ``OutputChunk`` and ``NamedChunk``
-which have a "wrapper" woven around the chunk's sequence of commands.
-
-@d Common base template...
-@{
-base_template = dedent("""\
-    {%- from macros import text, begin_code, code, ref, end_code, file_xref, macro_xref, userid_xref -%}
-    {%- if not text is defined %}{%- from defaults import text -%}{%- endif -%}
-    {%- if not begin_code is defined %}{%- from defaults import begin_code -%}{%- endif -%}
-    {%- if not code is defined %}{%- from defaults import code -%}{%- endif -%}
-    {%- if not ref is defined %}{%- from defaults import ref -%}{%- endif -%}
-    {%- if not end_code is defined %}{%- from defaults import end_code -%}{%- endif -%}
-    {%- if not file_xref is defined %}{%- from defaults import file_xref -%}{%- endif -%}
-    {%- if not macro_xref is defined %}{%- from defaults import macro_xref -%}{%- endif -%}
-    {%- if not userid_xref is defined %}{%- from defaults import userid_xref -%}{%- endif -%}
-    {% for chunk in web.chunks -%}
-        {%- if chunk.type_is('OutputChunk') or chunk.type_is('NamedChunk') -%}
-            {{begin_code(chunk)}}
-            {%- for command in chunk.commands -%}
-                {%- if command.typeid.CodeCommand -%}{{code(command)}}
-                {%- elif command.typeid.ReferenceCommand -%}{{ref(command)}}
-                {%- endif -%}
-            {%- endfor -%}
-            {{end_code(chunk)}}
-        {%- elif chunk.type_is('Chunk') -%}
-            {%- for command in chunk.commands -%}
-                {%- if command.typeid.TextCommand %}{{text(command)}}
-                {%- elif command.typeid.ReferenceCommand %}{{ref(command)}}
-                {%- elif command.typeid.FileXrefCommand %}{{file_xref(command)}}
-                {%- elif command.typeid.MacroXrefCommand %}{{macro_xref(command)}}
-                {%- elif command.typeid.UserIdXrefCommand %}{{userid_xref(command)}}
-                {%- endif -%}
-            {%- endfor -%}
-        {%- endif -%}
-    {%- endfor %}
-""")
-@}
-
-**TODO:** Need to more gracefully handle the case where an output chunk
-has multiple definitions. 
-
-..  parsed-literal::
-
-    @@o x.y
-    @@{
-    ... part 1 ...
-    @@}
-    
-    @@o x.y
-    @@{
-    ... part 2 ...
-    @@}
-    
-The above should have the same output as the follow (more complex) alternative: 
-
-..  parsed-literal::
-
-    @@o x.y
-    @@{
-    @@<part 1@@>
-    @@<part 2@@>
-    @@}
-    
-    @@d part 1
-    @@{
-    ... part 1 ...
-    @@}
-
-    @@d part 2
-    @@{
-    ... part 2 ...
-    @@}
-
-Currently, we casually treat the first instance
-as the "definition", and don't provide references
-to the additional parts of the definition.
 
 The Tangler Subclasses
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -1777,74 +1815,6 @@ class TanglerMake(Tangler):
             self.logger.info("Wrote %d lines to %s", self.linesWritten, target_path)
 @}
 
-Reference Strategy
-~~~~~~~~~~~~~~~~~~
-
-The Reference Strategy has two implementations. 
-This is a strategy that plugs into the web as a whole.
-A ``Chunk`` property collects this information
-from the ``Web`` containing the ``Chunk``.
-
-**TODO:** This is currently not implemented.
-
-@d Reference class hierarchy... 
-@{
-class Reference(abc.ABC):
-    def __init__(self) -> None:
-        self.logger = logging.getLogger(self.__class__.__qualname__)
-        
-    @@abc.abstractmethod
-    def chunkReferencedBy(self, aChunk: Chunk) -> list[Chunk]:
-        """Return a list of Chunks."""
-        ...
-@}
-
-
-The ``SimpleReference`` subclass does the simplest version of resolution. It returns
-the ``Chunk`` instances referenced.
-    
-@d Reference class hierarchy... 
-@{
-class SimpleReference(Reference):
-    def chunkReferencedBy(self, aChunk: Chunk) -> list[Chunk]:
-        if aChunk.referencedBy:
-            return [aChunk.referencedBy]
-        return []
-@}
-
-The ``TransitiveReference`` subclass does a transitive closure of all
-references to this ``Chunk``.
-
-This requires walking through the ``Web`` to locate "parents" of each referenced
-``Chunk``.
-
-@d Reference class hierarchy... 
-@{
-class TransitiveReference(Reference):
-    def chunkReferencedBy(self, aChunk: Chunk) -> list[Chunk]:
-        refBy = aChunk.referencedBy
-        if refBy:
-            all_refs = list(self.allParentsOf(refBy))
-            self.logger.debug("References: %r(%d) %r", aChunk.name, aChunk.seq, all_refs)
-            return all_refs
-        else:
-            return []
-        
-    @@staticmethod
-    def allParentsOf(chunk: Chunk | None, depth: int = 0) -> Iterator[Chunk]:
-        """Transitive closure of parents via recursive ascent.
-        """
-        if chunk:
-            yield chunk
-            yield from TransitiveReference.allParentsOf(chunk.referencedBy, depth+1)
-@}
-
-
-The core definitions and the Emitter class definitions are used
-to build the web and produce output. The next section looks at the ``WebReader`` parser
-to build a ``Web`` from a source file.
-
-
 Input Parsing
 -------------
 
@@ -1955,10 +1925,10 @@ The class has the following attributes:
     an empty list or ``('@@i',)``.
 
 :_source:
-    The open source being used by ``load()``.
+    The open file-like object being used by ``load()``.
     
 :filePath:
-    is used to pass the file name to the Web instance.
+    The path being processed; this provides a visible file name.
 
 :tokenizer:
     An instance of ``Tokenizer`` used to parse the input. This is built
@@ -1996,7 +1966,6 @@ class WebReader:
     base_path: Path  
     #: The tokenizer used to find commands
     tokenizer: Tokenizer  
-    # TODO: options parser class should be here, also.
     
     # State of the reader
     #: Parent context for @@i commands      
@@ -2990,7 +2959,6 @@ def __call__(self, options: argparse.Namespace) -> None:
         # Examine first few chars of first chunk of web to determine language
         self.options.weaver = self.options.web.language() 
         self.logger.info("Using %s", self.options.theWeaver)
-    self.options.theWeaver.reference_style = self.options.reference_style
     self.options.theWeaver.output = self.options.output
     try:
         self.options.theWeaver.set_markup(self.options.weaver)
@@ -3331,7 +3299,6 @@ def parseArgs(self, argv: list[str]) -> argparse.Namespace:
     p.add_argument("-w", "--weaver", dest="weaver", action="store")
     p.add_argument("-x", "--except", dest="skip", action="store", choices=('w', 't'))
     p.add_argument("-p", "--permit", dest="permit", action="store")
-    p.add_argument("-r", "--reference", dest="reference", action="store", choices=('t', 's'))
     p.add_argument("-n", "--linenumbers", dest="tangler_line_numbers", action="store_true")
     p.add_argument("-o", "--output", dest="output", action="store", type=Path)
     p.add_argument("-V", "--Version", action='version', version=f"py-web-tool pyweb.py {__version__}")
@@ -3344,14 +3311,6 @@ def expand(self, config: argparse.Namespace) -> argparse.Namespace:
     """Translate the argument values from simple text to useful objects.
     Weaver. Tangler. WebReader.
     """
-    match config.reference:
-        case 't':
-            config.reference_style = TransitiveReference() 
-        case 's':
-            config.reference_style = SimpleReference()
-        case _:
-            raise Error("Improper configuration")
-
     # Weaver & Tangler
     config.theWeaver = Weaver(config.output)
     config.theTangler = TanglerMake(config.output)

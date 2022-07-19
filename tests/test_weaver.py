@@ -81,6 +81,7 @@ for i in range(24):
 
 </code></pre>
 <p>&#8718; <em>some code (1)</em>.
+
 </p> 
 
 </body>
@@ -111,7 +112,6 @@ class Test_RefDefWeave(WeaveTestcase):
         self.web.web_path = self.file_path
         doc = pyweb.Weaver( )
         doc.set_markup("html")
-        doc.reference_style = pyweb.SimpleReference() 
         doc.emit(self.web)
         actual = self.file_path.with_suffix(".html").read_text()
         self.maxDiff = None
@@ -123,7 +123,6 @@ class Test_RefDefWeave(WeaveTestcase):
         self.web.web_path = self.file_path
         doc = pyweb.Weaver( )
         doc.set_markup("debug")
-        doc.reference_style = pyweb.SimpleReference() 
         doc.emit(self.web)
         actual = self.file_path.with_suffix(".debug").read_text()
         self.maxDiff = None
@@ -153,7 +152,6 @@ class TestEvaluations(WeaveTestcase):
         self.web.web_path = self.file_path
         doc = pyweb.Weaver( )
         doc.set_markup("html")
-        doc.reference_style = pyweb.SimpleReference() 
         doc.emit(self.web)
         actual = self.file_path.with_suffix(".html").read_text().splitlines()
         #print(actual)

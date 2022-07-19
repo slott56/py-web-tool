@@ -4,12 +4,20 @@
 To Do
 =======
    
-1.  Implement the Reference Strategy in the Weaver.
+1.  Implement alternative references at the end of a chunk.
+    Two forms for this: top-down ``→ Named (1) / → Sub-Named (2) / → Sub-Sub-Named (3)``,
+    and bottom-up ``→ Sub-Sub-Named (3) ∈ → Sub-Named (2) ∈ → Named (1)``.
+
+#.  Replace ``OptionParser`` with ``argparse.ArgumentParser``.
 
 #.  Tangling can include non-woven content. More usefully, Weaving can exclude some chunks.
     The use case is a book chapter with test cases that are **not** woven into the text.
-    Add an option to define tangle-only chunks that are NOT woven into the final document. 
-    
+    See https://github.com/slott56/py-web-tool/wiki/Tangle-only-Output
+       
+#.  Permit selecting a specific weaving template for a named block. 
+    A book may have REPL examples and code examples,
+    and sometimes they'll be different. Especially when working in LaTeX.
+
 #.  Update the ``-indent`` option on ``@@d`` chunks to accept a numeric argument with the 
     specific indentation value. This becomes a kind of "noindent" with a given
     value. The ``-noindent`` would then be the same as ``-indent 0``.  
