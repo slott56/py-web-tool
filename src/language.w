@@ -1,6 +1,6 @@
 .. py-web-tool/src/language.w
 
-The **py-web-tool** ``.w`` Markup Language
+The **py-web-lp** Markup Language
 ==========================================
 
 The essence of literate programming is a markup language that includes both code
@@ -11,7 +11,7 @@ The source document is a "Web" documentation that includes the code.
 It's important to see the ``.w`` file as the final documentation.  The code is tangled out 
 of the source web.  
 
-The **py-web-tool** tool parses the ``.w`` file, and performs the
+The **py-web-lp** tool parses the ``.w`` file, and performs the
 tangle and weave operations.  It *tangles* each individual output file
 from the program source chunks.  It *weaves* the final documentation file
 file from the entire sequence of chunks provided, mixing the author's 
@@ -22,24 +22,39 @@ Concepts
 
 The ``.w`` file has two tiers of markup in it.
 
--   At the top, it has **py-web-tool** markup to distinguish
+-   At the top, it has **py-web-lp** markup to distinguish
     documentation chunks from code chunks. 
     
 -   Within the documentation chunks, there can be 
     markup for the target publication tool chain. This might
     be RST, LaTeX, HTML, or some other markup language.
     
-The **py-web-tool** markup decomposes the source document a sequence of *Chunks*. 
-Each Chunk is one of the two kinds:
- 
--   program source code to be *tangled* and *woven*.
+The **py-web-lp** markup decomposes the source document a sequence of *Chunks*.
 
--   documentation to be *woven*.  
+..  uml::
+
+    object web
+    object chunk
+    object documentation
+    object "source code" as code
+    
+    web *-- chunk
+    chunk *-- documentation
+    chunk *-- code
+
+The Web chunks have the following two overall sets of features:
+ 
+-   Program source code to be *tangled* and *woven*. There are two important varieties: the "defined" chunks
+    that are named, and the "output" chunks that define a file to be written. Program code chunks can have references
+    to other defined code chunks. This permits created output files that tangled into a compiler-friendly
+    order, separate from the presentation.
+
+-   Documentation to be *woven*.  These are the blocks of text between commands.
 
 The bulk of the file is typically documentation chunks that describe the program in
 some publication-oriented markup language like RST, HTML, or LaTeX.
 
-**py-web-tool** markup surrounds the code with "commands." Everything else is documentation.
+**py-web-lp** markup surrounds the code with "commands." Everything else is documentation.
 
 The code chunks have two transformations applied.
 
@@ -54,8 +69,10 @@ The code chunks have two transformations applied.
 The non-code, documentation chunks are not transformed up in any way.  Everything that's not
 explicitly a code chunk is output without modification.
 
-All of the **py-web-tool** tags begin with ``@@``. This is sometimes called the command prefix.
+All of the **py-web-lp** tags begin with ``@@``. This is sometimes called the command prefix.
 (This can be changed.) The tags were historically referred to as "commands."
+For Python decorators in particular, the symbol must be doubled, ``@@@@``, because
+all ``@@`` symbols are commands, irrespective of context.
 
 The *Structural* tags (historically called "major commands") partition the input and define the
 various chunks.  The *Inline* tags are (called "minor commands") are used to control the
@@ -67,45 +84,6 @@ Boilerplate
 
 There is some mandatory "boilerplate" required to make a working document.
 Requirements vary by markup language.
-
-RST
-~~~
-
-The RST template uses two substitutions, ``|srarr|`` and ``|loz|``.
-
-These can be provided by 
-
-::
-    
-    ..	include:: <isoamsa.txt>
-    ..	include:: <isopub.txt>
-    
-Or
-
-::
-
-    .. |srarr|  unicode:: U+02192 .. RIGHTWARDS ARROW
-    .. |loz|    unicode:: U+025CA .. LOZENGE
-    
-Often the boilerplate document looks like this
-
-..  parsed-literal::
-    
-    ####################
-    *Title*
-    ####################
-    
-    ===============
-    *Author*
-    ===============
-    
-    ..  include:: <isoamsa.txt>
-    ..	include:: <isopub.txt>
-    
-    ..  contents::
-    
-    *Your Document Starts Here*
-
 
 LaTeX
 ~~~~~
@@ -138,9 +116,11 @@ Some minimal boilerplate document looks like this:
 HTML
 ~~~~
 
-No additional setup is required for HTML. However, there's often
-a fairly large amount of HTML boilerplate, depending on the CSS
-requirements.
+There's often a fairly large amount of HTML boilerplate.
+Currently, the templates used do **not** provide any CSS classes.
+For more sophisticated HTML documents, it may be necessary to
+provide customized templates with CSS classes to make the 
+document look good.
 
 Structural Tags
 ---------------
@@ -484,7 +464,7 @@ The expanded syntax for ``@@o`` looks like this.
 
 ..  parsed-literal::
 
-    @@o -start /* -end */ page-layout.css
+    @@o -start /* -end \*/ page-layout.css
     @@{
     *Some CSS code*
     @@}
@@ -543,8 +523,8 @@ A global context is created with the following variables defined.
     The ``.w`` file being processed.
     
 :thisApplication:
-    The name of the running **py-web-tool** application. It may not be pyweb.py, 
+    The name of the running **py-web-lp** application. It may not be pyweb.py,
     if some other script is being used.
 
 :__version__:
-    The version string in the **py-web-tool** application.
+    The version string in the **py-web-lp** application.

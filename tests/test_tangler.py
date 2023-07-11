@@ -17,18 +17,17 @@ class TangleTestcase(unittest.TestCase):
     
     def setUp(self) -> None:
         self.source = io.StringIO(self.text)
-        self.web = pyweb.Web()
         self.rdr = pyweb.WebReader()
         self.tangler = pyweb.Tangler()
         
     def tangle_and_check_exception(self, exception_text: str) -> None:
-        try:
-            self.rdr.load(self.web, self.file_path, self.source)
-            self.web.tangle(self.tangler)
-            self.web.createUsedBy()
+        with self.assertRaises(pyweb.Error) as exc_mgr:
+            chunks = self.rdr.load(self.file_path, self.source)
+            self.web = pyweb.Web(chunks)
+            self.tangler.emit(self.web)
             self.fail("Should not tangle")
-        except pyweb.Error as e:
-            self.assertEqual(exception_text, e.args[0])
+        exc = exc_mgr.exception
+        self.assertEqual(exception_text, exc.args[0])
             
     def tearDown(self) -> None:
         try:
@@ -52,7 +51,7 @@ class Test_SemanticError_2(TangleTestcase):
     text = test2_w
     file_path = Path("test2.w")
     def test_should_raise_undefined(self) -> None:
-        self.tangle_and_check_exception("Attempt to tangle an undefined Chunk, part2.")
+        self.tangle_and_check_exception("Attempt to tangle an undefined Chunk, 'part2'")
 
 
 
@@ -87,6 +86,7 @@ Okay, now for some errors: attempt to weave but no full name for part1....
 
 
 class Test_SemanticError_4(TangleTestcase):
+    """An optional feature of a Web."""
     text = test4_w
     file_path = Path("test4.w")
     def test_should_raise_noFullName(self) -> None:
@@ -132,12 +132,13 @@ class Test_SemanticError_6(TangleTestcase):
     text = test6_w
     file_path = Path("test6.w")
     def test_should_warn(self) -> None:
-        self.rdr.load(self.web, self.file_path, self.source)
-        self.web.tangle(self.tangler)
-        self.web.createUsedBy()
+        chunks = self.rdr.load(self.file_path, self.source)
+        self.web = pyweb.Web(chunks)
+        self.tangler.emit(self.web)
+        print(self.web.no_reference())
         self.assertEqual(1, len(self.web.no_reference()))
         self.assertEqual(1, len(self.web.multi_reference()))
-        self.assertEqual(0, len(self.web.no_definition()))
+        self.assertEqual({'part1a', 'part1...'}, self.tangler.reference_names)
 
 
 
@@ -149,8 +150,7 @@ A reference to @<title@>.
 A final anonymous chunk from test7.w
 """
 
-test7_inc_w = """The test7a.tmp chunk for test7.w
-"""
+test7_inc_w = """The test7a.tmp chunk for test7.w"""
 
 
 class Test_IncludeError_7(TangleTestcase):
@@ -160,11 +160,11 @@ class Test_IncludeError_7(TangleTestcase):
         Path('test7_inc.tmp').write_text(test7_inc_w)
         super().setUp()
     def test_should_include(self) -> None:
-        self.rdr.load(self.web, self.file_path, self.source)
-        self.web.tangle(self.tangler)
-        self.web.createUsedBy()
-        self.assertEqual(5, len(self.web.chunkSeq))
-        self.assertEqual(test7_inc_w, self.web.chunkSeq[3].commands[0].text)
+        chunks = self.rdr.load(self.file_path, self.source)
+        self.web = pyweb.Web(chunks)
+        self.tangler.emit(self.web)
+        self.assertEqual(5, len(self.web.chunks))
+        self.assertEqual(test7_inc_w, self.web.chunks[3].commands[0].text)
     def tearDown(self) -> None:
         Path('test7_inc.tmp').unlink()
         super().tearDown()

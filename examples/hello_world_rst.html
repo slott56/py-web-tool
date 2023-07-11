@@ -385,16 +385,6 @@ div.document { width: 7in; }
 <h1 class="title">Test Program</h1>
 <h2 class="subtitle" id="jason-r-fruit">Jason R. Fruit</h2>
 
-<!-- This data file has been placed in the public domain. -->
-<!-- Derived from the Unicode character mappings available from
-<http://www.w3.org/2003/entities/xml/>.
-Processed by unicode2rstsubs.py, part of Docutils:
-<http://docutils.sourceforge.net>. -->
-<!-- This data file has been placed in the public domain. -->
-<!-- Derived from the Unicode character mappings available from
-<http://www.w3.org/2003/entities/xml/>.
-Processed by unicode2rstsubs.py, part of Docutils:
-<http://docutils.sourceforge.net>. -->
 <div class="contents topic" id="contents">
 <p class="topic-title">Contents</p>
 <ul class="simple">
@@ -423,72 +413,60 @@ two different files.</p>
 <p>This document contains the makings of two files; the first,
 <tt class="docutils literal">test.py</tt>, uses simple string concatenation to build its output
 message:</p>
-<p class="rubric" id="target-1">hw_rst_1.py (1) =</p>
+<p class="rubric" id="hw-rst-1-py-1">hw_rst_1.py (1) =</p>
 <pre class="code literal-block">
-→Import the os module (<a class="reference internal" href="#target-3">3</a>)
-→Get the OS description (<a class="reference internal" href="#target-4">4</a>)
-→Construct the message with Concatenation (<a class="reference internal" href="#target-5">5</a>)
-→Print the message (<a class="reference internal" href="#target-7">7</a>)
+→<a class="reference internal" href="#import-the-os-module-3">Import the os module (3)</a>
+→<a class="reference internal" href="#get-the-os-description-4">Get the OS description (4)</a>
+→<a class="reference internal" href="#construct-the-message-with-concatenation-5">Construct the message with Concatenation (5)</a>
+→<a class="reference internal" href="#print-the-message-7">Print the message (7)</a>
 </pre>
 <!--  -->
-<blockquote>
-<p class="small">◊ <em>hw_rst_1.py (1)</em>.</p>
-</blockquote>
+<p class="small">∎ <em>hw_rst_1.py (1)</em></p>
 <p>The second uses string substitution:</p>
-<p class="rubric" id="target-2">hw_rst_2.py (2) =</p>
+<p class="rubric" id="hw-rst-2-py-2">hw_rst_2.py (2) =</p>
 <pre class="code literal-block">
-→Import the os module (<a class="reference internal" href="#target-3">3</a>)
-→Get the OS description (<a class="reference internal" href="#target-4">4</a>)
-→Construct the message with Substitution (<a class="reference internal" href="#target-6">6</a>)
-→Print the message (<a class="reference internal" href="#target-7">7</a>)
+→<a class="reference internal" href="#import-the-os-module-3">Import the os module (3)</a>
+→<a class="reference internal" href="#get-the-os-description-4">Get the OS description (4)</a>
+→<a class="reference internal" href="#construct-the-message-with-substitution-6">Construct the message with Substitution (6)</a>
+→<a class="reference internal" href="#print-the-message-7">Print the message (7)</a>
 </pre>
 <!--  -->
-<blockquote>
-<p class="small">◊ <em>hw_rst_2.py (2)</em>.</p>
-</blockquote>
+<p class="small">∎ <em>hw_rst_2.py (2)</em></p>
 </div>
 <div class="section" id="retrieving-the-os-description">
 <h2><a class="toc-backref" href="#toc-entry-4">Retrieving the OS description</a></h2>
 <p>First we must import the os module so we can learn about the OS:</p>
-<p class="rubric" id="target-3">Import the os module (3) =</p>
+<p class="rubric" id="import-the-os-module-3">Import the os module (3) =</p>
 <pre class="code literal-block">
 import os
 </pre>
 <!--  -->
-<blockquote>
-<p class="small">◊ <em>Import the os module (3)</em>. Used by: hw_rst_1.py (<a class="reference internal" href="#target-1">1</a>); hw_rst_2.py (<a class="reference internal" href="#target-2">2</a>)</p>
-</blockquote>
+<p class="small">∎ <em>Import the os module (3)</em></p>
 <p>That having been done, we can retrieve Python's name for the OS type:</p>
-<p class="rubric" id="target-4">Get the OS description (4) =</p>
+<p class="rubric" id="get-the-os-description-4">Get the OS description (4) =</p>
 <pre class="code literal-block">
 os_name = os.name
 </pre>
 <!--  -->
-<blockquote>
-<p class="small">◊ <em>Get the OS description (4)</em>. Used by: hw_rst_1.py (<a class="reference internal" href="#target-1">1</a>); hw_rst_2.py (<a class="reference internal" href="#target-2">2</a>)</p>
-</blockquote>
+<p class="small">∎ <em>Get the OS description (4)</em></p>
 </div>
 <div class="section" id="building-the-message">
 <h2><a class="toc-backref" href="#toc-entry-5">Building the message</a></h2>
 <p>Now, we're ready for the meat of the application: concatenating two strings:</p>
-<p class="rubric" id="target-5">Construct the message with Concatenation (5) =</p>
+<p class="rubric" id="construct-the-message-with-concatenation-5">Construct the message with Concatenation (5) =</p>
 <pre class="code literal-block">
 msg = &quot;Hello, &quot; + os_name + &quot;!&quot;
 </pre>
 <!--  -->
-<blockquote>
-<p class="small">◊ <em>Construct the message with Concatenation (5)</em>. Used by: hw_rst_1.py (<a class="reference internal" href="#target-1">1</a>)</p>
-</blockquote>
+<p class="small">∎ <em>Construct the message with Concatenation (5)</em></p>
 <p>But wait!  Is there a better way?  Using string substitution might be
 better:</p>
-<p class="rubric" id="target-6">Construct the message with Substitution (6) =</p>
+<p class="rubric" id="construct-the-message-with-substitution-6">Construct the message with Substitution (6) =</p>
 <pre class="code literal-block">
 msg = f&quot;Hello, {os_name}!&quot;
 </pre>
 <!--  -->
-<blockquote>
-<p class="small">◊ <em>Construct the message with Substitution (6)</em>. Used by: hw_rst_2.py (<a class="reference internal" href="#target-2">2</a>)</p>
-</blockquote>
+<p class="small">∎ <em>Construct the message with Substitution (6)</em></p>
 <p>We'll use the first of these methods in <tt class="docutils literal">rst_test_1.py</tt>, and the
 other in <tt class="docutils literal">rst_test_2.py</tt>.</p>
 </div>
@@ -497,14 +475,12 @@ other in <tt class="docutils literal">rst_test_2.py</tt>.</p>
 <p>Finally, we print the message out for the user to see.  Hopefully, a
 cheery greeting will make them happy to know what operating system
 they have:</p>
-<p class="rubric" id="target-7">Print the message (7) =</p>
+<p class="rubric" id="print-the-message-7">Print the message (7) =</p>
 <pre class="code literal-block">
 print(msg)
 </pre>
 <!--  -->
-<blockquote>
-<p class="small">◊ <em>Print the message (7)</em>. Used by: hw_rst_1.py (<a class="reference internal" href="#target-1">1</a>); hw_rst_2.py (<a class="reference internal" href="#target-2">2</a>)</p>
-</blockquote>
+<p class="small">∎ <em>Print the message (7)</em></p>
 </div>
 </div>
 </div>

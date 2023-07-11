@@ -1,14 +1,11 @@
 ############################################
-pyWeb Literate Programming 3.1 - Test Suite
+pyWeb Literate Programming 3.2 - Test Suite
 ############################################    
     
     
 =================================================
 Yet Another Literate Programming Tool
 =================================================
-
-..	include:: <isoamsa.txt>
-..	include:: <isopub.txt>
 
 ..	contents::
 
@@ -79,10 +76,6 @@ Macros
 
 @m
 
-User Identifiers
-----------------
-
-@u
 
 ----------
 

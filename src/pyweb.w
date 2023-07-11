@@ -1,16 +1,12 @@
 ##############################
-pyWeb Literate Programming 3.1
+pyWeb Literate Programming 3.2
 ##############################
 
 =================================================
 Yet Another Literate Programming Tool
 =================================================
 
-..	include:: <isoamsa.txt>
-..	include:: <isopub.txt>
-
 ..	contents::
-
 
 @i intro.w
 

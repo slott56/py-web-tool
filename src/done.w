@@ -1,8 +1,46 @@
-..    py-web-tool/src/done.w 
+..    py-web-tool/src/done.w
 
 Change Log
 ===========
 
+
+Changes for 3.2
+
+-   Rename to ``py-web-lp`` to limit collisions in PyPI.
+
+-   Replaced ``toml`` with ``tomli`` or built-in ``tomllib``.
+
+-   Fiddle with ``pyproject.toml`` and ``tox.ini`` to eliminate ``setup.py``.
+
+-   Replaced home-brewed ``OptionParser`` with ``argparse.ArgumentParser``.
+    Now the options for ``@@d`` and ``@@o`` can be *much* more flexible.
+
+-   Added the transitive path of references as a Chunk property.
+    Removes ``SimpleReference`` and ``TransitiveReference`` classes,
+    and the associated "reference_style" attribute of a ``Weaver``.
+    To show transitive references, a revised ``code_end`` template is required.
+
+-   Added a TOML-based configuration file with a ``[logging]`` section. 
+
+-   Incorporated Sphinx and PlantUML into the documentation.
+    Support continues for ```rst2html.py``. It's used for test documentaion. 
+    See https://github.com/slott56/py-web-tool/wiki/PlantUML-support-for-RST-%5BCompleted%5D
+
+-   Replaced weaving process with Jinja templates. 
+    See https://github.com/slott56/py-web-tool/wiki/Jinja-Template-for-Weaving-%5BCompleted%5D
+
+-   Dramatic redesign to Class, Chunk, and Command class hierarchies.
+
+-   Dramatic redesign to Emitters to switch to using Jinja templates.
+    By stepping away from the ``string.Template``,
+    we can incorporate list-processing ``{% for %}...{% endfor %}`` construct that 
+    pushes some processing into the template.
+
+-   Removed ``'\N{LOZENGE}'`` (borrowed from Interscript) and use the ``'\N{END OF PROOF}'`` symbol instead.
+
+-   Created a better ``weave.py`` example that shows how to incorporate bootstrap CSS into HTML overrides.
+    This also requires designing a more easily extended ``Weaver`` class.
+    
 Changes for 3.1
 
 -   Change to Python 3.10 as the supported version.

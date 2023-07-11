@@ -721,16 +721,6 @@ span.boxed, span.framebox {
 <h1 class="title">Ackermann’s Function</h1>
 <h2 class="subtitle" id="steven-f-lott">Steven F. Lott</h2>
 
-<!-- This data file has been placed in the public domain. -->
-<!-- Derived from the Unicode character mappings available from
-<http://www.w3.org/2003/entities/xml/>.
-Processed by unicode2rstsubs.py, part of Docutils:
-<http://docutils.sourceforge.net>. -->
-<!-- This data file has been placed in the public domain. -->
-<!-- Derived from the Unicode character mappings available from
-<http://www.w3.org/2003/entities/xml/>.
-Processed by unicode2rstsubs.py, part of Docutils:
-<http://docutils.sourceforge.net>. -->
 <div class="contents topic" id="contents">
 <p class="topic-title">Contents</p>
 <ul class="simple">
@@ -888,29 +878,27 @@ Processed by unicode2rstsubs.py, part of Docutils:
 <h1><a class="toc-backref" href="#toc-entry-2">Implementations</a></h1>
 <p>We'll look at a number of ways
 to implement this.</p>
-<p class="rubric" id="target-1">ackermanns.py (1) =</p>
+<p class="rubric" id="ackermanns-py-1">ackermanns.py (1) =</p>
 <pre class="code literal-block">
-→set reduction (<a class="reference internal" href="#target-2">2</a>)
+→<a class="reference internal" href="#set-reduction-2">set reduction (2)</a>
 REPL_set_reduction = &quot;&quot;&quot;
-→test set reduction (<a class="reference internal" href="#target-3">3</a>)
+→<a class="reference internal" href="#test-set-reduction-3">test set reduction (3)</a>
 &quot;&quot;&quot;
 
-→dictionary reduction (<a class="reference internal" href="#target-4">4</a>)
+→<a class="reference internal" href="#dictionary-reduction-4">dictionary reduction (4)</a>
 REPL_dict_reduction = &quot;&quot;&quot;
-→test dict reduction (<a class="reference internal" href="#target-5">5</a>)
+→<a class="reference internal" href="#test-dict-reduction-5">test dict reduction (5)</a>
 &quot;&quot;&quot;
 
-→match statement (<a class="reference internal" href="#target-6">6</a>)
+→<a class="reference internal" href="#match-statement-6">match statement (6)</a>
 REPL_match_statement = &quot;&quot;&quot;
-→test match statemnent (<a class="reference internal" href="#target-7">7</a>)
+→<a class="reference internal" href="#test-match-statemnent-7">test match statemnent (7)</a>
 &quot;&quot;&quot;
 
 __test__ = {n: v for n, v in globals().items() if n.startswith('REPL')}
 </pre>
 <!--  -->
-<blockquote>
-<p class="small">◊ <em>ackermanns.py (1)</em>.</p>
-</blockquote>
+<p class="small">∎ <em>ackermanns.py (1)</em></p>
 <div class="section" id="set-reduction">
 <h2><a class="toc-backref" href="#toc-entry-3">Set Reduction</a></h2>
 <p>First, let's consider evaluating the conditionals into &quot;value or None&quot; conditions.
@@ -918,7 +906,7 @@ We can then create a set and keep the non-None items.</p>
 <p>The set reduction involves computing a non-<tt class="docutils literal">None</tt> result for the case that is true
 and <tt class="docutils literal">None</tt> result for all remaining cases. The resulting set of values will be reduced to
 two items. Subtracting the <tt class="docutils literal">None</tt> item from the set leaves the result value.</p>
-<p class="rubric" id="target-2">set reduction (2) =</p>
+<p class="rubric" id="set-reduction-2">set reduction (2) =</p>
 <pre class="code literal-block">
 phi_1 = (
     lambda m, n, p: (
@@ -933,10 +921,8 @@ phi_1 = (
 )
 </pre>
 <!--  -->
-<blockquote>
-<p class="small">◊ <em>set reduction (2)</em>. Used by: ackermanns.py (<a class="reference internal" href="#target-1">1</a>)</p>
-</blockquote>
-<p class="rubric" id="target-3">test set reduction (3) =</p>
+<p class="small">∎ <em>set reduction (2)</em></p>
+<p class="rubric" id="test-set-reduction-3">test set reduction (3) =</p>
 <pre class="code literal-block">
 &gt;&gt;&gt; phi_1(3, 5, 0)
 8
@@ -948,9 +934,7 @@ phi_1 = (
 243
 </pre>
 <!--  -->
-<blockquote>
-<p class="small">◊ <em>test set reduction (3)</em>. Used by: ackermanns.py (<a class="reference internal" href="#target-1">1</a>)</p>
-</blockquote>
+<p class="small">∎ <em>test set reduction (3)</em></p>
 </div>
 <div class="section" id="dictionary-reduction">
 <h2><a class="toc-backref" href="#toc-entry-4">Dictionary Reduction</a></h2>
@@ -958,7 +942,7 @@ phi_1 = (
 key. The value for each key is the lambda to evaluate when the key is <tt class="docutils literal">True</tt>.
 Picking the <tt class="docutils literal">True</tt> key from the dictionary maps to the applicable lambda.
 The other lambda, mapped to <tt class="docutils literal">False</tt> can be ignored.</p>
-<p class="rubric" id="target-4">dictionary reduction (4) =</p>
+<p class="rubric" id="dictionary-reduction-4">dictionary reduction (4) =</p>
 <pre class="code literal-block">
 phi = (
     lambda m, n, p: (
@@ -973,10 +957,8 @@ phi = (
 )
 </pre>
 <!--  -->
-<blockquote>
-<p class="small">◊ <em>dictionary reduction (4)</em>. Used by: ackermanns.py (<a class="reference internal" href="#target-1">1</a>)</p>
-</blockquote>
-<p class="rubric" id="target-5">test dict reduction (5) =</p>
+<p class="small">∎ <em>dictionary reduction (4)</em></p>
+<p class="rubric" id="test-dict-reduction-5">test dict reduction (5) =</p>
 <pre class="code literal-block">
 &gt;&gt;&gt; phi(3, 5, 0) == 3+5
 True
@@ -986,15 +968,13 @@ True
 True
 </pre>
 <!--  -->
-<blockquote>
-<p class="small">◊ <em>test dict reduction (5)</em>. Used by: ackermanns.py (<a class="reference internal" href="#target-1">1</a>)</p>
-</blockquote>
+<p class="small">∎ <em>test dict reduction (5)</em></p>
 </div>
 <div class="section" id="match-case">
 <h2><a class="toc-backref" href="#toc-entry-5">Match/Case</a></h2>
 <p>We can use Python 3.10's <tt class="docutils literal">match</tt> statement, also.
 This is generally what folks expect to see.</p>
-<p class="rubric" id="target-6">match statement (6) =</p>
+<p class="rubric" id="match-statement-6">match statement (6) =</p>
 <pre class="code literal-block">
 def phi_m(m, n, p):
     match (m, n, p):
@@ -1010,10 +990,8 @@ def phi_m(m, n, p):
             return phi_m(m, phi_m(m, n-1, p), p-1)
 </pre>
 <!--  -->
-<blockquote>
-<p class="small">◊ <em>match statement (6)</em>. Used by: ackermanns.py (<a class="reference internal" href="#target-1">1</a>)</p>
-</blockquote>
-<p class="rubric" id="target-7">test match statemnent (7) =</p>
+<p class="small">∎ <em>match statement (6)</em></p>
+<p class="rubric" id="test-match-statemnent-7">test match statemnent (7) =</p>
 <pre class="code literal-block">
 &gt;&gt;&gt; phi_m(3, 5, 0) == 3+5
 True
@@ -1023,9 +1001,7 @@ True
 True
 </pre>
 <!--  -->
-<blockquote>
-<p class="small">◊ <em>test match statemnent (7)</em>. Used by: ackermanns.py (<a class="reference internal" href="#target-1">1</a>)</p>
-</blockquote>
+<p class="small">∎ <em>test match statemnent (7)</em></p>
 </div>
 </div>
 <div class="section" id="conclusion">

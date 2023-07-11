@@ -13,3 +13,12 @@ py_web_tool.egg-info/*
 v2_test
 .tox
 pyweb-3.0.py
+/clippings/
+plantuml/plantuml*.jar
+src/_build/doctrees/environment.pickle
+src/_build/doctrees/*.doctree
+src/_build/html/_plantuml/*
+*.egg-info/*
+src/*.egg-info/*
+tox_env.sh
+tmp*

@@ -6,9 +6,6 @@ Ackermann’s Function
 Steven F. Lott
 ==============
 
-..  include:: <isoamsa.txt>
-..	include:: <isopub.txt>
-
 ..  contents::
 
 Definitions
@@ -45,34 +42,35 @@ We'll look at a number of ways
 to implement this.
 
 
-..  _`1`:
+..  _`ackermanns.py (1)`:
 ..  rubric:: ackermanns.py (1) =
 ..  parsed-literal::
     :class: code
 
     
-    |srarr|\ set reduction (`2`_)
+    →\ `set reduction (2)`_    
     REPL\_set\_reduction = """
-    |srarr|\ test set reduction (`3`_)
+    →\ `test set reduction (3)`_    
     """
     
-    |srarr|\ dictionary reduction (`4`_)
+    →\ `dictionary reduction (4)`_    
     REPL\_dict\_reduction = """
-    |srarr|\ test dict reduction (`5`_)
+    →\ `test dict reduction (5)`_    
     """
     
-    |srarr|\ match statement (`6`_)
+    →\ `match statement (6)`_    
     REPL\_match\_statement = """
-    |srarr|\ test match statemnent (`7`_)
+    →\ `test match statemnent (7)`_    
     """
     
     \_\_test\_\_ = {n: v for n, v in globals().items() if n.startswith('REPL')}
 
 ..
 
-    ..  class:: small
+..  class:: small
 
-        |loz| *ackermanns.py (1)*.
+    ∎ *ackermanns.py (1)*
+
 
 
 Set Reduction
@@ -86,7 +84,7 @@ and ``None`` result for all remaining cases. The resulting set of values will be
 two items. Subtracting the ``None`` item from the set leaves the result value.
 
 
-..  _`2`:
+..  _`set reduction (2)`:
 ..  rubric:: set reduction (2) =
 ..  parsed-literal::
     :class: code
@@ -106,13 +104,14 @@ two items. Subtracting the ``None`` item from the set leaves the result value.
 
 ..
 
-    ..  class:: small
+..  class:: small
 
-        |loz| *set reduction (2)*. Used by: ackermanns.py (`1`_)
+    ∎ *set reduction (2)*
 
 
 
-..  _`3`:
+
+..  _`test set reduction (3)`:
 ..  rubric:: test set reduction (3) =
 ..  parsed-literal::
     :class: code
@@ -129,9 +128,10 @@ two items. Subtracting the ``None`` item from the set leaves the result value.
 
 ..
 
-    ..  class:: small
+..  class:: small
 
-        |loz| *test set reduction (3)*. Used by: ackermanns.py (`1`_)
+    ∎ *test set reduction (3)*
+
 
 
 
@@ -144,7 +144,7 @@ Picking the ``True`` key from the dictionary maps to the applicable lambda.
 The other lambda, mapped to ``False`` can be ignored.
 
 
-..  _`4`:
+..  _`dictionary reduction (4)`:
 ..  rubric:: dictionary reduction (4) =
 ..  parsed-literal::
     :class: code
@@ -164,13 +164,14 @@ The other lambda, mapped to ``False`` can be ignored.
 
 ..
 
-    ..  class:: small
+..  class:: small
 
-        |loz| *dictionary reduction (4)*. Used by: ackermanns.py (`1`_)
+    ∎ *dictionary reduction (4)*
 
 
 
-..  _`5`:
+
+..  _`test dict reduction (5)`:
 ..  rubric:: test dict reduction (5) =
 ..  parsed-literal::
     :class: code
@@ -185,9 +186,10 @@ The other lambda, mapped to ``False`` can be ignored.
 
 ..
 
-    ..  class:: small
+..  class:: small
 
-        |loz| *test dict reduction (5)*. Used by: ackermanns.py (`1`_)
+    ∎ *test dict reduction (5)*
+
 
 
 
@@ -198,7 +200,7 @@ We can use Python 3.10's ``match`` statement, also.
 This is generally what folks expect to see.
 
 
-..  _`6`:
+..  _`match statement (6)`:
 ..  rubric:: match statement (6) =
 ..  parsed-literal::
     :class: code
@@ -219,13 +221,14 @@ This is generally what folks expect to see.
 
 ..
 
-    ..  class:: small
+..  class:: small
 
-        |loz| *match statement (6)*. Used by: ackermanns.py (`1`_)
+    ∎ *match statement (6)*
 
 
 
-..  _`7`:
+
+..  _`test match statemnent (7)`:
 ..  rubric:: test match statemnent (7) =
 ..  parsed-literal::
     :class: code
@@ -240,9 +243,10 @@ This is generally what folks expect to see.
 
 ..
 
-    ..  class:: small
+..  class:: small
 
-        |loz| *test match statemnent (7)*. Used by: ackermanns.py (`1`_)
+    ∎ *test match statemnent (7)*
+
 
 
 Conclusion

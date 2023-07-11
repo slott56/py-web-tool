@@ -6,7 +6,7 @@ from pathlib import Path
 import pyweb
 
 def main(source: Path) -> None:
-    with pyweb.Logger(pyweb.log_config):
+    with pyweb.Logger(pyweb.default_logging_config):
         logger = logging.getLogger(__file__)
     
         options = argparse.Namespace(
@@ -16,17 +16,12 @@ def main(source: Path) -> None:
             command='@',
             permitList=['@i'],
             tangler_line_numbers=False,
-            reference_style=pyweb.SimpleReference(),
-            theTangler=pyweb.TanglerMake(),
             webReader=pyweb.WebReader(),
+            theTangler=pyweb.TanglerMake(),
         )
-    
-        w = pyweb.Web() 
-        
+            
         for action in pyweb.LoadAction(), pyweb.TangleAction():
-            action.web = w
-            action.options = options
-            action()
+            action(options)
             logger.info(action.summary())
 
 if __name__ == "__main__":

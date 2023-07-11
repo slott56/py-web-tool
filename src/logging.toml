@@ -1,0 +1,39 @@
+
+version = 1
+disable_existing_loggers = false
+
+[root]
+handlers = [ "console",]
+level = "INFO"
+
+[handlers.console]
+class = "logging.StreamHandler"
+stream = "ext://sys.stderr"
+formatter = "basic"
+
+[formatters.basic]
+format = "{levelname}:{name}:{message}"
+style = "{"
+
+[loggers.Weaver]
+level = "INFO"
+
+[loggers.WebReader]
+level = "INFO"
+
+[loggers.Tangler]
+level = "INFO"
+
+[loggers.TanglerMake]
+level = "INFO"
+
+[loggers.indent.TanglerMake]
+level = "INFO"
+
+[loggers.WebReader]
+level = "INFO"
+
+[loggers.ReferenceCommand]
+# Unit test requires this...
+level = "INFO"
+

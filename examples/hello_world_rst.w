@@ -6,9 +6,6 @@ Test Program
 Jason R. Fruit
 ===============
 
-..  include:: <isoamsa.txt>
-..	include:: <isopub.txt>
-
 ..  contents::
 
 

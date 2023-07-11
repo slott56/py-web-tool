@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import string
 import sys
+from textwrap import dedent
 from typing import ClassVar
 import unittest
 
@@ -19,14 +20,18 @@ class WeaveTestcase(unittest.TestCase):
     
     def setUp(self) -> None:
         self.source = io.StringIO(self.text)
-        self.web = pyweb.Web()
         self.rdr = pyweb.WebReader()
-        
+        self.maxDiff = None
+
     def tearDown(self) -> None:
         try:
             self.file_path.with_suffix(".html").unlink()
         except FileNotFoundError:
-            pass  # if the test failed, nothing to remove
+            pass
+        try:
+            self.file_path.with_suffix(".debug").unlink()
+        except FileNotFoundError:
+            pass
 
 
  
@@ -53,19 +58,18 @@ for i in range(24):
 """
 
 
-test0_expected = """<html>
+test0_expected_html = """<html>
 <head>
     <link rel="StyleSheet" href="pyweb.css" type="text/css" />
 </head>
 <body>
-<a href="#pyweb1">&rarr;<em>some code</em> (1)</a>
+&rarr;<a href="#pyweb_1"><em>some code (1)</em></a>
 
 
-    <a name="pyweb1"></a>
-    <!--line number 10-->
-    <p><em>some code</em> (1)&nbsp;=</p>
-    <pre><code>
-
+<a name="pyweb_1"></a>
+<!--line number ('test0.w', 10)-->
+<p><em>some code (1)</em> =</p>
+<pre><code>
 def fastExp(n, p):
     r = 1
     while p &gt; 0:
@@ -75,31 +79,54 @@ def fastExp(n, p):
 for i in range(24):
     fastExp(2,i)
 
-    </code></pre>
-    <p>&loz; <em>some code</em> (1).
-    
-    </p>
+</code></pre>
+<p>&#8718; <em>some code (1)</em>.
+
+</p> 
 
 </body>
 </html>
 """
+
+test0_expected_debug = (
+    'text: TextCommand(text=\'<html>\\n<head>\\n    <link rel="StyleSheet" href="pyweb.css" type="text/css" />\\n</head>\\n<body>\\n\', location=(\'test0.w\', 1))\n'
+    "ref: ReferenceCommand(name='some code', location=('test0.w', 6))"
+    "text: TextCommand(text='\\n\\n', location=('test0.w', 7))\n"
+    "begin_code: NamedChunk(name='some code', seq=1, commands=[CodeCommand(text='\\ndef fastExp(n, p):\\n    r = 1\\n    while p > 0:\\n        if p%2 == 1: return n*fastExp(n,p-1)\\n    return n*n*fastExp(n,p/2)\\n\\nfor i in range(24):\\n    fastExp(2,i)\\n', location=('test0.w', 10))], options=[], def_names=[], initial=True, comment_start=None, comment_end=None, references=0, referencedBy=None, logger=<Logger Chunk (INFO)>)\n"
+    "code: CodeCommand(text='\\ndef fastExp(n, p):\\n    r = 1\\n    while p > 0:\\n        if p%2 == 1: return n*fastExp(n,p-1)\\n    return n*n*fastExp(n,p/2)\\n\\nfor i in range(24):\\n    fastExp(2,i)\\n', location=('test0.w', 10))\n"
+    "end_code: NamedChunk(name='some code', seq=1, commands=[CodeCommand(text='\\ndef fastExp(n, p):\\n    r = 1\\n    while p > 0:\\n        if p%2 == 1: return n*fastExp(n,p-1)\\n    return n*n*fastExp(n,p/2)\\n\\nfor i in range(24):\\n    fastExp(2,i)\\n', location=('test0.w', 10))], options=[], def_names=[], initial=True, comment_start=None, comment_end=None, references=0, referencedBy=None, logger=<Logger Chunk (INFO)>)\n"
+    "text: TextCommand(text='\\n</body>\\n</html>\\n', location=('test0.w', 19))"
+    )
 
 
 class Test_RefDefWeave(WeaveTestcase):
     text = test0_w
     file_path = Path("test0.w")
     def test_load_should_createChunks(self) -> None:
-        self.rdr.load(self.web, self.file_path, self.source)
-        self.assertEqual(3, len(self.web.chunkSeq))
-    def test_weave_should_createFile(self) -> None:
-        self.rdr.load(self.web, self.file_path, self.source)
-        doc = pyweb.HTML()
-        doc.reference_style = pyweb.SimpleReference() 
-        self.web.weave(doc)
+        chunks = self.rdr.load(self.file_path, self.source)
+        self.assertEqual(3, len(chunks))
+        
+    def test_weave_should_create_html(self) -> None:
+        chunks = self.rdr.load(self.file_path, self.source)
+        self.web = pyweb.Web(chunks)
+        self.web.web_path = self.file_path
+        doc = pyweb.Weaver( )
+        doc.set_markup("html")
+        doc.emit(self.web)
         actual = self.file_path.with_suffix(".html").read_text()
         self.maxDiff = None
-        self.assertEqual(test0_expected, actual)
-
+        self.assertEqual(test0_expected_html, actual)
+        
+    def test_weave_should_create_debug(self) -> None:
+        chunks = self.rdr.load(self.file_path, self.source)
+        self.web = pyweb.Web(chunks)
+        self.web.web_path = self.file_path
+        doc = pyweb.Weaver( )
+        doc.set_markup("debug")
+        doc.emit(self.web)
+        actual = self.file_path.with_suffix(".debug").read_text()
+        self.maxDiff = None
+        self.assertEqual(test0_expected_debug, actual)
 
 
 
@@ -120,16 +147,18 @@ class TestEvaluations(WeaveTestcase):
         super().setUp()
         self.mock_time = Mock(asctime=Mock(return_value="mocked time"))
     def test_should_evaluate(self) -> None:
-        self.rdr.load(self.web, self.file_path, self.source)
-        doc = pyweb.HTML( )
-        doc.reference_style = pyweb.SimpleReference() 
-        self.web.weave(doc)
+        chunks = self.rdr.load(self.file_path, self.source)
+        self.web = pyweb.Web(chunks)
+        self.web.web_path = self.file_path
+        doc = pyweb.Weaver( )
+        doc.set_markup("html")
+        doc.emit(self.web)
         actual = self.file_path.with_suffix(".html").read_text().splitlines()
         #print(actual)
         self.assertEqual("An anonymous chunk.", actual[0])
         self.assertTrue("Time = mocked time", actual[1])
         self.assertEqual("File = ('test9.w', 3)", actual[2])
-        self.assertEqual('Version = 3.1', actual[3])
+        self.assertEqual('Version = 3.2', actual[3])
         self.assertEqual(f'CWD = {os.getcwd()}', actual[4])
 
 

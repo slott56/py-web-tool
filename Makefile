@@ -6,32 +6,32 @@ TEST_PYLPWEB = tests/pyweb_test.w tests/intro.w tests/unit.w tests/func.w tests/
 EXAMPLES_PYLPWEB = examples/hello_world_latex.w examples/hello_world_rst.w ackermanns.w
 DOCUTILS_PYLPWEB = docutils.conf pyweb.css page-layout.css
 
-.PHONY : test
+.PHONY : test doc build examples tox
 
-# Note the bootstrapping new version from version 3.0 as baseline.
-# Handy to keep this *outside* the project's Git repository.
-# Note that the bootstrap 3.0 version doesn't support the -o option.
+# Note the bootstrapping new version from version 3.1 as baseline.
 PYLPWEB_BOOTSTRAP=${PWD}/bootstrap/pyweb.py
 
 test : $(SOURCE_PYLPWEB) $(TEST_PYLPWEB)
-	cd src && python3 $(PYLPWEB_BOOTSTRAP) -xw pyweb.w 
+	python3 $(PYLPWEB_BOOTSTRAP) -xw -v -o src src/pyweb.w 
+	# cp src/pyweb.toml pyweb.toml  # Can obliterate test setup...
 	python3 src/pyweb.py tests/pyweb_test.w -o tests
-	PYTHONPATH=${PWD}/src pytest
+	PYTHONPATH=${PWD}/src PYTHONHASHSEED=0 pytest -vv
 	python3 src/pyweb.py tests/pyweb_test.w -xt -o tests
 	rst2html.py tests/pyweb_test.rst tests/pyweb_test.html
-	mypy --strict --show-error-codes src
+	mypy --strict --show-error-codes --exclude 'conf\.py' src
 
 doc : src/pyweb.html
 
-build : src/pyweb.py src/tangle.py src/weave.py src/pyweb.html
+build : src/pyweb.py src/tangle.py src/weave.py src/pyweb.html tests/pyweb_test.rst
 
-examples : examples/hello_world_latex.tex examples/hello_world_rst.html examples/ackermanns.html
+examples : examples/hello_world_latex.tex examples/hello_world_rst.html examples/ackermanns.html examples/hw.html
 
 src/pyweb.py src/pyweb.rst : $(SOURCE_PYLPWEB)
-	cd src && python3 $(PYLPWEB_BOOTSTRAP) pyweb.w 
+	cd src && python3 pyweb.py pyweb.w 
 
 src/pyweb.html : src/pyweb.rst $(DOCUTILS_PYLPWEB)
-	rst2html.py $< $@
+	# rst2html.py $< $@
+	cd src && make html
          
 tests/pyweb_test.rst : src/pyweb.py $(TEST_PYLPWEB)
 	python3 src/pyweb.py tests/pyweb_test.w -o tests
@@ -40,17 +40,27 @@ tests/pyweb_test.html : tests/pyweb_test.rst $(DOCUTILS_PYLPWEB)
 	rst2html.py $< $@
 
 examples/hello_world_rst.rst : examples/hello_world_rst.w
-	python3 src/pyweb.py -w rst examples/hello_world_rst.w -o examples
+	python3 src/pyweb.py -w rst $< -o examples
 
 examples/hello_world_rst.html : examples/hello_world_rst.rst $(DOCUTILS_PYLPWEB)
 	rst2html.py $< $@
 
 examples/hello_world_latex.tex : examples/hello_world_latex.w
-	python3 src/pyweb.py -w latex examples/hello_world_latex.w -o examples
+	python3 src/pyweb.py -w latex $< -o examples
 
 examples/ackermanns.rst : examples/ackermanns.w
-	python3 src/pyweb.py -w rst examples/ackermanns.w -o examples
+	python3 src/pyweb.py -w rst $< -o examples
 	python -m doctest examples/ackermanns.py
 
 examples/ackermanns.html : examples/ackermanns.rst $(DOCUTILS_PYLPWEB)
 	rst2html.py $< $@
+
+examples/hw.rst : examples/hw.w
+	python3 src/pyweb.py -pi -w rst $< -o examples
+	python3 examples/hw.py >examples/hw_output.log
+
+examples/hw.html : examples/hw.rst $(DOCUTILS_PYLPWEB)
+	rst2html.py $< $@
+
+tox:
+	tox

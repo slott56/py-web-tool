@@ -4,77 +4,61 @@ import argparse
 import logging
 import string
 from pathlib import Path
+from textwrap import dedent
+
 import pyweb
 
 
 
-class MyHTML(pyweb.HTML):
-    """HTML formatting templates."""
-    extension = ".html"
-    
-    cb_template = string.Template("""<a name="pyweb${seq}"></a>
-    <!--line number ${lineNumber}-->
-    <p><em>${fullName}</em> (${seq})&nbsp;${concat}</p>
-    <pre><code>\n""")
+class MyHTML(pyweb.Weaver):
+    bootstrap_html = dedent("""
+    {%- macro begin_code(chunk) %}
+    <div class="card">
+      <div class="card-header">
+        <a type="button" class="btn btn-primary" name="pyweb_{{chunk.seq}}"></a>
+        <!--line number {{chunk.location}}-->
+        <p class="small"><em>{{chunk.full_name or chunk.name}} ({{chunk.seq}})</em> {% if chunk.initial %}={% else %}+={% endif %}</p>
+       </div>
+      <div class="card-body">
+        <pre><code>
+    {%- endmacro -%}
 
-    ce_template = string.Template("""
-    </code></pre>
-    <p>&loz; <em>${fullName}</em> (${seq}).
-    ${references}
-    </p>\n""")
-        
-    fb_template = string.Template("""<a name="pyweb${seq}"></a>
-    <!--line number ${lineNumber}-->
-    <p>``${fullName}`` (${seq})&nbsp;${concat}</p>
-    <pre><code>\n""") # Prevent indent
-        
-    fe_template = string.Template( """</code></pre>
-    <p>&loz; ``${fullName}`` (${seq}).
-    ${references}
-    </p>\n""")
-        
-    ref_item_template = string.Template(
-    '<a href="#pyweb${seq}"><em>${fullName}</em>&nbsp;(${seq})</a>'
-    )
+    {%- macro end_code(chunk) %}
+        </code></pre>
+      </div>
+    <div class="card-footer">
+      <p>&#8718; <em>{{chunk.full_name or chunk.name}} ({{chunk.seq}})</em>.
+      </p> 
+    </div>
+    </div>
+    {% endmacro -%}
+    """)
     
-    ref_template = string.Template('  Used by ${refList}.' )
-            
-    refto_name_template = string.Template(
-    '<a href="#pyweb${seq}">&rarr;<em>${fullName}</em>&nbsp;(${seq})</a>'
-    )
-    refto_seq_template = string.Template('<a href="#pyweb${seq}">(${seq})</a>')
- 
-    xref_head_template = string.Template("<dl>\n")
-    xref_foot_template = string.Template("</dl>\n")
-    xref_item_template = string.Template("<dt>${fullName}</dt><dd>${refList}</dd>\n")
-    
-    name_def_template = string.Template('<a href="#pyweb${seq}"><b>&bull;${seq}</b></a>')
-    name_ref_template = string.Template('<a href="#pyweb${seq}">${seq}</a>')
+    def __init__(self, output: Path = Path.cwd()) -> None:
+        super().__init__(output)
+        self.template_map = pyweb.Weaver.template_map | {"html_macros": self.bootstrap_html}
 
 
 
 def main(source: Path) -> None:
-    with pyweb.Logger(pyweb.log_config):
+    with pyweb.Logger(pyweb.default_logging_config):
         logger = logging.getLogger(__file__)
     
         options = argparse.Namespace(
             source_path=source,
             output=source.parent,
             verbosity=logging.INFO,
+            weaver="html",
             command='@',
             permitList=[],
             tangler_line_numbers=False,
-            reference_style=pyweb.SimpleReference(),
-            theWeaver=MyHTML(),
             webReader=pyweb.WebReader(),
+            
+            theWeaver=MyHTML(),  # Customize with a specific Weaver subclass
         )
-    
-        w = pyweb.Web() 
-    
+        
         for action in pyweb.LoadAction(), pyweb.WeaveAction():
-            action.web = w
-            action.options = options
-            action()
+            action(options)
             logger.info(action.summary())
 
 if __name__ == "__main__":

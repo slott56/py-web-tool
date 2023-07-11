@@ -1,6 +1,7 @@
 
 import logging.handlers
 from pathlib import Path
+from textwrap import dedent
 from typing import ClassVar
 
 """Loader and parsing tests."""
@@ -23,7 +24,6 @@ class ParseTestcase(unittest.TestCase):
     
     def setUp(self) -> None:
         self.source = io.StringIO(self.text)
-        self.web = pyweb.Web()
         self.rdr = pyweb.WebReader()
 
 
@@ -46,11 +46,11 @@ class Test_ParseErrors(ParseTestcase):
     file_path = Path("test1.w")
     def test_error_should_count_1(self) -> None:
         with self.assertLogs('WebReader', level='WARN') as log_capture:
-            self.rdr.load(self.web, self.file_path, self.source)
+            chunks = self.rdr.load(self.file_path, self.source)
         self.assertEqual(3, self.rdr.errors)
         self.assertEqual(log_capture.output, 
             [
-                "ERROR:WebReader:At ('test1.w', 8): expected ('@{',), found '@o'",
+                "ERROR:WebReader:At ('test1.w', 8): expected {'@{'}, found '@o'",
                 "ERROR:WebReader:Extra '@{' (possibly missing chunk name) near ('test1.w', 9)",
                 "ERROR:WebReader:Extra '@{' (possibly missing chunk name) near ('test1.w', 9)"
             ]
@@ -80,11 +80,11 @@ class Test_IncludeParseErrors(ParseTestcase):
         Path('test8_inc.tmp').write_text(test8_inc_w)
     def test_error_should_count_2(self) -> None:
         with self.assertLogs('WebReader', level='WARN') as log_capture:
-            self.rdr.load(self.web, self.file_path, self.source)
+            chunks = self.rdr.load(self.file_path, self.source)
         self.assertEqual(1, self.rdr.errors)
         self.assertEqual(log_capture.output,
             [
-                "ERROR:WebReader:At ('test8_inc.tmp', 4): end of input, ('@{', '@[') not found", 
+                "ERROR:WebReader:At ('test8_inc.tmp', 4): end of input, {'@{', '@['} not found", 
                 "ERROR:WebReader:Errors in included file 'test8_inc.tmp', output is incomplete."
             ]
         ) 
