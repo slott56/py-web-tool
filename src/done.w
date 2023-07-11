@@ -1,9 +1,16 @@
-..    py-web-tool/src/done.w 
+..    py-web-tool/src/done.w
 
 Change Log
 ===========
 
+
 Changes for 3.2
+
+-   Rename to ``py-web-lp`` to limit collisions in PyPI.
+
+-   Replaced ``toml`` with ``tomli`` or built-in ``tomllib``.
+
+-   Fiddle with ``pyproject.toml`` and ``tox.ini`` to eliminate ``setup.py``.
 
 -   Replaced home-brewed ``OptionParser`` with ``argparse.ArgumentParser``.
     Now the options for ``@@d`` and ``@@o`` can be *much* more flexible.

@@ -1214,8 +1214,15 @@ This relies on a number of individual macros:
 
 The ``ref()`` macro can also be used in the XREF output macros. It can also be used in the ``end_code()`` macro.
 After a block of code, some tools (like Interscript) will show where the block was referenced.
+The point of using the ``ref()`` macro in multiple places is to make all of them look identical.
 
-There are several styles for the "referencedBy" information in a ``Chunk``.
+There are a variety of optional formatting considerations. First is cross-references,
+second is a variety of ``begin_code()`` options.
+
+
+There are four styles for the "referencedBy" information in a ``Chunk``.
+
+-   Nothing. 
 
 -   The immediate ``@@<name@@>`` Chunk.
 
@@ -1226,8 +1233,10 @@ There are several styles for the "referencedBy" information in a ``Chunk``.
     
     -   Bottom-up path.  ``→ Sub-Sub-Named (3) ∈ → Sub-Named (2) ∈ → Named (1)``.
 
-These require three distinct versions of the ``end_code()`` macro. This macro uses the ``transitive_referencedBy``
+These require four distinct versions of the ``end_code()`` macro. This macro uses the ``transitive_referencedBy``
 propery of a ``Chunk`` producing a sequence of ``ref()`` values. 
+
+We need 
 
 @d Common base template...
 @{
@@ -2162,10 +2171,10 @@ can be set to permit failure; this allows a ``.w`` to include
 a file that does not yet exist.  
  
 The primary use case for this permitted error feature is when weaving test output.
-A first use of the **py-web-tool** can be used to tangle the program source files,
+A first use of the **py-web-lp** can be used to tangle the program source files,
 ignoring a missing test output file, named in an ``@@i`` command.
 The application can then be run to create the missing test output file. 
-After this, a second use of the **py-web-tool** 
+After this, a second use of the **py-web-lp**
 can weave the test output file into a final, complete document.
 
 @d include another file
@@ -2534,7 +2543,7 @@ There are a number of other components:
 -   `Action Class Hierarchy`_ defines the actions the application can perform.
     This includes loading the WEB file, weaving, tangling, and doing combinations of actions.
     
--   `The Application Class`_ is a high-level definition of the **pyWeb-tool** application as a whole. 
+-   `The Application Class`_ is a high-level definition of the **py-web-lp** application as a whole.
 
 -   `Logging setup`_ defines a handy context manager to configure and shut down logging.
 
@@ -2612,14 +2621,14 @@ This two pass action might be embedded in the following type of Python program.
     Weaver().emit(web, "something.rst")
 
 
-The first step runs **py-web-tool** , excluding the final weaving pass.  The second
+The first step runs **py-web-lp** , excluding the final weaving pass.  The second
 step runs the tangled program, ``source.py``, and produces test results in
-some log file, ``source.log``.  The third step runs **py-web-tool**  excluding the
+some log file, ``source.log``.  The third step runs **py-web-lp**  excluding the
 tangle pass.  This produces a final document that includes the ``source.log`` 
 test results.
 
 To accomplish this, we provide a class hierarchy that defines the various
-actions of the **py-web-tool**  application.  This class hierarchy defines an extensible set of 
+actions of the **py-web-lp**  application.  This class hierarchy defines an extensible set of
 fundamental actions.  This gives us the flexibility to create a simple sequence
 of actions and execute any combination of these.  It eliminates the need for a 
 forest of ``if``-statements to determine precisely what will be done.
@@ -2638,10 +2647,10 @@ that defines the application options, inputs and results.
 @}
 
 
-The ``Action`` class embodies the basic operations of **py-web-tool** .
+The ``Action`` class embodies the basic operations of **py-web-lp** .
 The intent of this hierarchy is to both provide an easily expanded method of
 adding new actions, but an easily specified list of actions for a particular
-run of **py-web-tool** .
+run of **py-web-lp** .
 
 The overall process of the application is defined by an instance of ``Action``.
 This instance may be the ``WeaveAction`` instance, the ``TangleAction`` instance
@@ -3163,7 +3172,7 @@ def parseArgs(self, argv: list[str]) -> argparse.Namespace:
     p.add_argument("-p", "--permit", dest="permit", action="store")
     p.add_argument("-n", "--linenumbers", dest="tangler_line_numbers", action="store_true")
     p.add_argument("-o", "--output", dest="output", action="store", type=Path)
-    p.add_argument("-V", "--Version", action='version', version=f"py-web-tool pyweb.py {__version__}")
+    p.add_argument("-V", "--Version", action='version', version=f"py-web-lp pyweb.py {__version__}")
     p.add_argument("files", nargs='+', type=Path)
     config = p.parse_args(argv, namespace=self.defaults)
     self.expand(config)
@@ -3369,7 +3378,7 @@ We can load this with something like the following:
 ..  parsed-literal::
 
     config_path = Path("pyweb.toml")
-    with config_path.open() as config_file:
+    with config_path.open('rb') as config_file:
         config = toml.load(config_file)
     log_config = config.get('logging', {'version': 1, level=logging.INFO})
 
@@ -3420,7 +3429,7 @@ if __name__ == "__main__":
     base_config: dict[str, Any] = {}
     for cp in config_paths:
         if cp.exists():
-            with cp.open() as config_file:
+            with cp.open('rb') as config_file:
                 base_config = toml.load(config_file)
             break
     log_config = base_config.get('logging', default_logging_config)
@@ -3474,8 +3483,13 @@ closer to where they're referenced.
 @{import os
 import time
 import datetime
-import toml  # type: ignore [import]
+import sys
 import types
+
+if sys.version_info[:2] <= (3, 10):
+    import tomli as toml
+else:
+    import tomllib as toml
 @|  os time datetime toml types
 @}
 
@@ -3504,7 +3518,7 @@ detailed usage information.
 
 
 @d Overheads 
-@{"""py-web-tool Literate Programming.
+@{"""py-web-lp Literate Programming.
 
 Yet another simple literate programming tool derived from **nuweb**, 
 implemented entirely in Python.
@@ -3552,5 +3566,5 @@ This can be extended by doing something like the following.
     pyweb.main()
 
 
-This will create a variant on **py-web-tool** that will handle a different
+This will create a variant on **py-web-lp** that will handle a different
 weaver via the command-line option ``-w myweaver``.

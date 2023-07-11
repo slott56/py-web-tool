@@ -15,7 +15,7 @@ have a common origin, then the traditional gaps between intent
 (expressed in the documentation) and action (expressed in the
 working program) are significantly reduced.
 
-**py-web-tool** is a literate programming tool that combines the actions
+**py-web-lp** is a literate programming tool that combines the actions
 of *weaving* a document with *tangling* source files.
 It is independent of any source language.
 While is designed to work with RST document markup, it should be amenable to any other
@@ -72,11 +72,11 @@ like `Literate Programming <http://www.literateprogramming.com>`_,
 and the OASIS
 `XML Cover Pages: Literate Programming with SGML and XML <http://www.oasis-open.org/cover/xmlLitProg.html>`_.
 
-The immediate predecessors to this **py-web-tool** tool are 
+The immediate predecessors to this **py-web-lp** tool are
 `FunnelWeb <http://www.ross.net/funnelweb>`_,
 `noweb <http://www.eecs.harvard.edu/~nr/noweb/>`_ and 
 `nuweb <http://sourceforge.net/projects/nuweb/>`_.  The ideas lifted from these other
-tools created the foundation for **py-web-tool**.
+tools created the foundation for **py-web-lp**.
 
 There are several Python-oriented literate programming tools.  
 These include 
@@ -125,39 +125,39 @@ and it's output formatting. However, it's limited in the presentation order,
 making it difficult to present a complex Python module out of the proper
 Python required presentation.
 
-**py-web-tool**
+**py-web-lp**
 ---------------
 
-**py-web-tool** works with any 
+**py-web-lp** works with any
 programming language. It can work with any markup language, but is currently
 configured to work with RST.  This philosophy
 comes from *FunnelWeb*
 *noweb*, *nuweb* and *interscript*.  The primary differences
-between **py-web-tool** and other tools are the following.
+between **py-web-lp** and other tools are the following.
 
--   **py-web-tool** is object-oriented, permitting easy extension.  
+-   **py-web-lp** is object-oriented, permitting easy extension.
     *noweb* extensions
     are separate processes that communicate through a sophisticated protocol.
     *nuweb* is not easily extended without rewriting and recompiling
     the C programs.
 
--   **py-web-tool** is built in the very portable Python programming 
+-   **py-web-lp** is built in the very portable Python programming
     language.  This allows it to run anywhere that Python 3.3 runs, with
     only the addition of docutils.  This makes it a useful
     tool for programmers in any language.
 
--   **py-web-tool** is much simpler than *FunnelWeb*, *LEO* or *Interscript*.  It has 
+-   **py-web-lp** is much simpler than *FunnelWeb*, *LEO* or *Interscript*.  It has
     a very limited selection of commands, but can still produce 
     complex programs and HTML documents.
 
--   **py-web-tool** does not invent a complex markup language like *Interscript*.
+-   **py-web-lp** does not invent a complex markup language like *Interscript*.
     Because *Iterscript* has its own markup, it can generate L\ :sub:`a`\ T\ :sub:`e`\ X or HTML or other
     output formats from a unique input format.  While powerful, it seems simpler to
-    avoid inventing yet another sophisticated markup language.  The language **py-web-tool**
+    avoid inventing yet another sophisticated markup language.  The language **py-web-lp**
     uses is very simple, and the author's use their preferred markup language almost
     exclusively.
 
--   **py-web-tool** supports the forward literate programming philosophy, 
+-   **py-web-lp** supports the forward literate programming philosophy,
     where a source document creates programming language and markup language.
     The alternative, deriving the document from markup embedded in 
     program comments ("inverted literate programming"), seems less appealing.
@@ -165,7 +165,7 @@ between **py-web-tool** and other tools are the following.
     can't reflect the original author's preferred order of exposition,
     since that informtion generally isn't part of the source code.
 
--   **py-web-tool** also specifically rejects some features of *nuweb*
+-   **py-web-lp** also specifically rejects some features of *nuweb*
     and *FunnelWeb*.  These include the macro capability with parameter
     substitution, and multiple references to a chunk.  These two capabilities
     can be used to grow object-like applications from non-object programming
@@ -173,18 +173,18 @@ between **py-web-tool** and other tools are the following.
     Java, C++) are object-oriented, this macro capability is more of a problem
     than a help.
 
--   Since **py-web-tool** is built in the Python interpreter, a source document
+-   Since **py-web-lp** is built in the Python interpreter, a source document
     can include Python expressions that are evaluated during weave operation to
     produce time stamps, source file descriptions or other information in the woven 
     or tangled output.
 
 
-**py-web-tool** works with any programming language; it can work with any markup language.
+**py-web-lp** works with any programming language; it can work with any markup language.
 The initial release supports RST via simple templates.
 
 The following is extensively quoted from Briggs' *nuweb* documentation, 
 and provides an excellent background in the advantages of the very
-simple approach started by *nuweb* and adopted by **py-web-tool**.
+simple approach started by *nuweb* and adopted by **py-web-lp**.
 
     The need to support arbitrary
     programming languages has many consequences:
@@ -235,17 +235,17 @@ simple approach started by *nuweb* and adopted by **py-web-tool**.
         but it is also important in many practical situations, *e.g.*, debugging.
 
     :Speed:
-        Since [**py-web-tool**] doesn't do too much, it runs very quickly. 
+        Since [**py-web-lp**] doesn't do too much, it runs very quickly.
         It combines the functions of ``tangle`` and ``weave`` into a single 
         program that performs both functions at once.
 
     :Chunk numbers:
-        Inspired by the example of **noweb**, [**py-web-tool**] refers to all program code 
+        Inspired by the example of **noweb**, [**py-web-lp**] refers to all program code
         chunks by a simple, ascending sequence number through the file.  
         This becomes the HTML anchor name, also.
 
     :Multiple file output:
-        The programmer may specify more than one output file in a single [**py-web-tool**] 
+        The programmer may specify more than one output file in a single [**py-web-lp**]
         source file. This is required when constructing programs in a combination of 
         languages (say, Fortran and C). It's also an advantage when constructing 
         very large programs.

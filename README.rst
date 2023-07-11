@@ -1,4 +1,4 @@
-pyWeb 3.2: In Python, Yet Another Literate Programming Tool
+pyWebLP: In Python, Yet Another Literate Programming Tool
 
 Literate programming is an attempt to reconcile the opposing needs
 of clear presentation to people with the technical issues of 
@@ -8,7 +8,7 @@ Presentation to people requires extensive and sophisticated typesetting
 techniques.  Further, the "narrative arc" of a presentation may not 
 follow the source code as layed out for the compiler.
 
-pyWeb is a literate programming tool based on Knuth's Web to combine the actions
+**py-web-tool** is a literate programming tool based on Knuth's Web to combine the actions
 of weaving a document with tangling source files.
 It is independent of any particular document markup or source language.
 Is uses a simple set of markup tags to define chunks of code and 
@@ -24,18 +24,11 @@ Installation
 
 This requires Python 3.10. 
 
-This is not (currently) hosted in PyPI. Instead of installing it with PIP,
-clone the GitHub repository or download the distribution kit.
-
-Install pyweb "manually" using the provided ``setup.py``.
-
 ::
 
-    python setup.py install
+    python -m install py-web-lp
     
-This will install the ``pyweb`` module.
-
-This requires Jinja2, which should be installed automatically by the setup.
+This will install the ``pyweb`` module and all of its dependencies.
 
 Produce Documentation
 ---------------------
@@ -59,12 +52,12 @@ and assemble those code chunks into a coherent document as well as working code.
 You'll create a ``.w`` file with documentation and code.
 
 If you're a JEdit user, the ``jedit`` directory can be used
-to configure syntax highlighting that includes **py-web-tool** and RST.
+to configure syntax highlighting that includes **py-web-lp** and RST.
 
 Operation
 ---------
 
-After installation and authoring, you can then run **py-web-tool** with the following 
+After installation and authoring, you can then run **py-web-lp** with the following
 command
 
 ::
@@ -108,4 +101,4 @@ Here's a typical sequence, used during development:
     mypy --strict src
 
 Note that a previous release, untouched, is saved in the ``bootstrap`` directory.
-This is **not** changed during development, since **py-web-tool** is written with **py-web-tool**.
+This is **not** changed during development, since **py-web-lp** is written with **py-web-lp**.

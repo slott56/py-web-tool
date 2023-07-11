@@ -1,24 +1,55 @@
 [build-system]
-requires = ["setuptools >= 61.2.0", "wheel >= 0.37.1", "pytest == 7.1.2", "mypy == 0.910"]
+requires = ["setuptools >= 61.2.0", "wheel >= 0.37.1"]
 build-backend = "setuptools.build_meta"
 
-[tool.tox]
-legacy_tox_ini = """
-[tox]
-envlist = py310
+[project]
+# https://peps.python.org/pep-0621/#readme
+version = "3.2"
+requires-python = ">=3.10"
+name = "py-web-lp"
+description="py-web-lp: Yet Another Literate Programming Tool"
+readme = "README.rst"
+authors = [{"name" = "S.Lott", "email" = "slott56@gmail.com"}]
+license = {text = "BSD"}
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: BSD License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python",
+  "Topic :: Documentation",
+  "Topic :: Software Development :: Documentation",
+  "Topic :: System :: Systems Administration",
+  "Topic :: Text Processing :: Markup",
+  "Typing :: Typed",
+]
+dependencies = [
+  # Direct
+  "tomli; python_version < '3.11'",
+  "jinja2==3.1.2",
+  # Indirect components of build system
+  "setuptools",
+  "wheel",
+]
+[project.urls]
+repository = "https://github.com/slott56/py-web-tool"
+documentation = "https://slott56.github.io/py-web-tool/src/pyweb.html"
 
-[testenv]
-deps = 
-    pytest == 7.1.2
-    mypy == 0.961
-    -rrequirements.txt
-setenv = 
-    PYTHONPATH = {toxinidir}/src
-    PYTHONHASHSEED = 0
-commands_pre = 
-    python3 bootstrap/pyweb.py -xw -o src src/pyweb.w
-    python3 src/pyweb.py -o tests tests/pyweb_test.w 
-commands = 
-    pytest
-	mypy --strict --show-error-codes src
-"""
+[project.optional-dependencies]
+dev = [
+  "sphinx==7.0.1",
+  "sphinxcontrib-plantuml==1.0.0",
+  "docutils==0.20.1",
+  "build",
+  "twine",
+]
+test = [
+    "tox == 4.6.4",
+    "pytest == 7.4.0", 
+    "mypy == 1.4.1"
+]
+

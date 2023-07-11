@@ -25,7 +25,7 @@ have a common origin, then the traditional gaps between intent
 (expressed in the documentation) and action (expressed in the
 working program) are significantly reduced.
 
-**py-web-tool** is a literate programming tool that combines the actions
+**py-web-lp** is a literate programming tool that combines the actions
 of *weaving* a document with *tangling* source files.
 It is independent of any source language.
 While is designed to work with RST document markup, it should be amenable to any other
@@ -82,11 +82,11 @@ like `Literate Programming <http://www.literateprogramming.com>`_,
 and the OASIS
 `XML Cover Pages: Literate Programming with SGML and XML <http://www.oasis-open.org/cover/xmlLitProg.html>`_.
 
-The immediate predecessors to this **py-web-tool** tool are 
+The immediate predecessors to this **py-web-lp** tool are
 `FunnelWeb <http://www.ross.net/funnelweb>`_,
 `noweb <http://www.eecs.harvard.edu/~nr/noweb/>`_ and 
 `nuweb <http://sourceforge.net/projects/nuweb/>`_.  The ideas lifted from these other
-tools created the foundation for **py-web-tool**.
+tools created the foundation for **py-web-lp**.
 
 There are several Python-oriented literate programming tools.  
 These include 
@@ -135,39 +135,39 @@ and it's output formatting. However, it's limited in the presentation order,
 making it difficult to present a complex Python module out of the proper
 Python required presentation.
 
-**py-web-tool**
+**py-web-lp**
 ---------------
 
-**py-web-tool** works with any 
+**py-web-lp** works with any
 programming language. It can work with any markup language, but is currently
 configured to work with RST.  This philosophy
 comes from *FunnelWeb*
 *noweb*, *nuweb* and *interscript*.  The primary differences
-between **py-web-tool** and other tools are the following.
+between **py-web-lp** and other tools are the following.
 
--   **py-web-tool** is object-oriented, permitting easy extension.  
+-   **py-web-lp** is object-oriented, permitting easy extension.
     *noweb* extensions
     are separate processes that communicate through a sophisticated protocol.
     *nuweb* is not easily extended without rewriting and recompiling
     the C programs.
 
--   **py-web-tool** is built in the very portable Python programming 
+-   **py-web-lp** is built in the very portable Python programming
     language.  This allows it to run anywhere that Python 3.3 runs, with
     only the addition of docutils.  This makes it a useful
     tool for programmers in any language.
 
--   **py-web-tool** is much simpler than *FunnelWeb*, *LEO* or *Interscript*.  It has 
+-   **py-web-lp** is much simpler than *FunnelWeb*, *LEO* or *Interscript*.  It has
     a very limited selection of commands, but can still produce 
     complex programs and HTML documents.
 
--   **py-web-tool** does not invent a complex markup language like *Interscript*.
+-   **py-web-lp** does not invent a complex markup language like *Interscript*.
     Because *Iterscript* has its own markup, it can generate L\ :sub:`a`\ T\ :sub:`e`\ X or HTML or other
     output formats from a unique input format.  While powerful, it seems simpler to
-    avoid inventing yet another sophisticated markup language.  The language **py-web-tool**
+    avoid inventing yet another sophisticated markup language.  The language **py-web-lp**
     uses is very simple, and the author's use their preferred markup language almost
     exclusively.
 
--   **py-web-tool** supports the forward literate programming philosophy, 
+-   **py-web-lp** supports the forward literate programming philosophy,
     where a source document creates programming language and markup language.
     The alternative, deriving the document from markup embedded in 
     program comments ("inverted literate programming"), seems less appealing.
@@ -175,7 +175,7 @@ between **py-web-tool** and other tools are the following.
     can't reflect the original author's preferred order of exposition,
     since that informtion generally isn't part of the source code.
 
--   **py-web-tool** also specifically rejects some features of *nuweb*
+-   **py-web-lp** also specifically rejects some features of *nuweb*
     and *FunnelWeb*.  These include the macro capability with parameter
     substitution, and multiple references to a chunk.  These two capabilities
     can be used to grow object-like applications from non-object programming
@@ -183,18 +183,18 @@ between **py-web-tool** and other tools are the following.
     Java, C++) are object-oriented, this macro capability is more of a problem
     than a help.
 
--   Since **py-web-tool** is built in the Python interpreter, a source document
+-   Since **py-web-lp** is built in the Python interpreter, a source document
     can include Python expressions that are evaluated during weave operation to
     produce time stamps, source file descriptions or other information in the woven 
     or tangled output.
 
 
-**py-web-tool** works with any programming language; it can work with any markup language.
+**py-web-lp** works with any programming language; it can work with any markup language.
 The initial release supports RST via simple templates.
 
 The following is extensively quoted from Briggs' *nuweb* documentation, 
 and provides an excellent background in the advantages of the very
-simple approach started by *nuweb* and adopted by **py-web-tool**.
+simple approach started by *nuweb* and adopted by **py-web-lp**.
 
     The need to support arbitrary
     programming languages has many consequences:
@@ -245,17 +245,17 @@ simple approach started by *nuweb* and adopted by **py-web-tool**.
         but it is also important in many practical situations, *e.g.*, debugging.
 
     :Speed:
-        Since [**py-web-tool**] doesn't do too much, it runs very quickly. 
+        Since [**py-web-lp**] doesn't do too much, it runs very quickly.
         It combines the functions of ``tangle`` and ``weave`` into a single 
         program that performs both functions at once.
 
     :Chunk numbers:
-        Inspired by the example of **noweb**, [**py-web-tool**] refers to all program code 
+        Inspired by the example of **noweb**, [**py-web-lp**] refers to all program code
         chunks by a simple, ascending sequence number through the file.  
         This becomes the HTML anchor name, also.
 
     :Multiple file output:
-        The programmer may specify more than one output file in a single [**py-web-tool**] 
+        The programmer may specify more than one output file in a single [**py-web-lp**]
         source file. This is required when constructing programs in a combination of 
         languages (say, Fortran and C). It's also an advantage when constructing 
         very large programs.
@@ -303,14 +303,14 @@ when ``setup.py`` uses ``requirements.txt`` to install the required components.
 Using
 =====
 
-**py-web-tool** supports two use cases, `Tangle Source Files`_ and `Weave Documentation`_.
+**py-web-lp** supports two use cases, `Tangle Source Files`_ and `Weave Documentation`_.
 These are often combined to both tangle and weave an application and it's documentation.
 The work starts with creating a WEB file with documentation and code.
 
 Create WEB File
 ----------------
 
-See `The py-web-tool Markup Language`_ for more details on the language.
+See `The py-web-lp Markup Language`_ for more details on the language.
 For a simple example, we'll use the following WEB file: ``examples/hw.w``.
 
 ..  parsed-literal::
@@ -387,7 +387,7 @@ A typical command to weave (without tangling) is:
 The output will be named ``examples/hw.rst``. The ``-o`` option made sure the file
 was written to the ``examples`` directory.
 
-Running **py-web-tool** to Tangle and Weave
+Running **py-web-lp** to Tangle and Weave
 -------------------------------------------
 
 Assuming that you have marked ``pyweb.py`` as executable,
@@ -440,7 +440,7 @@ Currently, the following command line options are accepted.
 Bootstrapping
 --------------
 
-**py-web-tool** is written using **py-web-tool**. The distribution includes the original ``.w``
+**py-web-lp** is written using **py-web-lp**. The distribution includes the original ``.w``
 files as well as a ``.py`` module.
 
 The bootstrap procedure is to run a "known good" ``pyweb`` to transform
@@ -453,7 +453,7 @@ directory.
     rst2html.py pyweb.rst pyweb.html
     
 The resulting ``pyweb.html`` file is the updated documentation.
-The ``pyweb.py`` is the updated candidate release of **py-web-tool**.
+The ``pyweb.py`` is the updated candidate release of **py-web-lp**.
 
 Similarly, the tests built from a ``.w`` files.
 
@@ -466,7 +466,7 @@ Similarly, the tests built from a ``.w`` files.
 Dependencies
 -------------
 
-**py-web-tool** requires Python 3.10 or newer.
+**py-web-lp** requires Python 3.10 or newer.
 
 The following components are listed in the ``requirements.txt``
 file. These can be loaded via
@@ -475,14 +475,15 @@ file. These can be loaded via
     
     python -m pip install -r requirements.txt
     
-This tool uses `Jinja <https://palletsprojects.com/p/jinja/>`_ for template processing.
+This lp uses `Jinja <https://palletsprojects.com/p/jinja/>`_ for template processing.
 
-The `TOML <https://github.com/uiri/toml>`_ library is used to parse configuration files. 
+The `tomli <https://pypi.org/project/tomli/>`_ library is used to parse configuration files
+for older Python that lack a ``tomllib`` in the standard library.
 
 If you create RST output, you'll want to use either `docutils <https://docutils.sourceforge.io>`_ or `Sphinx <https://www.sphinx-doc.org/en/master/>`_ to translate
 the RST to HTML or LaTeX or any of the other formats supported by docutils or Sphinx.
 This is not a proper requirement to run the tool. It's a common
-part of an overall document production tool-chain.
+part of an overall document production tool chain.
 
 The overview contains PlantUML diagrams.
 See https://plantuml.com/ for more information.
@@ -570,7 +571,7 @@ from a few ``pyweb`` components.
 
 .. py-web-tool/src/language.w
 
-The **py-web-tool** Markup Language
+The **py-web-lp** Markup Language
 ==========================================
 
 The essence of literate programming is a markup language that includes both code
@@ -581,7 +582,7 @@ The source document is a "Web" documentation that includes the code.
 It's important to see the ``.w`` file as the final documentation.  The code is tangled out 
 of the source web.  
 
-The **py-web-tool** tool parses the ``.w`` file, and performs the
+The **py-web-lp** tool parses the ``.w`` file, and performs the
 tangle and weave operations.  It *tangles* each individual output file
 from the program source chunks.  It *weaves* the final documentation file
 file from the entire sequence of chunks provided, mixing the author's 
@@ -592,14 +593,14 @@ Concepts
 
 The ``.w`` file has two tiers of markup in it.
 
--   At the top, it has **py-web-tool** markup to distinguish
+-   At the top, it has **py-web-lp** markup to distinguish
     documentation chunks from code chunks. 
     
 -   Within the documentation chunks, there can be 
     markup for the target publication tool chain. This might
     be RST, LaTeX, HTML, or some other markup language.
     
-The **py-web-tool** markup decomposes the source document a sequence of *Chunks*. 
+The **py-web-lp** markup decomposes the source document a sequence of *Chunks*.
 
 ..  uml::
 
@@ -624,7 +625,7 @@ The Web chunks have the following two overall sets of features:
 The bulk of the file is typically documentation chunks that describe the program in
 some publication-oriented markup language like RST, HTML, or LaTeX.
 
-**py-web-tool** markup surrounds the code with "commands." Everything else is documentation.
+**py-web-lp** markup surrounds the code with "commands." Everything else is documentation.
 
 The code chunks have two transformations applied.
 
@@ -639,7 +640,7 @@ The code chunks have two transformations applied.
 The non-code, documentation chunks are not transformed up in any way.  Everything that's not
 explicitly a code chunk is output without modification.
 
-All of the **py-web-tool** tags begin with ``@``. This is sometimes called the command prefix.
+All of the **py-web-lp** tags begin with ``@``. This is sometimes called the command prefix.
 (This can be changed.) The tags were historically referred to as "commands."
 For Python decorators in particular, the symbol must be doubled, ``@@``, because
 all ``@`` symbols are commands, irrespective of context.
@@ -1093,11 +1094,11 @@ A global context is created with the following variables defined.
     The ``.w`` file being processed.
     
 :thisApplication:
-    The name of the running **py-web-tool** application. It may not be pyweb.py, 
+    The name of the running **py-web-lp** application. It may not be pyweb.py,
     if some other script is being used.
 
 :__version__:
-    The version string in the **py-web-tool** application.
+    The version string in the **py-web-lp** application.
 
 
 .. py-web-tool/src/overview.w 
@@ -1212,7 +1213,7 @@ as shown below:
      RST --> sphinx
      sphinx --> HTML
 
-We can use **pyweb-tool** to create an ``.rst`` file
+We can use **pyweb-lp** to create an ``.rst`` file
 with the documentation. This is then processed by Sphinx
 to inject a Sphinx theme and necessary CSS to make
 responsive web document(s). 
@@ -1450,9 +1451,9 @@ Weaving
 The weaving activity depends on having a target document markup language.
 There are several approaches to this problem.  
 
--   We can use a markup language unique to **py-web-tool**.
+-   We can use a markup language unique to **py-web-lp**.
     This would hide the final target markup language. It would mean
-    that **py-web-tool** would be equivalent to a tool like Pandoc, 
+    that **py-web-lp** would be equivalent to a tool like Pandoc,
     producing a variety of target markup languages from a single, common source.
 	
 -   We can use any of the existing markup languages (HTML, RST, Markdown, LaTeX, etc.) 
@@ -1494,7 +1495,7 @@ provide a correct indentation.  This required a command-line parameter
 to turn off indentation for languages like Fortran, where identation
 is not used.  
 
-In **py-web-tool**, there are two options. The default behavior is that the
+In **py-web-lp**, there are two options. The default behavior is that the
 indent of a ``@< name @>`` command is used to set the indent of the 
 material is expanded in place of this reference.  If all ``@<`` commands are presented at the
 left margin, no indentation will be done.  This is helpful simplification,
@@ -3044,8 +3045,15 @@ This relies on a number of individual macros:
 
 The ``ref()`` macro can also be used in the XREF output macros. It can also be used in the ``end_code()`` macro.
 After a block of code, some tools (like Interscript) will show where the block was referenced.
+The point of using the ``ref()`` macro in multiple places is to make all of them look identical.
 
-There are several styles for the "referencedBy" information in a ``Chunk``.
+There are a variety of optional formatting considerations. First is cross-references,
+second is a variety of ``begin_code()`` options.
+
+
+There are four styles for the "referencedBy" information in a ``Chunk``.
+
+-   Nothing. 
 
 -   The immediate ``@<name@>`` Chunk.
 
@@ -3056,8 +3064,10 @@ There are several styles for the "referencedBy" information in a ``Chunk``.
     
     -   Bottom-up path.  ``→ Sub-Sub-Named (3) ∈ → Sub-Named (2) ∈ → Named (1)``.
 
-These require three distinct versions of the ``end_code()`` macro. This macro uses the ``transitive_referencedBy``
+These require four distinct versions of the ``end_code()`` macro. This macro uses the ``transitive_referencedBy``
 propery of a ``Chunk`` producing a sequence of ``ref()`` values. 
+
+We need 
 
 
 ..  _`Common base template -- this is used for ALL weaving (23)`:
@@ -4201,10 +4211,10 @@ can be set to permit failure; this allows a ``.w`` to include
 a file that does not yet exist.  
  
 The primary use case for this permitted error feature is when weaving test output.
-A first use of the **py-web-tool** can be used to tangle the program source files,
+A first use of the **py-web-lp** can be used to tangle the program source files,
 ignoring a missing test output file, named in an ``@i`` command.
 The application can then be run to create the missing test output file. 
-After this, a second use of the **py-web-tool** 
+After this, a second use of the **py-web-lp**
 can weave the test output file into a final, complete document.
 
 
@@ -4755,7 +4765,7 @@ There are a number of other components:
 -   `Action Class Hierarchy`_ defines the actions the application can perform.
     This includes loading the WEB file, weaving, tangling, and doing combinations of actions.
     
--   `The Application Class`_ is a high-level definition of the **pyWeb-tool** application as a whole. 
+-   `The Application Class`_ is a high-level definition of the **py-web-lp** application as a whole.
 
 -   `Logging setup`_ defines a handy context manager to configure and shut down logging.
 
@@ -4846,14 +4856,14 @@ This two pass action might be embedded in the following type of Python program.
     Weaver().emit(web, "something.rst")
 
 
-The first step runs **py-web-tool** , excluding the final weaving pass.  The second
+The first step runs **py-web-lp** , excluding the final weaving pass.  The second
 step runs the tangled program, ``source.py``, and produces test results in
-some log file, ``source.log``.  The third step runs **py-web-tool**  excluding the
+some log file, ``source.log``.  The third step runs **py-web-lp**  excluding the
 tangle pass.  This produces a final document that includes the ``source.log`` 
 test results.
 
 To accomplish this, we provide a class hierarchy that defines the various
-actions of the **py-web-tool**  application.  This class hierarchy defines an extensible set of 
+actions of the **py-web-lp**  application.  This class hierarchy defines an extensible set of
 fundamental actions.  This gives us the flexibility to create a simple sequence
 of actions and execute any combination of these.  It eliminates the need for a 
 forest of ``if``-statements to determine precisely what will be done.
@@ -4885,10 +4895,10 @@ that defines the application options, inputs and results.
 
 
 
-The ``Action`` class embodies the basic operations of **py-web-tool** .
+The ``Action`` class embodies the basic operations of **py-web-lp** .
 The intent of this hierarchy is to both provide an easily expanded method of
 adding new actions, but an easily specified list of actions for a particular
-run of **py-web-tool** .
+run of **py-web-lp** .
 
 The overall process of the application is defined by an instance of ``Action``.
 This instance may be the ``WeaveAction`` instance, the ``TangleAction`` instance
@@ -5673,7 +5683,7 @@ instances.
         p.add\_argument("-p", "--permit", dest="permit", action="store")
         p.add\_argument("-n", "--linenumbers", dest="tangler\_line\_numbers", action="store\_true")
         p.add\_argument("-o", "--output", dest="output", action="store", type=Path)
-        p.add\_argument("-V", "--Version", action='version', version=f"py-web-tool pyweb.py {\_\_version\_\_}")
+        p.add\_argument("-V", "--Version", action='version', version=f"py-web-lp pyweb.py {\_\_version\_\_}")
         p.add\_argument("files", nargs='+', type=Path)
         config = p.parse\_args(argv, namespace=self.defaults)
         self.expand(config)
@@ -5952,7 +5962,7 @@ We can load this with something like the following:
 ..  parsed-literal::
 
     config_path = Path("pyweb.toml")
-    with config_path.open() as config_file:
+    with config_path.open('rb') as config_file:
         config = toml.load(config_file)
     log_config = config.get('logging', {'version': 1, level=logging.INFO})
 
@@ -6021,7 +6031,7 @@ The **pyWeb** application file is shown below:
         base\_config: dict[str, Any] = {}
         for cp in config\_paths:
             if cp.exists():
-                with cp.open() as config\_file:
+                with cp.open('rb') as config\_file:
                     base\_config = toml.load(config\_file)
                 break
         log\_config = base\_config.get('logging', default\_logging\_config)
@@ -6088,8 +6098,13 @@ closer to where they're referenced.
     import os
     import time
     import datetime
-    import toml  # type: ignore [import]
+    import sys
     import types
+    
+    if sys.version\_info[:2] <= (3, 10):
+        import tomli as toml
+    else:
+        import tomllib as toml
     
 
 ..
@@ -6144,7 +6159,7 @@ detailed usage information.
 ..  parsed-literal::
     :class: code
 
-    """py-web-tool Literate Programming.
+    """py-web-lp Literate Programming.
     
     Yet another simple literate programming tool derived from \*\*nuweb\*\*, 
     implemented entirely in Python.
@@ -6179,7 +6194,7 @@ source files.
     
     ### DO NOT EDIT THIS FILE!
     ### It was created by pyweb.py, \_\_version\_\_='3.2'.
-    ### From source impl.w modified Tue Jul 19 14:23:10 2022.
+    ### From source impl.w modified Tue Jul 11 09:03:19 2023.
     ### In working directory '/Users/slott/Documents/Projects/py-web-tool/src'.
 
 ..
@@ -6213,7 +6228,7 @@ This can be extended by doing something like the following.
     pyweb.main()
 
 
-This will create a variant on **py-web-tool** that will handle a different
+This will create a variant on **py-web-lp** that will handle a different
 weaver via the command-line option ``-w myweaver``.
 
 
@@ -6474,19 +6489,36 @@ Any macro **not** defined gets a default implementation.
 
  
 To Do
-=======
+======= 
    
-1.  Implement alternative references at the end of a chunk.
-    Two forms for this: top-down ``→ Named (1) / → Sub-Named (2) / → Sub-Sub-Named (3)``,
-    and bottom-up ``→ Sub-Sub-Named (3) ∈ → Sub-Named (2) ∈ → Named (1)``.
+1.  Change the comment start and comment end options
+    to use Jinja template fragments.
+    There needs to be an ``-add '# {{chunk.position}}'``
+    which overrides the default of ``''`` and injects
+    this into each Tangled chunk. Indented appropriately.
+    
+1.  Implement all four alternative references in the ``end_code()`` macro.
 
-#.  Tangling can include non-woven content. More usefully, Weaving can exclude some chunks.
+    -   Nothing. 
+
+    -   The immediate reference. 
+
+    -   The two variants on full paths: 
+
+        -   top-down ``→ Named (1) / → Sub-Named (2) / → Sub-Sub-Named (3)``
+
+        -   bottom-up ``→ Sub-Sub-Named (3) ∈ → Sub-Named (2) ∈ → Named (1)``
+
+#.  Implement ``@h`` command and ``HiddenOutputChunk``. This may be sufficient.
+    Tangling can then include non-woven output files. 
+    Viewed the other way, Weaving can exclude the non-woven file.
     The use case is a book chapter with test cases that are **not** woven into the text.
-    See https://github.com/slott56/py-web-tool/wiki/Tangle-only-Output
+    See https://github.com/slott56/py-web-tool/wiki/Tangle-only-Output.
        
-#.  Permit selecting a specific weaving template for a named block. 
-    A book may have REPL examples and code examples,
-    and sometimes they'll be different. Especially when working in LaTeX.
+#.  Permit selecting a specific ``begin_code()`` template for a named block. 
+    A book may have distinct formatting for REPL examples and code examples.
+    It may be as small as CSS classes for RST or HTML. It may be a more elaborate
+    set of differences in LaTeX.
 
 #.  Update the ``-indent`` option on ``@d`` chunks to accept a numeric argument with the 
     specific indentation value. This becomes a kind of "noindent" with a given
@@ -6494,6 +6526,8 @@ To Do
     Currently, `-indent` and `-noindent` are true/false flags. 
     
 #.  We might want to decompose the ``impl.w`` file: it's huge.
+    The four major sections -- base model, output, input parsing, other components -- make sense.
+    However, since the output is a *single* .rst file, it doesn't change much to do this.
 
 #.  We might want to interleave code and test into a document that presents both
     side-by-side. We can route the tangled code to multiple files.
@@ -6501,7 +6535,7 @@ To Do
     We'd have to use ``../tests/whatever.py``, **assuming** we were always using ``-o src``.
 
 #.  Rename the module from ``pyweb`` to ``pylpweb`` to avoid name squatting issues.
-    Rename the project from ``py-web-tool`` to ``py-lpweb``.
+    Rename the project from ``py-web-lp`` to ``py-lpweb``.
     
 #.  Offer a basic XHTML template that uses ``CDATA`` sections instead of quoting.
     Does require the standard quoting for the ``CDATA`` end tag.
@@ -6512,12 +6546,19 @@ To Do
     leads to the question of why nest ``@d`` or ``@o`` chunks in the first place?
 
 
-..    py-web-tool/src/done.w 
+..    py-web-tool/src/done.w
 
 Change Log
 ===========
 
+
 Changes for 3.2
+
+-   Rename to ``py-web-lp`` to limit collisions in PyPI.
+
+-   Replaced ``toml`` with ``tomli`` or built-in ``tomllib``.
+
+-   Fiddle with ``pyproject.toml`` and ``tox.ini`` to eliminate ``setup.py``.
 
 -   Replaced home-brewed ``OptionParser`` with ``argparse.ArgumentParser``.
     Now the options for ``@d`` and ``@o`` can be *much* more flexible.
@@ -7064,7 +7105,7 @@ User Identifiers
 
 ..	class:: small
 
-	Created by pyweb.py at Tue Jul 19 14:29:54 2022.
+	Created by pyweb.py at Tue Jul 11 09:15:02 2023.
 
     Source pyweb.w modified Sun Jul  3 13:07:49 2022.
 

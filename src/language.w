@@ -1,6 +1,6 @@
 .. py-web-tool/src/language.w
 
-The **py-web-tool** Markup Language
+The **py-web-lp** Markup Language
 ==========================================
 
 The essence of literate programming is a markup language that includes both code
@@ -11,7 +11,7 @@ The source document is a "Web" documentation that includes the code.
 It's important to see the ``.w`` file as the final documentation.  The code is tangled out 
 of the source web.  
 
-The **py-web-tool** tool parses the ``.w`` file, and performs the
+The **py-web-lp** tool parses the ``.w`` file, and performs the
 tangle and weave operations.  It *tangles* each individual output file
 from the program source chunks.  It *weaves* the final documentation file
 file from the entire sequence of chunks provided, mixing the author's 
@@ -22,14 +22,14 @@ Concepts
 
 The ``.w`` file has two tiers of markup in it.
 
--   At the top, it has **py-web-tool** markup to distinguish
+-   At the top, it has **py-web-lp** markup to distinguish
     documentation chunks from code chunks. 
     
 -   Within the documentation chunks, there can be 
     markup for the target publication tool chain. This might
     be RST, LaTeX, HTML, or some other markup language.
     
-The **py-web-tool** markup decomposes the source document a sequence of *Chunks*. 
+The **py-web-lp** markup decomposes the source document a sequence of *Chunks*.
 
 ..  uml::
 
@@ -54,7 +54,7 @@ The Web chunks have the following two overall sets of features:
 The bulk of the file is typically documentation chunks that describe the program in
 some publication-oriented markup language like RST, HTML, or LaTeX.
 
-**py-web-tool** markup surrounds the code with "commands." Everything else is documentation.
+**py-web-lp** markup surrounds the code with "commands." Everything else is documentation.
 
 The code chunks have two transformations applied.
 
@@ -69,7 +69,7 @@ The code chunks have two transformations applied.
 The non-code, documentation chunks are not transformed up in any way.  Everything that's not
 explicitly a code chunk is output without modification.
 
-All of the **py-web-tool** tags begin with ``@@``. This is sometimes called the command prefix.
+All of the **py-web-lp** tags begin with ``@@``. This is sometimes called the command prefix.
 (This can be changed.) The tags were historically referred to as "commands."
 For Python decorators in particular, the symbol must be doubled, ``@@@@``, because
 all ``@@`` symbols are commands, irrespective of context.
@@ -523,8 +523,8 @@ A global context is created with the following variables defined.
     The ``.w`` file being processed.
     
 :thisApplication:
-    The name of the running **py-web-tool** application. It may not be pyweb.py, 
+    The name of the running **py-web-lp** application. It may not be pyweb.py,
     if some other script is being used.
 
 :__version__:
-    The version string in the **py-web-tool** application.
+    The version string in the **py-web-lp** application.

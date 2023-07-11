@@ -47,7 +47,7 @@
 <ul>
 <li><p><a class="reference internal" href="#background" id="id4">Background</a></p></li>
 <li><p><a class="reference internal" href="#other-tools" id="id5">Other Tools</a></p></li>
-<li><p><a class="reference internal" href="#py-web-tool" id="id6"><strong>py-web-tool</strong></a></p></li>
+<li><p><a class="reference internal" href="#py-web-lp" id="id6"><strong>py-web-lp</strong></a></p></li>
 <li><p><a class="reference internal" href="#acknowledgements" id="id7">Acknowledgements</a></p></li>
 </ul>
 </li>
@@ -57,7 +57,7 @@
 <li><p><a class="reference internal" href="#create-web-file" id="id10">Create WEB File</a></p></li>
 <li><p><a class="reference internal" href="#tangle-source-files" id="id11">Tangle Source Files</a></p></li>
 <li><p><a class="reference internal" href="#weave-documentation" id="id12">Weave Documentation</a></p></li>
-<li><p><a class="reference internal" href="#running-py-web-tool-to-tangle-and-weave" id="id13">Running <strong>py-web-tool</strong> to Tangle and Weave</a></p>
+<li><p><a class="reference internal" href="#running-py-web-lp-to-tangle-and-weave" id="id13">Running <strong>py-web-lp</strong> to Tangle and Weave</a></p>
 <ul>
 <li><p><a class="reference internal" href="#command-line-options" id="id14">Command Line Options</a></p></li>
 </ul>
@@ -72,7 +72,7 @@
 <li><p><a class="reference internal" href="#template-changes" id="id19">Template Changes</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#the-py-web-tool-markup-language" id="id20">The <strong>py-web-tool</strong> Markup Language</a></p>
+<li><p><a class="reference internal" href="#the-py-web-lp-markup-language" id="id20">The <strong>py-web-lp</strong> Markup Language</a></p>
 <ul>
 <li><p><a class="reference internal" href="#concepts" id="id21">Concepts</a></p></li>
 <li><p><a class="reference internal" href="#boilerplate" id="id22">Boilerplate</a></p>
@@ -195,7 +195,7 @@ documentation about that source.  If the program and the documentation
 have a common origin, then the traditional gaps between intent
 (expressed in the documentation) and action (expressed in the
 working program) are significantly reduced.</p>
-<p><strong>py-web-tool</strong> is a literate programming tool that combines the actions
+<p><strong>py-web-lp</strong> is a literate programming tool that combines the actions
 of <em>weaving</em> a document with <em>tangling</em> source files.
 It is independent of any source language.
 While is designed to work with RST document markup, it should be amenable to any other
@@ -245,11 +245,11 @@ work.  A relatively complete survey is available at sites
 like <a class="reference external" href="http://www.literateprogramming.com">Literate Programming</a>,
 and the OASIS
 <a class="reference external" href="http://www.oasis-open.org/cover/xmlLitProg.html">XML Cover Pages: Literate Programming with SGML and XML</a>.</p>
-<p>The immediate predecessors to this <strong>py-web-tool</strong> tool are
+<p>The immediate predecessors to this <strong>py-web-lp</strong> tool are
 <a class="reference external" href="http://www.ross.net/funnelweb">FunnelWeb</a>,
 <a class="reference external" href="http://www.eecs.harvard.edu/~nr/noweb/">noweb</a> and
 <a class="reference external" href="http://sourceforge.net/projects/nuweb/">nuweb</a>.  The ideas lifted from these other
-tools created the foundation for <strong>py-web-tool</strong>.</p>
+tools created the foundation for <strong>py-web-lp</strong>.</p>
 <p>There are several Python-oriented literate programming tools.
 These include
 <a class="reference external" href="http://personalpages.tds.net/~edream/front.html&quot;">LEO</a>,
@@ -289,57 +289,57 @@ and it’s output formatting. However, it’s limited in the presentation order,
 making it difficult to present a complex Python module out of the proper
 Python required presentation.</p>
 </section>
-<section id="py-web-tool">
-<h4><a class="toc-backref" href="#id6" role="doc-backlink"><strong>py-web-tool</strong></a><a class="headerlink" href="#py-web-tool" title="Permalink to this heading">¶</a></h4>
-<p><strong>py-web-tool</strong> works with any
+<section id="py-web-lp">
+<h4><a class="toc-backref" href="#id6" role="doc-backlink"><strong>py-web-lp</strong></a><a class="headerlink" href="#py-web-lp" title="Permalink to this heading">¶</a></h4>
+<p><strong>py-web-lp</strong> works with any
 programming language. It can work with any markup language, but is currently
 configured to work with RST.  This philosophy
 comes from <em>FunnelWeb</em>
 <em>noweb</em>, <em>nuweb</em> and <em>interscript</em>.  The primary differences
-between <strong>py-web-tool</strong> and other tools are the following.</p>
+between <strong>py-web-lp</strong> and other tools are the following.</p>
 <ul class="simple">
-<li><p><strong>py-web-tool</strong> is object-oriented, permitting easy extension.
+<li><p><strong>py-web-lp</strong> is object-oriented, permitting easy extension.
 <em>noweb</em> extensions
 are separate processes that communicate through a sophisticated protocol.
 <em>nuweb</em> is not easily extended without rewriting and recompiling
 the C programs.</p></li>
-<li><p><strong>py-web-tool</strong> is built in the very portable Python programming
+<li><p><strong>py-web-lp</strong> is built in the very portable Python programming
 language.  This allows it to run anywhere that Python 3.3 runs, with
 only the addition of docutils.  This makes it a useful
 tool for programmers in any language.</p></li>
-<li><p><strong>py-web-tool</strong> is much simpler than <em>FunnelWeb</em>, <em>LEO</em> or <em>Interscript</em>.  It has
+<li><p><strong>py-web-lp</strong> is much simpler than <em>FunnelWeb</em>, <em>LEO</em> or <em>Interscript</em>.  It has
 a very limited selection of commands, but can still produce
 complex programs and HTML documents.</p></li>
-<li><p><strong>py-web-tool</strong> does not invent a complex markup language like <em>Interscript</em>.
+<li><p><strong>py-web-lp</strong> does not invent a complex markup language like <em>Interscript</em>.
 Because <em>Iterscript</em> has its own markup, it can generate L<sub>a</sub>T<sub>e</sub>X or HTML or other
 output formats from a unique input format.  While powerful, it seems simpler to
-avoid inventing yet another sophisticated markup language.  The language <strong>py-web-tool</strong>
+avoid inventing yet another sophisticated markup language.  The language <strong>py-web-lp</strong>
 uses is very simple, and the author’s use their preferred markup language almost
 exclusively.</p></li>
-<li><p><strong>py-web-tool</strong> supports the forward literate programming philosophy,
+<li><p><strong>py-web-lp</strong> supports the forward literate programming philosophy,
 where a source document creates programming language and markup language.
 The alternative, deriving the document from markup embedded in
 program comments (“inverted literate programming”), seems less appealing.
 The disadvantage of inverted literate programming is that the final document
 can’t reflect the original author’s preferred order of exposition,
 since that informtion generally isn’t part of the source code.</p></li>
-<li><p><strong>py-web-tool</strong> also specifically rejects some features of <em>nuweb</em>
+<li><p><strong>py-web-lp</strong> also specifically rejects some features of <em>nuweb</em>
 and <em>FunnelWeb</em>.  These include the macro capability with parameter
 substitution, and multiple references to a chunk.  These two capabilities
 can be used to grow object-like applications from non-object programming
 languages (<em>e.g.</em> C or Pascal).  Since most modern languages (Python,
 Java, C++) are object-oriented, this macro capability is more of a problem
 than a help.</p></li>
-<li><p>Since <strong>py-web-tool</strong> is built in the Python interpreter, a source document
+<li><p>Since <strong>py-web-lp</strong> is built in the Python interpreter, a source document
 can include Python expressions that are evaluated during weave operation to
 produce time stamps, source file descriptions or other information in the woven
 or tangled output.</p></li>
 </ul>
-<p><strong>py-web-tool</strong> works with any programming language; it can work with any markup language.
+<p><strong>py-web-lp</strong> works with any programming language; it can work with any markup language.
 The initial release supports RST via simple templates.</p>
 <p>The following is extensively quoted from Briggs’ <em>nuweb</em> documentation,
 and provides an excellent background in the advantages of the very
-simple approach started by <em>nuweb</em> and adopted by <strong>py-web-tool</strong>.</p>
+simple approach started by <em>nuweb</em> and adopted by <strong>py-web-lp</strong>.</p>
 <blockquote>
 <div><p>The need to support arbitrary
 programming languages has many consequences:</p>
@@ -390,17 +390,17 @@ Of course, this is essential for languages that are sensitive to layout;
 but it is also important in many practical situations, <em>e.g.</em>, debugging.</p>
 </dd>
 <dt class="field-even">Speed<span class="colon">:</span></dt>
-<dd class="field-even"><p>Since [<strong>py-web-tool</strong>] doesn’t do too much, it runs very quickly.
+<dd class="field-even"><p>Since [<strong>py-web-lp</strong>] doesn’t do too much, it runs very quickly.
 It combines the functions of <code class="docutils literal notranslate"><span class="pre">tangle</span></code> and <code class="docutils literal notranslate"><span class="pre">weave</span></code> into a single
 program that performs both functions at once.</p>
 </dd>
 <dt class="field-odd">Chunk numbers<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Inspired by the example of <strong>noweb</strong>, [<strong>py-web-tool</strong>] refers to all program code
+<dd class="field-odd"><p>Inspired by the example of <strong>noweb</strong>, [<strong>py-web-lp</strong>] refers to all program code
 chunks by a simple, ascending sequence number through the file.
 This becomes the HTML anchor name, also.</p>
 </dd>
 <dt class="field-even">Multiple file output<span class="colon">:</span></dt>
-<dd class="field-even"><p>The programmer may specify more than one output file in a single [<strong>py-web-tool</strong>]
+<dd class="field-even"><p>The programmer may specify more than one output file in a single [<strong>py-web-lp</strong>]
 source file. This is required when constructing programs in a combination of
 languages (say, Fortran and C). It’s also an advantage when constructing
 very large programs.</p>
@@ -440,12 +440,12 @@ when <code class="docutils literal notranslate"><span class="pre">setup.py</span
 </section>
 <section id="using">
 <h3><a class="toc-backref" href="#id9" role="doc-backlink">Using</a><a class="headerlink" href="#using" title="Permalink to this heading">¶</a></h3>
-<p><strong>py-web-tool</strong> supports two use cases, <a class="reference internal" href="#tangle-source-files">Tangle Source Files</a> and <a class="reference internal" href="#weave-documentation">Weave Documentation</a>.
+<p><strong>py-web-lp</strong> supports two use cases, <a class="reference internal" href="#tangle-source-files">Tangle Source Files</a> and <a class="reference internal" href="#weave-documentation">Weave Documentation</a>.
 These are often combined to both tangle and weave an application and it’s documentation.
 The work starts with creating a WEB file with documentation and code.</p>
 <section id="create-web-file">
 <h4><a class="toc-backref" href="#id10" role="doc-backlink">Create WEB File</a><a class="headerlink" href="#create-web-file" title="Permalink to this heading">¶</a></h4>
-<p>See <a class="reference internal" href="#the-py-web-tool-markup-language">The py-web-tool Markup Language</a> for more details on the language.
+<p>See <a class="reference internal" href="#the-py-web-lp-markup-language">The py-web-lp Markup Language</a> for more details on the language.
 For a simple example, we’ll use the following WEB file: <code class="docutils literal notranslate"><span class="pre">examples/hw.w</span></code>.</p>
 <pre class="literal-block">###########
 Hello World
@@ -503,8 +503,8 @@ errors in the <code class="docutils literal notranslate"><span class="pre">.w</s
 <p>The output will be named <code class="docutils literal notranslate"><span class="pre">examples/hw.rst</span></code>. The <code class="docutils literal notranslate"><span class="pre">-o</span></code> option made sure the file
 was written to the <code class="docutils literal notranslate"><span class="pre">examples</span></code> directory.</p>
 </section>
-<section id="running-py-web-tool-to-tangle-and-weave">
-<h4><a class="toc-backref" href="#id13" role="doc-backlink">Running <strong>py-web-tool</strong> to Tangle and Weave</a><a class="headerlink" href="#running-py-web-tool-to-tangle-and-weave" title="Permalink to this heading">¶</a></h4>
+<section id="running-py-web-lp-to-tangle-and-weave">
+<h4><a class="toc-backref" href="#id13" role="doc-backlink">Running <strong>py-web-lp</strong> to Tangle and Weave</a><a class="headerlink" href="#running-py-web-lp-to-tangle-and-weave" title="Permalink to this heading">¶</a></h4>
 <p>Assuming that you have marked <code class="docutils literal notranslate"><span class="pre">pyweb.py</span></code> as executable,
 you do the following:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python -m pyweb examples/hw.w -o examples
@@ -552,7 +552,7 @@ the tangled program is run to create test results; pass 2 uses
 </section>
 <section id="bootstrapping">
 <h4><a class="toc-backref" href="#id15" role="doc-backlink">Bootstrapping</a><a class="headerlink" href="#bootstrapping" title="Permalink to this heading">¶</a></h4>
-<p><strong>py-web-tool</strong> is written using <strong>py-web-tool</strong>. The distribution includes the original <code class="docutils literal notranslate"><span class="pre">.w</span></code>
+<p><strong>py-web-lp</strong> is written using <strong>py-web-lp</strong>. The distribution includes the original <code class="docutils literal notranslate"><span class="pre">.w</span></code>
 files as well as a <code class="docutils literal notranslate"><span class="pre">.py</span></code> module.</p>
 <p>The bootstrap procedure is to run a “known good” <code class="docutils literal notranslate"><span class="pre">pyweb</span></code> to transform
 a working copy into a new version of <code class="docutils literal notranslate"><span class="pre">pyweb</span></code>. We provide the previous release in the <code class="docutils literal notranslate"><span class="pre">bootstrap</span></code>
@@ -562,7 +562,7 @@ directory.</p>
 </pre></div>
 </div>
 <p>The resulting <code class="docutils literal notranslate"><span class="pre">pyweb.html</span></code> file is the updated documentation.
-The <code class="docutils literal notranslate"><span class="pre">pyweb.py</span></code> is the updated candidate release of <strong>py-web-tool</strong>.</p>
+The <code class="docutils literal notranslate"><span class="pre">pyweb.py</span></code> is the updated candidate release of <strong>py-web-lp</strong>.</p>
 <p>Similarly, the tests built from a <code class="docutils literal notranslate"><span class="pre">.w</span></code> files.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python pyweb.py tests/pyweb_test.w -o tests
 <span class="nv">PYTHONPATH</span><span class="o">=</span>.. pytest
@@ -572,18 +572,19 @@ rst2html.py tests/pyweb_test.rst tests/pyweb_test.html
 </section>
 <section id="dependencies">
 <h4><a class="toc-backref" href="#id16" role="doc-backlink">Dependencies</a><a class="headerlink" href="#dependencies" title="Permalink to this heading">¶</a></h4>
-<p><strong>py-web-tool</strong> requires Python 3.10 or newer.</p>
+<p><strong>py-web-lp</strong> requires Python 3.10 or newer.</p>
 <p>The following components are listed in the <code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code>
 file. These can be loaded via</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python -m pip install -r requirements.txt
 </pre></div>
 </div>
-<p>This tool uses <a class="reference external" href="https://palletsprojects.com/p/jinja/">Jinja</a> for template processing.</p>
-<p>The <a class="reference external" href="https://github.com/uiri/toml">TOML</a> library is used to parse configuration files.</p>
+<p>This lp uses <a class="reference external" href="https://palletsprojects.com/p/jinja/">Jinja</a> for template processing.</p>
+<p>The <a class="reference external" href="https://pypi.org/project/tomli/">tomli</a> library is used to parse configuration files
+for older Python that lack a <code class="docutils literal notranslate"><span class="pre">tomllib</span></code> in the standard library.</p>
 <p>If you create RST output, you’ll want to use either <a class="reference external" href="https://docutils.sourceforge.io">docutils</a> or <a class="reference external" href="https://www.sphinx-doc.org/en/master/">Sphinx</a> to translate
 the RST to HTML or LaTeX or any of the other formats supported by docutils or Sphinx.
 This is not a proper requirement to run the tool. It’s a common
-part of an overall document production tool-chain.</p>
+part of an overall document production tool chain.</p>
 <p>The overview contains PlantUML diagrams.
 See <a class="reference external" href="https://plantuml.com/">https://plantuml.com/</a> for more information.
 The <a class="reference external" href="https://github.com/sphinx-contrib/plantuml">PlantUML for Sphinx</a> plug-in
@@ -650,15 +651,15 @@ The <a class="reference internal" href="#handy-scripts-and-other-files">Handy Sc
 from a few <code class="docutils literal notranslate"><span class="pre">pyweb</span></code> components.</p>
 </section>
 </section>
-<section id="the-py-web-tool-markup-language">
-<h3><a class="toc-backref" href="#id20" role="doc-backlink">The <strong>py-web-tool</strong> Markup Language</a><a class="headerlink" href="#the-py-web-tool-markup-language" title="Permalink to this heading">¶</a></h3>
+<section id="the-py-web-lp-markup-language">
+<h3><a class="toc-backref" href="#id20" role="doc-backlink">The <strong>py-web-lp</strong> Markup Language</a><a class="headerlink" href="#the-py-web-lp-markup-language" title="Permalink to this heading">¶</a></h3>
 <p>The essence of literate programming is a markup language that includes both code
 from documentation. For tangling, the code is relevant. For weaving, both code
 and documentation are relevant.</p>
 <p>The source document is a “Web” documentation that includes the code.
 It’s important to see the <code class="docutils literal notranslate"><span class="pre">.w</span></code> file as the final documentation.  The code is tangled out
 of the source web.</p>
-<p>The <strong>py-web-tool</strong> tool parses the <code class="docutils literal notranslate"><span class="pre">.w</span></code> file, and performs the
+<p>The <strong>py-web-lp</strong> tool parses the <code class="docutils literal notranslate"><span class="pre">.w</span></code> file, and performs the
 tangle and weave operations.  It <em>tangles</em> each individual output file
 from the program source chunks.  It <em>weaves</em> the final documentation file
 file from the entire sequence of chunks provided, mixing the author’s
@@ -667,13 +668,13 @@ original documentation with some markup around the embedded program source.</p>
 <h4><a class="toc-backref" href="#id21" role="doc-backlink">Concepts</a><a class="headerlink" href="#concepts" title="Permalink to this heading">¶</a></h4>
 <p>The <code class="docutils literal notranslate"><span class="pre">.w</span></code> file has two tiers of markup in it.</p>
 <ul class="simple">
-<li><p>At the top, it has <strong>py-web-tool</strong> markup to distinguish
+<li><p>At the top, it has <strong>py-web-lp</strong> markup to distinguish
 documentation chunks from code chunks.</p></li>
 <li><p>Within the documentation chunks, there can be
 markup for the target publication tool chain. This might
 be RST, LaTeX, HTML, or some other markup language.</p></li>
 </ul>
-<p>The <strong>py-web-tool</strong> markup decomposes the source document a sequence of <em>Chunks</em>.</p>
+<p>The <strong>py-web-lp</strong> markup decomposes the source document a sequence of <em>Chunks</em>.</p>
 <p class="plantuml">
 <img src="_images/plantuml-0bff076f813d017a60bee35cd131d50c7c41d245.png" alt="object web
 object chunk
@@ -694,7 +695,7 @@ order, separate from the presentation.</p></li>
 </ul>
 <p>The bulk of the file is typically documentation chunks that describe the program in
 some publication-oriented markup language like RST, HTML, or LaTeX.</p>
-<p><strong>py-web-tool</strong> markup surrounds the code with “commands.” Everything else is documentation.</p>
+<p><strong>py-web-lp</strong> markup surrounds the code with “commands.” Everything else is documentation.</p>
 <p>The code chunks have two transformations applied.</p>
 <ul class="simple">
 <li><p>When Tangling, the indentation is adjusted to match the context in which they were originally defined.
@@ -706,7 +707,7 @@ to avoid problems with the <code class="docutils literal notranslate"><span clas
 </ul>
 <p>The non-code, documentation chunks are not transformed up in any way.  Everything that’s not
 explicitly a code chunk is output without modification.</p>
-<p>All of the <strong>py-web-tool</strong> tags begin with <code class="docutils literal notranslate"><span class="pre">&#64;</span></code>. This is sometimes called the command prefix.
+<p>All of the <strong>py-web-lp</strong> tags begin with <code class="docutils literal notranslate"><span class="pre">&#64;</span></code>. This is sometimes called the command prefix.
 (This can be changed.) The tags were historically referred to as “commands.”
 For Python decorators in particular, the symbol must be doubled, <code class="docutils literal notranslate"><span class="pre">&#64;&#64;</span></code>, because
 all <code class="docutils literal notranslate"><span class="pre">&#64;</span></code> symbols are commands, irrespective of context.</p>
@@ -1088,11 +1089,11 @@ for the original expression’s location.</p>
 <dd class="field-odd"><p>The <code class="docutils literal notranslate"><span class="pre">.w</span></code> file being processed.</p>
 </dd>
 <dt class="field-even">thisApplication<span class="colon">:</span></dt>
-<dd class="field-even"><p>The name of the running <strong>py-web-tool</strong> application. It may not be pyweb.py,
+<dd class="field-even"><p>The name of the running <strong>py-web-lp</strong> application. It may not be pyweb.py,
 if some other script is being used.</p>
 </dd>
 <dt class="field-odd">__version__<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The version string in the <strong>py-web-tool</strong> application.</p>
+<dd class="field-odd"><p>The version string in the <strong>py-web-lp</strong> application.</p>
 </dd>
 </dl>
 </section>
@@ -1192,7 +1193,7 @@ pyweb --&gt; RST
 RST --&gt; sphinx
 sphinx --&gt; HTML"/>
 </p>
-<p>We can use <strong>pyweb-tool</strong> to create an <code class="docutils literal notranslate"><span class="pre">.rst</span></code> file
+<p>We can use <strong>pyweb-lp</strong> to create an <code class="docutils literal notranslate"><span class="pre">.rst</span></code> file
 with the documentation. This is then processed by Sphinx
 to inject a Sphinx theme and necessary CSS to make
 responsive web document(s).</p>
@@ -1398,9 +1399,9 @@ the tangling activity.</p>
 <p>The weaving activity depends on having a target document markup language.
 There are several approaches to this problem.</p>
 <ul class="simple">
-<li><p>We can use a markup language unique to <strong>py-web-tool</strong>.
+<li><p>We can use a markup language unique to <strong>py-web-lp</strong>.
 This would hide the final target markup language. It would mean
-that <strong>py-web-tool</strong> would be equivalent to a tool like Pandoc,
+that <strong>py-web-lp</strong> would be equivalent to a tool like Pandoc,
 producing a variety of target markup languages from a single, common source.</p></li>
 <li><p>We can use any of the existing markup languages (HTML, RST, Markdown, LaTeX, etc.)
 expand snippets of markup into author-supplied markup to create the
@@ -1434,7 +1435,7 @@ some care was taken to understand the source code context for tangling, and
 provide a correct indentation.  This required a command-line parameter
 to turn off indentation for languages like Fortran, where identation
 is not used.</p>
-<p>In <strong>py-web-tool</strong>, there are two options. The default behavior is that the
+<p>In <strong>py-web-lp</strong>, there are two options. The default behavior is that the
 indent of a <code class="docutils literal notranslate"><span class="pre">&#64;&lt;</span> <span class="pre">name</span> <span class="pre">&#64;&gt;</span></code> command is used to set the indent of the
 material is expanded in place of this reference.  If all <code class="docutils literal notranslate"><span class="pre">&#64;&lt;</span></code> commands are presented at the
 left margin, no indentation will be done.  This is helpful simplification,
@@ -2638,9 +2639,13 @@ the markup being used.</p></li>
 <li><p>userid_xref(command). Emit the full <code class="docutils literal notranslate"><span class="pre">&#64;u</span></code> output, usually some kind of definition list.</p></li>
 </ul>
 <p>The <code class="docutils literal notranslate"><span class="pre">ref()</span></code> macro can also be used in the XREF output macros. It can also be used in the <code class="docutils literal notranslate"><span class="pre">end_code()</span></code> macro.
-After a block of code, some tools (like Interscript) will show where the block was referenced.</p>
-<p>There are several styles for the “referencedBy” information in a <code class="docutils literal notranslate"><span class="pre">Chunk</span></code>.</p>
+After a block of code, some tools (like Interscript) will show where the block was referenced.
+The point of using the <code class="docutils literal notranslate"><span class="pre">ref()</span></code> macro in multiple places is to make all of them look identical.</p>
+<p>There are a variety of optional formatting considerations. First is cross-references,
+second is a variety of <code class="docutils literal notranslate"><span class="pre">begin_code()</span></code> options.</p>
+<p>There are four styles for the “referencedBy” information in a <code class="docutils literal notranslate"><span class="pre">Chunk</span></code>.</p>
 <ul class="simple">
+<li><p>Nothing.</p></li>
 <li><p>The immediate <code class="docutils literal notranslate"><span class="pre">&#64;&lt;name&#64;&gt;</span></code> Chunk.</p></li>
 <li><p>The entire transitive sequence of parents for the <code class="docutils literal notranslate"><span class="pre">&#64;&lt;name&#64;&gt;</span></code> Chunk. There
 are two forms for this:</p>
@@ -2650,8 +2655,9 @@ are two forms for this:</p>
 </ul>
 </li>
 </ul>
-<p>These require three distinct versions of the <code class="docutils literal notranslate"><span class="pre">end_code()</span></code> macro. This macro uses the <code class="docutils literal notranslate"><span class="pre">transitive_referencedBy</span></code>
+<p>These require four distinct versions of the <code class="docutils literal notranslate"><span class="pre">end_code()</span></code> macro. This macro uses the <code class="docutils literal notranslate"><span class="pre">transitive_referencedBy</span></code>
 propery of a <code class="docutils literal notranslate"><span class="pre">Chunk</span></code> producing a sequence of <code class="docutils literal notranslate"><span class="pre">ref()</span></code> values.</p>
+<p>We need</p>
 <p class="rubric" id="common-base-template-this-is-used-for-all-weaving-23">Common base template – this is used for ALL weaving (23) =</p>
 <pre class="code literal-block"><code>base_template = dedent(&quot;&quot;&quot;\
     {%- from macros import text, begin_code, code, ref, end_code, file_xref, macro_xref, userid_xref -%}
@@ -3555,10 +3561,10 @@ This lists any commands where failure is permitted.  Currently, only the <code c
 can be set to permit failure; this allows a <code class="docutils literal notranslate"><span class="pre">.w</span></code> to include
 a file that does not yet exist.</p>
 <p>The primary use case for this permitted error feature is when weaving test output.
-A first use of the <strong>py-web-tool</strong> can be used to tangle the program source files,
+A first use of the <strong>py-web-lp</strong> can be used to tangle the program source files,
 ignoring a missing test output file, named in an <code class="docutils literal notranslate"><span class="pre">&#64;i</span></code> command.
 The application can then be run to create the missing test output file.
-After this, a second use of the <strong>py-web-tool</strong>
+After this, a second use of the <strong>py-web-lp</strong>
 can weave the test output file into a final, complete document.</p>
 <p class="rubric" id="include-another-file-38">include another file (38) =</p>
 <pre class="code literal-block"><code>incPath = Path(next(self.tokenizer).strip())
@@ -3917,7 +3923,7 @@ Used by     → <a class="reference internal" href="#base-class-definitions-33">
 <li><p><a class="reference internal" href="#error-class">Error class</a> Defines a uniform exception for this module.</p></li>
 <li><p><a class="reference internal" href="#action-class-hierarchy">Action Class Hierarchy</a> defines the actions the application can perform.
 This includes loading the WEB file, weaving, tangling, and doing combinations of actions.</p></li>
-<li><p><a class="reference internal" href="#the-application-class">The Application Class</a> is a high-level definition of the <strong>pyWeb-tool</strong> application as a whole.</p></li>
+<li><p><a class="reference internal" href="#the-application-class">The Application Class</a> is a high-level definition of the <strong>py-web-lp</strong> application as a whole.</p></li>
 <li><p><a class="reference internal" href="#logging-setup">Logging setup</a> defines a handy context manager to configure and shut down logging.</p></li>
 <li><p><a class="reference internal" href="#the-main-function">The Main Function</a> is a top-level function to create an instance of <code class="docutils literal notranslate"><span class="pre">Application</span></code>,
 and execute it with either supplied arguments or (by default) the actual command-line
@@ -3980,13 +3986,13 @@ the tangle pass, doing the weave action.</p>
 <span class="n">Weaver</span><span class="p">()</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">web</span><span class="p">,</span> <span class="s2">&quot;something.rst&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The first step runs <strong>py-web-tool</strong> , excluding the final weaving pass.  The second
+<p>The first step runs <strong>py-web-lp</strong> , excluding the final weaving pass.  The second
 step runs the tangled program, <code class="docutils literal notranslate"><span class="pre">source.py</span></code>, and produces test results in
-some log file, <code class="docutils literal notranslate"><span class="pre">source.log</span></code>.  The third step runs <strong>py-web-tool</strong>  excluding the
+some log file, <code class="docutils literal notranslate"><span class="pre">source.log</span></code>.  The third step runs <strong>py-web-lp</strong>  excluding the
 tangle pass.  This produces a final document that includes the <code class="docutils literal notranslate"><span class="pre">source.log</span></code>
 test results.</p>
 <p>To accomplish this, we provide a class hierarchy that defines the various
-actions of the <strong>py-web-tool</strong>  application.  This class hierarchy defines an extensible set of
+actions of the <strong>py-web-lp</strong>  application.  This class hierarchy defines an extensible set of
 fundamental actions.  This gives us the flexibility to create a simple sequence
 of actions and execute any combination of these.  It eliminates the need for a
 forest of <code class="docutils literal notranslate"><span class="pre">if</span></code>-statements to determine precisely what will be done.</p>
@@ -4003,10 +4009,10 @@ that defines the application options, inputs and results.</p>
 <p>∎ <em>Action class hierarchy used to describe actions of the application (53)</em>.
 Used by     → <a class="reference internal" href="#pyweb-py-79">pyweb.py (79)</a>.</p>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">Action</span></code> class embodies the basic operations of <strong>py-web-tool</strong> .
+<p>The <code class="docutils literal notranslate"><span class="pre">Action</span></code> class embodies the basic operations of <strong>py-web-lp</strong> .
 The intent of this hierarchy is to both provide an easily expanded method of
 adding new actions, but an easily specified list of actions for a particular
-run of <strong>py-web-tool</strong> .</p>
+run of <strong>py-web-lp</strong> .</p>
 <p>The overall process of the application is defined by an instance of <code class="docutils literal notranslate"><span class="pre">Action</span></code>.
 This instance may be the <code class="docutils literal notranslate"><span class="pre">WeaveAction</span></code> instance, the <code class="docutils literal notranslate"><span class="pre">TangleAction</span></code> instance
 or a <code class="docutils literal notranslate"><span class="pre">ActionSequence</span></code> instance.</p>
@@ -4511,7 +4517,7 @@ instances.</p>
     p.add_argument(&quot;-p&quot;, &quot;--permit&quot;, dest=&quot;permit&quot;, action=&quot;store&quot;)
     p.add_argument(&quot;-n&quot;, &quot;--linenumbers&quot;, dest=&quot;tangler_line_numbers&quot;, action=&quot;store_true&quot;)
     p.add_argument(&quot;-o&quot;, &quot;--output&quot;, dest=&quot;output&quot;, action=&quot;store&quot;, type=Path)
-    p.add_argument(&quot;-V&quot;, &quot;--Version&quot;, action='version', version=f&quot;py-web-tool pyweb.py {__version__}&quot;)
+    p.add_argument(&quot;-V&quot;, &quot;--Version&quot;, action='version', version=f&quot;py-web-lp pyweb.py {__version__}&quot;)
     p.add_argument(&quot;files&quot;, nargs='+', type=Path)
     config = p.parse_args(argv, namespace=self.defaults)
     self.expand(config)
@@ -4709,7 +4715,7 @@ level = &quot;INFO&quot;</code></pre>
 </div>
 <p>We can load this with something like the following:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;pyweb.toml&quot;</span><span class="p">)</span>
-<span class="k">with</span> <span class="n">config_path</span><span class="o">.</span><span class="n">open</span><span class="p">()</span> <span class="k">as</span> <span class="n">config_file</span><span class="p">:</span>
+<span class="k">with</span> <span class="n">config_path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">config_file</span><span class="p">:</span>
     <span class="n">config</span> <span class="o">=</span> <span class="n">toml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
 <span class="n">log_config</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;logging&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">})</span>
 </pre></div>
@@ -4757,7 +4763,7 @@ if __name__ == &quot;__main__&quot;:
     base_config: dict[str, Any] = {}
     for cp in config_paths:
         if cp.exists():
-            with cp.open() as config_file:
+            with cp.open('rb') as config_file:
                 base_config = toml.load(config_file)
             break
     log_config = base_config.get('logging', default_logging_config)
@@ -4795,13 +4801,16 @@ as well as log messages.</p></li>
 <li><p>The <code class="docutils literal notranslate"><span class="pre">types</span></code> module is used to get at <code class="docutils literal notranslate"><span class="pre">SimpleNamespace</span></code> for configuration.</p></li>
 </ul>
 <p class="rubric" id="imports-80">Imports (80) +=</p>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">datetime</span>
-<span class="kn">import</span> <span class="nn">toml</span>  <span class="c1"># type: ignore [import]</span>
-<span class="kn">import</span> <span class="nn">types</span>
-</pre></div>
-</div>
+<pre class="code literal-block"><code>import os
+import time
+import datetime
+import sys
+import types
+
+if sys.version_info[:2] &lt;= (3, 10):
+    import tomli as toml
+else:
+    import tomllib as toml</code></pre>
 <div class="small docutils container">
 <p>∎ <em>Imports (80)</em>.
 Used by     → <a class="reference internal" href="#pyweb-py-79">pyweb.py (79)</a>.</p>
@@ -4830,7 +4839,7 @@ the module or the application program.  The usual style is to provide
 a one-sentence summary on the first line.  This is followed by more
 detailed usage information.</p>
 <p class="rubric" id="overheads-82">Overheads (82) +=</p>
-<pre class="code literal-block"><code>&quot;&quot;&quot;py-web-tool Literate Programming.
+<pre class="code literal-block"><code>&quot;&quot;&quot;py-web-lp Literate Programming.
 
 Yet another simple literate programming tool derived from **nuweb**,
 implemented entirely in Python.
@@ -4851,7 +4860,7 @@ source files.</p>
 
 ### DO NOT EDIT THIS FILE!
 ### It was created by pyweb.py, __version__='3.2'.
-### From source impl.w modified Tue Jul 19 14:23:10 2022.
+### From source impl.w modified Tue Jul 11 09:03:19 2023.
 ### In working directory '/Users/slott/Documents/Projects/py-web-tool/src'.</code></pre>
 <div class="small docutils container">
 <p>∎ <em>Overheads (83)</em>.
@@ -4870,7 +4879,7 @@ class MyWeaver(HTML):
 
 pyweb.weavers['myweaver']= MyWeaver()
 pyweb.main()</pre>
-<p>This will create a variant on <strong>py-web-tool</strong> that will handle a different
+<p>This will create a variant on <strong>py-web-lp</strong> that will handle a different
 weaver via the command-line option <code class="docutils literal notranslate"><span class="pre">-w</span> <span class="pre">myweaver</span></code>.</p>
 </section>
 </section>
@@ -5049,26 +5058,47 @@ Used by     → <a class="reference internal" href="#weave-py-85">weave.py (85)<
 <section id="to-do">
 <h3><a class="toc-backref" href="#id80" role="doc-backlink">To Do</a><a class="headerlink" href="#to-do" title="Permalink to this heading">¶</a></h3>
 <ol class="arabic simple">
-<li><p>Implement alternative references at the end of a chunk.
-Two forms for this: top-down <code class="docutils literal notranslate"><span class="pre">→</span> <span class="pre">Named</span> <span class="pre">(1)</span> <span class="pre">/</span> <span class="pre">→</span> <span class="pre">Sub-Named</span> <span class="pre">(2)</span> <span class="pre">/</span> <span class="pre">→</span> <span class="pre">Sub-Sub-Named</span> <span class="pre">(3)</span></code>,
-and bottom-up <code class="docutils literal notranslate"><span class="pre">→</span> <span class="pre">Sub-Sub-Named</span> <span class="pre">(3)</span> <span class="pre">∈</span> <span class="pre">→</span> <span class="pre">Sub-Named</span> <span class="pre">(2)</span> <span class="pre">∈</span> <span class="pre">→</span> <span class="pre">Named</span> <span class="pre">(1)</span></code>.</p></li>
-<li><p>Tangling can include non-woven content. More usefully, Weaving can exclude some chunks.
+<li><p>Change the comment start and comment end options
+to use Jinja template fragments.
+There needs to be an <code class="docutils literal notranslate"><span class="pre">-add</span> <span class="pre">'#</span> <span class="pre">{{chunk.position}}'</span></code>
+which overrides the default of <code class="docutils literal notranslate"><span class="pre">''</span></code> and injects
+this into each Tangled chunk. Indented appropriately.</p></li>
+</ol>
+<ol class="arabic simple">
+<li><p>Implement all four alternative references in the <code class="docutils literal notranslate"><span class="pre">end_code()</span></code> macro.</p>
+<ul class="simple">
+<li><p>Nothing.</p></li>
+<li><p>The immediate reference.</p></li>
+<li><p>The two variants on full paths:</p>
+<ul>
+<li><p>top-down <code class="docutils literal notranslate"><span class="pre">→</span> <span class="pre">Named</span> <span class="pre">(1)</span> <span class="pre">/</span> <span class="pre">→</span> <span class="pre">Sub-Named</span> <span class="pre">(2)</span> <span class="pre">/</span> <span class="pre">→</span> <span class="pre">Sub-Sub-Named</span> <span class="pre">(3)</span></code></p></li>
+<li><p>bottom-up <code class="docutils literal notranslate"><span class="pre">→</span> <span class="pre">Sub-Sub-Named</span> <span class="pre">(3)</span> <span class="pre">∈</span> <span class="pre">→</span> <span class="pre">Sub-Named</span> <span class="pre">(2)</span> <span class="pre">∈</span> <span class="pre">→</span> <span class="pre">Named</span> <span class="pre">(1)</span></code></p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Implement <code class="docutils literal notranslate"><span class="pre">&#64;h</span></code> command and <code class="docutils literal notranslate"><span class="pre">HiddenOutputChunk</span></code>. This may be sufficient.
+Tangling can then include non-woven output files.
+Viewed the other way, Weaving can exclude the non-woven file.
 The use case is a book chapter with test cases that are <strong>not</strong> woven into the text.
-See <a class="reference external" href="https://github.com/slott56/py-web-tool/wiki/Tangle-only-Output">https://github.com/slott56/py-web-tool/wiki/Tangle-only-Output</a></p></li>
-<li><p>Permit selecting a specific weaving template for a named block.
-A book may have REPL examples and code examples,
-and sometimes they’ll be different. Especially when working in LaTeX.</p></li>
+See <a class="reference external" href="https://github.com/slott56/py-web-tool/wiki/Tangle-only-Output">https://github.com/slott56/py-web-tool/wiki/Tangle-only-Output</a>.</p></li>
+<li><p>Permit selecting a specific <code class="docutils literal notranslate"><span class="pre">begin_code()</span></code> template for a named block.
+A book may have distinct formatting for REPL examples and code examples.
+It may be as small as CSS classes for RST or HTML. It may be a more elaborate
+set of differences in LaTeX.</p></li>
 <li><p>Update the <code class="docutils literal notranslate"><span class="pre">-indent</span></code> option on <code class="docutils literal notranslate"><span class="pre">&#64;d</span></code> chunks to accept a numeric argument with the
 specific indentation value. This becomes a kind of “noindent” with a given
 value. The <code class="docutils literal notranslate"><span class="pre">-noindent</span></code> would then be the same as <code class="docutils literal notranslate"><span class="pre">-indent</span> <span class="pre">0</span></code>.
 Currently, <cite>-indent</cite> and <cite>-noindent</cite> are true/false flags.</p></li>
-<li><p>We might want to decompose the <code class="docutils literal notranslate"><span class="pre">impl.w</span></code> file: it’s huge.</p></li>
+<li><p>We might want to decompose the <code class="docutils literal notranslate"><span class="pre">impl.w</span></code> file: it’s huge.
+The four major sections – base model, output, input parsing, other components – make sense.
+However, since the output is a <em>single</em> .rst file, it doesn’t change much to do this.</p></li>
 <li><p>We might want to interleave code and test into a document that presents both
 side-by-side. We can route the tangled code to multiple files.
 It can be awkward to create tangled files in multiple directories, however.
 We’d have to use <code class="docutils literal notranslate"><span class="pre">../tests/whatever.py</span></code>, <strong>assuming</strong> we were always using <code class="docutils literal notranslate"><span class="pre">-o</span> <span class="pre">src</span></code>.</p></li>
 <li><p>Rename the module from <code class="docutils literal notranslate"><span class="pre">pyweb</span></code> to <code class="docutils literal notranslate"><span class="pre">pylpweb</span></code> to avoid name squatting issues.
-Rename the project from <code class="docutils literal notranslate"><span class="pre">py-web-tool</span></code> to <code class="docutils literal notranslate"><span class="pre">py-lpweb</span></code>.</p></li>
+Rename the project from <code class="docutils literal notranslate"><span class="pre">py-web-lp</span></code> to <code class="docutils literal notranslate"><span class="pre">py-lpweb</span></code>.</p></li>
 <li><p>Offer a basic XHTML template that uses <code class="docutils literal notranslate"><span class="pre">CDATA</span></code> sections instead of quoting.
 Does require the standard quoting for the <code class="docutils literal notranslate"><span class="pre">CDATA</span></code> end tag.</p></li>
 <li><p>Note that the overall <code class="docutils literal notranslate"><span class="pre">Web</span></code> is a bit like a <code class="docutils literal notranslate"><span class="pre">NamedChunk</span></code> that contains <code class="docutils literal notranslate"><span class="pre">Chunks</span></code>.
@@ -5081,6 +5111,9 @@ leads to the question of why nest <code class="docutils literal notranslate"><sp
 <h3><a class="toc-backref" href="#id81" role="doc-backlink">Change Log</a><a class="headerlink" href="#change-log" title="Permalink to this heading">¶</a></h3>
 <p>Changes for 3.2</p>
 <ul class="simple">
+<li><p>Rename to <code class="docutils literal notranslate"><span class="pre">py-web-lp</span></code> to limit collisions in PyPI.</p></li>
+<li><p>Replaced <code class="docutils literal notranslate"><span class="pre">toml</span></code> with <code class="docutils literal notranslate"><span class="pre">tomli</span></code> or built-in <code class="docutils literal notranslate"><span class="pre">tomllib</span></code>.</p></li>
+<li><p>Fiddle with <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> and <code class="docutils literal notranslate"><span class="pre">tox.ini</span></code> to eliminate <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>.</p></li>
 <li><p>Replaced home-brewed <code class="docutils literal notranslate"><span class="pre">OptionParser</span></code> with <code class="docutils literal notranslate"><span class="pre">argparse.ArgumentParser</span></code>.
 Now the options for <code class="docutils literal notranslate"><span class="pre">&#64;d</span></code> and <code class="docutils literal notranslate"><span class="pre">&#64;o</span></code> can be <em>much</em> more flexible.</p></li>
 <li><p>Added the transitive path of references as a Chunk property.
@@ -5574,7 +5607,7 @@ of the ReferenceCommand.</p></li>
 <dt class="sig sig-object py" id="small">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">small</span></span><a class="headerlink" href="#small" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
-<div><p>Created by pyweb.py at Tue Jul 19 14:29:54 2022.</p>
+<div><p>Created by pyweb.py at Tue Jul 11 09:15:02 2023.</p>
 </div></blockquote>
 <p>Source pyweb.w modified Sun Jul  3 13:07:49 2022.</p>
 <blockquote>

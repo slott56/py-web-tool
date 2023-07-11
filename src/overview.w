@@ -110,7 +110,7 @@ as shown below:
      RST --> sphinx
      sphinx --> HTML
 
-We can use **pyweb-tool** to create an ``.rst`` file
+We can use **pyweb-lp** to create an ``.rst`` file
 with the documentation. This is then processed by Sphinx
 to inject a Sphinx theme and necessary CSS to make
 responsive web document(s). 
@@ -348,9 +348,9 @@ Weaving
 The weaving activity depends on having a target document markup language.
 There are several approaches to this problem.  
 
--   We can use a markup language unique to **py-web-tool**.
+-   We can use a markup language unique to **py-web-lp**.
     This would hide the final target markup language. It would mean
-    that **py-web-tool** would be equivalent to a tool like Pandoc, 
+    that **py-web-lp** would be equivalent to a tool like Pandoc,
     producing a variety of target markup languages from a single, common source.
 	
 -   We can use any of the existing markup languages (HTML, RST, Markdown, LaTeX, etc.) 
@@ -392,7 +392,7 @@ provide a correct indentation.  This required a command-line parameter
 to turn off indentation for languages like Fortran, where identation
 is not used.  
 
-In **py-web-tool**, there are two options. The default behavior is that the
+In **py-web-lp**, there are two options. The default behavior is that the
 indent of a ``@@< name @@>`` command is used to set the indent of the 
 material is expanded in place of this reference.  If all ``@@<`` commands are presented at the
 left margin, no indentation will be done.  This is helpful simplification,

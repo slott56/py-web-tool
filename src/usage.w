@@ -22,14 +22,14 @@ when ``setup.py`` uses ``requirements.txt`` to install the required components.
 Using
 =====
 
-**py-web-tool** supports two use cases, `Tangle Source Files`_ and `Weave Documentation`_.
+**py-web-lp** supports two use cases, `Tangle Source Files`_ and `Weave Documentation`_.
 These are often combined to both tangle and weave an application and it's documentation.
 The work starts with creating a WEB file with documentation and code.
 
 Create WEB File
 ----------------
 
-See `The py-web-tool Markup Language`_ for more details on the language.
+See `The py-web-lp Markup Language`_ for more details on the language.
 For a simple example, we'll use the following WEB file: ``examples/hw.w``.
 
 ..  parsed-literal::
@@ -106,7 +106,7 @@ A typical command to weave (without tangling) is:
 The output will be named ``examples/hw.rst``. The ``-o`` option made sure the file
 was written to the ``examples`` directory.
 
-Running **py-web-tool** to Tangle and Weave
+Running **py-web-lp** to Tangle and Weave
 -------------------------------------------
 
 Assuming that you have marked ``pyweb.py`` as executable,
@@ -159,7 +159,7 @@ Currently, the following command line options are accepted.
 Bootstrapping
 --------------
 
-**py-web-tool** is written using **py-web-tool**. The distribution includes the original ``.w``
+**py-web-lp** is written using **py-web-lp**. The distribution includes the original ``.w``
 files as well as a ``.py`` module.
 
 The bootstrap procedure is to run a "known good" ``pyweb`` to transform
@@ -172,7 +172,7 @@ directory.
     rst2html.py pyweb.rst pyweb.html
     
 The resulting ``pyweb.html`` file is the updated documentation.
-The ``pyweb.py`` is the updated candidate release of **py-web-tool**.
+The ``pyweb.py`` is the updated candidate release of **py-web-lp**.
 
 Similarly, the tests built from a ``.w`` files.
 
@@ -185,7 +185,7 @@ Similarly, the tests built from a ``.w`` files.
 Dependencies
 -------------
 
-**py-web-tool** requires Python 3.10 or newer.
+**py-web-lp** requires Python 3.10 or newer.
 
 The following components are listed in the ``requirements.txt``
 file. These can be loaded via
@@ -194,14 +194,15 @@ file. These can be loaded via
     
     python -m pip install -r requirements.txt
     
-This tool uses `Jinja <https://palletsprojects.com/p/jinja/>`_ for template processing.
+This lp uses `Jinja <https://palletsprojects.com/p/jinja/>`_ for template processing.
 
-The `TOML <https://github.com/uiri/toml>`_ library is used to parse configuration files. 
+The `tomli <https://pypi.org/project/tomli/>`_ library is used to parse configuration files
+for older Python that lack a ``tomllib`` in the standard library.
 
 If you create RST output, you'll want to use either `docutils <https://docutils.sourceforge.io>`_ or `Sphinx <https://www.sphinx-doc.org/en/master/>`_ to translate
 the RST to HTML or LaTeX or any of the other formats supported by docutils or Sphinx.
 This is not a proper requirement to run the tool. It's a common
-part of an overall document production tool-chain.
+part of an overall document production tool chain.
 
 The overview contains PlantUML diagrams.
 See https://plantuml.com/ for more information.
