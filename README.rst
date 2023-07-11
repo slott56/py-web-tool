@@ -26,7 +26,7 @@ This requires Python 3.10.
 
 ::
 
-    python -m install py-web-lp
+    python -m pip install py-web-lp
     
 This will install the ``pyweb`` module and all of its dependencies.
 
@@ -64,7 +64,7 @@ command
 
     python3 -m pyweb src/pyweb.w -o src 
 
-This will create the various output files from the source ```.w`` file.
+This will create the various output files from the source ``.w`` file.
 
 -   ``pyweb.rst`` is the final woven document. This can be run through docutils for publication.
 
@@ -94,11 +94,11 @@ Here's a typical sequence, used during development:
 
 ::
 
-	python3 bootstrap/pyweb.py -xw src/pyweb.w -o src 
-	python3 src/pyweb.py tests/pyweb_test.w -o tests
-	PYTHONPATH=${PWD}/src pytest
-	rst2html.py tests/pyweb_test.rst tests/pyweb_test.html
+    python3 bootstrap/pyweb.py -xw src/pyweb.w -o src
+    python3 src/pyweb.py tests/pyweb_test.w -o tests
+    PYTHONPATH=${PWD}/src pytest
+    rst2html.py tests/pyweb_test.rst tests/pyweb_test.html
     mypy --strict src
 
-Note that a previous release, untouched, is saved in the ``bootstrap`` directory.
+Note that a previous release, untouched, is saved in the project's ``bootstrap`` directory.
 This is **not** changed during development, since **py-web-lp** is written with **py-web-lp**.
