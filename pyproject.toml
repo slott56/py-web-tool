@@ -30,7 +30,7 @@ classifiers = [
 dependencies = [
   # Direct
   "tomli; python_version < '3.11'",
-  "jinja2==3.1.2",
+  "jinja2==3.1.3",
   # Indirect components of build system
   "setuptools",
   "wheel",
