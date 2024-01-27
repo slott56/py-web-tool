@@ -3424,7 +3424,7 @@ The **pyWeb** application file is shown below:
 @<Logging Setup@>
 @<Interface Functions@>
 
-if __name__ == "__main__":
+def config() -> None:
     config_paths = Path("pyweb.toml"), Path.home()/"pyweb.toml"
     base_config: dict[str, Any] = {}
     for cp in config_paths:
@@ -3435,6 +3435,10 @@ if __name__ == "__main__":
     log_config = base_config.get('logging', default_logging_config)
     with Logger(log_config):
         main(base_config=base_config.get('pyweb', {}))
+
+
+if __name__ == "__main__":
+    config()
 @}
 
 The `Overheads`_ are described below, they include things like:
