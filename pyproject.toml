@@ -35,6 +35,7 @@ dependencies = [
   "setuptools",
   "wheel",
 ]
+
 [project.urls]
 repository = "https://github.com/slott56/py-web-tool"
 documentation = "https://slott56.github.io/py-web-tool/src/pyweb.html"
@@ -53,3 +54,5 @@ test = [
     "mypy == 1.4.1"
 ]
 
+[project.scripts]
+pyweb = "pyweb:config"

@@ -28,7 +28,8 @@ This requires Python 3.10.
 
     python -m pip install py-web-lp
     
-This will install the ``pyweb`` module and all of its dependencies.
+This will install the ``pyweb`` module and all of its dependencies. Alternatively, 
+you may better want to install as ``pipx install py-web-lp``.
 
 Produce Documentation
 ---------------------
