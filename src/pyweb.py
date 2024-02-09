@@ -868,7 +868,7 @@ class Weaver(Emitter):
     def emit(self, web: Web) -> None:
         self.target_path = (self.output / web.web_path.name).with_suffix(f".{self.markup}")
         self.logger.info("Weaving %s using %s markup", self.target_path, self.markup)
-        with self.target_path.open('w') as target_file:
+        with self.target_path.open('w', encoding="utf-8") as target_file:
             for text in self.generate_text(web):
                 self.linesWritten += text.count("\n")
                 target_file.write(text)
