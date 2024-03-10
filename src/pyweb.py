@@ -636,7 +636,8 @@ rst_weaver_template = dedent("""
     {% for file in command.files -%}
     :{{file.name}}:
         \N{RIGHTWARDS ARROW} `{{file.name}} ({{file.seq}})`_
-    {%- endfor %}
+
+    {% endfor %}
     {%- endmacro -%}
     
     {%- macro macro_xref(command) -%}
