@@ -3,34 +3,33 @@
 Implementation
 ==============
 
-The implementation is contained in a single Python module defining 
-the all of the classes and functions, as well as an overall ``main()`` function.  The ``main()``
-function uses these base classes to weave and tangle the output files.
+The implementation is contained in a single Python module defining the all of the classes and functions, as well as an overall ``main()`` function.
+The ``main()`` function uses these base classes to weave and tangle the output files.
 
 The broad outline of the presentation is as follows:
 
 -   `Base Classes`_ that define a model for the ``.w`` file.
 
-    -   `Web Class`_ contains the overall Web of Chunks. A Web is a sequence
-        of `Chunk` objects. It's also a mapping from chunk name to definition.
+    -   `Web Class`_ contains the overall Web of Chunks.
+        A Web is a sequence of `Chunk` objects.
+        It's also a mapping from chunk name to definition.
     
     -   `Chunk Class Hierarchy`_ are pieces of the source document, built into a Web.
-        A ``Chunk`` is a collection of ``Command`` instances.  This can be
-        either an anonymous chunk that will be sent directly to the output, 
+        A ``Chunk`` is a collection of ``Command`` instances.
+        This can be either an anonymous chunk that will be sent directly to the output,
         or a named chunks delimited by the structural ``@@d`` or ``@@o`` commands.
     
-    -   `Command Class Hierarchy`_ are the items within a ``Chunk``. The text and
-        the inline ``@@<name@@>`` references are the principle command classes.  
-        Additionally, there are some cross reference commands (``@@f``, ``@@m``, or ``@@u``).
+    -   `Command Class Hierarchy`_ are the items within a ``Chunk``.
+        The text and the inline ``@@<name@@>`` references are the principle command classes.
+        Additionally, there are some cross reference commands (``@@f``, ``@@m``, and ``@@u``) that generate content.
 
--   `Output Serialization`_. This is the ``Emitter`` class
-    hierarchy writes various kinds of files. 
+-   `Output Serialization`_. The ``Emitter`` class hierarchy writes various kinds of files.
     These decompose into two subclasses:
             
          -  A ``Tangler`` creates source code. 
          
-         -  A ``Weaver`` creates documentation. The various Jinja-based templates
-            are part of weaving.
+         -  A ``Weaver`` creates documentation.
+            The various Jinja-based templates are part of weaving.
          
 -   `Input Parsing`_ covers deserialization from the source ``.w`` file
     to the base model of ``Web``, ``Chunk``, and ``Command``.
@@ -56,14 +55,12 @@ The broad outline of the presentation is as follows:
     
     -   `pyWeb Module File`_ defines the final module file that contains the application.
 
-We'll start with the base classes that define the 
-data model for the source WEB of chunks.
+We'll start with the base classes that define the data model for the source WEB of chunks.
 
 Base Classes
 -------------
 
-Here are some of the base classes that define
-the structure and meaning of a ``.w`` source file.
+Here are some of the base classes that define the structure and meaning of a ``.w`` source file.
 
 @d Base Class Definitions 
 @{
@@ -74,24 +71,23 @@ the structure and meaning of a ``.w`` source file.
 @<Web class -- describes the overall "web" of chunks@>
 @}
 
-The above order is reasonably helpful for Python and minimizes forward
-references. The ``Chunk``, ``Command``, and ``Web`` instances do have a circular relationship,
-making a strict ordering a bit complex.
+The above order is reasonably helpful for Python and minimizes forward references.
+The ``Chunk``, ``Command``, and ``Web`` instances do have a circular relationship, making a strict ordering a bit complex.
 
 We'll start at the central collection of information, the ``Web`` class of objects.
 
 Web Class
 ~~~~~~~~~
 
-The overall web of chunks is contained in a 
-single instance of the ``Web`` class that is the principle parameter for the weaving and tangling actions.  
-Broadly, the functionality of a Web can be separated into the folloowing areas:
+The overall web of chunks is contained in a single instance of the ``Web`` class.
+This is the principle parameter for the weaving and tangling actions.
+Broadly, the functionality of a Web can be separated into the following areas:
 
 - It is constructed by a ``WebReader``.
 
 - It also supports "enrichment" of the web, once all the ``Chunk`` instances are known. 
-  This is a stateful update to the web.  Each ``Chunk`` is updated with 
-  references it makes as well as references to it.
+  This is a stateful update to the web.
+  Each ``Chunk`` is updated with  references it makes as well as references to it.
 
 - It supports ``Chunk`` cross-reference methods that traverse this enriched data.
   This includes a kind of validity check to be sure that everything is used once
@@ -102,16 +98,14 @@ Fundamentally, a ``Web`` is a hybrid list+mapping. It as the following features:
 
 -   It's a ``Sequence`` to retain all ``Chunk`` instances in order.
 
--   It's a mapping of name-to-Chunk that also offers a 
-    moderately sophisticated
-    lookup, including exact match for a ``Chunk`` name and an approximate match for a
-    an abbreviated name. 
+-   It's a mapping of name-to-Chunk that also offers a moderately sophisticated lookup, including exact match for a ``Chunk`` name and an approximate match for an abbreviated name.
 
 The ``Web`` is built by the parser by loading the sequence of ``Chunk`` instances.
 
-Note that the WEB source language has a "mixed content model". This means the code chunks
-have specific tags with names. The text, on the other hand, is interspersed
-among the code chunks. The text belongs to implicit, unnamed text chunks.
+Note that the WEB source language has a "mixed content model".
+This means the code chunks have specific tags with names.
+The text, on the other hand, is interspersed among the code chunks.
+The text belongs to implicit, unnamed text chunks.
 
 A web instance has a number of attributes.
 
@@ -137,9 +131,8 @@ A web instance has a number of attributes.
     chunks.
 
 This relies on the way a ``@@dataclass`` does post-init processing.
-One the raw sequence of ``Chunks`` has been presented, some additional
-processing is done to link each ``Chunk`` to the web. This permits
-the ``full_name`` property to expand abbreviated names to full names,
+One the raw sequence of ``Chunks`` has been presented, some additional processing is done to link each ``Chunk`` to the web.
+This permits the ``full_name`` property to expand abbreviated names to full names,
 and, consequently, chunk references.
 
 @d Imports
@@ -150,13 +143,12 @@ from functools import cache
 import logging
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any, Optional, Literal, ClassVar, Union
+from typing import Any, Literal, ClassVar
 from weakref import ref, ReferenceType
 @}
 
-The class defines one visible element of a ``Web`` instance,
-the ``chunks`` list of ``Chunk`` instances. From this list of
-``Chunk`` objects, the remaining internal objects are built.
+The class defines one visible element of a ``Web`` instance, the ``chunks`` list of ``Chunk`` instances.
+From this list of ``Chunk`` objects, the remaining internal objects are built.
 These include the following:
  
 -  ``chunk_map`` has the mapping of chunk names to list of chunks that provide the definition for the chunk.
@@ -167,11 +159,11 @@ These include the following:
 
 Additionally there are attributes to contain a logger, a reference to the WEB file path,
 used to evaluate expressions, and a "strict-match" option that can report errors during
-name resolution. Disabling this will allow documents to be tangled that are potentially
-incomplete. 
+name resolution.
+Disabling strict-match will allow documents to be tangled that are potentially incomplete.
 
-Generally, a parser will create a list of ``Chunk`` objects. From this, the
-parser can creates the final ``Web``.
+Generally, a parser will create a list of ``Chunk`` objects.
+From this, the parser can create the final ``Web``.
 
 @d Web class...
 @{
@@ -198,23 +190,26 @@ There are several passes through the WEB to digest the data:
 
 1.  Set all ``Chunk`` and ``Command`` back references to the ``Web`` container.
     This is required so a ``Chunk`` with a ``ReferenceCommand`` instance can properly
-    refer to a chunk elsewhere in the ``Web`` container. There are all weak
-    references to faciliate garbgage collection.
+    refer to a chunk elsewhere in the ``Web`` container.
+    There are all weak references to faciliate garbgage collection.
 
 2.  Locate the unabbreviated names in chunks and references to chunks.
-    Names can found in two places. The ``@@d`` command provides a name.
-    A ``@@<name@@>`` command can also provide a reference to a name. 
-    The unabbreviated names define the structure. Unambiguous abbreviations can be
-    used freely, since full names are located first.
+    Names can found in two places:
+    the ``@@d`` command provides a name, and
+    a ``@@<name@@>`` command provides a reference to a name.
+    The unabbreviated names define the structure.
+    Unambiguous abbreviations can be used freely, since full names are located first.
 
-3.  Accumulate chunk lists, output lists, and name definition lists. This pass
-    does two things. First any user-defined name after a ``@@|`` command
-    is accumulated. Second, any abbreviated name is resolved to the full name, 
+3.  Accumulate chunk lists, output lists, and name definition lists.
+    This pass does two things.
+    First any user-defined name after a ``@@|`` command is accumulated.
+    Second, any abbreviated name is resolved to the full name,
     and the complete mapping from chunk name to a sequence of defining chunks is completed.
 
 4.  Set the ``referencedBy`` attribute of a ``Chunk`` instance with all of the
-    commands that point to it. The idea here is that a top-level ``Chunk`` instance
-    may have references to other ``Chunk`` isntances. This forms a kind of tree.
+    commands that point to it.
+    The idea here is that a top-level ``Chunk`` instance may have references to other ``Chunk`` isntances.
+    This forms a kind of tree.
     Any given low-level ``Chunk`` object is named by a sequence of parent ``Chunk`` objects.
 
 Once the initialization is complete, the ``Web`` instance can be woven or tangled.
@@ -286,8 +281,8 @@ Once the initialization is complete, the ``Web`` instance can be woven or tangle
 @}
 
 The representation of a ``Web`` instance is a sequence of ``Chunk`` instances.
-This can be long and difficult to read. It is, however, complete, and can be 
-used to build instances of ``Web`` objects from a variety of sources.
+This can be long and difficult to read.
+It is, however, complete, and can be  used to build instances of ``Web`` objects from a variety of sources.
 
 @d Web class...
 @{            
@@ -305,10 +300,8 @@ Name resolution provides only the expanded name.
 Chunk resolution provides the list of chunks that define a name.
 Chunk resolution expands on the basic features of Name resolution.
 
-The complex ``target.endswith('...')`` processing only happens once
-during ``__post_init__()`` processing. After the initalization is complete, 
-all ``ReferenceCommand`` objects will have a ``full_name`` attribute
-that avoids the complication of resolving a name with a ``...`` ellipsis.
+The complex ``target.endswith('...')`` processing only happens once during ``__post_init__()`` processing.
+After the initalization is complete, all ``ReferenceCommand`` objects will have a ``full_name`` attribute that avoids the complication of resolving a name with a ``...`` ellipsis.
 
 @d Web class...
 @{
@@ -324,7 +317,6 @@ that avoids the complication of resolving a name with a ``...`` ellipsis.
                 for c_name in self.chunk_map
                 if c_name.startswith(target[:-3])
             )
-            match : str
             # self.logger.debug(f"resolve_name {target=} {matches=} in self.chunk_map")
             match matches:
                 case []:
@@ -333,13 +325,13 @@ that avoids the complication of resolving a name with a ``...`` ellipsis.
                     else:
                         self.logger.warning(f"resolve_name {target=} unknown")
                         self.chunk_map[target] = []
-                    match = target
+                    return target
                 case [head]:
-                    match = head
+                    return head
                 case [head, *tail]:
                     message = f"Ambiguous abbreviation {target!r}, matches {[head] + tail!r}"
                     raise Error(message)
-            return match
+            raise RuntimeError(f"unexpected {matches}")
         else:
             self.logger.warning(f"resolve_name {target=} unknown")
             self.chunk_map[target] = []
@@ -353,14 +345,11 @@ that avoids the complication of resolving a name with a ``...`` ellipsis.
         return chunk_list
 @}
 
-The point of the ``Web`` object is to be able to manage a variety of 
-structures. These iterator methods and properties provide the list of
-``@@o`` chunks, ``@@d`` chunks, and the usernames after ``@@|`` in a chunk.
+The point of the ``Web`` object is to be able to manage a variety of  structures.
+These iterator methods and properties provide the list of ``@@o`` chunks, ``@@d`` chunks, and the usernames after ``@@|`` in a chunk.
 
-Additionally, we can confirm the overall structure by asserting
-that each ``@@d`` name has one reference. A name with no references
-indicates an omission, a name with multiple references suggests a spelling
-or ellipsis problem.
+Additionally, we can confirm the overall structure by asserting that each ``@@d`` name has one reference.
+A name with no references indicates an omission, a name with multiple references suggests a spelling or ellipsis problem.
 
 @d Web class...
 @{
@@ -420,7 +409,8 @@ A ``Web`` is composed of individual ``Chunk`` instances.
 Chunk Class Hierarchy
 ~~~~~~~~~~~~~~~~~~~~~
 
-A ``Chunk`` is a piece of the input file.  It is a collection of ``Command`` instances.
+A ``Chunk`` is a piece of the input file.
+It is a collection of ``Command`` instances.
 A ``Chunk`` can be woven or tangled to create output.
 
 ..  uml::
@@ -457,16 +447,15 @@ These subclasss reflect three kinds of content in the WEB source document:
         Text in the body becomes a ``CodeCommand``.
         Any ``@@< reference @@>`` will be expanded when tangling, but become a link when weaving.
 
-Most of the attributes are pushed up to the superclass. This makes type checking the complex
-WEB tree much simpler.
+Most of the attributes are pushed up to the superclass.
+This makes type checking the complex WEB tree simpler.
 
-The attributes are visible to the Jinja templates. In particular the sequence number, ``seq``, 
-and the initial definition indicator, ``initial``, are often used to customize presentation of the
-woven content.
+The attributes are visible to the Jinja templates.
+In particular the sequence number, ``seq``,  and the initial definition indicator, ``initial``, are often used to customize presentation of the woven content.
 
-A ``type_is()`` method is used to discern the various subtypes. This slightly simplifies
-the work done by a template. It's not easy to rely on proper inheritance because the templates
-are implemented in a separate language with their own processing rules.
+A ``type_is()`` method is used to discern the various subtypes.
+This slightly simplifies the work done by a template.
+It's not easy to rely on proper inheritance because the templates are implemented in a separate language with their own processing rules.
 
 @d Chunk class hierarchy...
 @{
@@ -502,7 +491,7 @@ class Chunk:
     references: int = field(init=False, default=0)
     
     #: The immediate reference to this chunk.
-    referencedBy: Optional["Chunk"] = field(init=False, default=None)
+    referencedBy: "Chunk | None" = field(init=False, default=None)
     
     #: Weak reference to the ``Web`` containing this ``Chunk``.
     web: ReferenceType["Web"] = field(init=False, repr=False)
@@ -603,16 +592,14 @@ class NamedDocumentChunk(Chunk):
 Command Class Hierarchy
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-A ``Chunk`` is a sequence of ``Command`` instances. For the generic ``Chunk`` superclass,
-the commands are -- mostly -- the ``TextCommand`` subclass of ``Command``.
-These are blocks of text. A ``Chunk`` may also include some ``XRefCommand`` instances
-which expand to cross-reference material for an index.
+A ``Chunk`` is a sequence of ``Command`` instances.
+For the generic ``Chunk`` superclass, the commands are -- mostly -- the ``TextCommand`` subclass of ``Command``; these are blocks of text.
+A ``Chunk`` may also include some ``XRefCommand`` instances which expand to cross-reference material for an index.
 
-For the ``CodeChunk`` and ``NamedChunk`` subclasses, the commands are
-``CodeCommand`` instances intermixed with ``ReferenceCommand`` instances.
-A ``CodeCommand`` has a wrapper when weaving. Additionally, it will tangled
-into the output. A ``ReferenceCommand`` becomes a link when weaving, and expands
-to it's full body when being tangled. 
+For the ``CodeChunk`` and ``NamedChunk`` subclasses, the commands are ``CodeCommand`` instances intermixed with ``ReferenceCommand`` instances.
+A ``CodeCommand`` has a wrapper applied to it when weaving.
+Additionally, it will be tangled into the output.
+A ``ReferenceCommand`` becomes a link when weaving, and expands to its full body when being tangled.
 
 ..  uml::
 
@@ -660,15 +647,12 @@ to it's full body when being tangled.
 
     Command -- TypeId
 
-Each of these variants has the possibility of distinct processing
-when weaving the final document. The type information must be 
-visibile to the Jinja template processing. This is done
-through an instance of the ``TypeId`` class attached
-to each of these classes.
+Each of these variants has the possibility of distinct processing when weaving the final document.
+The type information must be  visibile to the Jinja template processing.
+This is done through an instance of the ``TypeId`` class attached to each of these classes.
 
-The input stream is broken into individual commands, based on the
-various ``@@``\ *x* strings in the file.  There are several subclasses of ``Command``,
-each used to describe a different command or block of text in the input.
+The input stream is broken into individual commands, based on the various ``@@``\ *x* strings in the file.
+There are several subclasses of ``Command``, each used to describe a different command or block of text in the input.
 
 All instances of the ``Command`` class are created by the ``WebReader`` instance.  
 In this case, a ``WebReader`` can be thought of as a factory for ``Command`` instances.
@@ -703,11 +687,10 @@ the the definitions of the various ``Command`` subclasses.
 The TypeId Class
 ****************
 
-The ``TypeId`` class provides run-time type
-identification to the Jinja templates. The idea is ``object.typeid.AClass`` is 
-equivalent to ``isinstance(object, pyweb.AClass)``. It has simpler syntax
-and works better with Jinja templates. It helps sort out the various nodes of the AST
-built from the source WEB document. 
+The ``TypeId`` class provides run-time type identification to the Jinja templates.
+The idea is ``object.typeid.AClass`` is  equivalent to ``isinstance(object, pyweb.AClass)``.
+It has simpler syntax and works better with Jinja templates.
+It helps sort out the various nodes of the AST built from the source WEB document.
 
 There are three parts to the ``TypeId`` implementation:
 
@@ -717,23 +700,21 @@ There are three parts to the ``TypeId`` implementation:
 -   A metaclass definition, ``TypeIdMeta``, to inject the new ``typeid`` attribute into each class.
 
 -   The normal class initialization process, which evaluates ``__set_name__()``
-    for each attribute of a class that defines the method. This provides the
-    containing class to the ``TypeId`` instance. 
+    for each attribute of a class that defines the method.
+    This provides the containing class to the ``TypeId`` instance.
 
 The idea of run-time type identification is -- in a way -- a failure to properly
-define the classes to follow the Liskov Substitution design principle. A better
-design would check for specific features of a subclass of ``Command``.
+define the classes to follow the Liskov Substitution design principle.
 This becomes awkwardly complex in the Jinja templates, because the templates exist
-outside the class hierarchy. We rely on the ``typeid`` to map classes to macros appropriate to the class.  
+outside the class hierarchy.
+We rely on the ``typeid`` to map classes to macros appropriate to the class.
 
 @d Imports
-@{from typing import TypeGuard, TypeVar, Generic
+@{from typing import TypeVar, Generic
 @}
 
 @d The TypeId Class...
 @{
-_T = TypeVar("_T")
-
 class TypeId:
     """
     This makes a given class name into an attribute with a 
@@ -747,11 +728,12 @@ class TypeId:
     >>> a.typeid.B
     False
     """             
-    def __set_name__(self, owner: type[_T], name: str) -> "TypeId":
+    def __set_name__(self, owner: type, name: str) -> "TypeId":
+        """Invoked automatically during object construction."""
         self.my_class = owner
         return self
 
-    def __getattr__(self, item: str) -> TypeGuard[_T]:
+    def __getattr__(self, item: str) -> bool:
         return self.my_class.__name__ == item
         
 from collections.abc import Mapping
@@ -765,8 +747,7 @@ class TypeIdMeta(type):
 @}
 
 The ``TypeIdMeta`` metaclass sets the ``typeid`` attribute of each class defined by this metaclass. 
-The ordinary class preparation will invoke
-the ``__set_name__()`` special method to provide details to the attribute.
+The ordinary class preparation automatically invokes the ``__set_name__()`` special method to provide details to the attribute.
 
 Once set, any reference to ``c.typeid.name`` will be evaluated as ``__getattr__(c, 'name')``.
 This permits the typeid to compare the name provided by ``__set_name__()`` with the name
@@ -775,15 +756,14 @@ being inquired about.
 The Command Class
 ********************
 
-The ``Command`` class is abstract, and describes 
-most of the features of the various subclasses.
+The ``Command`` class is abstract, and describes most of the features of the various subclasses.
 
 @d The Command Abstract Base Class...
 @{
 class Command(metaclass=TypeIdMeta):
     typeid: TypeId
-    has_name: TypeGuard["ReferenceCommand"] = False
-    has_text: TypeGuard[Union["CodeCommand", "TextCommand"]] = False
+    has_name = False
+    has_text = False
         
     def __init__(self, location: tuple[str, int]) -> None:
         self.location = location  #: The (filename, line number)
@@ -802,27 +782,27 @@ class Command(metaclass=TypeIdMeta):
 The HasText Classes
 *******************
 
-A type hint summarizes some of the subclass relationships.
+An Annotation summarizes some of the subclass relationships.
    
 @d The HasText Type Hint...
 @{
-HasText = Union["CodeCommand", "TextCommand"]
+type HasText = "CodeCommand | TextCommand"
 @}
 
-We don't formalize this as proper subclass definitions. We probably should,
-but it doesn't seem to add any clarity.
+We don't formalize this as proper subclass definitions.
+We probably should, but it doesn't seem to add any clarity.
 
 The TextCommand Class
 *********************
 
-The ``TextCommand`` class describes all of the text **outside** the ``@@d`` and ``@@o`` 
-chunks. These are **not** tangled, and an exception is raised.
+The ``TextCommand`` class describes all of the text **outside** the ``@@d`` and ``@@o`` chunks.
+These are **not** tangled, and any attempt to do this raises an exception .
  
 @d The TextCommand Class...
 @{
 class TextCommand(Command):
     """Text outside any other command."""    
-    has_text: TypeGuard[Union["CodeCommand", "TextCommand"]] = True
+    has_text = True
     
     def __init__(self, text: str, location: tuple[str, int]) -> None:
         super().__init__(location)
@@ -840,14 +820,14 @@ class TextCommand(Command):
 The CodeCommand Class
 *********************
 
-The ``CodeCommand`` class describes the text **inside** the ``@@d`` and ``@@o`` 
-chunks. These are tangled without change.
+The ``CodeCommand`` class describes the text **inside** the ``@@d`` and ``@@o``  chunks.
+These are tangled without change.
  
 @d The CodeCommand Class...
 @{
 class CodeCommand(Command):
     """Code inside a ``@@o``, or ``@@d`` command."""    
-    has_text: TypeGuard[Union["CodeCommand", "TextCommand"]] = True
+    has_text = True
 
     def __init__(self, text: str, location: tuple[str, int]) -> None:
         super().__init__(location)
@@ -866,8 +846,7 @@ The ReferenceCommand Class
 
 The ``ReferenceCommand`` class describes a ``@@< name @@>`` construct inside a chunk. 
 When tangled, these lead to inserting the referenced chunk's content.
-Because this a reference to another chunk, the properties provide
-the values for the other chunk.
+Because this a reference to another chunk, the properties provide the values for the other chunk.
  
 @d The ReferenceCommand Class...
 @{
@@ -877,7 +856,7 @@ class ReferenceCommand(Command):
     In a CodeChunk or OutputChunk, it tangles to the definition from a ``NamedChunk``.
     In text, it can weave to the text of a ``NamedDocumentChunk``.
     """    
-    has_name: TypeGuard["ReferenceCommand"] = True
+    has_name = True
 
     def __init__(self, name: str, location: tuple[str, int]) -> None:
         super().__init__(location)
@@ -921,10 +900,9 @@ The XrefCommand Classes
 **************************
 
 The ``XRefCommand`` classes describes a ``@@f``, ``@@m``, and ``@@u`` constructs inside a chunk. 
-These are **not** Tangled. They're only woven.
+These are **not** Tangled; they're only woven.
 
-Each offers a unique property that can be used by the template rending to 
-get data about the WEB content.
+Each offers a unique property that can be used by the template rending to  get data about the WEB content.
  
 @d The XrefCommand Subclasses...
 @{
@@ -1042,17 +1020,16 @@ class Emitter(abc.ABC):
 The Weaver Subclass
 ~~~~~~~~~~~~~~~~~~~~
 
-The Weaver is a **Facade** that wraps Jinja template processing.
-
-The job is to build the necessary environment, locate the templates, 
+The ``Weaver`` is a **Facade** that wraps Jinja template processing.
+The job is to build the necessary environment, locate the templates,
 and then evaluate the template's ``generate()`` method to fill the values
 into the template to create the woven document.
 
-There's "base_weaver" template that contains the essential structure of
-the output document. This creates the needed macros, and then weaves the various chunks, in order.
+There's "base_weaver" template that contains the essential structure of the output document.
+This creates the needed macros, and then weaves the various chunks, in order.
 
-Each unique markup language has macros that provide the unique markup required for
-the various chunks. This permits customization of the markup.  
+Each markup language has macros that provide the unique markup required for the various chunks.
+This permits customization of the markup.
 
 We have an interesting wrinkle with RST-formatted output. There are two variants that may be important:
 
@@ -1060,8 +1037,9 @@ We have an interesting wrinkle with RST-formatted output. There are two variants
 
 - When used without Sphinx, i.e., native docutils, the the "small" caption at the end of a code block uses ``..  class:: small``.
 
-This is a minor change to the template being used. The question is how to make that distinction
-in the weaver? One view is to use subclasses of :py:class:`Weaver` for this.
+This is a minor change to the template being used.
+The question is how to make that distinction in the weaver?
+One view is to use subclasses of :py:class:`Weaver` for this.
 However, the templates are found by name in the ``template_map`` within the ``Weaver``.
 The ``--weaver`` command-line option provides the string (e.g., ``rst`` or ``html``) used
 to build a key into the template map. 
@@ -1074,10 +1052,10 @@ We can, therefore, use the ``--weaver`` command-line option  to provide an expan
 
 - ``-w rst-nosphinx`` is the "pure-docutils" version, using ``.. class::``. 
 
-- ``-w rst-docutils`` is an alias for the nosphinx option.
+- ``-w rst-docutils`` is an alias for the ``rst-nosphinx`` option.
 
-While this works out nicely, it turns out that the ``..  container:: small`` is, perhaps, a better
-markup that ``..  class:: small``. This work in docutils **and** Sphinx.
+While this works out nicely, it turns out that the ``..  container:: small`` is, perhaps, a better markup that ``..  class:: small``.
+This work in docutils **and** Sphinx.
 
 @d Weaver Subclass...
 @{
@@ -1144,15 +1122,15 @@ class Weaver(Emitter):
         return template.generate(web=web, macros=macros, defaults=defaults)
 @}
 
-There are several strategy plug-ins. Each is unique for a particular flavort of markup.
-These include the quoting function used to escape markup characters,
-and the templates used.
+There are several strategy plug-ins.
+Each is unique for a particular flavort of markup.
+These include the quoting function used to escape markup characters, and the templates used.
 
 The objective is to have a generic "weaver" template which includes three levels
 of template definition:
 
 1. Defaults.
-2. Configured overrides, perhaps from ``pyweb.toml``.
+2. Configured overrides from ``pyweb.toml``.
 3. Document overrides from the ``.w`` file in ``@@t name @@{...@@}`` commands.
 
 This means there is a two-step binding between document and macros.
@@ -1175,15 +1153,11 @@ Some kind of "import rst/markup as markup" would be ideal.
 Jinja, however, doesn't seem to support this the same way Python does.
 There's no ``import as`` construct allowing very late binding.
  
-The alternative is to 
-create the environment very late in the process, once we have all the information
-available. We can then pick the templates to put into a DictLoader to support
-the standard weaving structure.
+The alternative is to  create the environment very late in the process, once we have all the information available.
+We can then pick the templates to put into a DictLoader to support the standard weaving structure.
 
-The quoting rules apply to the various
-template languages. The idea is that
-a few characters must be escaped for
-proper presentation in the code sample sections.
+The quoting rules apply to the various template languages.
+The idea is that a few characters must be escaped for proper presentation in the code sample sections.
 
 Common Base Template
 ********************
@@ -1216,9 +1190,8 @@ The ``ref()`` macro can also be used in the XREF output macros. It can also be u
 After a block of code, some tools (like Interscript) will show where the block was referenced.
 The point of using the ``ref()`` macro in multiple places is to make all of them look identical.
 
-There are a variety of optional formatting considerations. First is cross-references,
-second is a variety of ``begin_code()`` options.
-
+There are a variety of optional formatting considerations.
+First is cross-references, second is a variety of ``begin_code()`` options.
 
 There are four styles for the "referencedBy" information in a ``Chunk``.
 
@@ -1233,10 +1206,10 @@ There are four styles for the "referencedBy" information in a ``Chunk``.
     
     -   Bottom-up path.  ``→ Sub-Sub-Named (3) ∈ → Sub-Named (2) ∈ → Named (1)``.
 
-These require four distinct versions of the ``end_code()`` macro. This macro uses the ``transitive_referencedBy``
-propery of a ``Chunk`` producing a sequence of ``ref()`` values. 
+These require four distinct versions of the ``end_code()`` macro.
+This macro uses the ``transitive_referencedBy`` property of a ``Chunk`` producing a sequence of ``ref()`` values.
 
-We need 
+(Note the ``→`` characters are preface characters for a link.)
 
 @d Common base template...
 @{
@@ -1273,44 +1246,45 @@ base_template = dedent("""\
 """)
 @}
 
-**TODO:** Need to more gracefully handle the case where an output chunk
-has multiple definitions. 
+..  todo:: Need to more gracefully handle the case where an output chunk has multiple definitions.
 
-..  parsed-literal::
+    For example,
 
-    @@o x.y
-    @@{
-    ... part 1 ...
-    @@}
-    
-    @@o x.y
-    @@{
-    ... part 2 ...
-    @@}
-    
-The above should have the same output as the follow (more complex) alternative: 
+    ..  parsed-literal::
 
-..  parsed-literal::
+        @@o x.y
+        @@{
+        ... part 1 ...
+        @@}
 
-    @@o x.y
-    @@{
-    @@<part 1@@>
-    @@<part 2@@>
-    @@}
-    
-    @@d part 1
-    @@{
-    ... part 1 ...
-    @@}
+        @@o x.y
+        @@{
+        ... part 2 ...
+        @@}
 
-    @@d part 2
-    @@{
-    ... part 2 ...
-    @@}
+    The above should have the same output as the following (more complex) alternative:
 
-Currently, we casually treat the first instance
-as the "definition", and don't provide references
-to the additional parts of the definition.
+    ..  parsed-literal::
+
+        @@o x.y
+        @@{
+        @@<part 1@@>
+        @@<part 2@@>
+        @@}
+
+        @@d part 1
+        @@{
+        ... part 1 ...
+        @@}
+
+        @@d part 2
+        @@{
+        ... part 2 ...
+        @@}
+
+    Currently, we casually treat the first instance
+    as the "definition", and don't provide references
+    to the additional parts of the definition.
 
 Debug Template
 ***************
@@ -1597,17 +1571,15 @@ tex_overrides_template = dedent("""\
 The Tangler Subclasses
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Tangling is a variation on emitting that includes all the code in the order
-defined by the ``@@o`` file commands. This is not necessarily the order
-they're presented in the document.
+Tangling is a variation on emitting that includes all the code in the order defined by the ``@@o`` file commands.
+This is not necessarily the order they're presented in the document.
 
-The whole point of Weaving and Tangling is to write a document in an order that's
-sensible for people to understand. The tangled output is for compilers
-and run-time environments.
+The whole point of Weaving and Tangling is to write a document in an order that's sensible for people to understand.
+The tangled output is for compilers and run-time environments.
 
 Each file is individually tangled, unrelated to the order of the source
-WEB document. The ``emit()`` process, therefore, iterates through all
-of the files defined in the WEB.
+WEB document.
+The ``emit()`` process, therefore, iterates through all of the files defined in the WEB.
 
 There's a complex interplay between ``Tangler`` and ``CodeCommand``
 to maintain the indentations.
@@ -1776,9 +1748,9 @@ def resetIndent(self, indent: int = 0) -> None:
 @}
 
 An extension to the ``Tangler`` class that only updates a file if the content has changed.
-This tangles to a temporary file. If the content is identical, the temporary
-file is quietly disposed of. Otherwise, the temporary file is linked to
-the original name.  
+This tangles to a temporary file.
+If the content is identical, the temporary file is quietly disposed of.
+Otherwise, the temporary file is linked to the original name.
 
 Files are compared with the ``filecmp`` module.
 
@@ -1828,7 +1800,7 @@ There are three tiers to the input parsing:
 
 -   A base tokenizer.
 
-=   Additionally, a separate parser is used for options in ``@@d`` and ``@@o`` commands.
+-   Additionally, a separate parser is used for options in ``@@d`` and ``@@o`` commands.
 
 -   The overall ``WebReader`` class.
 
@@ -1861,8 +1833,8 @@ We'll start with the ``WebReader`` class definition
 The WebReader Class
 ~~~~~~~~~~~~~~~~~~~
 
-There are two forms of the constructor for a ``WebReader``.  The 
-initial ``WebReader`` instance is created with code like the following:
+There are two forms of the constructor for a ``WebReader``.
+The  initial ``WebReader`` instance is created with code like the following:
 
 
 ..  parsed-literal::
@@ -1956,7 +1928,7 @@ class WebReader:
     
     # State of the reader
     #: Parent context for @@i commands      
-    parent: Optional["WebReader"]
+    parent: "WebReader | None"
     #: Input Path 
     filePath: Path 
     #: Input file-like object, default is self.filePath.open()
@@ -1964,7 +1936,7 @@ class WebReader:
     #: The sequence of Chunk instances being built
     content: list[Chunk] 
     
-    def __init__(self, parent: Optional["WebReader"] = None) -> None:
+    def __init__(self, parent: "WebReader | None" = None) -> None:
         self.logger = logging.getLogger(self.__class__.__qualname__)
 
         self.output_option_parser = argparse.ArgumentParser(add_help=False, exit_on_error=False)
@@ -2045,7 +2017,7 @@ This would make the ``match`` statement shorter and easier to understand.
 @{
 def handleCommand(self, token: str) -> bool:
     self.logger.debug("Reading %r", token)
-    new_chunk: Optional[Chunk] = None
+    new_chunk: Chunk | None = None
     match token[:2]:
         case self.cmdo:
             @<start an OutputChunk, adding it to the web@>
@@ -2115,14 +2087,14 @@ end the chunk.
 
 We'll use an ``ArgumentParser`` to locate the optional parameter of ``-noindent``.
 
-**TODO:** Extend this to support ``-indent`` *number*
+..  todo:: Extend the ``@@d`` argument parser to support ``-indent`` *number*
 
 Then we can use the ``options`` value to create an appropriate subclass of ``NamedChunk``.
         
 If ```"-indent"`` is in options, this is the default. 
 If both are in the options, we should provide a warning.
 
-**TODO:** Add a warning for conflicting options.
+..  todo:: Add a warning for conflicting options.
 
 @d start a NamedChunk...
 @{
@@ -2203,13 +2175,12 @@ except IOError as e:
 self.content.append(Chunk())
 @}
 
-When a ``@@}`` or ``@@]`` are found, this finishes a named chunk.  The next
-text is therefore part of an anonymous chunk.
+When a ``@@}`` or ``@@]`` are found, this finishes a named chunk.
+The next text is therefore part of an anonymous chunk.
 
 Note that no check is made to assure that the previous ``Chunk`` was indeed a named
 chunk or output chunk started with ``@@{`` or ``@@[``.  
-To do this, an attribute would be
-needed for each ``Chunk`` subclass that indicated if a trailing bracket was necessary.
+To do this, an attribute would be needed for each ``Chunk`` subclass that indicated if a trailing bracket was necessary.
 For the base ``Chunk`` class, this would be false, but for all other subclasses of
 ``Chunk``, this would be true.
 
@@ -2224,8 +2195,7 @@ User identifiers occur after a ``@@|`` command inside a ``NamedChunk``.
 
 Note that no check is made to assure that the previous ``Chunk`` was indeed a named
 chunk or output chunk started with ``@@{``.  
-To do this, an attribute would be
-needed for each ``Chunk`` subclass that indicated if user identifiers are permitted.
+To do this, an attribute would be needed for each ``Chunk`` subclass that indicated if user identifiers are permitted.
 For the base ``Chunk`` class, this would be false, but for the ``NamedChunk`` class and
 ``OutputChunk`` class, this would be true.
 
@@ -2256,8 +2226,7 @@ self.logger.debug("Reading %r %r", name, closing)
 @}
 
 An expression command has the form ``@@(``\ *Python Expression*\ ``@@)``.  
-We accept three
-tokens from the input, the middle token is the expression.
+We accept three tokens from the input, the middle token is the expression.
 
 There are two alternative semantics for an embedded expression.
 
@@ -2283,7 +2252,7 @@ import platform
 @| builtins sys platform
 @}
 
-**TODO:** Appening the text should be a method of a Chunk -- either append text, or append a command.
+..  todo:: Appending the text should be a method of a ``Chunk`` -- either append text, or append a command.
 
 @d add an expression command...
 @{
@@ -2324,13 +2293,12 @@ except Exception as exc:
 self.content[-1].add_text(result, self.location())
 @}
 
-A double command sequence (``'@@@@'``, when the command is an ``'@@'``) has the
-usual meaning of ``'@@'`` in the input stream.  We do this by appending text to
-the last command in the current ``Chunk``.  This will append the 
-character on the end of the most recent ``TextCommand`` or ``CodeCommand```; if this fails, it will
-create a new, empty ``TextCommand`` or ``CodeCommand``.
+A double command sequence (``'@@@@'``, when the command is an ``'@@'``) has the usual meaning of ``'@@'`` in the input stream.
+We do this by appending text to the last command in the current ``Chunk``.
+This will append the  character on the end of the most recent ``TextCommand`` or ``CodeCommand```.
+If this fails, it will create a new, empty ``TextCommand`` or ``CodeCommand``.
 
-**TODO:** This should be a method of a Chunk -- either append text, or append a command.
+..  todo:: Appending a ``'@'`` command character should be a method of a Chunk -- either append text, or append a command.
 
 @d double at-sign replacement...
 @{
@@ -2338,8 +2306,8 @@ self.logger.debug(f"double-command: {self.content[-1]=}")
 self.content[-1].add_text(self.command, self.location())
 @}
 
-The ``expect()`` method examines the 
-next token to see if it is the expected item. ``'\n'`` are absorbed.  
+The ``expect()`` method examines the next token to see if it is the expected item.
+Any ``'\n'`` characters are absorbed.
 If this is not found, a standard type of error message is raised. 
 This is used by ``handleCommand()``.
 
@@ -2375,15 +2343,13 @@ def location(self) -> tuple[str, int]:
 @| location
 @}
 
-The ``load()`` method reads the entire input file as a sequence
-of tokens, split up by the ``Tokenizer``.  Each token that appears
-to be a command is passed to the ``handleCommand()`` method.  If
-the ``handleCommand()`` method returns a True result, the command was recognized
-and placed in the ``Web``.  If ``handleCommand()`` returns a False result, the command
-was unknown, and we write a warning but treat it as text.
+The ``load()`` method reads the entire input file as a sequence of tokens, split up by the ``Tokenizer``.
+Each token that appears to be a command is passed to the ``handleCommand()`` method.
+If the ``handleCommand()`` method returns a True result, the command was recognized and placed in the ``Web``.
+If ``handleCommand()`` returns a False result, the command was unknown, and we write a warning but treat it as text.
 
-The ``load()`` method is used recursively to handle the ``@@i`` command. The issue
-is that it's always loading a single top-level web. 
+The ``load()`` method is used recursively to handle the ``@@i`` command.
+The issue is that it's always loading a single top-level web.
 
 @d Imports
 @{from typing import TextIO, cast
@@ -2437,10 +2403,8 @@ def parse_source(self) -> None:
 @}
 
 The command character can be changed to permit
-some flexibility when working with languages that make extensive
-use of the ``@@`` symbol, i.e., PERL.
-The initialization of the ``WebReader`` is based on the selected 
-command character.
+some flexibility when working with languages that make extensive use of the ``@@`` symbol.
+The initialization of the ``WebReader`` is based on the selected command character.
 
 
 @d WebReader command literals
@@ -2472,20 +2436,20 @@ self.cmdu = self.command+'u'
 The Tokenizer Class
 ~~~~~~~~~~~~~~~~~~~~
 
-The ``WebReader`` requires a tokenizer. The tokenizer breaks the input text
-into a stream of tokens. There are two broad classes of tokens:
+The ``WebReader`` requires a tokenizer. The tokenizer breaks the input text into a stream of tokens.
+There are two broad classes of tokens:
 
 -   ``r'@@.'`` command tokens, including the structural, inline, and content
     commands.
 
--   ``r'\n'``. Inside text, these matter. Within structural command tokens, these don't matter.
-    Except after the filename after an ``@@i`` command, where it ends the command. 
+-   ``r'\n'``. Inside text, these matter.
+    Within structural command tokens, these don't matter.
+    Except after the filename after an ``@@i`` command, where one of these end the command.
 
 -   The remaining text; neither newlines nor commands.
 
 The tokenizer works by reading the entire file and splitting on ``r'@@.'`` patterns.
-The ``re.split()`` function will separate the input
-and preserve the actual character sequence on which the input was split.
+The ``re.split()`` function will separate the input and preserve the actual character sequence on which the input was split.
 This breaks the input into blocks of text separated by the ``r'@@.'`` characters.
 
 For example:
@@ -2495,17 +2459,15 @@ For example:
     >>> pat.split( "@@{hi mom@@}")
     ['', '@@{', 'hi mom', '@@}', '']
     
-This tokenizer splits the input using ``r'@@.|\n'``. The idea is that 
-we locate commands, newlines and the interstitial text as three classes of tokens.  
+This tokenizer splits the input using ``r'@@.|\n'``.
+The idea is that  we locate commands, newlines and the interstitial text as three classes of tokens.
 We can then assemble each ``Command`` instance from a short sequence of tokens.
-The core ``TextCommand`` and ``CodeCommand`` will be a line of text ending with
-the ``\n``. 
+The core ``TextCommand`` and ``CodeCommand`` will be a line of text ending with the ``\n``.
 
-The tokenizer counts newline characters for us, so that error messages can include
-a line number. Also, we can tangle extract comments into a file to reveal source line numbers.
+The tokenizer counts newline characters for us, so that error messages can include a line number.
+Also, we can tangle extract comments into a file to reveal source line numbers.
 
-Since the tokenizer is a proper iterator, we can use ``tokens = iter(Tokenizer(source))``
-and ``next(tokens)`` to step through the sequence of tokens until we raise a ``StopIteration``
+Since the tokenizer is a proper iterator, we can use ``tokens = iter(Tokenizer(source))`` and ``next(tokens)`` to step through the sequence of tokens until we raise a ``StopIteration``
 exception.
 
 @d Imports
@@ -2554,22 +2516,20 @@ There are a number of other components:
 Error class
 ~~~~~~~~~~~
 
-An ``Error`` is raised whenever processing cannot continue.  Since it
-is a subclass of Exception, it takes an arbitrary number of arguments.  The
-first should be the basic message text.  Subsequent arguments provide 
-additional details.  We will try to be sure that
-all of our internal exceptions reference a specific chunk, if possible.
-This means either including the chunk as an argument, or catching the 
-exception and appending the current chunk to the exception's arguments.
+An ``Error`` is raised whenever processing cannot continue.
+Since it is a subclass of ``Exception``, it takes an arbitrary number of arguments.
+The first should be the basic message text.
+Subsequent arguments provide additional details.
+We will try to be sure that all of our internal exceptions reference a specific chunk, if possible.
+This means either including the chunk as an argument, or catching the  exception and appending the current chunk to the exception's arguments.
 
-The Python ``raise`` statement takes an instance of ``Error`` and passes it
-to the enclosing ``try/except`` statement for processing.
+The Python ``raise`` statement takes an instance of ``Error`` and passes it to the enclosing ``try/except`` statement for processing.
 
 The typical creation is as follows:
 
 ..  parsed-literal::
 
-    raise Error(f"No full name for {chunk.name!r}", chunk)
+    raise Error(f"no full name for {chunk.name!r}", chunk)
 
 A typical exception-handling suite might look like this:
 
@@ -2583,9 +2543,8 @@ A typical exception-handling suite might look like this:
         print(w.args) # this is some other Python Exception
 
 The ``Error`` class is a subclass of ``Exception`` used to differentiate 
-application-specific
-exceptions from other Python exceptions.  It does no additional processing,
-but merely creates a distinct class to facilitate writing ``except`` statements.
+application-specific exceptions from other Python exceptions.
+It does no additional processing, but merely creates a distinct class to facilitate writing ``except`` statements.
 
 
 @d Error class -- defines the errors raised
@@ -2596,15 +2555,13 @@ class Error(Exception): pass
 Action Class Hierarchy
 ~~~~~~~~~~~~~~~~~~~~~~
 
-This application performs three major actions: loading the document web, 
-weaving and tangling.  Generally,
-the use case is to perform a load, weave and tangle.  However, a less common use case
-is to first load and tangle output files, run a regression test and then 
-load and weave a result that includes the test output file.
+This application performs three major actions: loading the document web, weaving and tangling.
+Generally, the use case is to perform a load, weave and tangle.
+However, a less common use case is to first load and tangle output files, run a regression test and then load and weave a result that includes the test output file.
 
-The ``-x`` option excludes one of the two output actions.  The ``-xw`` 
-excludes the weave pass, doing only the tangle action.  The ``-xt`` excludes
-the tangle pass, doing the weave action.
+The ``-x`` option excludes one of the two output actions.
+The ``-xw``  excludes the weave pass, doing only the tangle action.
+The ``-xt`` excludes the tangle pass, doing the weave action.
 
 This two pass action might be embedded in the following type of Python program.
 
@@ -2621,20 +2578,19 @@ This two pass action might be embedded in the following type of Python program.
     Weaver().emit(web, "something.rst")
 
 
-The first step runs **py-web-lp** , excluding the final weaving pass.  The second
-step runs the tangled program, ``source.py``, and produces test results in
-some log file, ``source.log``.  The third step runs **py-web-lp**  excluding the
-tangle pass.  This produces a final document that includes the ``source.log`` 
-test results.
+The first step runs **py-web-lp** , excluding the final weaving pass.
+The second step runs the tangled program, ``source.py``, and produces test results in
+some log file, ``source.log``.
+The third step runs **py-web-lp**  excluding the tangle pass.
+This produces a final document that includes the ``source.log``  test results.
 
-To accomplish this, we provide a class hierarchy that defines the various
-actions of the **py-web-lp**  application.  This class hierarchy defines an extensible set of
-fundamental actions.  This gives us the flexibility to create a simple sequence
-of actions and execute any combination of these.  It eliminates the need for a 
-forest of ``if``-statements to determine precisely what will be done.
+To accomplish this, we provide a class hierarchy that defines the various actions of the **py-web-lp**  application.
+This class hierarchy defines an extensible set of fundamental actions.
+This gives us the flexibility to create a simple sequence of actions and execute any combination of these.
+It eliminates the need for a  forest of ``if``-statements to determine precisely what will be done.
 
-Each action has the potential to update the state of the overall
-application.   A partner with this command hierarchy is the Application class
+Each action has the potential to update the state of the overall application.
+A partner with this command hierarchy is the ``Application`` class
 that defines the application options, inputs and results. 
 
 @d Action class hierarchy -- used to describe actions of the application 
@@ -2656,11 +2612,11 @@ The overall process of the application is defined by an instance of ``Action``.
 This instance may be the ``WeaveAction`` instance, the ``TangleAction`` instance
 or a ``ActionSequence`` instance.
 
-The instance is constructed during parsing of the input parameters.  Then the 
-``Action`` class ``perform()`` method is called to actually perform the
-action.  There are three standard ``Action`` instances available: an instance
-that is a macro and does both tangling and weaving, an instance that excludes tangling,
-and an instance that excludes weaving.  These correspond to the command-line options.
+The instance is constructed during parsing of the input parameters.
+Then the  ``Action`` class ``perform()`` method is called to actually perform the action.
+There are three standard ``Action`` instances available: an instance
+that is a macro and does both tangling and weaving, an instance that excludes tangling, and an instance that excludes weaving.
+These correspond to the command-line options.
 
 ..  parsed-literal::
 
@@ -2716,8 +2672,7 @@ def __call__(self, options: argparse.Namespace) -> None:
 @| perform
 @}
 
-The ``summary()`` method returns some basic processing
-statistics for this action.
+The ``summary()`` method returns some basic processing statistics for this action.
 
 @d Action final... @{
 def duration(self) -> float:
@@ -2732,17 +2687,15 @@ def summary(self) -> str:
 ActionSequence Class
 ~~~~~~~~~~~~~~~~~~~~
 
-A ``ActionSequence`` defines a composite action; it is a sequence of
-other actions.  When the macro is performed, it delegates to the 
-sub-actions.
+A ``ActionSequence`` defines a composite action; it is a sequence of other actions.
+When the macro is performed, it delegates to the  sub-actions.
 
-The instance is created during parsing of input parameters.  An instance of
-this class is one of
-the three standard actions available; it generally is the default, "do everything" 
-action.
+The instance is created during parsing of input parameters.
+An instance of this class is one of the three standard actions available;
+it generally is the default, "do everything"  action.
 
-This class overrides the ``perform()`` method of the superclass.  It also adds
-an ``append()`` method that is used to construct the sequence of actions.
+This class overrides the ``perform()`` method of the superclass.
+It also adds an ``append()`` method that is used to construct the sequence of actions.
 
 
 @d ActionSequence subclass... 
@@ -2789,11 +2742,11 @@ def summary(self) -> str:
 WeaveAction Class
 ~~~~~~~~~~~~~~~~~~
 
-The ``WeaveAction`` defines the action of weaving.  This action
-logs a message, and invokes the ``weave()`` method of the ``Web`` instance.
-This method also includes the basic decision on which weaver to use.  If a ``Weaver`` was
-specified on the command line, this instance is used.  Otherwise, the first few characters
-are examined and a weaver is selected.
+The ``WeaveAction`` defines the action of weaving.
+This action logs a message, and invokes the ``weave()`` method of the ``Web`` instance.
+This method also includes the basic decision on which weaver to use.
+If a ``Weaver`` was specified on the command line, this instance is used.
+Otherwise, the first few characters are examined and a weaver is selected.
 
 This class overrides the ``__call__()`` method of the superclass.
 
@@ -2815,9 +2768,8 @@ class WeaveAction(Action):
 @| WeaveAction
 @}
 
-The language is picked just prior to weaving.  It is either (1) the language
-specified on the command line, or, (2) if no language was specified, a language
-is selected based on the first few characters of the input.
+The language is picked just prior to weaving.
+It is either (1) the language specified on the command line, or, (2) if no language was specified, a language is selected based on the first few characters of the input.
 
 Weaving can only raise an exception when there is a reference to a chunk that
 is never defined.
@@ -2857,11 +2809,10 @@ def summary(self) -> str:
 TangleAction Class
 ~~~~~~~~~~~~~~~~~~~
 
-The ``TangleAction`` defines the action of tangling.  This operation
-logs a message, and invokes the ``weave()`` method of the ``Web`` instance.
-This method also includes the basic decision on which weaver to use.  If a ``Weaver`` was
-specified on the command line, this instance is used.  Otherwise, the first few characters
-are examined and a weaver is selected.
+The ``TangleAction`` defines the action of tangling.
+This operation logs a message, and invokes the ``weave()`` method of the ``Web`` instance.
+This method also includes the basic decision on which weaver to use.
+If a ``Weaver`` was specified on the command line, this instance is used.  Otherwise, the first few characters are examined and a weaver is selected.
 
 This class overrides the ``__call__()`` method of the superclass.
 
@@ -2879,9 +2830,8 @@ class TangleAction(Action):
 @| TangleAction
 @}
 
-Tangling can only raise an exception when a cross reference request (``@@f``, ``@@m`` or ``@@u``)
-occurs in a program code chunk.  Program code chunks are defined 
-with any of ``@@d`` or ``@@o``  and use ``@@{`` ``@@}`` brackets.
+Tangling can only raise an exception when a cross reference request (``@@f``, ``@@m`` or ``@@u``) occurs in a program code chunk.
+Program code chunks are defined  with any of ``@@d`` or ``@@o``  and use ``@@{`` ``@@}`` brackets.
 
 
 @d TangleAction call... @{
@@ -2914,11 +2864,11 @@ def summary(self) -> str:
 LoadAction Class
 ~~~~~~~~~~~~~~~~~~
 
-The ``LoadAction`` defines the action of loading the web structure.  This action
-uses the application's ``webReader`` to actually do the load.
+The ``LoadAction`` defines the action of loading the web structure.
+This action uses the application's ``webReader`` to actually do the load.
 
-An instance is created during parsing of the input parameters.  An instance of
-this class is part of any of the weave, tangle and "do everything" action.
+An instance is created during parsing of the input parameters.
+An instance of this class is part of any of the weave, tangle and "do everything" action.
 
 This class overrides the ``__call__()`` method of the superclass.
 
@@ -3003,23 +2953,19 @@ def summary(self) -> str:
 The Application Class
 ~~~~~~~~~~~~~~~~~~~~~
 
-The ``Application`` class is provided so that the ``Action`` instances
-have an overall application to update.  This allows the ``WeaveAction`` to 
-provide the selected ``Weaver`` instance to the application.  It also provides a
-central location for the various options and alternatives that might be accepted from
-the command line.
-
+The ``Application`` class is provided so that the ``Action`` instances have an overall application to update.
+This allows the ``WeaveAction`` to  provide the selected ``Weaver`` instance to the application.
+It also provides a central location for the various options and alternatives that might be accepted from the command line.
 
 The constructor creates a default ``argparse.Namespace`` with values
 suitable for weaving and tangling.
 
-The ``parseArgs()`` method uses the ``sys.argv`` sequence to 
-parse the command line arguments and update the options.  This allows a
-program to pre-process the arguments, passing other arguments to this module.
+The ``parseArgs()`` method uses the ``sys.argv`` sequence to  parse the command line arguments and update the options.
+This allows a program to pre-process the arguments, passing other arguments to this module.
 
 
-The ``process()`` method processes a list of files.  This is either
-the list of files passed as an argument, or it is the list of files
+The ``process()`` method processes a list of files.
+This is either the list of files passed as an argument, or it is the list of files
 parsed by the ``parseArgs()`` method.
 
 
@@ -3151,9 +3097,8 @@ self.doTangle = ActionSequence("load and tangle", [self.loadOp, self.tangleOp])
 self.theAction = ActionSequence("load, tangle and weave", [self.loadOp, self.tangleOp, self.weaveOp])
 @}
 
-The algorithm for parsing the command line parameters uses the built in
-``argparse`` module.  We have to build a parser, define the options,
-and the parse the command-line arguments, updating the default namespace.
+The algorithm for parsing the command line parameters uses the built in ``argparse`` module.
+We have to build a parser, define the options, and the parse the command-line arguments, updating the default namespace.
 
 We further expand on the arguments. This transforms simple strings into object
 instances.
@@ -3181,17 +3126,26 @@ def parseArgs(self, argv: list[str]) -> argparse.Namespace:
 def expand(self, config: argparse.Namespace) -> argparse.Namespace:
     """Translate the argument values from simple text to useful objects.
     Weaver. Tangler. WebReader.
+
+    Note the binding of working directories:
+
+    -   Weaver writes to ``Path.cwd() / "docs"``. The ``-o`` option resets this.
+        ``-o .`` is previous version behavior.
+
+    -   Tangler writes to ``Path.cwd()``. Previously, the ``-o`` option reset this.
+        Now, there's a ``-t --target`` option for a directory.
     """
     # Weaver & Tangler
     config.theWeaver = Weaver(config.output)
     config.theTangler = TanglerMake(config.output)
     
+    # Permitted errors, usual case is ``-pi`` to permit ``@@i`` include errors
     if config.permit:
-        # save permitted errors, usual case is ``-pi`` to permit ``@@i`` include errors
         config.permitList = [f'{config.command!s}{c!s}' for c in config.permit]
     else:
         config.permitList = []
 
+    # Create the configured WebReader
     config.webReader = WebReader()
 
     return config
@@ -3204,7 +3158,7 @@ to process each file as follows:
 1.  Create a new ``WebReader`` for the ``Application``, providing
     the parameters required to process the input file.
 
-2.  Create a ``Web`` instance, *w* 
+2.  Create a ``Web`` instance, *w*,
     and set the Web's *sourceFileName* from the WebReader's *filePath*.
 
 3.  Perform the given command, typically a ``ActionSequence``, 
@@ -3214,11 +3168,8 @@ to process each file as follows:
 
 4.  Print a performance summary line that shows lines processed per second.
 
-In the event of failure in any of the major processing steps, 
-a summary message is produced, to clarify the state of 
-the output files, and the exception is reraised.
-The re-raising is done so that all exceptions are handled by the 
-outermost main program.
+In the event of failure in any of the major processing steps, a summary message is produced to clarify the state of the output files, and the exception is reraised.
+The re-raising is done so that all exceptions are handled by the outermost main program.
 
 @d Application class process all...
 @{
@@ -3249,9 +3200,8 @@ def process(self, config: argparse.Namespace) -> None:
 Logging Setup
 ~~~~~~~~~~~~~~~~~~~~~
 
-We'll create a logging context manager. This allows us to wrap the ``main()`` 
-function in an explicit ``with`` statement that assures that logging is
-configured and cleaned up politely.
+We'll create a logging context manager.
+This allows us to wrap the ``main()`` function in an explicit ``with`` statement that assures that logging is configured and cleaned up politely.
 
 @d Imports...
 @{import logging
@@ -3259,12 +3209,11 @@ import logging.config
 @| logging logging.config
 @}
 
-This has two configuration approaches. If a positional argument is given,
-that dictionary is used for ``logging.config.dictConfig``. Otherwise,
-keyword arguments are provided to ``logging.basicConfig``.
+This has two configuration approaches.
+If a positional argument is given, that dictionary is used for ``logging.config.dictConfig``.
+Otherwise, keyword arguments are provided to ``logging.basicConfig``.
 
-A subclass might properly load a dictionary 
-encoded in YAML and use that with ``logging.config.dictConfig``.
+A subclass might properly load a dictionary encoded in TOML or YAML and use that with ``logging.config.dictConfig``.
 
 @d Logging Setup
 @{
@@ -3285,11 +3234,10 @@ class Logger:
         return False
 @}
 
-Here's a sample logging setup. This creates a simple console handler and 
-a formatter that matches the ``basicConfig`` formatter.
+Here's a sample logging setup.
+This creates a simple console handler and a formatter that matches the ``basicConfig`` formatter.
 
-This configuration dictionary defines the root logger plus some overrides for class loggers that might be
-used to gather additional information.
+This configuration dictionary defines the root logger plus some overrides for class loggers that might be used to gather additional information.
 
 @d Logging Setup
 @{
@@ -3484,13 +3432,10 @@ closer to where they're referenced.
 import time
 import datetime
 import sys
+import tomllib as toml
 import types
 
-if sys.version_info[:2] <= (3, 10):
-    import tomli as toml
-else:
-    import tomllib as toml
-@|  os time datetime toml types
+@|  os time datetime sys tomllib types
 @}
 
 Note that ``os.path``, ``time``, ``datetime`` and ``platform```

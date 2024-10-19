@@ -1,5 +1,5 @@
-Combined Test Runner
-=====================
+DEPRECATED Test Runner
+======================
 
 .. test/runner.w
 

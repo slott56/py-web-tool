@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 # https://peps.python.org/pep-0621/#readme
-version = "3.2"
+version = "3.3"
 requires-python = ">=3.10"
 name = "py-web-lp"
 description="py-web-lp: Yet Another Literate Programming Tool"
@@ -20,6 +20,8 @@ classifiers = [
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Programming Language :: Python",
   "Topic :: Documentation",
   "Topic :: Software Development :: Documentation",
@@ -46,10 +48,11 @@ dev = [
   "docutils==0.20.1",
   "build",
   "twine",
+  "pip-tools",
 ]
 test = [
-    "tox == 4.6.4",
-    "pytest == 7.4.0", 
-    "mypy == 1.4.1"
+    "tox",
+    "pytest",
+    "pyright"
 ]
 

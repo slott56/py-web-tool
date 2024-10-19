@@ -34,6 +34,7 @@ release = '3.2'
 # ones.
 extensions = [
     'sphinxcontrib.plantuml',
+    'sphinx.ext.todo',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

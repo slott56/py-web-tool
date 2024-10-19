@@ -2,9 +2,7 @@
 pyWeb Literate Programming 3.2
 ##############################
 
-=================================================
-Yet Another Literate Programming Tool
-=================================================
+**Yet Another Literate Programming Tool**
 
 ..	contents::
 

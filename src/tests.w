@@ -21,5 +21,5 @@ environment. The ``PYTHONPATH`` setting is essential to support importing ``pywe
 	python pyweb.py -o tests tests/pyweb_test.w
 	PYTHONPATH=$(PWD) pytest
 
-Note that the last line really does set an environment variable and run 
+Note that the last line sets an environment variable and runs
 the ``pytest`` tool on a single line.

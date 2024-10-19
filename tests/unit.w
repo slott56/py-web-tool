@@ -141,7 +141,7 @@ class TestEmitter(unittest.TestCase):
         self.web = Mock(name="mock web")
     def test_emitter_should_open_close_write(self) -> None:
         self.emitter.emit(self.web)
-        self.emitter.mock_emit.called_once_with(self.web)
+        self.emitter.mock_emit.assert_called_once_with(self.web)
         self.assertEqual(self.emitter.output, self.output)
 @}
 

@@ -33,15 +33,12 @@ This will install the ``pyweb`` module and all of its dependencies.
 Produce Documentation
 ---------------------
 
-The supplied documentation uses RST markup; it requires docutils.
+The supplied documentation uses RST markup; it requires **docutils**.
+The ``pyweb`` module is designed to reproduce itself from the ``src/pyweb.w`` source.
 
 ::
 
-    python3 -m pip install docutils
-
-::
-
-	python3 -m pyweb src/pyweb.w -o src
+	python -m pyweb src/pyweb.w -o src
 	rst2html.py src/pyweb.rst src/pyweb.html
 
 Authoring

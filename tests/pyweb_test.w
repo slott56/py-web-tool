@@ -18,8 +18,6 @@ Yet Another Literate Programming Tool
 
 @i scripts.w
 
-No Longer supported: @@i runner.w, using **pytest** seems better.
-
 Additional Files
 =================
 
@@ -27,13 +25,17 @@ To get the RST to look good, there are two additional files.
 These are clones of what's in the ``src`` directory.
 
 ``docutils.conf`` defines two CSS files to use.
-	The default CSS file may need to be customized.
+The default CSS file needs to be customized.
+
+When using **conda** the path is ``$CONDA_PREFIX/lib/python*/site-packages/docutils/writers/html4css1/html4css1.css``
+
+When using **venv**, the path will be different.
 
 @o docutils.conf 
 @{# docutils.conf
 
 [html4css1 writer]
-stylesheet-path: /Users/slott/miniconda3/envs/pywebtool/lib/python3.10/site-packages/docutils/writers/html4css1/html4css1.css,
+stylesheet-path: /Users/slott/miniconda3/envs/pywebtool/lib/python3.12/site-packages/docutils/writers/html4css1/html4css1.css,
     page-layout.css
 syntax-highlight: long
 @}

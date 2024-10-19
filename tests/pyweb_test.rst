@@ -24,53 +24,12 @@ There are two levels of testing in this document.
 Other testing, like performance or security, is possible.
 But for this application, not very interesting.
 
-This doument builds a complete test suite, ``test.py``.
+This WEB document builds a complete test suite, ``test.py``.
+This can then be run with
 
-..	parsed-literal::
+::
 
-	MacBookPro-SLott:test slott$ python3.3 ../pyweb.py pyweb_test.w
-	INFO:Application:Setting root log level to 'INFO'
-	INFO:Application:Setting command character to '@'
-	INFO:Application:Weaver RST
-	INFO:Application:load, tangle and weave 'pyweb_test.w'
-	INFO:LoadAction:Starting Load
-	INFO:WebReader:Including 'intro.w'
-	WARNING:WebReader:Unknown @-command in input: "@'"
-	INFO:WebReader:Including 'unit.w'
-	INFO:WebReader:Including 'func.w'
-	INFO:WebReader:Including 'combined.w'
-	INFO:TangleAction:Starting Tangle
-	INFO:TanglerMake:Tangling 'test_unit.py'
-	INFO:TanglerMake:No change to 'test_unit.py'
-	INFO:TanglerMake:Tangling 'test_loader.py'
-	INFO:TanglerMake:No change to 'test_loader.py'
-	INFO:TanglerMake:Tangling 'test.py'
-	INFO:TanglerMake:No change to 'test.py'
-	INFO:TanglerMake:Tangling 'page-layout.css'
-	INFO:TanglerMake:No change to 'page-layout.css'
-	INFO:TanglerMake:Tangling 'docutils.conf'
-	INFO:TanglerMake:No change to 'docutils.conf'
-	INFO:TanglerMake:Tangling 'test_tangler.py'
-	INFO:TanglerMake:No change to 'test_tangler.py'
-	INFO:TanglerMake:Tangling 'test_weaver.py'
-	INFO:TanglerMake:No change to 'test_weaver.py'
-	INFO:WeaveAction:Starting Weave
-	INFO:RST:Weaving 'pyweb_test.rst'
-	INFO:RST:Wrote 3173 lines to 'pyweb_test.rst'
-	INFO:WeaveAction:Finished Normally
-	INFO:Application:Load 1911 lines from 5 files in 0.05 sec., Tangle 138 lines in 0.03 sec., Weave 3173 lines in 0.02 sec.
-	MacBookPro-SLott:test slott$ PYTHONPATH=.. python3.3 test.py
-	ERROR:WebReader:At ('test8_inc.tmp', 4): end of input, ('@{', '@[') not found
-	ERROR:WebReader:Errors in included file test8_inc.tmp, output is incomplete.
-	.ERROR:WebReader:At ('test1.w', 8): expected ('@{',), found '@o'
-	ERROR:WebReader:Extra '@{' (possibly missing chunk name) near ('test1.w', 9)
-	ERROR:WebReader:Extra '@{' (possibly missing chunk name) near ('test1.w', 9)
-	.............................................................................
-	----------------------------------------------------------------------
-	Ran 78 tests in 0.025s
-
-	OK
-	MacBookPro-SLott:test slott$ rst2html.py pyweb_test.rst pyweb_test.html
+    PYTHONPATH=src pytest
 
 
 Unit Testing
@@ -249,7 +208,7 @@ emitter is Tangler-like.
             self.web = Mock(name="mock web")
         def test\_emitter\_should\_open\_close\_write(self) -> None:
             self.emitter.emit(self.web)
-            self.emitter.mock\_emit.called\_once\_with(self.web)
+            self.emitter.mock\_emit.assert\_called\_once\_with(self.web)
             self.assertEqual(self.emitter.output, self.output)
 
 ..
@@ -3492,8 +3451,6 @@ here in case we want to run these tests in isolation.
 We run the default ``unittest.main()`` to execute the entire suite of tests.
 
 
-No Longer supported: @i runner.w, using **pytest** seems better.
-
 Additional Files
 =================
 
@@ -3501,7 +3458,11 @@ To get the RST to look good, there are two additional files.
 These are clones of what's in the ``src`` directory.
 
 ``docutils.conf`` defines two CSS files to use.
-	The default CSS file may need to be customized.
+The default CSS file needs to be customized.
+
+When using **conda** the path is ``$CONDA_PREFIX/lib/python*/site-packages/docutils/writers/html4css1/html4css1.css``
+
+When using **venv**, the path will be different.
 
 
 ..  _`docutils.conf (88)`:
@@ -3512,7 +3473,7 @@ These are clones of what's in the ``src`` directory.
     # docutils.conf
     
     [html4css1 writer]
-    stylesheet-path: /Users/slott/miniconda3/envs/pywebtool/lib/python3.10/site-packages/docutils/writers/html4css1/html4css1.css,
+    stylesheet-path: /Users/slott/miniconda3/envs/pywebtool/lib/python3.12/site-packages/docutils/writers/html4css1/html4css1.css,
         page-layout.css
     syntax-highlight: long
 
@@ -3807,9 +3768,9 @@ Macros
 
 ..	class:: small
 
-	Created by src/pyweb.py at Tue Jul 11 09:11:15 2023.
+	Created by src/pyweb.py at Sat Oct 19 07:45:05 2024.
 
-    Source tests/pyweb_test.w modified Sat Jul  2 09:39:56 2022.
+    Source tests/pyweb_test.w modified Fri Oct 18 07:23:14 2024.
 
 	pyweb.__version__ '3.2'.
 

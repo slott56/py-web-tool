@@ -433,51 +433,10 @@ div.document { width: 7in; }
 </ul>
 <p>Other testing, like performance or security, is possible.
 But for this application, not very interesting.</p>
-<p>This doument builds a complete test suite, <tt class="docutils literal">test.py</tt>.</p>
+<p>This WEB document builds a complete test suite, <tt class="docutils literal">test.py</tt>.
+This can then be run with</p>
 <pre class="literal-block">
-MacBookPro-SLott:test slott$ python3.3 ../pyweb.py pyweb_test.w
-INFO:Application:Setting root log level to 'INFO'
-INFO:Application:Setting command character to '&#64;'
-INFO:Application:Weaver RST
-INFO:Application:load, tangle and weave 'pyweb_test.w'
-INFO:LoadAction:Starting Load
-INFO:WebReader:Including 'intro.w'
-WARNING:WebReader:Unknown &#64;-command in input: &quot;&#64;'&quot;
-INFO:WebReader:Including 'unit.w'
-INFO:WebReader:Including 'func.w'
-INFO:WebReader:Including 'combined.w'
-INFO:TangleAction:Starting Tangle
-INFO:TanglerMake:Tangling 'test_unit.py'
-INFO:TanglerMake:No change to 'test_unit.py'
-INFO:TanglerMake:Tangling 'test_loader.py'
-INFO:TanglerMake:No change to 'test_loader.py'
-INFO:TanglerMake:Tangling 'test.py'
-INFO:TanglerMake:No change to 'test.py'
-INFO:TanglerMake:Tangling 'page-layout.css'
-INFO:TanglerMake:No change to 'page-layout.css'
-INFO:TanglerMake:Tangling 'docutils.conf'
-INFO:TanglerMake:No change to 'docutils.conf'
-INFO:TanglerMake:Tangling 'test_tangler.py'
-INFO:TanglerMake:No change to 'test_tangler.py'
-INFO:TanglerMake:Tangling 'test_weaver.py'
-INFO:TanglerMake:No change to 'test_weaver.py'
-INFO:WeaveAction:Starting Weave
-INFO:RST:Weaving 'pyweb_test.rst'
-INFO:RST:Wrote 3173 lines to 'pyweb_test.rst'
-INFO:WeaveAction:Finished Normally
-INFO:Application:Load 1911 lines from 5 files in 0.05 sec., Tangle 138 lines in 0.03 sec., Weave 3173 lines in 0.02 sec.
-MacBookPro-SLott:test slott$ PYTHONPATH=.. python3.3 test.py
-ERROR:WebReader:At ('test8_inc.tmp', 4): end of input, ('&#64;{', '&#64;[') not found
-ERROR:WebReader:Errors in included file test8_inc.tmp, output is incomplete.
-.ERROR:WebReader:At ('test1.w', 8): expected ('&#64;{',), found '&#64;o'
-ERROR:WebReader:Extra '&#64;{' (possibly missing chunk name) near ('test1.w', 9)
-ERROR:WebReader:Extra '&#64;{' (possibly missing chunk name) near ('test1.w', 9)
-.............................................................................
-----------------------------------------------------------------------
-Ran 78 tests in 0.025s
-
-OK
-MacBookPro-SLott:test slott$ rst2html.py pyweb_test.rst pyweb_test.html
+PYTHONPATH=src pytest
 </pre>
 </div>
 <div class="section" id="unit-testing">
@@ -600,7 +559,7 @@ class TestEmitter(unittest.TestCase):
         self.web = Mock(name=&quot;mock web&quot;)
     def test_emitter_should_open_close_write(self) -&gt; None:
         self.emitter.emit(self.web)
-        self.emitter.mock_emit.called_once_with(self.web)
+        self.emitter.mock_emit.assert_called_once_with(self.web)
         self.assertEqual(self.emitter.output, self.output)
 </pre>
 <!--  -->
@@ -2898,23 +2857,22 @@ if __name__ == &quot;__main__&quot;:
 ∎ <em>Scripts Test main (87)</em>.
 Used by     → <a class="reference internal" href="#test-scripts-py-81">test_scripts.py (81)</a>.</div>
 <p>We run the default <tt class="docutils literal">unittest.main()</tt> to execute the entire suite of tests.</p>
-<p>No Longer supported: &#64;i runner.w, using <strong>pytest</strong> seems better.</p>
 </div>
 </div>
 <div class="section" id="additional-files">
 <h1><a class="toc-backref" href="#toc-entry-22">Additional Files</a></h1>
 <p>To get the RST to look good, there are two additional files.
 These are clones of what's in the <tt class="docutils literal">src</tt> directory.</p>
-<dl class="docutils">
-<dt><tt class="docutils literal">docutils.conf</tt> defines two CSS files to use.</dt>
-<dd>The default CSS file may need to be customized.</dd>
-</dl>
+<p><tt class="docutils literal">docutils.conf</tt> defines two CSS files to use.
+The default CSS file needs to be customized.</p>
+<p>When using <strong>conda</strong> the path is <tt class="docutils literal"><span class="pre">$CONDA_PREFIX/lib/python*/site-packages/docutils/writers/html4css1/html4css1.css</span></tt></p>
+<p>When using <strong>venv</strong>, the path will be different.</p>
 <p class="rubric" id="docutils-conf-88">docutils.conf (88) =</p>
 <pre class="code literal-block">
 # docutils.conf
 
 [html4css1 writer]
-stylesheet-path: /Users/slott/miniconda3/envs/pywebtool/lib/python3.10/site-packages/docutils/writers/html4css1/html4css1.css,
+stylesheet-path: /Users/slott/miniconda3/envs/pywebtool/lib/python3.12/site-packages/docutils/writers/html4css1/html4css1.css,
     page-layout.css
 syntax-highlight: long
 </pre>
@@ -3200,8 +3158,8 @@ div.document { width: 7in; }
 </table>
 <hr class="docutils" />
 <blockquote class="small">
-Created by src/pyweb.py at Tue Jul 19 14:29:45 2022.</blockquote>
-<p class="small">Source tests/pyweb_test.w modified Sat Jul  2 09:39:56 2022.</p>
+Created by src/pyweb.py at Sat Oct 19 07:45:05 2024.</blockquote>
+<p class="small">Source tests/pyweb_test.w modified Fri Oct 18 07:23:14 2024.</p>
 <blockquote class="small">
 <p>pyweb.__version__ '3.2'.</p>
 <p>Working directory '/Users/slott/Documents/Projects/py-web-tool'.</p>
