@@ -158,7 +158,7 @@ class TestEvaluations(WeaveTestcase):
         self.assertEqual("An anonymous chunk.", actual[0])
         self.assertTrue("Time = mocked time", actual[1])
         self.assertEqual("File = ('test9.w', 3)", actual[2])
-        self.assertEqual('Version = 3.2', actual[3])
+        self.assertEqual('Version = 3.3', actual[3])
         self.assertEqual(f'CWD = {os.getcwd()}', actual[4])
 
 

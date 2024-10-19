@@ -1,0 +1,2698 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>pyWeb Literate Programming 3.3 - Test Suite &#8212; PyWebTool 3.2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
+    <script src="_static/documentation_options.js?v=828ea960"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="pyWeb Literate Programming 3.3" href="pyweb.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="pyweb-literate-programming-3-3-test-suite">
+<h1><a class="toc-backref" href="#id2" role="doc-backlink">pyWeb Literate Programming 3.3 - Test Suite</a><a class="headerlink" href="#pyweb-literate-programming-3-3-test-suite" title="Link to this heading">¶</a></h1>
+<p>** Yet Another Literate Programming Tool**</p>
+<nav class="contents" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#pyweb-literate-programming-3-3-test-suite" id="id2">pyWeb Literate Programming 3.3 - Test Suite</a></p>
+<ul>
+<li><p><a class="reference internal" href="#introduction" id="id3">Introduction</a></p></li>
+<li><p><a class="reference internal" href="#unit-testing" id="id4">Unit Testing</a></p>
+<ul>
+<li><p><a class="reference internal" href="#emitter-tests" id="id5">Emitter Tests</a></p></li>
+<li><p><a class="reference internal" href="#chunk-tests" id="id6">Chunk Tests</a></p></li>
+<li><p><a class="reference internal" href="#chunk-references-tests" id="id7">Chunk References Tests</a></p></li>
+<li><p><a class="reference internal" href="#command-tests" id="id8">Command Tests</a></p></li>
+<li><p><a class="reference internal" href="#web-tests" id="id9">Web Tests</a></p></li>
+<li><p><a class="reference internal" href="#webreader-tests" id="id10">WebReader Tests</a></p></li>
+<li><p><a class="reference internal" href="#action-tests" id="id11">Action Tests</a></p></li>
+<li><p><a class="reference internal" href="#application-tests" id="id12">Application Tests</a></p></li>
+<li><p><a class="reference internal" href="#overheads-and-main-script" id="id13">Overheads and Main Script</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#functional-testing" id="id14">Functional Testing</a></p>
+<ul>
+<li><p><a class="reference internal" href="#tests-for-loading" id="id15">Tests for Loading</a></p></li>
+<li><p><a class="reference internal" href="#tests-for-tangling" id="id16">Tests for Tangling</a></p></li>
+<li><p><a class="reference internal" href="#tests-for-weaving" id="id17">Tests for Weaving</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#additional-scripts-testing" id="id18">Additional Scripts Testing</a></p>
+<ul>
+<li><p><a class="reference internal" href="#sample-web-file" id="id19">Sample Web File</a></p></li>
+<li><p><a class="reference internal" href="#superclass-for-test-cases" id="id20">Superclass for test cases</a></p></li>
+<li><p><a class="reference internal" href="#weave-script-test" id="id21">Weave Script Test</a></p></li>
+<li><p><a class="reference internal" href="#tangle-script-test" id="id22">Tangle Script Test</a></p></li>
+<li><p><a class="reference internal" href="#id1" id="id23">Overheads and Main Script</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#indices" id="id24">Indices</a></p>
+<ul>
+<li><p><a class="reference internal" href="#files" id="id25">Files</a></p></li>
+<li><p><a class="reference internal" href="#macros" id="id26">Macros</a></p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+<section id="introduction">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Introduction</a><a class="headerlink" href="#introduction" title="Link to this heading">¶</a></h2>
+<p>There are two levels of testing in this document.</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#unit-testing">Unit Testing</a></p></li>
+<li><p><a class="reference internal" href="#functional-testing">Functional Testing</a></p></li>
+</ul>
+<p>Other testing, like performance or security, is possible.
+But for this application, not very interesting.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">pyweb_test.w</span></code> WEB creates the test suite.
+This source will weave a <code class="docutils literal notranslate"><span class="pre">pyweb_test.rst</span></code> file.
+It tangles several test modules:  <code class="docutils literal notranslate"><span class="pre">test.py</span></code>, <code class="docutils literal notranslate"><span class="pre">test_tangler.py</span></code>, <code class="docutils literal notranslate"><span class="pre">test_weaver.py</span></code>,
+<code class="docutils literal notranslate"><span class="pre">test_loader.py</span></code>, <code class="docutils literal notranslate"><span class="pre">test_unit.py</span></code>, and <code class="docutils literal notranslate"><span class="pre">test_scripts.py</span></code>.</p>
+<p>Use <strong>pytest</strong> to discover and run all 80+ test cases.</p>
+<p>Here’s a script that works out well for running this without disturbing the development
+environment. The <code class="docutils literal notranslate"><span class="pre">PYTHONPATH</span></code> setting is essential to support importing <code class="docutils literal notranslate"><span class="pre">pyweb</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>python pyweb.py -o tests tests/pyweb_test.w
+PYTHONPATH=$(PWD) pytest
+</pre></div>
+</div>
+<p>Note that the last line sets an environment variable and runs
+the <code class="docutils literal notranslate"><span class="pre">pytest</span></code> tool on a single line.</p>
+</section>
+<section id="unit-testing">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Unit Testing</a><a class="headerlink" href="#unit-testing" title="Link to this heading">¶</a></h2>
+<p>There are several broad areas of unit testing.  There are the 34 classes in this application.
+However, it isn’t really necessary to test everyone single one of these classes.
+We’ll decompose these into several hierarchies.</p>
+<ul>
+<li><p>Emitters</p>
+<blockquote>
+<div><p>class Emitter:</p>
+<p>class Weaver(Emitter):</p>
+<p>class LaTeX(Weaver):</p>
+<p>class HTML(Weaver):</p>
+<p>class Tangler(Emitter):</p>
+<p>class TanglerMake(Tangler):</p>
+</div></blockquote>
+</li>
+<li><p>Structure: Chunk, Command</p>
+<blockquote>
+<div><p>class Chunk:</p>
+<p>class NamedChunk(Chunk):</p>
+<p>class NamedChunk_Noindent(Chunk):</p>
+<p>class OutputChunk(NamedChunk):</p>
+<p>class NamedDocumentChunk(NamedChunk):</p>
+<p>class Command:</p>
+<p>class TextCommand(Command):</p>
+<p>class CodeCommand(TextCommand):</p>
+<p>class XrefCommand(Command):</p>
+<p>class FileXrefCommand(XrefCommand):</p>
+<p>class MacroXrefCommand(XrefCommand):</p>
+<p>class UserIdXrefCommand(XrefCommand):</p>
+<p>class ReferenceCommand(Command):</p>
+</div></blockquote>
+</li>
+<li><p>class Error(Exception):</p></li>
+<li><p>Reference Handling</p>
+<blockquote>
+<div><p>class Reference:</p>
+<p>class SimpleReference(Reference):</p>
+<p>class TransitiveReference(Reference):</p>
+</div></blockquote>
+</li>
+<li><p>class Web:</p></li>
+<li><p>class WebReader:</p>
+<blockquote>
+<div><p>class Tokenizer:</p>
+<p>class OptionParser:</p>
+</div></blockquote>
+</li>
+<li><p>Action</p>
+<blockquote>
+<div><p>class Action:</p>
+<p>class ActionSequence(Action):</p>
+<p>class WeaveAction(Action):</p>
+<p>class TangleAction(Action):</p>
+<p>class LoadAction(Action):</p>
+</div></blockquote>
+</li>
+<li><p>class Application:</p></li>
+<li><p>class MyWeaver(HTML):</p></li>
+<li><p>class MyHTML(pyweb.HTML):</p></li>
+</ul>
+<p>This gives us the following outline for unit testing.</p>
+<p class="rubric" id="tests-test-unit-py-1">tests/test_unit.py (1) =</p>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#unit-test-overheads-imports-etc-43">Unit Test overheads: imports, etc. (43)</a>
+→ <a class="reference internal" href="#unit-test-of-emitter-class-hierarchy-2">Unit Test of Emitter class hierarchy (2)</a>
+→ <a class="reference internal" href="#unit-test-of-chunk-class-hierarchy-10">Unit Test of Chunk class hierarchy (10)</a>
+→ <a class="reference internal" href="#unit-test-of-chunk-references-22">Unit Test of Chunk References (22)</a>
+→ <a class="reference internal" href="#unit-test-of-command-class-hierarchy-23">Unit Test of Command class hierarchy (23)</a>
+→ <a class="reference internal" href="#unit-test-of-web-class-32">Unit Test of Web class (32)</a>
+→ <a class="reference internal" href="#unit-test-of-webreader-class-33">Unit Test of WebReader class (33)</a>
+→ <a class="reference internal" href="#unit-test-of-action-class-hierarchy-37">Unit Test of Action class hierarchy (37)</a>
+→ <a class="reference internal" href="#unit-test-of-application-class-42">Unit Test of Application class (42)</a>
+→ <a class="reference internal" href="#unit-test-main-45">Unit Test main (45)</a></code></pre>
+<div class="small docutils container">
+<p>∎ <em>tests/test_unit.py (1)</em>.</p>
+</div>
+<section id="emitter-tests">
+<h3><a class="toc-backref" href="#id5" role="doc-backlink">Emitter Tests</a><a class="headerlink" href="#emitter-tests" title="Link to this heading">¶</a></h3>
+<p>The emitter class hierarchy produces output files; either woven output
+which uses templates to generate proper markup, or tangled output which
+precisely follows the document structure.</p>
+<p class="rubric" id="unit-test-of-emitter-class-hierarchy-2">Unit Test of Emitter class hierarchy (2) =</p>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#unit-test-mock-chunk-class-4">Unit Test Mock Chunk class (4)</a>
+→ <a class="reference internal" href="#unit-test-of-emitter-superclass-3">Unit Test of Emitter Superclass (3)</a>
+→ <a class="reference internal" href="#unit-test-of-weaver-subclass-of-emitter-5">Unit Test of Weaver subclass of Emitter (5)</a>
+→ <a class="reference internal" href="#unit-test-of-latex-subclass-of-emitter-6">Unit Test of LaTeX subclass of Emitter (6)</a>
+→ <a class="reference internal" href="#unit-test-of-html-subclass-of-emitter-7">Unit Test of HTML subclass of Emitter (7)</a>
+→ <a class="reference internal" href="#unit-test-of-tangler-subclass-of-emitter-8">Unit Test of Tangler subclass of Emitter (8)</a>
+→ <a class="reference internal" href="#unit-test-of-tanglermake-subclass-of-emitter-9">Unit Test of TanglerMake subclass of Emitter (9)</a></code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of Emitter class hierarchy (2)</em>.
+Used by     → <a class="reference internal" href="#tests-test-unit-py-1">tests/test_unit.py (1)</a>.</p>
+</div>
+<p>The Emitter superclass is designed to be extended.  The test
+creates a subclass to exercise a few key features. The default
+emitter is Tangler-like.</p>
+<p class="rubric" id="unit-test-of-emitter-superclass-3">Unit Test of Emitter Superclass (3) =</p>
+<pre class="code literal-block"><code>class EmitterExtension(pyweb.Emitter):
+    mock_emit = Mock()
+    def emit(self, web: pyweb.Web) -&gt; None:
+        self.mock_emit(web)
+
+class TestEmitter(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.output = Path(&quot;TestEmitter.out&quot;)
+        self.emitter = EmitterExtension(self.output)
+        self.web = Mock(name=&quot;mock web&quot;)
+    def test_emitter_should_open_close_write(self) -&gt; None:
+        self.emitter.emit(self.web)
+        self.emitter.mock_emit.assert_called_once_with(self.web)
+        self.assertEqual(self.emitter.output, self.output)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of Emitter Superclass (3)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-emitter-class-hierarchy-2">Unit Test of Emitter class hierarchy (2)</a>.</p>
+</div>
+<p>A mock Chunk is a Chunk-like object that we can use to test Weavers.</p>
+<p>Some tests will create multiple chunks. To keep their state separate,
+we define a function to return each mocked <code class="docutils literal notranslate"><span class="pre">Chunk</span></code> instance as a new Mock
+object. The overall <code class="docutils literal notranslate"><span class="pre">MockChunk</span></code> class, uses a side effect to
+invoke the the <code class="docutils literal notranslate"><span class="pre">mock_chunk_instance()</span></code> function.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">write_closure()</span></code> is a function that calls the <code class="docutils literal notranslate"><span class="pre">Tangler.write()</span></code>
+method. This is <em>not</em> consistent with best unit testing practices.
+It is merely a hold-over from an older testing strategy. The mock call
+history to the <code class="docutils literal notranslate"><span class="pre">tangle()</span></code> method of each <code class="docutils literal notranslate"><span class="pre">Chunk</span></code> instance is a better
+test strategy.</p>
+<p><strong>TODO:</strong> Simplify the following definition. A great deal of these features are legacy definitions.</p>
+<p class="rubric" id="unit-test-mock-chunk-class-4">Unit Test Mock Chunk class (4) =</p>
+<pre class="code literal-block"><code>def mock_chunk_instance(name: str, seq: int, location: tuple[str, int]) -&gt; Mock:
+    chunk = Mock(
+        wraps=pyweb.Chunk,
+        full_name=name,
+        seq=seq,
+        location=location,
+        commands=[],
+        referencedBy=None,
+        references=0,
+        def_names=[],
+        path=None,
+        tangle=Mock(),
+        type_is=Mock(side_effect=lambda x: x == &quot;Chunk&quot;),
+        # reference_indent=Mock(),
+        # reference_dedent=Mock(),
+    )
+    chunk.name = name
+    return chunk
+
+MockChunk = Mock(
+    name=&quot;Chunk class&quot;,
+    side_effect=mock_chunk_instance
+)
+
+def mock_web() -&gt; pyweb.Web:
+    def tangle_method(aTangler: pyweb.Tangler, target: TextIO) -&gt; None:
+        aTangler.codeBlock(target, &quot;Mocked Tangle Output\n&quot;)
+
+    mock_file = Mock(full_name=&quot;sample.out&quot;, seq=1)
+    mock_file.name = &quot;sample.out&quot;
+    mock_output = Mock(full_name=&quot;named chunk&quot;, seq=2, def_list=[3])
+    mock_output.name = &quot;named chunk&quot;
+    mock_uid_1 = Mock(userid=&quot;user_id_1&quot;, ref_list=[mock_output])
+    mock_uid_2 = Mock(userid=&quot;user_id_2&quot;, ref_list=[mock_output])
+    mock_ref = Mock(typeid=pyweb.TypeId(), full_name=&quot;named chunk&quot;, seq=42)
+    mock_ref.typeid.__set_name__(pyweb.ReferenceCommand, &quot;typeid&quot;)
+    mock_ref.name = &quot;named...&quot;
+
+    c_0 = Mock(
+        name=&quot;mock Chunk&quot;,
+        type_is=Mock(side_effect = lambda n: n == &quot;Chunk&quot;),
+        commands=[
+            Mock(
+                typeid=pyweb.TypeId().__set_name__(pyweb.TextCommand, &quot;typeid&quot;),
+                text=&quot;text with |char| untouched.&quot;,
+            ),
+            Mock(
+                typeid=pyweb.TypeId().__set_name__(pyweb.TextCommand, &quot;typeid&quot;),
+                text=&quot;\n&quot;,
+            ),
+            Mock(
+                typeid=pyweb.TypeId().__set_name__(pyweb.FileXrefCommand, &quot;typeid&quot;),
+                location=1,
+                files=[mock_file],
+            ),
+            Mock(
+                typeid=pyweb.TypeId().__set_name__(pyweb.TextCommand, &quot;typeid&quot;),
+                text=&quot;\n&quot;,
+            ),
+            Mock(
+                typeid=pyweb.TypeId().__set_name__(pyweb.MacroXrefCommand, &quot;typeid&quot;),
+                location=2,
+                macros=[mock_output],
+            ),
+            Mock(
+                typeid=pyweb.TypeId().__set_name__(pyweb.TextCommand, &quot;typeid&quot;),
+                text=&quot;\n&quot;,
+            ),
+            Mock(
+                typeid=pyweb.TypeId().__set_name__(pyweb.UserIdXrefCommand, &quot;typeid&quot;),
+                location=3,
+                userids=[mock_uid_1, mock_uid_2]
+            ),
+        ],
+        referencedBy=None,
+    )
+    c_1 = Mock(
+        name=&quot;mock OutputChunk&quot;,
+        type_is=Mock(side_effect = lambda n: n == &quot;OutputChunk&quot;),
+        seq=42,
+        full_name=&quot;sample.out&quot;,
+        commands=[
+            Mock(
+                typeid=pyweb.TypeId().__set_name__(pyweb.CodeCommand, &quot;typeid&quot;),
+                text=&quot;|char| `code` *em* _em_&quot;,
+                tangle=Mock(side_effect=tangle_method),
+            ),
+            Mock(
+                typeid=pyweb.TypeId().__set_name__(pyweb.CodeCommand, &quot;typeid&quot;),
+                text=&quot;\n&quot;,
+                tangle=Mock(),
+            ),
+            mock_ref,
+        ],
+        def_names=[&quot;some_name&quot;],
+        referencedBy=None,
+    )
+    c_2 = Mock(
+        name=&quot;mock NamedChunk&quot;,
+        type_is=Mock(side_effect = lambda n: n == &quot;NamedChunk&quot;),
+        seq=42,
+        full_name=&quot;named chunk&quot;,
+        commands=[
+            Mock(
+                typeid=pyweb.TypeId().__set_name__(pyweb.CodeCommand, &quot;typeid&quot;),
+                text=&quot;|char| `code` *em* _em_&quot;,
+            ),
+            Mock(
+                typeid=pyweb.TypeId().__set_name__(pyweb.CodeCommand, &quot;typeid&quot;),
+                text=&quot;\n&quot;,
+                tangle=Mock(),
+            ),
+        ],
+        def_names=[&quot;another_name&quot;],
+        referencedBy=c_1
+    )
+    web = Mock(
+        name=&quot;mock web&quot;,
+        web_path=Path(&quot;TestWeaver.w&quot;),
+        chunks=[c_0, c_1, c_2],
+    )
+    web.chunks[1].name=&quot;sample.out&quot;
+    web.chunks[2].name=&quot;named...&quot;
+    web.files = [web.chunks[1]]
+    return web</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test Mock Chunk class (4)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-emitter-class-hierarchy-2">Unit Test of Emitter class hierarchy (2)</a>.</p>
+</div>
+<p>The default Weaver is an Emitter that uses templates to produce RST markup.</p>
+<p class="rubric" id="unit-test-of-weaver-subclass-of-emitter-5">Unit Test of Weaver subclass of Emitter (5) =</p>
+<pre class="code literal-block"><code>def test_rst_quote_rules():
+    assert pyweb.rst_quote_rules(&quot;|char| `code` *em* _em_&quot;) == r&quot;\|char\| \`code\` \*em\* \_em\_&quot;
+
+def test_html_quote_rules():
+    assert pyweb.html_quote_rules(&quot;a &amp; b &lt; c &gt; d&quot;) == r&quot;a &amp;amp; b &amp;lt; c &amp;gt; d&quot;
+
+
+class TestWeaver(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.filepath = Path.cwd()
+        self.weaver = pyweb.Weaver(self.filepath)
+        self.weaver.set_markup(&quot;rst&quot;)
+        # self.weaver.reference_style = pyweb.SimpleReference()  # Remove this
+        self.output_path = self.filepath / &quot;TestWeaver.rst&quot;
+        self.web = mock_web()
+        self.maxDiff = None
+
+    def tearDown(self) -&gt; None:
+        try:
+            self.output_path.unlink()
+        except OSError:
+            pass
+
+    def test_weaver_functions_generic(self) -&gt; None:
+        self.weaver.emit(self.web)
+        result = self.output_path.read_text()
+        expected = ('text with |char| untouched.\n'
+             ':sample.out:\n'
+             '    → `sample.out (1)`_\n'
+             ':named chunk:\n'
+             '    → ` ()`_\n'
+             '\n'
+             '\n'
+             ':user_id_1:\n'
+             '    → `named chunk (2)`_\n'
+             '\n'
+             ':user_id_2:\n'
+             '    → `named chunk (2)`_\n'
+             '\n'
+             '\n'
+            '..  _`sample.out (42)`:\n'
+            '..  rubric:: sample.out (42) =\n'
+            '..  parsed-literal::\n'
+            '    :class: code\n'
+            '\n'
+            '    \\|char\\| \\`code\\` \\*em\\* \\_em\\_\n'
+            '    \n'
+            '    → `named chunk (42)`_\n'
+            '..\n'
+            '\n'
+            '..  container:: small\n'
+            '\n'
+            '    ∎ *sample.out (42)*.\n'
+            '    \n'
+            '\n'
+            '\n'
+            '..  _`named chunk (42)`:\n'
+            '..  rubric:: named chunk (42) =\n'
+            '..  parsed-literal::\n'
+            '    :class: code\n'
+            '\n'
+            '    \\|char\\| \\`code\\` \\*em\\* \\_em\\_\n'
+            '    \n'
+            '\n'
+            '..\n'
+            '\n'
+            '..  container:: small\n'
+            '\n'
+            '    ∎ *named chunk (42)*.\n'
+            '    Used by     → `sample.out (42)`_.\n'
+            '\n')
+        self.assertEqual(expected, result)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of Weaver subclass of Emitter (5)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-emitter-class-hierarchy-2">Unit Test of Emitter class hierarchy (2)</a>.</p>
+</div>
+<p>A significant fraction of the various subclasses of weaver are simply
+expansion of templates.  There’s no real point in testing the template
+expansion, since that’s more easily tested by running a document
+through pyweb and looking at the results.</p>
+<p>We’ll examine a few features of the LaTeX templates.</p>
+<p class="rubric" id="unit-test-of-latex-subclass-of-emitter-6">Unit Test of LaTeX subclass of Emitter (6) =</p>
+<pre class="code literal-block"><code>class TestLaTeX(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.weaver = pyweb.Weaver()
+        self.weaver.set_markup(&quot;tex&quot;)
+        # self.weaver.reference_style = pyweb.SimpleReference()  # Remove this
+        self.filepath = Path(&quot;testweaver&quot;)
+        self.aFileChunk = MockChunk(&quot;File&quot;, 123, (&quot;sample.w&quot;, 456))
+        self.aFileChunk.referencedBy = [ ]
+        self.aChunk = MockChunk(&quot;Chunk&quot;, 314, (&quot;sample.w&quot;, 789))
+        self.aChunk.type_is = Mock(side_effect=lambda n: n == &quot;OutputChunk&quot;)
+        self.aChunk.referencedBy = [self.aFileChunk,]
+        self.aChunk.references = [(self.aFileChunk.name, self.aFileChunk.seq)]
+
+    def tearDown(self) -&gt; None:
+        try:
+            self.filepath.with_suffix(&quot;.tex&quot;).unlink()
+        except OSError:
+            pass
+
+    def test_weaver_functions_latex(self) -&gt; None:
+        result = pyweb.latex_quote_rules(&quot;\\end{Verbatim}&quot;)
+        self.assertEqual(&quot;\\end\\,{Verbatim}&quot;, result)
+        web = Mock(chunks=[self.aChunk])
+        result = list(self.weaver.generate_text(web))
+        expected = [
+            '\n'
+            '\\label{pyweb-314}\n'
+            '\\begin{flushleft}\n'
+            '\\textit{Code example Chunk (314)}\n'
+            '\\begin{Verbatim}[commandchars=\\\\\\{\\},codes={\\catcode`$$=3\\catcode`^=7},frame=single]',
+            '\n'
+            '\\end{Verbatim}\n'
+            '\\end{flushleft}\n'
+        ]
+        self.assertEqual(expected, result)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of LaTeX subclass of Emitter (6)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-emitter-class-hierarchy-2">Unit Test of Emitter class hierarchy (2)</a>.</p>
+</div>
+<p>We’ll examine a few features of the HTML templates.</p>
+<p class="rubric" id="unit-test-of-html-subclass-of-emitter-7">Unit Test of HTML subclass of Emitter (7) =</p>
+<pre class="code literal-block"><code>class TestHTML(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.maxDiff = None
+        self.weaver = pyweb.Weaver( )
+        self.weaver.set_markup(&quot;html&quot;)
+        # self.weaver.reference_style = pyweb.SimpleReference()  # Remove this
+        self.filepath = Path(&quot;testweaver&quot;)
+        self.aFileChunk = MockChunk(&quot;File&quot;, 123, (&quot;sample.w&quot;, 456))
+        self.aFileChunk.referencedBy = []
+        self.aChunk = MockChunk(&quot;Chunk&quot;, 314, (&quot;sample.w&quot;, 789))
+        self.aChunk.type_is = Mock(side_effect=lambda n: n == &quot;OutputChunk&quot;)
+        self.aChunk.referencedBy = [self.aFileChunk,]
+        self.aChunk.references = [(self.aFileChunk.name, self.aFileChunk.seq)]
+
+    def tearDown(self) -&gt; None:
+        try:
+            self.filepath.with_suffix(&quot;.html&quot;).unlink()
+        except OSError:
+            pass
+
+    def test_weaver_functions_html(self) -&gt; None:
+        result = pyweb.html_quote_rules(&quot;a &lt; b &amp;&amp; c &gt; d&quot;)
+        self.assertEqual(&quot;a &amp;lt; b &amp;amp;&amp;amp; c &amp;gt; d&quot;, result)
+        web = Mock(chunks=[self.aChunk])
+        result = list(self.weaver.generate_text(web))
+        expected = [
+            '\n'
+            '&lt;a name=&quot;pyweb_314&quot;&gt;&lt;/a&gt;\n'
+            &quot;&lt;!--line number ('sample.w', 789)--&gt;\n&quot;
+            '&lt;p&gt;&lt;em&gt;Chunk (314)&lt;/em&gt; =&lt;/p&gt;\n'
+            '&lt;pre&gt;&lt;code&gt;',
+            '\n'
+            '&lt;/code&gt;&lt;/pre&gt;\n'
+            '&lt;p&gt;&amp;#8718; &lt;em&gt;Chunk (314)&lt;/em&gt;.\n'
+            'Used by &amp;rarr;&lt;a href=&quot;#pyweb_&quot;&gt;&lt;em&gt; ()&lt;/em&gt;&lt;/a&gt;.\n'
+            '&lt;/p&gt; \n'
+        ]
+        self.assertEqual(expected, result)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of HTML subclass of Emitter (7)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-emitter-class-hierarchy-2">Unit Test of Emitter class hierarchy (2)</a>.</p>
+</div>
+<p>A Tangler emits the various named source files in proper format for the desired
+compiler and language.</p>
+<p class="rubric" id="unit-test-of-tangler-subclass-of-emitter-8">Unit Test of Tangler subclass of Emitter (8) =</p>
+<pre class="code literal-block"><code>class TestTangler(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.filepath = Path.cwd()
+        self.tangler = pyweb.Tangler(self.filepath)
+
+    def tearDown(self) -&gt; None:
+        try:
+            target = self.filepath / &quot;sample.out&quot;
+            target.unlink()
+        except FileNotFoundError:
+            pass
+
+    def test_tangler_should_codeBlock(self) -&gt; None:
+        target = io.StringIO()
+        self.tangler.codeBlock(target, &quot;Some&quot;)
+        self.tangler.codeBlock(target, &quot; Code&quot;)
+        self.tangler.codeBlock(target, &quot;\n&quot;)
+        output = target.getvalue()
+        self.assertEqual(&quot;Some Code\n&quot;, output)
+
+    def test_tangler_should_indent(self) -&gt; None:
+        target = io.StringIO()
+        self.tangler.codeBlock(target, &quot;Begin\n&quot;)
+        self.tangler.addIndent(4)
+        self.tangler.codeBlock(target, &quot;More Code\n&quot;)
+        self.tangler.clrIndent()
+        self.tangler.codeBlock(target, &quot;End\n&quot;)
+        output = target.getvalue()
+        self.assertEqual(&quot;Begin\n    More Code\nEnd\n&quot;, output)
+
+    def test_tangler_should_noindent(self) -&gt; None:
+        target = io.StringIO()
+        self.tangler.codeBlock(target, &quot;Begin&quot;)
+        self.tangler.codeBlock(target, &quot;\n&quot;)
+        self.tangler.setIndent(0)
+        self.tangler.codeBlock(target, &quot;More Code&quot;)
+        self.tangler.codeBlock(target, &quot;\n&quot;)
+        self.tangler.clrIndent()
+        self.tangler.codeBlock(target, &quot;End&quot;)
+        self.tangler.codeBlock(target, &quot;\n&quot;)
+        output = target.getvalue()
+        self.assertEqual(&quot;Begin\nMore Code\nEnd\n&quot;, output)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of Tangler subclass of Emitter (8)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-emitter-class-hierarchy-2">Unit Test of Emitter class hierarchy (2)</a>.</p>
+</div>
+<p>A TanglerMake uses a cheap hack to see if anything changed.
+It creates a temporary file and then does a complete (slow, expensive) file difference
+check.  If the file is different, the old version is replaced with
+the new version.  If the file content is the same, the old version
+is left intact with all of the operating system creation timestamps
+untouched.</p>
+<p class="rubric" id="unit-test-of-tanglermake-subclass-of-emitter-9">Unit Test of TanglerMake subclass of Emitter (9) =</p>
+<pre class="code literal-block"><code>class TestTanglerMake(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.filepath = Path.cwd()
+        self.tangler = pyweb.TanglerMake()
+        self.web = mock_web()
+        self.output = self.filepath / &quot;sample.out&quot;
+        self.tangler.emit(self.web)
+        self.time_original = self.output.stat().st_mtime
+        self.original = self.output.stat()
+
+    def tearDown(self) -&gt; None:
+        try:
+            self.output.unlink()
+        except OSError:
+            pass
+
+    def test_confirm_tanged_output(self) -&gt; None:
+        tangled = self.output.read_text()
+        expected = (
+            'Mocked Tangle Output\n'
+        )
+        self.assertEqual(expected, tangled)
+
+
+    def test_same_should_leave(self) -&gt; None:
+        self.tangler.emit(self.web)
+        self.assertTrue(os.path.samestat(self.original, self.output.stat()))
+        #self.assertEqual(self.time_original, self.output.stat().st_mtime)
+
+    def test_different_should_update(self) -&gt; None:
+        # Modify the web in some way to create a distinct value.
+        def tangle_method(aTangler: pyweb.Tangler, target: TextIO) -&gt; None:
+            aTangler.codeBlock(target, &quot;Updated Tangle Output\n&quot;)
+        self.web.chunks[1].commands[0].tangle = Mock(side_effect=tangle_method)
+        self.tangler.emit(self.web)
+        print(self.output.read_text())
+        self.assertFalse(os.path.samestat(self.original, self.output.stat()))
+        #self.assertNotEqual(self.time_original, self.output.stat().st_mtime)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of TanglerMake subclass of Emitter (9)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-emitter-class-hierarchy-2">Unit Test of Emitter class hierarchy (2)</a>.</p>
+</div>
+</section>
+<section id="chunk-tests">
+<h3><a class="toc-backref" href="#id6" role="doc-backlink">Chunk Tests</a><a class="headerlink" href="#chunk-tests" title="Link to this heading">¶</a></h3>
+<p>The Chunk and Command class hierarchies model the input document – the web
+of chunks that are used to produce the documentation and the source files.</p>
+<p class="rubric" id="unit-test-of-chunk-class-hierarchy-10">Unit Test of Chunk class hierarchy (10) =</p>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#unit-test-of-chunk-superclass-11">Unit Test of Chunk superclass (11)</a>
+→ <a class="reference internal" href="#unit-test-of-namedchunk-subclass-18">Unit Test of NamedChunk subclass (18)</a>
+→ <a class="reference internal" href="#unit-test-of-namedchunk-noindent-subclass-19">Unit Test of NamedChunk_Noindent subclass (19)</a>
+→ <a class="reference internal" href="#unit-test-of-outputchunk-subclass-20">Unit Test of OutputChunk subclass (20)</a>
+→ <a class="reference internal" href="#unit-test-of-nameddocumentchunk-subclass-21">Unit Test of NamedDocumentChunk subclass (21)</a></code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of Chunk class hierarchy (10)</em>.
+Used by     → <a class="reference internal" href="#tests-test-unit-py-1">tests/test_unit.py (1)</a>.</p>
+</div>
+<p>In order to test the Chunk superclass, we need several mock objects.
+A Chunk contains one or more commands.  A Chunk is a part of a Web.
+Also, a Chunk is processed by a Tangler or a Weaver.  We’ll need
+mock objects for all of these relationships in which a Chunk participates.</p>
+<p>A MockCommand can be attached to a Chunk.</p>
+<p class="rubric" id="unit-test-of-chunk-superclass-11">Unit Test of Chunk superclass (11) =</p>
+<pre class="code literal-block"><code>MockCommand = Mock(
+    name=&quot;Command class&quot;,
+    side_effect=lambda: Mock(
+        name=&quot;Command instance&quot;,
+        # text=&quot;&quot;,  # Only used for TextCommand.
+        lineNumber=314,
+        startswith=Mock(return_value=False)
+    )
+)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of Chunk superclass (11)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-chunk-class-hierarchy-10">Unit Test of Chunk class hierarchy (10)</a>.</p>
+</div>
+<p>A MockWeb can contain a Chunk.</p>
+<p class="rubric" id="unit-test-of-chunk-superclass-12">Unit Test of Chunk superclass (12) +=</p>
+<pre class="code literal-block"><code>def mock_web_instance() -&gt; Mock:
+    web = Mock(
+        name=&quot;Web instance&quot;,
+        chunks=[],
+        # add=Mock(return_value=None),
+        # addNamed=Mock(return_value=None),
+        # addOutput=Mock(return_value=None),
+        fullNameFor=Mock(side_effect=lambda name: name),
+        fileXref=Mock(return_value={'file': [1,2,3]}),
+        chunkXref=Mock(return_value={'chunk': [4,5,6]}),
+        userNamesXref=Mock(return_value={'name': (7, [8,9,10])}),
+        # getchunk=Mock(side_effect=lambda name: [MockChunk(name, 1, (&quot;sample.w&quot;, 314))]),
+        createUsedBy=Mock(),
+        weaveChunk=Mock(side_effect=lambda name, weaver: weaver.write(name)),
+        weave=Mock(return_value=None),
+        tangle=Mock(return_value=None),
+    )
+    return web
+
+MockWeb = Mock(
+    name=&quot;Web class&quot;,
+    side_effect=mock_web_instance,
+    file_path=&quot;sample.input&quot;,
+)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of Chunk superclass (12)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-chunk-class-hierarchy-10">Unit Test of Chunk class hierarchy (10)</a>.</p>
+</div>
+<p>A MockWeaver or MockTangler appear to process a Chunk.
+We can interrogate the <code class="docutils literal notranslate"><span class="pre">mock_calls</span></code> to be sure the right things were done.</p>
+<p>We need to permit <code class="docutils literal notranslate"><span class="pre">__enter__()</span></code> and <code class="docutils literal notranslate"><span class="pre">__exit__()</span></code>,
+which leads to a multi-step instance.
+The initial instance with <code class="docutils literal notranslate"><span class="pre">__enter__()</span></code> that
+returns the context manager instance.</p>
+<p class="rubric" id="unit-test-of-chunk-superclass-13">Unit Test of Chunk superclass (13) +=</p>
+<pre class="code literal-block"><code>def mock_weaver_instance() -&gt; MagicMock:
+    context = MagicMock(
+        name=&quot;Weaver instance context&quot;,
+        __exit__=Mock()
+    )
+
+    weaver = MagicMock(
+        name=&quot;Weaver instance&quot;,
+        quote=Mock(return_value=&quot;quoted&quot;),
+        __enter__=Mock(return_value=context)
+    )
+    return weaver
+
+MockWeaver = Mock(
+    name=&quot;Weaver class&quot;,
+    side_effect=mock_weaver_instance
+)
+
+def mock_tangler_instance() -&gt; MagicMock:
+    context = MagicMock(
+        name=&quot;Tangler instance context&quot;,
+        reference_names=Mock(add=Mock()),
+        __exit__=Mock()
+    )
+
+    tangler = MagicMock(
+        name=&quot;Tangler instance&quot;,
+        __enter__=Mock(return_value=context),
+    )
+    return tangler
+
+MockTangler = Mock(
+    name=&quot;Tangler class&quot;,
+    side_effect=mock_tangler_instance
+)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of Chunk superclass (13)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-chunk-class-hierarchy-10">Unit Test of Chunk class hierarchy (10)</a>.</p>
+</div>
+<p>A Chunk is built, interrogated and then emitted.</p>
+<p class="rubric" id="unit-test-of-chunk-superclass-14">Unit Test of Chunk superclass (14) +=</p>
+<pre class="code literal-block"><code>class TestChunk(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.theChunk = pyweb.Chunk()
+
+
+→ <a class="reference internal" href="#unit-test-of-chunk-construction-15">Unit Test of Chunk construction (15)</a>
+
+
+→ <a class="reference internal" href="#unit-test-of-chunk-interrogation-16">Unit Test of Chunk interrogation (16)</a>
+
+
+→ <a class="reference internal" href="#unit-test-of-chunk-properties-17">Unit Test of Chunk properties (17)</a></code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of Chunk superclass (14)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-chunk-class-hierarchy-10">Unit Test of Chunk class hierarchy (10)</a>.</p>
+</div>
+<p>Can we build a Chunk?</p>
+<p class="rubric" id="unit-test-of-chunk-construction-15">Unit Test of Chunk construction (15) =</p>
+<pre class="code literal-block"><code>def test_append_command_should_work(self) -&gt; None:
+    cmd1 = MockCommand()
+    self.theChunk.commands.append(cmd1)
+    self.assertEqual(1, len(self.theChunk.commands))
+    self.assertEqual([cmd1], self.theChunk.commands)
+
+    cmd2 = MockCommand()
+    self.theChunk.commands.append(cmd2)
+    self.assertEqual(2, len(self.theChunk.commands))
+    self.assertEqual([cmd1, cmd2], self.theChunk.commands)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of Chunk construction (15)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-chunk-superclass-14">Unit Test of Chunk superclass (14)</a>.</p>
+</div>
+<p>Can we interrogate a Chunk?</p>
+<p class="rubric" id="unit-test-of-chunk-interrogation-16">Unit Test of Chunk interrogation (16) =</p>
+<pre class="code literal-block"><code>def test_lineNumber_should_work(self) -&gt; None:
+    cmd1 = MockCommand()
+    self.theChunk.commands.append(cmd1)
+    self.assertEqual(314, self.theChunk.commands[0].lineNumber)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of Chunk interrogation (16)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-chunk-superclass-14">Unit Test of Chunk superclass (14)</a>.</p>
+</div>
+<p>Can we emit a Chunk with a weaver or tangler?</p>
+<p class="rubric" id="unit-test-of-chunk-properties-17">Unit Test of Chunk properties (17) =</p>
+<pre class="code literal-block"><code>def test_properties(self) -&gt; None:
+    self.theChunk.name = &quot;some name&quot;
+    web = MockWeb()
+    self.theChunk.web = Mock(return_value=web)
+    self.theChunk.full_name
+    web.resolve_name.assert_called_once_with(self.theChunk.name)
+    self.assertIsNone(self.theChunk.path)
+    self.assertTrue(self.theChunk.type_is('Chunk'))
+    self.assertFalse(self.theChunk.type_is('OutputChunk'))
+    self.assertIsNone(self.theChunk.referencedBy)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of Chunk properties (17)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-chunk-superclass-14">Unit Test of Chunk superclass (14)</a>.</p>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">NamedChunk</span></code> is created by a <code class="docutils literal notranslate"><span class="pre">&#64;d</span></code> command.
+Since it’s named, it appears in the Web’s index.  Also, it is woven
+and tangled differently than anonymous chunks.</p>
+<p class="rubric" id="unit-test-of-namedchunk-subclass-18">Unit Test of NamedChunk subclass (18) =</p>
+<pre class="code literal-block"><code>class TestNamedChunk(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.theChunk = pyweb.NamedChunk(name=&quot;Some Name...&quot;)
+        cmd = MockCommand()
+        self.theChunk.commands.append(cmd)
+        self.theChunk.def_names = [&quot;index&quot;, &quot;terms&quot;]
+
+    def test_should_find_xref_words(self) -&gt; None:
+        self.assertEqual(2, len(self.theChunk.def_names))
+        self.assertEqual({&quot;index&quot;, &quot;terms&quot;}, set(self.theChunk.def_names))
+
+    def test_properties(self) -&gt; None:
+        web = MockWeb()
+        self.theChunk.web = Mock(return_value=web)
+        self.theChunk.full_name
+        web.resolve_name.assert_called_once_with(self.theChunk.name)
+        self.assertIsNone(self.theChunk.path)
+        self.assertTrue(self.theChunk.type_is(&quot;NamedChunk&quot;))
+        self.assertFalse(self.theChunk.type_is(&quot;OutputChunk&quot;))
+        self.assertFalse(self.theChunk.type_is(&quot;Chunk&quot;))
+        self.assertIsNone(self.theChunk.referencedBy)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of NamedChunk subclass (18)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-chunk-class-hierarchy-10">Unit Test of Chunk class hierarchy (10)</a>.</p>
+</div>
+<p class="rubric" id="unit-test-of-namedchunk-noindent-subclass-19">Unit Test of NamedChunk_Noindent subclass (19) =</p>
+<pre class="code literal-block"><code>class TestNamedChunk_Noindent(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.theChunk = pyweb.NamedChunk(&quot;NoIndent Name...&quot;, options=&quot;-noindent&quot;)
+        cmd = MockCommand()
+        self.theChunk.commands.append(cmd)
+        self.theChunk.def_names = [&quot;index&quot;, &quot;terms&quot;]
+
+    def test_should_find_xref_words(self) -&gt; None:
+        self.assertEqual(2, len(self.theChunk.def_names))
+        self.assertEqual({&quot;index&quot;, &quot;terms&quot;}, set(self.theChunk.def_names))
+
+    def test_properties(self) -&gt; None:
+        web = MockWeb()
+        self.theChunk.web = Mock(return_value=web)
+        self.theChunk.full_name
+        web.resolve_name.assert_called_once_with(self.theChunk.name)
+        self.assertIsNone(self.theChunk.path)
+        self.assertTrue(self.theChunk.type_is(&quot;NamedChunk&quot;))
+        self.assertFalse(self.theChunk.type_is(&quot;Chunk&quot;))
+        self.assertIsNone(self.theChunk.referencedBy)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of NamedChunk_Noindent subclass (19)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-chunk-class-hierarchy-10">Unit Test of Chunk class hierarchy (10)</a>.</p>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">OutputChunk</span></code> is created by a <code class="docutils literal notranslate"><span class="pre">&#64;o</span></code> command.
+Since it’s named, it appears in the Web’s index.  Also, it is woven
+and tangled differently than anonymous chunks of text.
+This defines the files of tangled code.</p>
+<p class="rubric" id="unit-test-of-outputchunk-subclass-20">Unit Test of OutputChunk subclass (20) =</p>
+<pre class="code literal-block"><code>class TestOutputChunk(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.theChunk = pyweb.OutputChunk(&quot;filename.out&quot;)
+        self.theChunk.comment_start = &quot;# &quot;
+        self.theChunk.comment_end = &quot;&quot;
+        cmd = MockCommand()
+        self.theChunk.commands.append(cmd)
+        self.theChunk.def_names = [&quot;index&quot;, &quot;terms&quot;]
+
+    def test_should_find_xref_words(self) -&gt; None:
+        self.assertEqual(2, len(self.theChunk.def_names))
+        self.assertEqual({&quot;index&quot;, &quot;terms&quot;}, set(self.theChunk.def_names))
+
+    def test_properties(self) -&gt; None:
+        web = MockWeb()
+        self.theChunk.web = Mock(return_value=web)
+        self.assertIsNone(self.theChunk.full_name)
+        web.resolve_name.assert_not_called()
+        self.assertEqual(self.theChunk.path, Path(&quot;filename.out&quot;))
+        self.assertTrue(self.theChunk.type_is(&quot;OutputChunk&quot;))
+        self.assertFalse(self.theChunk.type_is(&quot;Chunk&quot;))
+        self.assertIsNone(self.theChunk.referencedBy)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of OutputChunk subclass (20)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-chunk-class-hierarchy-10">Unit Test of Chunk class hierarchy (10)</a>.</p>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">NamedDocumentChunk</span></code> is a way to define substitutable text, similar to
+tabled code, but it applies to document chunks. It’s not clear how useful this really
+is.</p>
+<p class="rubric" id="unit-test-of-nameddocumentchunk-subclass-21">Unit Test of NamedDocumentChunk subclass (21) =</p>
+<pre class="code literal-block"><code>class TestNamedDocumentChunk(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.theChunk = pyweb.NamedDocumentChunk(&quot;Document Chunk Name...&quot;)
+        cmd = MockCommand()
+        self.theChunk.commands.append(cmd)
+        self.theChunk.def_names = [&quot;index&quot;, &quot;terms&quot;]
+
+    def test_should_find_xref_words(self) -&gt; None:
+        self.assertEqual(2, len(self.theChunk.def_names))
+        self.assertEqual({&quot;index&quot;, &quot;terms&quot;}, set(self.theChunk.def_names))
+
+    def test_properties(self) -&gt; None:
+        web = MockWeb()
+        self.theChunk.web = Mock(return_value=web)
+        self.theChunk.full_name
+        web.resolve_name.assert_called_once_with(self.theChunk.name)
+        self.assertIsNone(self.theChunk.path)
+        self.assertTrue(self.theChunk.type_is(&quot;NamedDocumentChunk&quot;))
+        self.assertFalse(self.theChunk.type_is(&quot;OutputChunk&quot;))
+        self.assertIsNone(self.theChunk.referencedBy)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of NamedDocumentChunk subclass (21)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-chunk-class-hierarchy-10">Unit Test of Chunk class hierarchy (10)</a>.</p>
+</div>
+</section>
+<section id="chunk-references-tests">
+<h3><a class="toc-backref" href="#id7" role="doc-backlink">Chunk References Tests</a><a class="headerlink" href="#chunk-references-tests" title="Link to this heading">¶</a></h3>
+<p>A Chunk’s “referencedBy” attribute is set by the <code class="docutils literal notranslate"><span class="pre">Web</span></code> during
+the initialization processing.</p>
+<p>The test fixture is this</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@d</span> <span class="n">main</span> <span class="o">@</span><span class="p">{</span> <span class="o">@&lt;</span> <span class="n">parent</span> <span class="o">@&gt;</span> <span class="o">@</span><span class="p">}</span>
+
+<span class="nd">@d</span> <span class="n">parent</span> <span class="o">@</span><span class="p">{</span> <span class="o">@&lt;</span> <span class="n">sub</span> <span class="o">@&gt;</span> <span class="o">@</span><span class="p">}</span>
+
+<span class="nd">@d</span> <span class="n">sub</span> <span class="o">@</span><span class="p">{</span> <span class="n">something</span> <span class="o">@</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">sub</span></code> item is referenced by <code class="docutils literal notranslate"><span class="pre">parent</span></code> which is referenced by <code class="docutils literal notranslate"><span class="pre">main</span></code>.</p>
+<p>The simple reference is <code class="docutils literal notranslate"><span class="pre">sub</span></code> referenced by <code class="docutils literal notranslate"><span class="pre">parent</span></code>.</p>
+<p>The transitive references are <code class="docutils literal notranslate"><span class="pre">sub</span></code> referenced by <code class="docutils literal notranslate"><span class="pre">parent</span></code> which is referenced by <code class="docutils literal notranslate"><span class="pre">main</span></code>.</p>
+<p class="rubric" id="unit-test-of-chunk-references-22">Unit Test of Chunk References (22) =</p>
+<pre class="code literal-block"><code>class TestReferences(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.web = MockWeb()
+        self.main = pyweb.NamedChunk(&quot;Main&quot;, 1)
+        self.main.referencedBy = None
+        self.main.web = Mock(return_value=self.web)
+        self.parent = pyweb.NamedChunk(&quot;Parent&quot;, 2)
+        self.parent.referencedBy = self.main
+        self.parent.web = Mock(return_value=self.web)
+        self.chunk = pyweb.NamedChunk(&quot;Sub&quot;, 3)
+        self.chunk.referencedBy = self.parent
+        self.chunk.web = Mock(return_value=self.web)
+
+    def test_simple(self) -&gt; None:
+        self.assertEqual(self.chunk.referencedBy, self.parent)
+
+    def test_transitive_sub_sub(self) -&gt; None:
+        theList = self.chunk.transitive_referencedBy
+        self.assertEqual(2, len(theList))
+        self.assertEqual(self.parent, theList[0])
+        self.assertEqual(self.main, theList[1])
+
+    def test_transitive_sub(self) -&gt; None:
+        theList = self.parent.transitive_referencedBy
+        self.assertEqual(1, len(theList))
+        self.assertEqual(self.main, theList[0])
+
+    def test_transitive_top(self) -&gt; None:
+        theList = self.main.transitive_referencedBy
+        self.assertEqual(0, len(theList))</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of Chunk References (22)</em>.
+Used by     → <a class="reference internal" href="#tests-test-unit-py-1">tests/test_unit.py (1)</a>.</p>
+</div>
+</section>
+<section id="command-tests">
+<h3><a class="toc-backref" href="#id8" role="doc-backlink">Command Tests</a><a class="headerlink" href="#command-tests" title="Link to this heading">¶</a></h3>
+<p class="rubric" id="unit-test-of-command-class-hierarchy-23">Unit Test of Command class hierarchy (23) =</p>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#unit-test-of-command-superclass-24">Unit Test of Command superclass (24)</a>
+→ <a class="reference internal" href="#unit-test-of-textcommand-class-to-contain-a-document-text-block-25">Unit Test of TextCommand class to contain a document text block (25)</a>
+→ <a class="reference internal" href="#unit-test-of-codecommand-class-to-contain-a-program-source-code-block-26">Unit Test of CodeCommand class to contain a program source code block (26)</a>
+→ <a class="reference internal" href="#unit-test-of-xrefcommand-superclass-for-all-cross-reference-commands-27">Unit Test of XrefCommand superclass for all cross-reference commands (27)</a>
+→ <a class="reference internal" href="#unit-test-of-filexrefcommand-class-for-an-output-file-cross-reference-28">Unit Test of FileXrefCommand class for an output file cross-reference (28)</a>
+→ <a class="reference internal" href="#unit-test-of-macroxrefcommand-class-for-a-named-chunk-cross-reference-29">Unit Test of MacroXrefCommand class for a named chunk cross-reference (29)</a>
+→ <a class="reference internal" href="#unit-test-of-useridxrefcommand-class-for-a-user-identifier-cross-reference-30">Unit Test of UserIdXrefCommand class for a user identifier cross-reference (30)</a>
+→ <a class="reference internal" href="#unit-test-of-referencecommand-class-for-chunk-references-31">Unit Test of ReferenceCommand class for chunk references (31)</a></code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of Command class hierarchy (23)</em>.
+Used by     → <a class="reference internal" href="#tests-test-unit-py-1">tests/test_unit.py (1)</a>.</p>
+</div>
+<p>This Command superclass is essentially an inteface definition, it
+has no real testable features.</p>
+<p class="rubric" id="unit-test-of-command-superclass-24">Unit Test of Command superclass (24) =</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># No Tests</span>
+</pre></div>
+</div>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of Command superclass (24)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-command-class-hierarchy-23">Unit Test of Command class hierarchy (23)</a>.</p>
+</div>
+<p>A <code class="docutils literal notranslate"><span class="pre">TextCommand</span></code> object must be built from source text, interrogated, and emitted.
+A <code class="docutils literal notranslate"><span class="pre">TextCommand</span></code> should not (generally) be created in a <code class="docutils literal notranslate"><span class="pre">Chunk</span></code>, it should
+only be part of a <code class="docutils literal notranslate"><span class="pre">NamedChunk</span></code> or <code class="docutils literal notranslate"><span class="pre">OutputChunk</span></code>.</p>
+<p class="rubric" id="unit-test-of-textcommand-class-to-contain-a-document-text-block-25">Unit Test of TextCommand class to contain a document text block (25) =</p>
+<pre class="code literal-block"><code>class TestTextCommand(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.cmd = pyweb.TextCommand(&quot;Some text &amp; words in the document\n    &quot;, (&quot;sample.w&quot;, 314))
+        self.cmd2 = pyweb.TextCommand(&quot;No Indent\n&quot;, (&quot;sample.w&quot;, 271))
+
+    def test_methods_should_work(self) -&gt; None:
+        self.assertTrue(self.cmd.typeid.TextCommand)
+        self.assertEqual((&quot;sample.w&quot;, 314), self.cmd.location)
+
+    def test_tangle_should_error(self) -&gt; None:
+        tnglr = MockTangler()
+        with self.assertRaises(pyweb.Error) as exc_info:
+            self.cmd.tangle(tnglr, sentinel.TARGET)
+        assert exc_info.exception.args == (
+            &quot;attempt to tangle a text block ('sample.w', 314) 'Some text &amp; words in the [...]'&quot;,
+        )</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of TextCommand class to contain a document text block (25)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-command-class-hierarchy-23">Unit Test of Command class hierarchy (23)</a>.</p>
+</div>
+<p>A <code class="docutils literal notranslate"><span class="pre">CodeCommand</span></code> object is a <code class="docutils literal notranslate"><span class="pre">TextCommand</span></code> with different processing for being emitted.
+It represents a block of code in a <code class="docutils literal notranslate"><span class="pre">NamedChunk</span></code> or <code class="docutils literal notranslate"><span class="pre">OutputChunk</span></code>.</p>
+<p class="rubric" id="unit-test-of-codecommand-class-to-contain-a-program-source-code-block-26">Unit Test of CodeCommand class to contain a program source code block (26) =</p>
+<pre class="code literal-block"><code>class TestCodeCommand(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.cmd = pyweb.CodeCommand(&quot;Some code in the document\n    &quot;, (&quot;sample.w&quot;, 314))
+
+    def test_methods_should_work(self) -&gt; None:
+        self.assertTrue(self.cmd.typeid.CodeCommand)
+        self.assertEqual((&quot;sample.w&quot;, 314), self.cmd.location)
+
+    def test_tangle_should_work(self) -&gt; None:
+        tnglr = MockTangler()
+        self.cmd.tangle(tnglr, sentinel.TARGET)
+        tnglr.codeBlock.assert_called_once_with(sentinel.TARGET, 'Some code in the document\n    ')</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of CodeCommand class to contain a program source code block (26)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-command-class-hierarchy-23">Unit Test of Command class hierarchy (23)</a>.</p>
+</div>
+<p>An <code class="docutils literal notranslate"><span class="pre">XrefCommand</span></code> class (if defined) would be abstract. We could formalize this,
+but it seems easier to have a collection of <code class="docutils literal notranslate"><span class="pre">&#64;dataclass</span></code> definitions a
+<code class="docutils literal notranslate"><span class="pre">Union[...]</span></code> type hint.</p>
+<p class="rubric" id="unit-test-of-xrefcommand-superclass-for-all-cross-reference-commands-27">Unit Test of XrefCommand superclass for all cross-reference commands (27) =</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># No Tests</span>
+</pre></div>
+</div>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of XrefCommand superclass for all cross-reference commands (27)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-command-class-hierarchy-23">Unit Test of Command class hierarchy (23)</a>.</p>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">FileXrefCommand</span></code> command is expanded by a weaver to a list of <code class="docutils literal notranslate"><span class="pre">&#64;o</span></code>
+locations.</p>
+<p class="rubric" id="unit-test-of-filexrefcommand-class-for-an-output-file-cross-reference-28">Unit Test of FileXrefCommand class for an output file cross-reference (28) =</p>
+<pre class="code literal-block"><code>class TestFileXRefCommand(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.cmd = pyweb.FileXrefCommand((&quot;sample.w&quot;, 314))
+        self.web = Mock(files=sentinel.FILES)
+        self.cmd.web = Mock(return_value=self.web)
+
+    def test_methods_should_work(self) -&gt; None:
+        self.assertTrue(self.cmd.typeid.FileXrefCommand)
+        self.assertEqual((&quot;sample.w&quot;, 314), self.cmd.location)
+        self.assertEqual(sentinel.FILES, self.cmd.files)
+
+    def test_tangle_should_fail(self) -&gt; None:
+        tnglr = MockTangler()
+        try:
+            self.cmd.tangle(tnglr, sentinel.TARGET)
+            self.fail()
+        except pyweb.Error:
+            pass</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of FileXrefCommand class for an output file cross-reference (28)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-command-class-hierarchy-23">Unit Test of Command class hierarchy (23)</a>.</p>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">MacroXrefCommand</span></code> command is expanded by a weaver to a list of all <code class="docutils literal notranslate"><span class="pre">&#64;d</span></code>
+locations.</p>
+<p class="rubric" id="unit-test-of-macroxrefcommand-class-for-a-named-chunk-cross-reference-29">Unit Test of MacroXrefCommand class for a named chunk cross-reference (29) =</p>
+<pre class="code literal-block"><code>class TestMacroXRefCommand(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.cmd = pyweb.MacroXrefCommand((&quot;sample.w&quot;, 314))
+        self.web = Mock(macros=sentinel.MACROS)
+        self.cmd.web = Mock(return_value=self.web)
+
+    def test_methods_should_work(self) -&gt; None:
+        self.assertTrue(self.cmd.typeid.MacroXrefCommand)
+        self.assertEqual((&quot;sample.w&quot;, 314), self.cmd.location)
+        self.assertEqual(sentinel.MACROS, self.cmd.macros)
+
+    def test_tangle_should_fail(self) -&gt; None:
+        tnglr = MockTangler()
+        try:
+            self.cmd.tangle(tnglr, sentinel.TARGET)
+            self.fail()
+        except pyweb.Error:
+            pass</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of MacroXrefCommand class for a named chunk cross-reference (29)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-command-class-hierarchy-23">Unit Test of Command class hierarchy (23)</a>.</p>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">UserIdXrefCommand</span></code> command is expanded by a weaver to a list of all <code class="docutils literal notranslate"><span class="pre">&#64;|</span></code>
+names.</p>
+<p class="rubric" id="unit-test-of-useridxrefcommand-class-for-a-user-identifier-cross-reference-30">Unit Test of UserIdXrefCommand class for a user identifier cross-reference (30) =</p>
+<pre class="code literal-block"><code>class TestUserIdXrefCommand(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.cmd = pyweb.UserIdXrefCommand((&quot;sample.w&quot;, 314))
+        self.web = Mock(userids=sentinel.USERIDS)
+        self.cmd.web = Mock(return_value=self.web)
+
+    def test_methods_should_work(self) -&gt; None:
+        self.assertTrue(self.cmd.typeid.UserIdXrefCommand)
+        self.assertEqual((&quot;sample.w&quot;, 314), self.cmd.location)
+        self.assertEqual(sentinel.USERIDS, self.cmd.userids)
+
+    def test_tangle_should_fail(self) -&gt; None:
+        tnglr = MockTangler()
+        try:
+            self.cmd.tangle(tnglr, sentinel.TARGET)
+            self.fail()
+        except pyweb.Error:
+            pass</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of UserIdXrefCommand class for a user identifier cross-reference (30)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-command-class-hierarchy-23">Unit Test of Command class hierarchy (23)</a>.</p>
+</div>
+<p>Instances of the <code class="docutils literal notranslate"><span class="pre">Reference</span></code> command reflect <code class="docutils literal notranslate"><span class="pre">&#64;&lt;</span> <span class="pre">name</span> <span class="pre">&#64;&gt;</span></code> locations in code.
+These require a context when tangling.
+The context helps provide the required indentation.
+They can’t be simply tangled, since the expand to code that may (transitively)
+have more references to more code.</p>
+<p>The document here is a mock-up of the following</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@d</span> <span class="n">name</span> <span class="o">@</span><span class="p">{</span> <span class="o">@&lt;</span><span class="n">Some</span> <span class="n">Name</span><span class="o">@&gt;</span> <span class="o">@</span><span class="p">}</span>
+
+<span class="nd">@d</span> <span class="n">Some</span> <span class="n">Name</span> <span class="o">@</span><span class="p">{</span> <span class="n">code</span> <span class="o">@</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>This is a single Chunk with a reference to another Chunk.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">Web</span></code> class <code class="docutils literal notranslate"><span class="pre">__post_init__</span></code> sets the references and referencedBy attributes of each Chunk.</p>
+<p class="rubric" id="unit-test-of-referencecommand-class-for-chunk-references-31">Unit Test of ReferenceCommand class for chunk references (31) =</p>
+<pre class="code literal-block"><code>class TestReferenceCommand(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.chunk = MockChunk(&quot;name&quot;, 123, (&quot;sample.w&quot;, 456))
+        self.cmd = pyweb.ReferenceCommand(&quot;Some Name&quot;, (&quot;sample.w&quot;, 314))
+        self.chunk.commands = [self.cmd]
+        self.referenced_chunk = Mock(seq=sentinel.SEQUENCE, references=1, referencedBy=self.chunk, commands=[Mock()])
+        self.web = Mock(
+            resolve_name=Mock(return_value=sentinel.FULL_NAME),
+            resolve_chunk=Mock(return_value=[self.referenced_chunk])
+        )
+        self.cmd.web = Mock(return_value=self.web)
+
+    def test_methods_should_work(self) -&gt; None:
+        self.assertTrue(self.cmd.typeid.ReferenceCommand)
+        self.assertEqual((&quot;sample.w&quot;, 314), self.cmd.location)
+        self.assertEqual(sentinel.FULL_NAME, self.cmd.full_name)
+        self.assertEqual(sentinel.SEQUENCE, self.cmd.seq)
+
+    def test_tangle_should_work(self) -&gt; None:
+        tnglr = MockTangler()
+        self.cmd.tangle(tnglr, sentinel.TARGET)
+        self.web.resolve_chunk.assert_called_once_with(&quot;Some Name&quot;)
+        tnglr.reference_names.add.assert_called_once_with('Some Name')
+        self.assertEqual(1, self.referenced_chunk.references)
+        self.referenced_chunk.commands[0].tangle.assert_called_once_with(tnglr, sentinel.TARGET)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of ReferenceCommand class for chunk references (31)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-command-class-hierarchy-23">Unit Test of Command class hierarchy (23)</a>.</p>
+</div>
+</section>
+<section id="web-tests">
+<h3><a class="toc-backref" href="#id9" role="doc-backlink">Web Tests</a><a class="headerlink" href="#web-tests" title="Link to this heading">¶</a></h3>
+<p>We create a <code class="docutils literal notranslate"><span class="pre">Web</span></code> instance with mocked Chunks and mocked Commands.
+The point is to test the <code class="docutils literal notranslate"><span class="pre">Web</span></code> features in isolation. This is tricky
+because some state is recorded in the Chunk instances.</p>
+<p class="rubric" id="unit-test-of-web-class-32">Unit Test of Web class (32) =</p>
+<pre class="code literal-block"><code>class TestWebConstruction(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.c1 = MockChunk(&quot;c1&quot;, 1, (&quot;sample.w&quot;, 11))
+        self.c1.type_is = Mock(side_effect = lambda n: n == &quot;Chunk&quot;)
+        self.c1.referencedBy = None
+        self.c1.name = None
+        self.c2 = MockChunk(&quot;c2&quot;, 2, (&quot;sample.w&quot;, 22))
+        self.c2.type_is = Mock(side_effect = lambda n: n == &quot;OutputChunk&quot;)
+        self.c2.commands = [Mock()]
+        self.c2.commands[0].name = &quot;c3...&quot;
+        self.c2.commands[0].typeid = Mock(ReferenceCommand=True, TextCommand=False, CodeCommand=False)
+        self.c2.referencedBy = None
+        self.c3 = MockChunk(&quot;c3 has a long name&quot;, 3, (&quot;sample.w&quot;, 33))
+        self.c3.type_is = Mock(side_effect = lambda n: n == &quot;NamedChunk&quot;)
+        self.c3.referencedBy = None
+        self.c3.def_names = [&quot;userid&quot;]
+        self.web = pyweb.Web([self.c1, self.c2, self.c3])
+
+    def test_name_resolution(self) -&gt; None:
+        self.assertEqual(self.web.resolve_name(&quot;c1&quot;), &quot;c1&quot;)
+        self.assertEqual(self.web.resolve_chunk(&quot;c2&quot;), [self.c2])
+        self.assertEqual(self.web.resolve_name(&quot;c1...&quot;), &quot;c1&quot;)
+        self.assertEqual(self.web.resolve_name(&quot;c3...&quot;), &quot;c3 has a long name&quot;)
+
+    def test_chunks_should_iterate(self) -&gt; None:
+        self.assertEqual([self.c2], list(self.web.file_iter()))
+        self.assertEqual([self.c3], list(self.web.macro_iter()))
+        self.assertEqual([SimpleNamespace(def_name=&quot;userid&quot;, chunk=self.c3)], list(self.web.userid_iter()))
+        self.assertEqual([self.c2], self.web.files)
+        self.assertEqual(
+            [
+                SimpleNamespace(name=&quot;c2&quot;, full_name=&quot;c2&quot;, seq=1, def_list=[self.c2]),
+                SimpleNamespace(name=&quot;c3 has a long name&quot;, full_name=&quot;c3 has a long name&quot;, seq=2, def_list=[self.c3])
+            ],
+            self.web.macros)
+        self.assertEqual([SimpleNamespace(userid='userid', ref_list=[self.c3])], self.web.userids)
+        self.assertEqual([self.c2], self.web.no_reference())
+        self.assertEqual([], self.web.multi_reference())
+
+    def test_valid_web_should_tangle(self) -&gt; None:
+        &quot;&quot;&quot;This is the entire interface used by tangling.
+        The details are pushed down to ```command.tangle()`` for each command in each chunk.
+        &quot;&quot;&quot;
+        self.assertEqual([self.c2], self.web.files)
+
+    def test_valid_web_should_weave(self) -&gt; None:
+        &quot;&quot;&quot;This is the entire interface used by tangling.
+        The details are pushed down to unique processing based on ``chunk.type_is``.
+        &quot;&quot;&quot;
+        self.assertEqual([self.c1, self.c2, self.c3], self.web.chunks)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of Web class (32)</em>.
+Used by     → <a class="reference internal" href="#tests-test-unit-py-1">tests/test_unit.py (1)</a>.</p>
+</div>
+</section>
+<section id="webreader-tests">
+<h3><a class="toc-backref" href="#id10" role="doc-backlink">WebReader Tests</a><a class="headerlink" href="#webreader-tests" title="Link to this heading">¶</a></h3>
+<p>Generally, this is tested separately through the functional tests.
+Those tests each present source files to be processed by the
+WebReader.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">WebReader</span></code> is poorly designed for unit testing.
+The various chunk and command classes are part of the <code class="docutils literal notranslate"><span class="pre">WebReader</span></code>, and
+new classes cannot be injected gracefully.</p>
+<p>Exacerbating this are two special cases: the <code class="docutils literal notranslate"><span class="pre">&#64;&#64;</span></code> and <code class="docutils literal notranslate"><span class="pre">&#64;(expr&#64;)</span></code> constructs
+are evaluated immediately, and don’t create commands.</p>
+<p class="rubric" id="unit-test-of-webreader-class-33">Unit Test of WebReader class (33) =</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Tested via functional tests</span>
+</pre></div>
+</div>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of WebReader class (33)</em>.
+Used by     → <a class="reference internal" href="#tests-test-unit-py-1">tests/test_unit.py (1)</a>.</p>
+</div>
+<p>Some lower-level units: specifically the tokenizer and the option parser.</p>
+<p class="rubric" id="unit-test-of-webreader-class-34">Unit Test of WebReader class (34) +=</p>
+<pre class="code literal-block"><code>class TestTokenizer(unittest.TestCase):
+    def test_should_split_tokens(self) -&gt; None:
+        input = io.StringIO(&quot;&#64;&#64; word &#64;{ &#64;[ &#64;&lt; &#64;&gt;\n&#64;] &#64;} &#64;i &#64;| &#64;m &#64;f &#64;u &#64;( &#64;)\n&quot;)
+        self.tokenizer = pyweb.Tokenizer(input)
+        tokens = list(self.tokenizer)
+        self.assertEqual(28, len(tokens))
+        self.assertEqual( ['&#64;&#64;', ' word ', '&#64;{', ' ', '&#64;[', ' ', '&#64;&lt;', ' ',
+        '&#64;&gt;', '\n', '&#64;]', ' ', '&#64;}', ' ', '&#64;i', ' ', '&#64;|', ' ', '&#64;m', ' ',
+        '&#64;f', ' ', '&#64;u', ' ', '&#64;(', ' ', '&#64;)', '\n'], tokens )
+        self.assertEqual(2, self.tokenizer.lineNumber)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of WebReader class (34)</em>.
+Used by     → <a class="reference internal" href="#tests-test-unit-py-1">tests/test_unit.py (1)</a>.</p>
+</div>
+<p class="rubric" id="unit-test-of-webreader-class-35">Unit Test of WebReader class (35) +=</p>
+<pre class="code literal-block"><code>class TestOptionParser_OutputChunk(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        rdr = pyweb.WebReader()
+        self.option_parser = rdr.output_option_parser
+    def test_with_options_should_parse(self) -&gt; None:
+        text1 = &quot; -start /* -end */ something.css &quot;
+        options1 = self.option_parser.parse_args(shlex.split(text1))
+        self.assertEqual(argparse.Namespace(start='/*', end='*/', argument=['something.css']), options1)
+    def test_without_options_should_parse(self) -&gt; None:
+        text2 = &quot; something.py &quot;
+        options2 = self.option_parser.parse_args(shlex.split(text2))
+        self.assertEqual(argparse. Namespace(start=None, end='', argument=['something.py']), options2)
+
+class TestOptionParser_NamedChunk(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        rdr = pyweb.WebReader()
+        self.option_parser = rdr.definition_option_parser
+    def test_with_options_should_parse(self) -&gt; None:
+        text1 = &quot; -indent the name of test1 chunk... &quot;
+        options1 = self.option_parser.parse_args(shlex.split(text1))
+        self.assertEqual(argparse.Namespace(argument=['the', 'name', 'of', 'test1', 'chunk...'], indent=True, noindent=False), options1)
+    def test_without_options_should_parse(self) -&gt; None:
+        text2 = &quot; the name of test2 chunk... &quot;
+        options2 = self.option_parser.parse_args(shlex.split(text2))
+        self.assertEqual(argparse.Namespace(argument=['the', 'name', 'of', 'test2', 'chunk...'], indent=False, noindent=False), options2)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of WebReader class (35)</em>.
+Used by     → <a class="reference internal" href="#tests-test-unit-py-1">tests/test_unit.py (1)</a>.</p>
+</div>
+<p>Testing the <code class="docutils literal notranslate"><span class="pre">&#64;&#64;</span></code> case and one of the <code class="docutils literal notranslate"><span class="pre">&#64;(expr&#64;)</span></code> cases.
+Need to test all the available variables: <code class="docutils literal notranslate"><span class="pre">os.path</span></code>, <code class="docutils literal notranslate"><span class="pre">os.getcwd</span></code>, <code class="docutils literal notranslate"><span class="pre">os.name</span></code>, <code class="docutils literal notranslate"><span class="pre">time</span></code>, <code class="docutils literal notranslate"><span class="pre">datetime</span></code>, <code class="docutils literal notranslate"><span class="pre">platform</span></code>,
+<code class="docutils literal notranslate"><span class="pre">theWebReader</span></code>, <code class="docutils literal notranslate"><span class="pre">theFile</span></code>, <code class="docutils literal notranslate"><span class="pre">thisApplication</span></code>, <code class="docutils literal notranslate"><span class="pre">version</span></code>, <code class="docutils literal notranslate"><span class="pre">theLocation</span></code>.</p>
+<p class="rubric" id="unit-test-of-webreader-class-36">Unit Test of WebReader class (36) +=</p>
+<pre class="code literal-block"><code>class TestWebReader_Immediate(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.reader = pyweb.WebReader()
+
+    def test_should_build_escape_chunk(self):
+        chunks = self.reader.load(Path(), io.StringIO(&quot;Escape: &#64;&#64; Example&quot;))
+        self.assertEqual(1, len(chunks))
+        self.assertEqual(1, len(chunks[0].commands))
+        self.assertEqual(&quot;Escape: &#64; Example&quot;, chunks[0].commands[0].text)
+
+    def test_expressions(self):
+        chunks = self.reader.load(Path(&quot;sample.w&quot;), io.StringIO(&quot;Filename: &#64;(theFile&#64;)&quot;))
+        self.assertEqual(1, len(chunks))
+        self.assertEqual(1, len(chunks[0].commands))
+        self.assertEqual(&quot;Filename: sample.w&quot;, chunks[0].commands[0].text)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of WebReader class (36)</em>.
+Used by     → <a class="reference internal" href="#tests-test-unit-py-1">tests/test_unit.py (1)</a>.</p>
+</div>
+</section>
+<section id="action-tests">
+<h3><a class="toc-backref" href="#id11" role="doc-backlink">Action Tests</a><a class="headerlink" href="#action-tests" title="Link to this heading">¶</a></h3>
+<p>Each class is tested separately.  Sequence of some mocks,
+load, tangle, weave.</p>
+<p class="rubric" id="unit-test-of-action-class-hierarchy-37">Unit Test of Action class hierarchy (37) =</p>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#unit-test-of-action-sequence-class-38">Unit test of Action Sequence class (38)</a>
+→ <a class="reference internal" href="#unit-test-of-loadaction-class-41">Unit test of LoadAction class (41)</a>
+→ <a class="reference internal" href="#unit-test-of-tangleaction-class-40">Unit test of TangleAction class (40)</a>
+→ <a class="reference internal" href="#unit-test-of-weaveraction-class-39">Unit test of WeaverAction class (39)</a></code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of Action class hierarchy (37)</em>.
+Used by     → <a class="reference internal" href="#tests-test-unit-py-1">tests/test_unit.py (1)</a>.</p>
+</div>
+<p><strong>TODO:</strong> Replace with Mock</p>
+<p class="rubric" id="unit-test-of-action-sequence-class-38">Unit test of Action Sequence class (38) =</p>
+<pre class="code literal-block"><code>class TestActionSequence(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.web = MockWeb()
+        self.a1 = MagicMock(name=&quot;Action1&quot;)
+        self.a2 = MagicMock(name=&quot;Action2&quot;)
+        self.action = pyweb.ActionSequence(&quot;TwoSteps&quot;, [self.a1, self.a2])
+        self.action.web = self.web
+        self.options = argparse.Namespace()
+    def test_should_execute_both(self) -&gt; None:
+        self.action(self.options)
+        self.assertEqual(self.a1.call_count, 1)
+        self.assertEqual(self.a2.call_count, 1)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit test of Action Sequence class (38)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-action-class-hierarchy-37">Unit Test of Action class hierarchy (37)</a>.</p>
+</div>
+<p class="rubric" id="unit-test-of-weaveraction-class-39">Unit test of WeaverAction class (39) =</p>
+<pre class="code literal-block"><code>class TestWeaveAction(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.web = MockWeb()
+        self.action = pyweb.WeaveAction()
+        self.weaver = MockWeaver()
+        self.options = argparse.Namespace(
+            theWeaver=self.weaver,
+            # reference_style=pyweb.SimpleReference(),  # Remove this
+            output=Path.cwd(),
+            web=self.web,
+            weaver='rst',
+        )
+    def test_should_execute_weaving(self) -&gt; None:
+        self.action(self.options)
+        self.assertEqual(self.weaver.emit.mock_calls, [call(self.web)])</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit test of WeaverAction class (39)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-action-class-hierarchy-37">Unit Test of Action class hierarchy (37)</a>.</p>
+</div>
+<p class="rubric" id="unit-test-of-tangleaction-class-40">Unit test of TangleAction class (40) =</p>
+<pre class="code literal-block"><code>class TestTangleAction(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.web = MockWeb()
+        self.action = pyweb.TangleAction()
+        self.tangler = MockTangler()
+        self.options = argparse.Namespace(
+            theTangler = self.tangler,
+            tangler_line_numbers = False,
+            output=Path.cwd(),
+            web = self.web
+        )
+    def test_should_execute_tangling(self) -&gt; None:
+        self.action(self.options)
+        self.assertEqual(self.tangler.emit.mock_calls, [call(self.web)])</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit test of TangleAction class (40)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-action-class-hierarchy-37">Unit Test of Action class hierarchy (37)</a>.</p>
+</div>
+<p>The mocked <code class="docutils literal notranslate"><span class="pre">WebReader</span></code> must provide an <code class="docutils literal notranslate"><span class="pre">errors</span></code> property to the <code class="docutils literal notranslate"><span class="pre">LoadAction</span></code> instance.</p>
+<p class="rubric" id="unit-test-of-loadaction-class-41">Unit test of LoadAction class (41) =</p>
+<pre class="code literal-block"><code>class TestLoadAction(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.web = MockWeb()
+        self.action = pyweb.LoadAction()
+        self.webReader = Mock(
+            name=&quot;WebReader&quot;,
+            errors=0,
+            load=Mock(return_value=[])
+        )
+        self.source_path = Path(&quot;TestLoadAction.w&quot;)
+        self.options = argparse.Namespace(
+            webReader = self.webReader,
+            source_path=self.source_path,
+            command=&quot;&#64;&quot;,
+            permitList = [],
+            output=Path.cwd(),
+        )
+        Path(&quot;TestLoadAction.w&quot;).write_text(&quot;&quot;)
+    def tearDown(self) -&gt; None:
+        try:
+            Path(&quot;TestLoadAction.w&quot;).unlink()
+        except IOError:
+            pass
+    def test_should_execute_loading(self) -&gt; None:
+        self.action(self.options)
+        print(self.webReader.load.mock_calls)
+        self.assertEqual(self.webReader.load.mock_calls, [call(self.source_path)])
+        self.webReader.web.assert_not_called()  # Deprecated
+        self.webReader.source.assert_not_called()  # Deprecated</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit test of LoadAction class (41)</em>.
+Used by     → <a class="reference internal" href="#unit-test-of-action-class-hierarchy-37">Unit Test of Action class hierarchy (37)</a>.</p>
+</div>
+</section>
+<section id="application-tests">
+<h3><a class="toc-backref" href="#id12" role="doc-backlink">Application Tests</a><a class="headerlink" href="#application-tests" title="Link to this heading">¶</a></h3>
+<p>As with testing WebReader, this requires extensive mocking.
+It’s easier to simply run the various use cases.</p>
+<p><strong>TODO:</strong> Test Application class</p>
+<p class="rubric" id="unit-test-of-application-class-42">Unit Test of Application class (42) =</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># TODO Test Application class</span>
+</pre></div>
+</div>
+<div class="small docutils container">
+<p>∎ <em>Unit Test of Application class (42)</em>.
+Used by     → <a class="reference internal" href="#tests-test-unit-py-1">tests/test_unit.py (1)</a>.</p>
+</div>
+</section>
+<section id="overheads-and-main-script">
+<h3><a class="toc-backref" href="#id13" role="doc-backlink">Overheads and Main Script</a><a class="headerlink" href="#overheads-and-main-script" title="Link to this heading">¶</a></h3>
+<p>The boilerplate code for unit testing is the following.</p>
+<p class="rubric" id="unit-test-overheads-imports-etc-43">Unit Test overheads: imports, etc. (43) =</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Unit tests.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">shlex</span>
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">textwrap</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">SimpleNamespace</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">TextIO</span>
+<span class="kn">import</span> <span class="nn">unittest</span>
+<span class="kn">from</span> <span class="nn">unittest.mock</span> <span class="kn">import</span> <span class="n">Mock</span><span class="p">,</span> <span class="n">call</span><span class="p">,</span> <span class="n">MagicMock</span><span class="p">,</span> <span class="n">sentinel</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">pyweb</span>
+</pre></div>
+</div>
+<div class="small docutils container">
+<p>∎ <em>Unit Test overheads: imports, etc. (43)</em>.
+Used by     → <a class="reference internal" href="#tests-test-unit-py-1">tests/test_unit.py (1)</a>.</p>
+</div>
+<p>One more overhead is a function we can inject into selected subclasses
+of <code class="docutils literal notranslate"><span class="pre">unittest.TestCase</span></code>. This is monkeypatch feature that seems useful.</p>
+<p class="rubric" id="unit-test-overheads-imports-etc-44">Unit Test overheads: imports, etc. (44) +=</p>
+<pre class="code literal-block"><code>def rstrip_lines(source: str) -&gt; list[str]:
+    return list(l.rstrip() for l in source.splitlines())</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test overheads: imports, etc. (44)</em>.
+Used by     → <a class="reference internal" href="#tests-test-unit-py-1">tests/test_unit.py (1)</a>.</p>
+</div>
+<p class="rubric" id="unit-test-main-45">Unit Test main (45) =</p>
+<pre class="code literal-block"><code>if __name__ == &quot;__main__&quot;:
+    logging.basicConfig(stream=sys.stdout, level=logging.WARN)
+    unittest.main()</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Unit Test main (45)</em>.
+Used by     → <a class="reference internal" href="#tests-test-unit-py-1">tests/test_unit.py (1)</a>.</p>
+</div>
+<p>We run the default <code class="docutils literal notranslate"><span class="pre">unittest.main()</span></code> to execute the entire suite of tests.</p>
+</section>
+</section>
+<section id="functional-testing">
+<h2><a class="toc-backref" href="#id14" role="doc-backlink">Functional Testing</a><a class="headerlink" href="#functional-testing" title="Link to this heading">¶</a></h2>
+<p>There are three broad areas of functional testing.</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#tests-for-loading">Tests for Loading</a></p></li>
+<li><p><a class="reference internal" href="#tests-for-tangling">Tests for Tangling</a></p></li>
+<li><p><a class="reference internal" href="#tests-for-weaving">Tests for Weaving</a></p></li>
+</ul>
+<p>There are a total of 11 test cases.</p>
+<section id="tests-for-loading">
+<h3><a class="toc-backref" href="#id15" role="doc-backlink">Tests for Loading</a><a class="headerlink" href="#tests-for-loading" title="Link to this heading">¶</a></h3>
+<p>We need to be able to load a web from one or more source files.</p>
+<p class="rubric" id="tests-test-loader-py-46">tests/test_loader.py (46) =</p>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#load-test-overheads-imports-etc-48">Load Test overheads: imports, etc. (48)</a>
+
+→ <a class="reference internal" href="#load-test-superclass-to-refactor-common-setup-47">Load Test superclass to refactor common setup (47)</a>
+
+→ <a class="reference internal" href="#load-test-error-handling-with-a-few-common-syntax-errors-49">Load Test error handling with a few common syntax errors (49)</a>
+
+→ <a class="reference internal" href="#load-test-include-processing-with-syntax-errors-51">Load Test include processing with syntax errors (51)</a>
+
+→ <a class="reference internal" href="#load-test-main-program-54">Load Test main program (54)</a></code></pre>
+<div class="small docutils container">
+<p>∎ <em>tests/test_loader.py (46)</em>.</p>
+</div>
+<p>Parsing test cases have a common setup shown in this superclass.</p>
+<p>By using some class-level variables <code class="docutils literal notranslate"><span class="pre">text</span></code>,
+<code class="docutils literal notranslate"><span class="pre">file_path</span></code>, we can simply provide a file-like
+input object to the <code class="docutils literal notranslate"><span class="pre">WebReader</span></code> instance.</p>
+<p class="rubric" id="load-test-superclass-to-refactor-common-setup-47">Load Test superclass to refactor common setup (47) =</p>
+<pre class="code literal-block"><code>class ParseTestcase(unittest.TestCase):
+    text: ClassVar[str]
+    file_path: ClassVar[Path]
+
+    def setUp(self) -&gt; None:
+        self.source = io.StringIO(self.text)
+        self.rdr = pyweb.WebReader()</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Load Test superclass to refactor common setup (47)</em>.
+Used by     → <a class="reference internal" href="#tests-test-loader-py-46">tests/test_loader.py (46)</a>.</p>
+</div>
+<p>There are a lot of specific parsing exceptions which can be thrown.
+We’ll cover most of the cases with a quick check for a failure to
+find an expected next token.</p>
+<p class="rubric" id="load-test-overheads-imports-etc-48">Load Test overheads: imports, etc. (48) =</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging.handlers</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">textwrap</span> <span class="kn">import</span> <span class="n">dedent</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">ClassVar</span>
+</pre></div>
+</div>
+<div class="small docutils container">
+<p>∎ <em>Load Test overheads: imports, etc. (48)</em>.
+Used by     → <a class="reference internal" href="#tests-test-loader-py-46">tests/test_loader.py (46)</a>.</p>
+</div>
+<p class="rubric" id="load-test-error-handling-with-a-few-common-syntax-errors-49">Load Test error handling with a few common syntax errors (49) =</p>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#sample-document-1-with-correct-and-incorrect-syntax-50">Sample Document 1 with correct and incorrect syntax (50)</a>
+
+class Test_ParseErrors(ParseTestcase):
+    text = test1_w
+    file_path = Path(&quot;test1.w&quot;)
+    def test_error_should_count_1(self) -&gt; None:
+        with self.assertLogs('WebReader', level='WARN') as log_capture:
+            chunks = self.rdr.load(self.file_path, self.source)
+        self.assertEqual(3, self.rdr.errors)
+        self.assertEqual(log_capture.output,
+            [
+                &quot;ERROR:WebReader:At ('test1.w', 8): expected {'&#64;{'}, found '&#64;o'&quot;,
+                &quot;ERROR:WebReader:Extra '&#64;{' (possibly missing chunk name) near ('test1.w', 9)&quot;,
+                &quot;ERROR:WebReader:Extra '&#64;{' (possibly missing chunk name) near ('test1.w', 9)&quot;
+            ]
+        )</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Load Test error handling with a few common syntax errors (49)</em>.
+Used by     → <a class="reference internal" href="#tests-test-loader-py-46">tests/test_loader.py (46)</a>.</p>
+</div>
+<p class="rubric" id="sample-document-1-with-correct-and-incorrect-syntax-50">Sample Document 1 with correct and incorrect syntax (50) =</p>
+<pre class="code literal-block"><code>test1_w = &quot;&quot;&quot;Some anonymous chunk
+&#64;o test1.tmp
+&#64;{&#64;&lt;part1&#64;&gt;
+&#64;&lt;part2&#64;&gt;
+&#64;}&#64;&#64;
+&#64;d part1 &#64;{This is part 1.&#64;}
+Okay, now for an error.
+&#64;o show how &#64;o commands work
+&#64;{ &#64;{ &#64;] &#64;]
+&quot;&quot;&quot;</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Sample Document 1 with correct and incorrect syntax (50)</em>.
+Used by     → <a class="reference internal" href="#load-test-error-handling-with-a-few-common-syntax-errors-49">Load Test error handling with a few common syntax errors (49)</a>.</p>
+</div>
+<p>All of the parsing exceptions should be correctly identified with
+any included file.
+We’ll cover most of the cases with a quick check for a failure to
+find an expected next token.</p>
+<p>In order to test the include file processing, we have to actually
+create a temporary file.  It’s hard to mock the include processing,
+since it’s a nested instance of the tokenizer.</p>
+<p class="rubric" id="load-test-include-processing-with-syntax-errors-51">Load Test include processing with syntax errors (51) =</p>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#sample-document-8-and-the-file-it-includes-52">Sample Document 8 and the file it includes (52)</a>
+
+class Test_IncludeParseErrors(ParseTestcase):
+    text = test8_w
+    file_path = Path(&quot;test8.w&quot;)
+    def setUp(self) -&gt; None:
+        super().setUp()
+        Path('test8_inc.tmp').write_text(test8_inc_w)
+    def test_error_should_count_2(self) -&gt; None:
+        with self.assertLogs('WebReader', level='WARN') as log_capture:
+            chunks = self.rdr.load(self.file_path, self.source)
+        self.assertEqual(1, self.rdr.errors)
+        self.assertEqual(log_capture.output,
+            [
+                &quot;ERROR:WebReader:At ('test8_inc.tmp', 4): end of input, {'&#64;{', '&#64;['} not found&quot;,
+                &quot;ERROR:WebReader:Errors in included file 'test8_inc.tmp', output is incomplete.&quot;
+            ]
+        )
+    def tearDown(self) -&gt; None:
+        super().tearDown()
+        Path('test8_inc.tmp').unlink()</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Load Test include processing with syntax errors (51)</em>.
+Used by     → <a class="reference internal" href="#tests-test-loader-py-46">tests/test_loader.py (46)</a>.</p>
+</div>
+<p>The sample document must reference the correct name that will
+be given to the included document by <code class="docutils literal notranslate"><span class="pre">setUp</span></code>.</p>
+<p class="rubric" id="sample-document-8-and-the-file-it-includes-52">Sample Document 8 and the file it includes (52) =</p>
+<pre class="code literal-block"><code>test8_w = &quot;&quot;&quot;Some anonymous chunk.
+&#64;d title &#64;[the title of this document, defined with &#64;&#64;[ and &#64;&#64;]&#64;]
+A reference to &#64;&lt;title&#64;&gt;.
+&#64;i test8_inc.tmp
+A final anonymous chunk from test8.w
+&quot;&quot;&quot;
+
+test8_inc_w=&quot;&quot;&quot;A chunk from test8a.w
+And now for an error - incorrect syntax in an included file!
+&#64;d yap
+&quot;&quot;&quot;</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Sample Document 8 and the file it includes (52)</em>.
+Used by     → <a class="reference internal" href="#load-test-include-processing-with-syntax-errors-51">Load Test include processing with syntax errors (51)</a>.</p>
+</div>
+<p>&lt;p&gt;The overheads for a Python unittest.&lt;/p&gt;</p>
+<p class="rubric" id="load-test-overheads-imports-etc-53">Load Test overheads: imports, etc. (53) +=</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Loader and parsing tests.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">import</span> <span class="nn">unittest</span>
+
+<span class="kn">import</span> <span class="nn">pyweb</span>
+</pre></div>
+</div>
+<div class="small docutils container">
+<p>∎ <em>Load Test overheads: imports, etc. (53)</em>.
+Used by     → <a class="reference internal" href="#tests-test-loader-py-46">tests/test_loader.py (46)</a>.</p>
+</div>
+<p>A main program that configures logging and then runs the test.</p>
+<p class="rubric" id="load-test-main-program-54">Load Test main program (54) =</p>
+<pre class="code literal-block"><code>if __name__ == &quot;__main__&quot;:
+    logging.basicConfig(stream=sys.stdout, level=logging.WARN)
+    unittest.main()</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Load Test main program (54)</em>.
+Used by     → <a class="reference internal" href="#tests-test-loader-py-46">tests/test_loader.py (46)</a>.</p>
+</div>
+</section>
+<section id="tests-for-tangling">
+<h3><a class="toc-backref" href="#id16" role="doc-backlink">Tests for Tangling</a><a class="headerlink" href="#tests-for-tangling" title="Link to this heading">¶</a></h3>
+<p>We need to be able to tangle a web.</p>
+<p class="rubric" id="tests-test-tangler-py-55">tests/test_tangler.py (55) =</p>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#tangle-test-overheads-imports-etc-69">Tangle Test overheads: imports, etc. (69)</a>
+→ <a class="reference internal" href="#tangle-test-superclass-to-refactor-common-setup-56">Tangle Test superclass to refactor common setup (56)</a>
+→ <a class="reference internal" href="#tangle-test-semantic-error-2-57">Tangle Test semantic error 2 (57)</a>
+→ <a class="reference internal" href="#tangle-test-semantic-error-3-59">Tangle Test semantic error 3 (59)</a>
+→ <a class="reference internal" href="#tangle-test-semantic-error-4-61">Tangle Test semantic error 4 (61)</a>
+→ <a class="reference internal" href="#tangle-test-semantic-error-5-63">Tangle Test semantic error 5 (63)</a>
+→ <a class="reference internal" href="#tangle-test-semantic-error-6-65">Tangle Test semantic error 6 (65)</a>
+→ <a class="reference internal" href="#tangle-test-include-error-7-67">Tangle Test include error 7 (67)</a>
+→ <a class="reference internal" href="#tangle-test-main-program-70">Tangle Test main program (70)</a></code></pre>
+<div class="small docutils container">
+<p>∎ <em>tests/test_tangler.py (55)</em>.</p>
+</div>
+<p>Tangling test cases have a common setup and teardown shown in this superclass.
+Since tangling must produce a file, it’s helpful to remove the file that gets created.
+The essential test case is to load and attempt to tangle, checking the
+exceptions raised.</p>
+<p class="rubric" id="tangle-test-superclass-to-refactor-common-setup-56">Tangle Test superclass to refactor common setup (56) =</p>
+<pre class="code literal-block"><code>class TangleTestcase(unittest.TestCase):
+    text: ClassVar[str]
+    error: ClassVar[str]
+    file_path: ClassVar[Path]
+
+    def setUp(self) -&gt; None:
+        self.source = io.StringIO(self.text)
+        self.rdr = pyweb.WebReader()
+        self.tangler = pyweb.Tangler()
+
+    def tangle_and_check_exception(self, exception_text: str) -&gt; None:
+        with self.assertRaises(pyweb.Error) as exc_mgr:
+            chunks = self.rdr.load(self.file_path, self.source)
+            self.web = pyweb.Web(chunks)
+            self.tangler.emit(self.web)
+            self.fail(&quot;Should not tangle&quot;)
+        exc = exc_mgr.exception
+        self.assertEqual(exception_text, exc.args[0])
+
+    def tearDown(self) -&gt; None:
+        try:
+            self.file_path.with_suffix(&quot;.tmp&quot;).unlink()
+        except FileNotFoundError:
+            pass  # If the test fails, nothing to remove...</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Tangle Test superclass to refactor common setup (56)</em>.
+Used by     → <a class="reference internal" href="#tests-test-tangler-py-55">tests/test_tangler.py (55)</a>.</p>
+</div>
+<p class="rubric" id="tangle-test-semantic-error-2-57">Tangle Test semantic error 2 (57) =</p>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#sample-document-2-58">Sample Document 2 (58)</a>
+
+class Test_SemanticError_2(TangleTestcase):
+    text = test2_w
+    file_path = Path(&quot;test2.w&quot;)
+    def test_should_raise_undefined(self) -&gt; None:
+        self.tangle_and_check_exception(&quot;Attempt to tangle an undefined Chunk, 'part2'&quot;)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Tangle Test semantic error 2 (57)</em>.
+Used by     → <a class="reference internal" href="#tests-test-tangler-py-55">tests/test_tangler.py (55)</a>.</p>
+</div>
+<p class="rubric" id="sample-document-2-58">Sample Document 2 (58) =</p>
+<pre class="code literal-block"><code>test2_w = &quot;&quot;&quot;Some anonymous chunk
+&#64;o test2.tmp
+&#64;{&#64;&lt;part1&#64;&gt;
+&#64;&lt;part2&#64;&gt;
+&#64;}&#64;&#64;
+&#64;d part1 &#64;{This is part 1.&#64;}
+Okay, now for some errors: no part2!
+&quot;&quot;&quot;</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Sample Document 2 (58)</em>.
+Used by     → <a class="reference internal" href="#tangle-test-semantic-error-2-57">Tangle Test semantic error 2 (57)</a>.</p>
+</div>
+<p class="rubric" id="tangle-test-semantic-error-3-59">Tangle Test semantic error 3 (59) =</p>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#sample-document-3-60">Sample Document 3 (60)</a>
+
+class Test_SemanticError_3(TangleTestcase):
+    text = test3_w
+    file_path = Path(&quot;test3.w&quot;)
+    def test_should_raise_bad_xref(self) -&gt; None:
+        self.tangle_and_check_exception(&quot;Illegal tangling of a cross reference command.&quot;)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Tangle Test semantic error 3 (59)</em>.
+Used by     → <a class="reference internal" href="#tests-test-tangler-py-55">tests/test_tangler.py (55)</a>.</p>
+</div>
+<p class="rubric" id="sample-document-3-60">Sample Document 3 (60) =</p>
+<pre class="code literal-block"><code>test3_w = &quot;&quot;&quot;Some anonymous chunk
+&#64;o test3.tmp
+&#64;{&#64;&lt;part1&#64;&gt;
+&#64;&lt;part2&#64;&gt;
+&#64;}&#64;&#64;
+&#64;d part1 &#64;{This is part 1.&#64;}
+&#64;d part2 &#64;{This is part 2, with an illegal: &#64;f.&#64;}
+Okay, now for some errors: attempt to tangle a cross-reference!
+&quot;&quot;&quot;</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Sample Document 3 (60)</em>.
+Used by     → <a class="reference internal" href="#tangle-test-semantic-error-3-59">Tangle Test semantic error 3 (59)</a>.</p>
+</div>
+<p class="rubric" id="tangle-test-semantic-error-4-61">Tangle Test semantic error 4 (61) =</p>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#sample-document-4-62">Sample Document 4 (62)</a>
+
+class Test_SemanticError_4(TangleTestcase):
+    &quot;&quot;&quot;An optional feature of a Web.&quot;&quot;&quot;
+    text = test4_w
+    file_path = Path(&quot;test4.w&quot;)
+    def test_should_raise_noFullName(self) -&gt; None:
+        self.tangle_and_check_exception(&quot;No full name for 'part1...'&quot;)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Tangle Test semantic error 4 (61)</em>.
+Used by     → <a class="reference internal" href="#tests-test-tangler-py-55">tests/test_tangler.py (55)</a>.</p>
+</div>
+<p class="rubric" id="sample-document-4-62">Sample Document 4 (62) =</p>
+<pre class="code literal-block"><code>test4_w = &quot;&quot;&quot;Some anonymous chunk
+&#64;o test4.tmp
+&#64;{&#64;&lt;part1...&#64;&gt;
+&#64;&lt;part2&#64;&gt;
+&#64;}&#64;&#64;
+&#64;d part1... &#64;{This is part 1.&#64;}
+&#64;d part2 &#64;{This is part 2.&#64;}
+Okay, now for some errors: attempt to weave but no full name for part1....
+&quot;&quot;&quot;</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Sample Document 4 (62)</em>.
+Used by     → <a class="reference internal" href="#tangle-test-semantic-error-4-61">Tangle Test semantic error 4 (61)</a>.</p>
+</div>
+<p class="rubric" id="tangle-test-semantic-error-5-63">Tangle Test semantic error 5 (63) =</p>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#sample-document-5-64">Sample Document 5 (64)</a>
+
+class Test_SemanticError_5(TangleTestcase):
+    text = test5_w
+    file_path = Path(&quot;test5.w&quot;)
+    def test_should_raise_ambiguous(self) -&gt; None:
+        self.tangle_and_check_exception(&quot;Ambiguous abbreviation 'part1...', matches ['part1a', 'part1b']&quot;)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Tangle Test semantic error 5 (63)</em>.
+Used by     → <a class="reference internal" href="#tests-test-tangler-py-55">tests/test_tangler.py (55)</a>.</p>
+</div>
+<p class="rubric" id="sample-document-5-64">Sample Document 5 (64) =</p>
+<pre class="code literal-block"><code>test5_w = &quot;&quot;&quot;
+Some anonymous chunk
+&#64;o test5.tmp
+&#64;{&#64;&lt;part1...&#64;&gt;
+&#64;&lt;part2&#64;&gt;
+&#64;}&#64;&#64;
+&#64;d part1a &#64;{This is part 1 a.&#64;}
+&#64;d part1b &#64;{This is part 1 b.&#64;}
+&#64;d part2 &#64;{This is part 2.&#64;}
+Okay, now for some errors: part1... is ambiguous
+&quot;&quot;&quot;</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Sample Document 5 (64)</em>.
+Used by     → <a class="reference internal" href="#tangle-test-semantic-error-5-63">Tangle Test semantic error 5 (63)</a>.</p>
+</div>
+<p class="rubric" id="tangle-test-semantic-error-6-65">Tangle Test semantic error 6 (65) =</p>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#sample-document-6-66">Sample Document 6 (66)</a>
+
+class Test_SemanticError_6(TangleTestcase):
+    text = test6_w
+    file_path = Path(&quot;test6.w&quot;)
+    def test_should_warn(self) -&gt; None:
+        chunks = self.rdr.load(self.file_path, self.source)
+        self.web = pyweb.Web(chunks)
+        self.tangler.emit(self.web)
+        print(self.web.no_reference())
+        self.assertEqual(1, len(self.web.no_reference()))
+        self.assertEqual(1, len(self.web.multi_reference()))
+        self.assertEqual({'part1a', 'part1...'}, self.tangler.reference_names)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Tangle Test semantic error 6 (65)</em>.
+Used by     → <a class="reference internal" href="#tests-test-tangler-py-55">tests/test_tangler.py (55)</a>.</p>
+</div>
+<p class="rubric" id="sample-document-6-66">Sample Document 6 (66) =</p>
+<pre class="code literal-block"><code>test6_w = &quot;&quot;&quot;Some anonymous chunk
+&#64;o test6.tmp
+&#64;{&#64;&lt;part1...&#64;&gt;
+&#64;&lt;part1a&#64;&gt;
+&#64;}&#64;&#64;
+&#64;d part1a &#64;{This is part 1 a.&#64;}
+&#64;d part2 &#64;{This is part 2.&#64;}
+Okay, now for some warnings:
+- part1 has multiple references.
+- part2 is unreferenced.
+&quot;&quot;&quot;</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Sample Document 6 (66)</em>.
+Used by     → <a class="reference internal" href="#tangle-test-semantic-error-6-65">Tangle Test semantic error 6 (65)</a>.</p>
+</div>
+<p class="rubric" id="tangle-test-include-error-7-67">Tangle Test include error 7 (67) =</p>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#sample-document-7-and-it-s-included-file-68">Sample Document 7 and it's included file (68)</a>
+
+class Test_IncludeError_7(TangleTestcase):
+    text = test7_w
+    file_path = Path(&quot;test7.w&quot;)
+    def setUp(self) -&gt; None:
+        Path('test7_inc.tmp').write_text(test7_inc_w)
+        super().setUp()
+    def test_should_include(self) -&gt; None:
+        chunks = self.rdr.load(self.file_path, self.source)
+        self.web = pyweb.Web(chunks)
+        self.tangler.emit(self.web)
+        self.assertEqual(5, len(self.web.chunks))
+        self.assertEqual(test7_inc_w, self.web.chunks[3].commands[0].text)
+    def tearDown(self) -&gt; None:
+        Path('test7_inc.tmp').unlink()
+        super().tearDown()</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Tangle Test include error 7 (67)</em>.
+Used by     → <a class="reference internal" href="#tests-test-tangler-py-55">tests/test_tangler.py (55)</a>.</p>
+</div>
+<p class="rubric" id="sample-document-7-and-it-s-included-file-68">Sample Document 7 and it’s included file (68) =</p>
+<pre class="code literal-block"><code>test7_w = &quot;&quot;&quot;
+Some anonymous chunk.
+&#64;d title &#64;[the title of this document, defined with &#64;&#64;[ and &#64;&#64;]&#64;]
+A reference to &#64;&lt;title&#64;&gt;.
+&#64;i test7_inc.tmp
+A final anonymous chunk from test7.w
+&quot;&quot;&quot;
+
+test7_inc_w = &quot;&quot;&quot;The test7a.tmp chunk for test7.w&quot;&quot;&quot;</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Sample Document 7 and it’s included file (68)</em>.
+Used by     → <a class="reference internal" href="#tangle-test-include-error-7-67">Tangle Test include error 7 (67)</a>.</p>
+</div>
+<p class="rubric" id="tangle-test-overheads-imports-etc-69">Tangle Test overheads: imports, etc. (69) =</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Tangler tests exercise various semantic features.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">ClassVar</span>
+<span class="kn">import</span> <span class="nn">unittest</span>
+
+<span class="kn">import</span> <span class="nn">pyweb</span>
+</pre></div>
+</div>
+<div class="small docutils container">
+<p>∎ <em>Tangle Test overheads: imports, etc. (69)</em>.
+Used by     → <a class="reference internal" href="#tests-test-tangler-py-55">tests/test_tangler.py (55)</a>.</p>
+</div>
+<p class="rubric" id="tangle-test-main-program-70">Tangle Test main program (70) =</p>
+<pre class="code literal-block"><code>if __name__ == &quot;__main__&quot;:
+    import sys
+    logging.basicConfig(stream=sys.stdout, level=logging.WARN)
+    unittest.main()</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Tangle Test main program (70)</em>.
+Used by     → <a class="reference internal" href="#tests-test-tangler-py-55">tests/test_tangler.py (55)</a>.</p>
+</div>
+</section>
+<section id="tests-for-weaving">
+<h3><a class="toc-backref" href="#id17" role="doc-backlink">Tests for Weaving</a><a class="headerlink" href="#tests-for-weaving" title="Link to this heading">¶</a></h3>
+<p>We need to be able to weave a document from one or more source files.</p>
+<p class="rubric" id="tests-test-weaver-py-71">tests/test_weaver.py (71) =</p>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#weave-test-overheads-imports-etc-79">Weave Test overheads: imports, etc. (79)</a>
+→ <a class="reference internal" href="#weave-test-superclass-to-refactor-common-setup-72">Weave Test superclass to refactor common setup (72)</a>
+→ <a class="reference internal" href="#weave-test-references-and-definitions-73">Weave Test references and definitions (73)</a>
+→ <a class="reference internal" href="#weave-test-evaluation-of-expressions-77">Weave Test evaluation of expressions (77)</a>
+→ <a class="reference internal" href="#weave-test-main-program-80">Weave Test main program (80)</a></code></pre>
+<div class="small docutils container">
+<p>∎ <em>tests/test_weaver.py (71)</em>.</p>
+</div>
+<p>Weaving test cases have a common setup shown in this superclass.</p>
+<p class="rubric" id="weave-test-superclass-to-refactor-common-setup-72">Weave Test superclass to refactor common setup (72) =</p>
+<pre class="code literal-block"><code>class WeaveTestcase(unittest.TestCase):
+    text: ClassVar[str]
+    error: ClassVar[str]
+    file_path: ClassVar[Path]
+
+    def setUp(self) -&gt; None:
+        self.source = io.StringIO(self.text)
+        self.rdr = pyweb.WebReader()
+        self.maxDiff = None
+
+    def tearDown(self) -&gt; None:
+        try:
+            self.file_path.with_suffix(&quot;.html&quot;).unlink()
+        except FileNotFoundError:
+            pass
+        try:
+            self.file_path.with_suffix(&quot;.debug&quot;).unlink()
+        except FileNotFoundError:
+            pass</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Weave Test superclass to refactor common setup (72)</em>.
+Used by     → <a class="reference internal" href="#tests-test-weaver-py-71">tests/test_weaver.py (71)</a>.</p>
+</div>
+<p class="rubric" id="weave-test-references-and-definitions-73">Weave Test references and definitions (73) =</p>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#sample-document-0-74">Sample Document 0 (74)</a>
+→ <a class="reference internal" href="#expected-output-0-75">Expected Output 0 (75)</a>
+
+class Test_RefDefWeave(WeaveTestcase):
+    text = test0_w
+    file_path = Path(&quot;test0.w&quot;)
+    def test_load_should_createChunks(self) -&gt; None:
+        chunks = self.rdr.load(self.file_path, self.source)
+        self.assertEqual(3, len(chunks))
+
+    def test_weave_should_create_html(self) -&gt; None:
+        chunks = self.rdr.load(self.file_path, self.source)
+        self.web = pyweb.Web(chunks)
+        self.web.web_path = self.file_path
+        doc = pyweb.Weaver( )
+        doc.set_markup(&quot;html&quot;)
+        doc.emit(self.web)
+        actual = self.file_path.with_suffix(&quot;.html&quot;).read_text()
+        self.maxDiff = None
+        self.assertEqual(test0_expected_html, actual)
+
+    def test_weave_should_create_debug(self) -&gt; None:
+        chunks = self.rdr.load(self.file_path, self.source)
+        self.web = pyweb.Web(chunks)
+        self.web.web_path = self.file_path
+        doc = pyweb.Weaver( )
+        doc.set_markup(&quot;debug&quot;)
+        doc.emit(self.web)
+        actual = self.file_path.with_suffix(&quot;.debug&quot;).read_text()
+        self.maxDiff = None
+        self.assertEqual(test0_expected_debug, actual)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Weave Test references and definitions (73)</em>.
+Used by     → <a class="reference internal" href="#tests-test-weaver-py-71">tests/test_weaver.py (71)</a>.</p>
+</div>
+<p class="rubric" id="sample-document-0-74">Sample Document 0 (74) =</p>
+<pre class="code literal-block"><code>test0_w = &quot;&quot;&quot;&lt;html&gt;
+&lt;head&gt;
+    &lt;link rel=&quot;StyleSheet&quot; href=&quot;pyweb.css&quot; type=&quot;text/css&quot; /&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&#64;&lt;some code&#64;&gt;
+
+&#64;d some code
+&#64;{
+def fastExp(n, p):
+    r = 1
+    while p &gt; 0:
+        if p%2 == 1: return n*fastExp(n,p-1)
+    return n*n*fastExp(n,p/2)
+
+for i in range(24):
+    fastExp(2,i)
+&#64;}
+&lt;/body&gt;
+&lt;/html&gt;
+&quot;&quot;&quot;</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Sample Document 0 (74)</em>.
+Used by     → <a class="reference internal" href="#weave-test-references-and-definitions-73">Weave Test references and definitions (73)</a>.</p>
+</div>
+<p class="rubric" id="expected-output-0-75">Expected Output 0 (75) =</p>
+<pre class="code literal-block"><code>test0_expected_html = &quot;&quot;&quot;&lt;html&gt;
+&lt;head&gt;
+    &lt;link rel=&quot;StyleSheet&quot; href=&quot;pyweb.css&quot; type=&quot;text/css&quot; /&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&amp;rarr;&lt;a href=&quot;#pyweb_1&quot;&gt;&lt;em&gt;some code (1)&lt;/em&gt;&lt;/a&gt;
+
+
+&lt;a name=&quot;pyweb_1&quot;&gt;&lt;/a&gt;
+&lt;!--line number ('test0.w', 10)--&gt;
+&lt;p&gt;&lt;em&gt;some code (1)&lt;/em&gt; =&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;
+def fastExp(n, p):
+    r = 1
+    while p &amp;gt; 0:
+        if p%2 == 1: return n*fastExp(n,p-1)
+    return n*n*fastExp(n,p/2)
+
+for i in range(24):
+    fastExp(2,i)
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&amp;#8718; &lt;em&gt;some code (1)&lt;/em&gt;.
+
+&lt;/p&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+&quot;&quot;&quot;</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Expected Output 0 (75)</em>.
+Used by     → <a class="reference internal" href="#weave-test-references-and-definitions-73">Weave Test references and definitions (73)</a>.</p>
+</div>
+<p class="rubric" id="expected-output-0-76">Expected Output 0 (76) +=</p>
+<pre class="code literal-block"><code>test0_expected_debug = (
+    'text: TextCommand(text=\'&lt;html&gt;\\n&lt;head&gt;\\n    &lt;link rel=&quot;StyleSheet&quot; href=&quot;pyweb.css&quot; type=&quot;text/css&quot; /&gt;\\n&lt;/head&gt;\\n&lt;body&gt;\\n\', location=(\'test0.w\', 1))\n'
+    &quot;ref: ReferenceCommand(name='some code', location=('test0.w', 6))&quot;
+    &quot;text: TextCommand(text='\\n\\n', location=('test0.w', 7))\n&quot;
+    &quot;begin_code: NamedChunk(name='some code', seq=1, commands=[CodeCommand(text='\\ndef fastExp(n, p):\\n    r = 1\\n    while p &gt; 0:\\n        if p%2 == 1: return n*fastExp(n,p-1)\\n    return n*n*fastExp(n,p/2)\\n\\nfor i in range(24):\\n    fastExp(2,i)\\n', location=('test0.w', 10))], options=[], def_names=[], initial=True, comment_start=None, comment_end=None, references=0, referencedBy=None, logger=&lt;Logger Chunk (INFO)&gt;)\n&quot;
+    &quot;code: CodeCommand(text='\\ndef fastExp(n, p):\\n    r = 1\\n    while p &gt; 0:\\n        if p%2 == 1: return n*fastExp(n,p-1)\\n    return n*n*fastExp(n,p/2)\\n\\nfor i in range(24):\\n    fastExp(2,i)\\n', location=('test0.w', 10))\n&quot;
+    &quot;end_code: NamedChunk(name='some code', seq=1, commands=[CodeCommand(text='\\ndef fastExp(n, p):\\n    r = 1\\n    while p &gt; 0:\\n        if p%2 == 1: return n*fastExp(n,p-1)\\n    return n*n*fastExp(n,p/2)\\n\\nfor i in range(24):\\n    fastExp(2,i)\\n', location=('test0.w', 10))], options=[], def_names=[], initial=True, comment_start=None, comment_end=None, references=0, referencedBy=None, logger=&lt;Logger Chunk (INFO)&gt;)\n&quot;
+    &quot;text: TextCommand(text='\\n&lt;/body&gt;\\n&lt;/html&gt;\\n', location=('test0.w', 19))&quot;
+    )</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Expected Output 0 (76)</em>.
+Used by     → <a class="reference internal" href="#weave-test-references-and-definitions-73">Weave Test references and definitions (73)</a>.</p>
+</div>
+<p>Note that this really requires a mocked <code class="docutils literal notranslate"><span class="pre">time</span></code> module in order
+to properly provide a consistent output from <code class="docutils literal notranslate"><span class="pre">time.asctime()</span></code>.</p>
+<p class="rubric" id="weave-test-evaluation-of-expressions-77">Weave Test evaluation of expressions (77) =</p>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#sample-document-9-78">Sample Document 9 (78)</a>
+
+from unittest.mock import Mock
+
+class TestEvaluations(WeaveTestcase):
+    text = test9_w
+    file_path = Path(&quot;test9.w&quot;)
+    def setUp(self):
+        super().setUp()
+        self.mock_time = Mock(asctime=Mock(return_value=&quot;mocked time&quot;))
+    def test_should_evaluate(self) -&gt; None:
+        chunks = self.rdr.load(self.file_path, self.source)
+        self.web = pyweb.Web(chunks)
+        self.web.web_path = self.file_path
+        doc = pyweb.Weaver( )
+        doc.set_markup(&quot;html&quot;)
+        doc.emit(self.web)
+        actual = self.file_path.with_suffix(&quot;.html&quot;).read_text().splitlines()
+        #print(actual)
+        self.assertEqual(&quot;An anonymous chunk.&quot;, actual[0])
+        self.assertTrue(&quot;Time = mocked time&quot;, actual[1])
+        self.assertEqual(&quot;File = ('test9.w', 3)&quot;, actual[2])
+        self.assertEqual('Version = 3.3', actual[3])
+        self.assertEqual(f'CWD = {os.getcwd()}', actual[4])</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Weave Test evaluation of expressions (77)</em>.
+Used by     → <a class="reference internal" href="#tests-test-weaver-py-71">tests/test_weaver.py (71)</a>.</p>
+</div>
+<p class="rubric" id="sample-document-9-78">Sample Document 9 (78) =</p>
+<pre class="code literal-block"><code>test9_w= &quot;&quot;&quot;An anonymous chunk.
+Time = &#64;(time.asctime()&#64;)
+File = &#64;(theLocation&#64;)
+Version = &#64;(__version__&#64;)
+CWD = &#64;(os.path.realpath('.')&#64;)
+&quot;&quot;&quot;</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Sample Document 9 (78)</em>.
+Used by     → <a class="reference internal" href="#weave-test-evaluation-of-expressions-77">Weave Test evaluation of expressions (77)</a>.</p>
+</div>
+<p class="rubric" id="weave-test-overheads-imports-etc-79">Weave Test overheads: imports, etc. (79) =</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Weaver tests exercise various weaving features.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">textwrap</span> <span class="kn">import</span> <span class="n">dedent</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">ClassVar</span>
+<span class="kn">import</span> <span class="nn">unittest</span>
+
+<span class="kn">import</span> <span class="nn">pyweb</span>
+</pre></div>
+</div>
+<div class="small docutils container">
+<p>∎ <em>Weave Test overheads: imports, etc. (79)</em>.
+Used by     → <a class="reference internal" href="#tests-test-weaver-py-71">tests/test_weaver.py (71)</a>.</p>
+</div>
+<p class="rubric" id="weave-test-main-program-80">Weave Test main program (80) =</p>
+<pre class="code literal-block"><code>if __name__ == &quot;__main__&quot;:
+    logging.basicConfig(stream=sys.stderr, level=logging.WARN)
+    unittest.main()</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Weave Test main program (80)</em>.
+Used by     → <a class="reference internal" href="#tests-test-weaver-py-71">tests/test_weaver.py (71)</a>.</p>
+</div>
+</section>
+</section>
+<section id="additional-scripts-testing">
+<h2><a class="toc-backref" href="#id18" role="doc-backlink">Additional Scripts Testing</a><a class="headerlink" href="#additional-scripts-testing" title="Link to this heading">¶</a></h2>
+<p>We provide these two additional scripts; effectively command-line short-cuts:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">tangle.py</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">weave.py</span></code></p></li>
+</ul>
+<p>These need their own test cases.</p>
+<p>This gives us the following outline for the script testing.</p>
+<p class="rubric" id="tests-test-scripts-py-81">tests/test_scripts.py (81) =</p>
+<pre class="code literal-block"><code>→ <a class="reference internal" href="#script-test-overheads-imports-etc-86">Script Test overheads: imports, etc. (86)</a>
+
+→ <a class="reference internal" href="#sample-web-file-to-test-with-82">Sample web file to test with (82)</a>
+
+→ <a class="reference internal" href="#superclass-for-test-cases-83">Superclass for test cases (83)</a>
+
+→ <a class="reference internal" href="#test-of-weave-py-84">Test of weave.py (84)</a>
+
+→ <a class="reference internal" href="#test-of-tangle-py-85">Test of tangle.py (85)</a>
+
+→ <a class="reference internal" href="#scripts-test-main-87">Scripts Test main (87)</a></code></pre>
+<div class="small docutils container">
+<p>∎ <em>tests/test_scripts.py (81)</em>.</p>
+</div>
+<section id="sample-web-file">
+<h3><a class="toc-backref" href="#id19" role="doc-backlink">Sample Web File</a><a class="headerlink" href="#sample-web-file" title="Link to this heading">¶</a></h3>
+<p>This is a web <code class="docutils literal notranslate"><span class="pre">.w</span></code> file to create a document and tangle a small file.</p>
+<p class="rubric" id="sample-web-file-to-test-with-82">Sample web file to test with (82) =</p>
+<pre class="code literal-block"><code>sample = textwrap.dedent(&quot;&quot;&quot;
+    &lt;!doctype html&gt;
+    &lt;html lang=&quot;en&quot;&gt;
+      &lt;head&gt;
+        &lt;meta charset=&quot;utf-8&quot;&gt;
+        &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+        &lt;title&gt;Sample HTML web file&lt;/title&gt;
+      &lt;/head&gt;
+      &lt;body&gt;
+        &lt;h1&gt;Sample HTML web file&lt;/h1&gt;
+        &lt;p&gt;We're avoiding using Python specifically.
+        This hints at other languages being tangled by this tool.&lt;/p&gt;
+
+    &#64;o sample_tangle.code
+    &#64;{
+    &#64;&lt;preamble&#64;&gt;
+    &#64;&lt;body&#64;&gt;
+    &#64;}
+
+    &#64;d preamble
+    &#64;{
+    #include &lt;stdio.h&gt;
+    &#64;}
+
+    &#64;d body
+    &#64;{
+    int main() {
+        println(&quot;Hello, World!&quot;)
+    }
+    &#64;}
+
+      &lt;/body&gt;
+    &lt;/html&gt;
+    &quot;&quot;&quot;)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Sample web file to test with (82)</em>.
+Used by     → <a class="reference internal" href="#tests-test-scripts-py-81">tests/test_scripts.py (81)</a>.</p>
+</div>
+</section>
+<section id="superclass-for-test-cases">
+<h3><a class="toc-backref" href="#id20" role="doc-backlink">Superclass for test cases</a><a class="headerlink" href="#superclass-for-test-cases" title="Link to this heading">¶</a></h3>
+<p>This superclass definition creates a consistent test fixture for both test cases.
+The sample <code class="docutils literal notranslate"><span class="pre">test_sample.w</span></code> file is created and removed after the test.</p>
+<p class="rubric" id="superclass-for-test-cases-83">Superclass for test cases (83) =</p>
+<pre class="code literal-block"><code>class SampleWeb(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        self.sample_path = Path(&quot;test_sample.w&quot;)
+        self.sample_path.write_text(sample)
+        self.maxDiff = None
+
+    def tearDown(self) -&gt; None:
+        self.sample_path.unlink()
+
+    def assertEqual_Ignore_Blank_Lines(self, first: str, second: str, msg: str=None) -&gt; None:
+        &quot;&quot;&quot;Skips blank lines and trailing whitespace that (generally) aren't problems when weaving.&quot;&quot;&quot;
+        def non_blank(line: str) -&gt; bool:
+            return len(line) &gt; 0
+        first_nb = '\n'.join(filter(non_blank, (line.rstrip() for line in first.splitlines())))
+        second_nb = '\n'.join(filter(non_blank, (line.rstrip() for line in second.splitlines())))
+        self.assertEqual(first_nb, second_nb, msg)</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Superclass for test cases (83)</em>.
+Used by     → <a class="reference internal" href="#tests-test-scripts-py-81">tests/test_scripts.py (81)</a>.</p>
+</div>
+</section>
+<section id="weave-script-test">
+<h3><a class="toc-backref" href="#id21" role="doc-backlink">Weave Script Test</a><a class="headerlink" href="#weave-script-test" title="Link to this heading">¶</a></h3>
+<p>We check the weave output to be sure it’s what we expected.
+This could be altered to check a few features of the weave file rather than compare the entire file.</p>
+<p class="rubric" id="test-of-weave-py-84">Test of weave.py (84) =</p>
+<pre class="code literal-block"><code>expected_weave = ('&lt;!doctype html&gt;\n'
+    '&lt;html lang=&quot;en&quot;&gt;\n'
+    '  &lt;head&gt;\n'
+    '    &lt;meta charset=&quot;utf-8&quot;&gt;\n'
+    '    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;\n'
+    '    &lt;title&gt;Sample HTML web file&lt;/title&gt;\n'
+    '  &lt;/head&gt;\n'
+    '  &lt;body&gt;\n'
+    '    &lt;h1&gt;Sample HTML web file&lt;/h1&gt;\n'
+    &quot;    &lt;p&gt;We're avoiding using Python specifically.\n&quot;
+    '    This hints at other languages being tangled by this tool.&lt;/p&gt;\n'
+    '&lt;div class=&quot;card&quot;&gt;\n'
+    '  &lt;div class=&quot;card-header&quot;&gt;\n'
+    '    &lt;a type=&quot;button&quot; class=&quot;btn btn-primary&quot; name=&quot;pyweb_1&quot;&gt;&lt;/a&gt;\n'
+    &quot;    &lt;!--line number ('test_sample.w', 16)--&gt;\n&quot;
+    '    &lt;p class=&quot;small&quot;&gt;&lt;em&gt;sample_tangle.code (1)&lt;/em&gt; =&lt;/p&gt;\n'
+    '   &lt;/div&gt;\n'
+    '  &lt;div class=&quot;card-body&quot;&gt;\n'
+    '    &lt;pre&gt;&lt;code&gt;\n'
+    '&amp;rarr;&lt;a href=&quot;#pyweb_2&quot;&gt;&lt;em&gt;preamble (2)&lt;/em&gt;&lt;/a&gt;\n'
+    '&amp;rarr;&lt;a href=&quot;#pyweb_3&quot;&gt;&lt;em&gt;body (3)&lt;/em&gt;&lt;/a&gt;\n'
+    '    &lt;/code&gt;&lt;/pre&gt;\n'
+    '  &lt;/div&gt;\n'
+    '&lt;div class=&quot;card-footer&quot;&gt;\n'
+    '  &lt;p&gt;&amp;#8718; &lt;em&gt;sample_tangle.code (1)&lt;/em&gt;.\n'
+    '  &lt;/p&gt;\n'
+    '&lt;/div&gt;\n'
+    '&lt;/div&gt;\n'
+    '&lt;div class=&quot;card&quot;&gt;\n'
+    '  &lt;div class=&quot;card-header&quot;&gt;\n'
+    '    &lt;a type=&quot;button&quot; class=&quot;btn btn-primary&quot; name=&quot;pyweb_2&quot;&gt;&lt;/a&gt;\n'
+    &quot;    &lt;!--line number ('test_sample.w', 22)--&gt;\n&quot;
+    '    &lt;p class=&quot;small&quot;&gt;&lt;em&gt;preamble (2)&lt;/em&gt; =&lt;/p&gt;\n'
+    '   &lt;/div&gt;\n'
+    '  &lt;div class=&quot;card-body&quot;&gt;\n'
+    '    &lt;pre&gt;&lt;code&gt;\n'
+    '#include &amp;lt;stdio.h&amp;gt;\n'
+    '    &lt;/code&gt;&lt;/pre&gt;\n'
+    '  &lt;/div&gt;\n'
+    '&lt;div class=&quot;card-footer&quot;&gt;\n'
+    '  &lt;p&gt;&amp;#8718; &lt;em&gt;preamble (2)&lt;/em&gt;.\n'
+    '  &lt;/p&gt;\n'
+    '&lt;/div&gt;\n'
+    '&lt;/div&gt;\n'
+    '&lt;div class=&quot;card&quot;&gt;\n'
+    '  &lt;div class=&quot;card-header&quot;&gt;\n'
+    '    &lt;a type=&quot;button&quot; class=&quot;btn btn-primary&quot; name=&quot;pyweb_3&quot;&gt;&lt;/a&gt;\n'
+    &quot;    &lt;!--line number ('test_sample.w', 27)--&gt;\n&quot;
+    '    &lt;p class=&quot;small&quot;&gt;&lt;em&gt;body (3)&lt;/em&gt; =&lt;/p&gt;\n'
+    '   &lt;/div&gt;\n'
+    '  &lt;div class=&quot;card-body&quot;&gt;\n'
+    '    &lt;pre&gt;&lt;code&gt;\n'
+    'int main() {\n'
+    '    println(&amp;quot;Hello, World!&amp;quot;)\n'
+    '}\n'
+    '    &lt;/code&gt;&lt;/pre&gt;\n'
+    '  &lt;/div&gt;\n'
+    '&lt;div class=&quot;card-footer&quot;&gt;\n'
+    '  &lt;p&gt;&amp;#8718; &lt;em&gt;body (3)&lt;/em&gt;.\n'
+    '  &lt;/p&gt;\n'
+    '&lt;/div&gt;\n'
+    '&lt;/div&gt;\n'
+    '  &lt;/body&gt;\n'
+    '&lt;/html&gt;')
+
+class TestWeave(SampleWeb):
+    def setUp(self) -&gt; None:
+        super().setUp()
+        self.output = self.sample_path.with_suffix(&quot;.html&quot;)
+        self.maxDiff = None
+
+    def test(self) -&gt; None:
+        weave.main(self.sample_path)
+        result = self.output.read_text()
+        self.assertEqual_Ignore_Blank_Lines(expected_weave, result)
+
+    def tearDown(self) -&gt; None:
+        super().tearDown()
+        self.output.unlink()</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Test of weave.py (84)</em>.
+Used by     → <a class="reference internal" href="#tests-test-scripts-py-81">tests/test_scripts.py (81)</a>.</p>
+</div>
+</section>
+<section id="tangle-script-test">
+<h3><a class="toc-backref" href="#id22" role="doc-backlink">Tangle Script Test</a><a class="headerlink" href="#tangle-script-test" title="Link to this heading">¶</a></h3>
+<p>We check the tangle output to be sure it’s what we expected.</p>
+<p class="rubric" id="test-of-tangle-py-85">Test of tangle.py (85) =</p>
+<pre class="code literal-block"><code>expected_tangle = textwrap.dedent(&quot;&quot;&quot;
+
+    #include &lt;stdio.h&gt;
+
+
+    int main() {
+        println(&quot;Hello, World!&quot;)
+    }
+
+    &quot;&quot;&quot;)
+
+class TestTangle(SampleWeb):
+    def setUp(self) -&gt; None:
+        super().setUp()
+        self.output = Path(&quot;sample_tangle.code&quot;)
+
+    def test(self) -&gt; None:
+        tangle.main(self.sample_path)
+        result = self.output.read_text()
+        self.assertEqual(expected_tangle, result)
+
+    def tearDown(self) -&gt; None:
+        super().tearDown()
+        self.output.unlink()</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Test of tangle.py (85)</em>.
+Used by     → <a class="reference internal" href="#tests-test-scripts-py-81">tests/test_scripts.py (81)</a>.</p>
+</div>
+</section>
+<section id="id1">
+<h3><a class="toc-backref" href="#id23" role="doc-backlink">Overheads and Main Script</a><a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<p>This is typical of the other test modules. We provide a unittest runner
+here in case we want to run these tests in isolation.</p>
+<p class="rubric" id="script-test-overheads-imports-etc-86">Script Test overheads: imports, etc. (86) =</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Script tests.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">textwrap</span>
+<span class="kn">import</span> <span class="nn">unittest</span>
+
+<span class="kn">import</span> <span class="nn">tangle</span>
+<span class="kn">import</span> <span class="nn">weave</span>
+</pre></div>
+</div>
+<div class="small docutils container">
+<p>∎ <em>Script Test overheads: imports, etc. (86)</em>.
+Used by     → <a class="reference internal" href="#tests-test-scripts-py-81">tests/test_scripts.py (81)</a>.</p>
+</div>
+<p class="rubric" id="scripts-test-main-87">Scripts Test main (87) =</p>
+<pre class="code literal-block"><code>if __name__ == &quot;__main__&quot;:
+    logging.basicConfig(stream=sys.stdout, level=logging.WARN)
+    unittest.main()</code></pre>
+<div class="small docutils container">
+<p>∎ <em>Scripts Test main (87)</em>.
+Used by     → <a class="reference internal" href="#tests-test-scripts-py-81">tests/test_scripts.py (81)</a>.</p>
+</div>
+<p>We run the default <code class="docutils literal notranslate"><span class="pre">unittest.main()</span></code> to execute the entire suite of tests.</p>
+</section>
+</section>
+<section id="indices">
+<h2><a class="toc-backref" href="#id24" role="doc-backlink">Indices</a><a class="headerlink" href="#indices" title="Link to this heading">¶</a></h2>
+<section id="files">
+<h3><a class="toc-backref" href="#id25" role="doc-backlink">Files</a><a class="headerlink" href="#files" title="Link to this heading">¶</a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">tests/test_unit.py<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#tests-test-unit-py-1">tests/test_unit.py (1)</a>:tests/test_loader.py:
+→ <a class="reference internal" href="#tests-test-loader-py-46">tests/test_loader.py (46)</a>:tests/test_tangler.py:
+→ <a class="reference internal" href="#tests-test-tangler-py-55">tests/test_tangler.py (55)</a>:tests/test_weaver.py:
+→ <a class="reference internal" href="#tests-test-weaver-py-71">tests/test_weaver.py (71)</a>:tests/test_scripts.py:
+→ <a class="reference internal" href="#tests-test-scripts-py-81">tests/test_scripts.py (81)</a></p>
+</dd>
+</dl>
+</section>
+<section id="macros">
+<h3><a class="toc-backref" href="#id26" role="doc-backlink">Macros</a><a class="headerlink" href="#macros" title="Link to this heading">¶</a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">Expected Output 0<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#expected-output-0-75">Expected Output 0 (75)</a>, → <a class="reference internal" href="#expected-output-0-76">Expected Output 0 (76)</a></p>
+</dd>
+<dt class="field-even">Load Test error handling with a few common syntax errors<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#load-test-error-handling-with-a-few-common-syntax-errors-49">Load Test error handling with a few common syntax errors (49)</a></p>
+</dd>
+<dt class="field-odd">Load Test include processing with syntax errors<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#load-test-include-processing-with-syntax-errors-51">Load Test include processing with syntax errors (51)</a></p>
+</dd>
+<dt class="field-even">Load Test main program<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#load-test-main-program-54">Load Test main program (54)</a></p>
+</dd>
+<dt class="field-odd">Load Test overheads<span class="colon">:</span></dt>
+<dd class="field-odd"><p>imports, etc.:
+→ <a class="reference internal" href="#load-test-overheads-imports-etc-48">Load Test overheads: imports, etc. (48)</a>, → <a class="reference internal" href="#load-test-overheads-imports-etc-53">Load Test overheads: imports, etc. (53)</a></p>
+</dd>
+<dt class="field-even">Load Test superclass to refactor common setup<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#load-test-superclass-to-refactor-common-setup-47">Load Test superclass to refactor common setup (47)</a></p>
+</dd>
+<dt class="field-odd">Sample Document 0<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#sample-document-0-74">Sample Document 0 (74)</a></p>
+</dd>
+<dt class="field-even">Sample Document 1 with correct and incorrect syntax<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#sample-document-1-with-correct-and-incorrect-syntax-50">Sample Document 1 with correct and incorrect syntax (50)</a></p>
+</dd>
+<dt class="field-odd">Sample Document 2<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#sample-document-2-58">Sample Document 2 (58)</a></p>
+</dd>
+<dt class="field-even">Sample Document 3<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#sample-document-3-60">Sample Document 3 (60)</a></p>
+</dd>
+<dt class="field-odd">Sample Document 4<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#sample-document-4-62">Sample Document 4 (62)</a></p>
+</dd>
+<dt class="field-even">Sample Document 5<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#sample-document-5-64">Sample Document 5 (64)</a></p>
+</dd>
+<dt class="field-odd">Sample Document 6<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#sample-document-6-66">Sample Document 6 (66)</a></p>
+</dd>
+<dt class="field-even">Sample Document 7 and it’s included file<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#sample-document-7-and-it-s-included-file-68">Sample Document 7 and it’s included file (68)</a></p>
+</dd>
+<dt class="field-odd">Sample Document 8 and the file it includes<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#sample-document-8-and-the-file-it-includes-52">Sample Document 8 and the file it includes (52)</a></p>
+</dd>
+<dt class="field-even">Sample Document 9<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#sample-document-9-78">Sample Document 9 (78)</a></p>
+</dd>
+<dt class="field-odd">Sample web file to test with<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#sample-web-file-to-test-with-82">Sample web file to test with (82)</a></p>
+</dd>
+<dt class="field-even">Script Test overheads<span class="colon">:</span></dt>
+<dd class="field-even"><p>imports, etc.:
+→ <a class="reference internal" href="#script-test-overheads-imports-etc-86">Script Test overheads: imports, etc. (86)</a></p>
+</dd>
+<dt class="field-odd">Scripts Test main<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#scripts-test-main-87">Scripts Test main (87)</a></p>
+</dd>
+<dt class="field-even">Superclass for test cases<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#superclass-for-test-cases-83">Superclass for test cases (83)</a></p>
+</dd>
+<dt class="field-odd">Tangle Test include error 7<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#tangle-test-include-error-7-67">Tangle Test include error 7 (67)</a></p>
+</dd>
+<dt class="field-even">Tangle Test main program<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#tangle-test-main-program-70">Tangle Test main program (70)</a></p>
+</dd>
+<dt class="field-odd">Tangle Test overheads<span class="colon">:</span></dt>
+<dd class="field-odd"><p>imports, etc.:
+→ <a class="reference internal" href="#tangle-test-overheads-imports-etc-69">Tangle Test overheads: imports, etc. (69)</a></p>
+</dd>
+<dt class="field-even">Tangle Test semantic error 2<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#tangle-test-semantic-error-2-57">Tangle Test semantic error 2 (57)</a></p>
+</dd>
+<dt class="field-odd">Tangle Test semantic error 3<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#tangle-test-semantic-error-3-59">Tangle Test semantic error 3 (59)</a></p>
+</dd>
+<dt class="field-even">Tangle Test semantic error 4<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#tangle-test-semantic-error-4-61">Tangle Test semantic error 4 (61)</a></p>
+</dd>
+<dt class="field-odd">Tangle Test semantic error 5<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#tangle-test-semantic-error-5-63">Tangle Test semantic error 5 (63)</a></p>
+</dd>
+<dt class="field-even">Tangle Test semantic error 6<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#tangle-test-semantic-error-6-65">Tangle Test semantic error 6 (65)</a></p>
+</dd>
+<dt class="field-odd">Tangle Test superclass to refactor common setup<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#tangle-test-superclass-to-refactor-common-setup-56">Tangle Test superclass to refactor common setup (56)</a></p>
+</dd>
+<dt class="field-even">Test of tangle.py<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#test-of-tangle-py-85">Test of tangle.py (85)</a></p>
+</dd>
+<dt class="field-odd">Test of weave.py<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#test-of-weave-py-84">Test of weave.py (84)</a></p>
+</dd>
+<dt class="field-even">Unit Test Mock Chunk class<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#unit-test-mock-chunk-class-4">Unit Test Mock Chunk class (4)</a></p>
+</dd>
+<dt class="field-odd">Unit Test main<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#unit-test-main-45">Unit Test main (45)</a></p>
+</dd>
+<dt class="field-even">Unit Test of Action class hierarchy<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#unit-test-of-action-class-hierarchy-37">Unit Test of Action class hierarchy (37)</a></p>
+</dd>
+<dt class="field-odd">Unit Test of Application class<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#unit-test-of-application-class-42">Unit Test of Application class (42)</a></p>
+</dd>
+<dt class="field-even">Unit Test of Chunk References<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#unit-test-of-chunk-references-22">Unit Test of Chunk References (22)</a></p>
+</dd>
+<dt class="field-odd">Unit Test of Chunk class hierarchy<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#unit-test-of-chunk-class-hierarchy-10">Unit Test of Chunk class hierarchy (10)</a></p>
+</dd>
+<dt class="field-even">Unit Test of Chunk construction<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#unit-test-of-chunk-construction-15">Unit Test of Chunk construction (15)</a></p>
+</dd>
+<dt class="field-odd">Unit Test of Chunk interrogation<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#unit-test-of-chunk-interrogation-16">Unit Test of Chunk interrogation (16)</a></p>
+</dd>
+<dt class="field-even">Unit Test of Chunk properties<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#unit-test-of-chunk-properties-17">Unit Test of Chunk properties (17)</a></p>
+</dd>
+<dt class="field-odd">Unit Test of Chunk superclass<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#unit-test-of-chunk-superclass-11">Unit Test of Chunk superclass (11)</a>, → <a class="reference internal" href="#unit-test-of-chunk-superclass-12">Unit Test of Chunk superclass (12)</a>, → <a class="reference internal" href="#unit-test-of-chunk-superclass-13">Unit Test of Chunk superclass (13)</a>, → <a class="reference internal" href="#unit-test-of-chunk-superclass-14">Unit Test of Chunk superclass (14)</a></p>
+</dd>
+<dt class="field-even">Unit Test of CodeCommand class to contain a program source code block<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#unit-test-of-codecommand-class-to-contain-a-program-source-code-block-26">Unit Test of CodeCommand class to contain a program source code block (26)</a></p>
+</dd>
+<dt class="field-odd">Unit Test of Command class hierarchy<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#unit-test-of-command-class-hierarchy-23">Unit Test of Command class hierarchy (23)</a></p>
+</dd>
+<dt class="field-even">Unit Test of Command superclass<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#unit-test-of-command-superclass-24">Unit Test of Command superclass (24)</a></p>
+</dd>
+<dt class="field-odd">Unit Test of Emitter Superclass<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#unit-test-of-emitter-superclass-3">Unit Test of Emitter Superclass (3)</a></p>
+</dd>
+<dt class="field-even">Unit Test of Emitter class hierarchy<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#unit-test-of-emitter-class-hierarchy-2">Unit Test of Emitter class hierarchy (2)</a></p>
+</dd>
+<dt class="field-odd">Unit Test of FileXrefCommand class for an output file cross-reference<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#unit-test-of-filexrefcommand-class-for-an-output-file-cross-reference-28">Unit Test of FileXrefCommand class for an output file cross-reference (28)</a></p>
+</dd>
+<dt class="field-even">Unit Test of HTML subclass of Emitter<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#unit-test-of-html-subclass-of-emitter-7">Unit Test of HTML subclass of Emitter (7)</a></p>
+</dd>
+<dt class="field-odd">Unit Test of LaTeX subclass of Emitter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#unit-test-of-latex-subclass-of-emitter-6">Unit Test of LaTeX subclass of Emitter (6)</a></p>
+</dd>
+<dt class="field-even">Unit Test of MacroXrefCommand class for a named chunk cross-reference<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#unit-test-of-macroxrefcommand-class-for-a-named-chunk-cross-reference-29">Unit Test of MacroXrefCommand class for a named chunk cross-reference (29)</a></p>
+</dd>
+<dt class="field-odd">Unit Test of NamedChunk subclass<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#unit-test-of-namedchunk-subclass-18">Unit Test of NamedChunk subclass (18)</a></p>
+</dd>
+<dt class="field-even">Unit Test of NamedChunk_Noindent subclass<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#unit-test-of-namedchunk-noindent-subclass-19">Unit Test of NamedChunk_Noindent subclass (19)</a></p>
+</dd>
+<dt class="field-odd">Unit Test of NamedDocumentChunk subclass<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#unit-test-of-nameddocumentchunk-subclass-21">Unit Test of NamedDocumentChunk subclass (21)</a></p>
+</dd>
+<dt class="field-even">Unit Test of OutputChunk subclass<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#unit-test-of-outputchunk-subclass-20">Unit Test of OutputChunk subclass (20)</a></p>
+</dd>
+<dt class="field-odd">Unit Test of ReferenceCommand class for chunk references<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#unit-test-of-referencecommand-class-for-chunk-references-31">Unit Test of ReferenceCommand class for chunk references (31)</a></p>
+</dd>
+<dt class="field-even">Unit Test of Tangler subclass of Emitter<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#unit-test-of-tangler-subclass-of-emitter-8">Unit Test of Tangler subclass of Emitter (8)</a></p>
+</dd>
+<dt class="field-odd">Unit Test of TanglerMake subclass of Emitter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#unit-test-of-tanglermake-subclass-of-emitter-9">Unit Test of TanglerMake subclass of Emitter (9)</a></p>
+</dd>
+<dt class="field-even">Unit Test of TextCommand class to contain a document text block<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#unit-test-of-textcommand-class-to-contain-a-document-text-block-25">Unit Test of TextCommand class to contain a document text block (25)</a></p>
+</dd>
+<dt class="field-odd">Unit Test of UserIdXrefCommand class for a user identifier cross-reference<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#unit-test-of-useridxrefcommand-class-for-a-user-identifier-cross-reference-30">Unit Test of UserIdXrefCommand class for a user identifier cross-reference (30)</a></p>
+</dd>
+<dt class="field-even">Unit Test of Weaver subclass of Emitter<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#unit-test-of-weaver-subclass-of-emitter-5">Unit Test of Weaver subclass of Emitter (5)</a></p>
+</dd>
+<dt class="field-odd">Unit Test of Web class<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#unit-test-of-web-class-32">Unit Test of Web class (32)</a></p>
+</dd>
+<dt class="field-even">Unit Test of WebReader class<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#unit-test-of-webreader-class-33">Unit Test of WebReader class (33)</a>, → <a class="reference internal" href="#unit-test-of-webreader-class-34">Unit Test of WebReader class (34)</a>, → <a class="reference internal" href="#unit-test-of-webreader-class-35">Unit Test of WebReader class (35)</a>, → <a class="reference internal" href="#unit-test-of-webreader-class-36">Unit Test of WebReader class (36)</a></p>
+</dd>
+<dt class="field-odd">Unit Test of XrefCommand superclass for all cross-reference commands<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#unit-test-of-xrefcommand-superclass-for-all-cross-reference-commands-27">Unit Test of XrefCommand superclass for all cross-reference commands (27)</a></p>
+</dd>
+<dt class="field-even">Unit Test overheads<span class="colon">:</span></dt>
+<dd class="field-even"><p>imports, etc.:
+→ <a class="reference internal" href="#unit-test-overheads-imports-etc-43">Unit Test overheads: imports, etc. (43)</a>, → <a class="reference internal" href="#unit-test-overheads-imports-etc-44">Unit Test overheads: imports, etc. (44)</a></p>
+</dd>
+<dt class="field-odd">Unit test of Action Sequence class<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#unit-test-of-action-sequence-class-38">Unit test of Action Sequence class (38)</a></p>
+</dd>
+<dt class="field-even">Unit test of LoadAction class<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#unit-test-of-loadaction-class-41">Unit test of LoadAction class (41)</a></p>
+</dd>
+<dt class="field-odd">Unit test of TangleAction class<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#unit-test-of-tangleaction-class-40">Unit test of TangleAction class (40)</a></p>
+</dd>
+<dt class="field-even">Unit test of WeaverAction class<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#unit-test-of-weaveraction-class-39">Unit test of WeaverAction class (39)</a></p>
+</dd>
+<dt class="field-odd">Weave Test evaluation of expressions<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#weave-test-evaluation-of-expressions-77">Weave Test evaluation of expressions (77)</a></p>
+</dd>
+<dt class="field-even">Weave Test main program<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#weave-test-main-program-80">Weave Test main program (80)</a></p>
+</dd>
+<dt class="field-odd">Weave Test overheads<span class="colon">:</span></dt>
+<dd class="field-odd"><p>imports, etc.:
+→ <a class="reference internal" href="#weave-test-overheads-imports-etc-79">Weave Test overheads: imports, etc. (79)</a></p>
+</dd>
+<dt class="field-even">Weave Test references and definitions<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#weave-test-references-and-definitions-73">Weave Test references and definitions (73)</a></p>
+</dd>
+<dt class="field-odd">Weave Test superclass to refactor common setup<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#weave-test-superclass-to-refactor-common-setup-72">Weave Test superclass to refactor common setup (72)</a></p>
+</dd>
+</dl>
+<hr class="docutils" />
+<dl class="py class">
+<dt class="sig sig-object py" id="small">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">small</span></span><a class="headerlink" href="#small" title="Link to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>Created by src/pyweb.py at Sat Oct 19 13:54:41 2024.</p>
+</div></blockquote>
+<p>Source pyweb_test.w modified Sat Oct 19 13:49:28 2024.</p>
+<blockquote>
+<div><p>pyweb.__version__ ‘3.3’.</p>
+<p>Working directory ‘/Users/slott/Documents/Projects/py-web-tool’.</p>
+</div></blockquote>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">PyWebTool</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="pyweb.html">pyWeb Literate Programming 3.3</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">pyWeb Literate Programming 3.3 - Test Suite</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#unit-testing">Unit Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#functional-testing">Functional Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#additional-scripts-testing">Additional Scripts Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#indices">Indices</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="pyweb.html" title="previous chapter">pyWeb Literate Programming 3.3</a></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2022, S.Lott.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="_sources/pyweb_test.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

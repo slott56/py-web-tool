@@ -30,12 +30,8 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-  # Direct
   "tomli; python_version < '3.11'",
-  "jinja2==3.1.4",
-  # Indirect components of build system
-  "setuptools",
-  "wheel",
+  "jinja2",
 ]
 [project.urls]
 repository = "https://github.com/slott56/py-web-tool"
@@ -43,9 +39,9 @@ documentation = "https://slott56.github.io/py-web-tool/src/pyweb.html"
 
 [project.optional-dependencies]
 dev = [
-  "sphinx==7.0.1",
-  "sphinxcontrib-plantuml==1.0.0",
-  "docutils==0.20.1",
+  "sphinx",
+  "sphinxcontrib-plantuml",
+  "docutils",
   "build",
   "twine",
   "pip-tools",
