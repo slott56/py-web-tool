@@ -118,8 +118,8 @@ precisely follows the document structure.
 @<Unit Test Mock Chunk class@>
 @<Unit Test of Emitter Superclass@>
 @<Unit Test of Weaver subclass of Emitter@>
-@<Unit Test of LaTeX subclass of Emitter@>
-@<Unit Test of HTML subclass of Emitter@>
+@<Unit Test of LaTeX macros in Weaver@>
+@<Unit Test of HTML macros in Weaver@>
 @<Unit Test of Tangler subclass of Emitter@>
 @<Unit Test of TanglerMake subclass of Emitter@>
 @}
@@ -293,7 +293,7 @@ The default Weaver is an Emitter that uses templates to produce RST markup.
 
 @d Unit Test of Weaver... @{
 def test_rst_quote_rules():
-    assert pyweb.rst_quote_rules("|char| `code` *em* _em_") == r"\|char\| \`code\` \*em\* \_em\_"
+    assert pyweb.rst_quote_rules("|char| `code` *em* _em_") == "|char| `code` *em* _em_"
 
 def test_html_quote_rules():
     assert pyweb.html_quote_rules("a & b < c > d") == r"a &amp; b &lt; c &gt; d"
@@ -304,7 +304,6 @@ class TestWeaver(unittest.TestCase):
         self.filepath = Path.cwd()
         self.weaver = pyweb.Weaver(self.filepath)
         self.weaver.set_markup("rst")
-        # self.weaver.reference_style = pyweb.SimpleReference()  # Remove this
         self.output_path = self.filepath / "TestWeaver.rst"
         self.web = mock_web()
         self.maxDiff = None
@@ -334,10 +333,10 @@ class TestWeaver(unittest.TestCase):
              '\n'
             '..  _`sample.out (42)`:\n'
             '..  rubric:: sample.out (42) =\n'
-            '..  parsed-literal::\n'
+            '..  code-block::\n'
             '    :class: code\n'
             '\n'
-            '    \\|char\\| \\`code\\` \\*em\\* \\_em\\_\n'
+            '    |char| `code` *em* _em_\n'
             '    \n'
             '    → `named chunk (42)`_\n'
             '..\n'
@@ -350,10 +349,10 @@ class TestWeaver(unittest.TestCase):
             '\n'
             '..  _`named chunk (42)`:\n'
             '..  rubric:: named chunk (42) =\n'
-            '..  parsed-literal::\n'
+            '..  code-block::\n'
             '    :class: code\n'
             '\n'
-            '    \\|char\\| \\`code\\` \\*em\\* \\_em\\_\n'
+            '    |char| `code` *em* _em_\n'
             '    \n'
             '\n'
             '..\n'
@@ -377,12 +376,11 @@ We'll examine a few features of the LaTeX templates.
 class TestLaTeX(unittest.TestCase):
     def setUp(self) -> None:
         self.weaver = pyweb.Weaver()
-        self.weaver.set_markup("tex")
-        # self.weaver.reference_style = pyweb.SimpleReference()  # Remove this 
-        self.filepath = Path("testweaver") 
+        self.filepath = Path("testweaver")
         self.aFileChunk = MockChunk("File", 123, ("sample.w", 456))
         self.aFileChunk.referencedBy = [ ]
         self.aChunk = MockChunk("Chunk", 314, ("sample.w", 789))
+        self.aChunk.style = "python"
         self.aChunk.type_is = Mock(side_effect=lambda n: n == "OutputChunk")
         self.aChunk.referencedBy = [self.aFileChunk,]
         self.aChunk.references = [(self.aFileChunk.name, self.aFileChunk.seq)]
@@ -394,6 +392,7 @@ class TestLaTeX(unittest.TestCase):
             pass
             
     def test_weaver_functions_latex(self) -> None:
+        self.weaver.set_markup("tex")
         result = pyweb.latex_quote_rules("\\end{Verbatim}")
         self.assertEqual("\\end\\,{Verbatim}", result)
         web = Mock(chunks=[self.aChunk])
@@ -409,18 +408,33 @@ class TestLaTeX(unittest.TestCase):
             '\\end{flushleft}\n'
         ]
         self.assertEqual(expected, result)
+
+    def test_weaver_functions_latex_minted(self) -> None:
+        self.weaver.set_markup("tex-minted")
+        result = pyweb.latex_minted_quote_rules("\\end{minted}")
+        self.assertEqual("\\end\\,{minted}", result)
+        web = Mock(chunks=[self.aChunk])
+        result = list(self.weaver.generate_text(web))
+        expected = [
+            '\n'
+            '\\label{pyweb-314}\n'
+            '\\textit{Code example Chunk (314)}\n'
+            '\\begin{minted}{python}',
+            '\n'
+            '\\end{minted}\n'
+        ]
+        self.assertEqual(expected, result)
 @}
 
 We'll examine a few features of the HTML templates.
 
-@d Unit Test of HTML subclass... @{ 
+@d Unit Test of HTML... @{
 class TestHTML(unittest.TestCase):
     def setUp(self) -> None:
         self.maxDiff = None
         self.weaver = pyweb.Weaver( )
         self.weaver.set_markup("html")
-        # self.weaver.reference_style = pyweb.SimpleReference()  # Remove this 
-        self.filepath = Path("testweaver") 
+        self.filepath = Path("testweaver")
         self.aFileChunk = MockChunk("File", 123, ("sample.w", 456))
         self.aFileChunk.referencedBy = []
         self.aChunk = MockChunk("Chunk", 314, ("sample.w", 789))
@@ -438,6 +452,7 @@ class TestHTML(unittest.TestCase):
         result = pyweb.html_quote_rules("a < b && c > d")
         self.assertEqual("a &lt; b &amp;&amp; c &gt; d", result)
         web = Mock(chunks=[self.aChunk])
+        print(self.weaver.template_name_map["html"])
         result = list(self.weaver.generate_text(web))
         expected = [
             '\n'
@@ -735,7 +750,7 @@ and tangled differently than anonymous chunks.
 @d Unit Test of NamedChunk subclass... @{ 
 class TestNamedChunk(unittest.TestCase):
     def setUp(self) -> None:
-        self.theChunk = pyweb.NamedChunk(name="Some Name...")
+        self.theChunk = pyweb.NamedChunk(options=["Some Name..."])
         cmd = MockCommand()
         self.theChunk.commands.append(cmd)
         self.theChunk.def_names = ["index", "terms"]
@@ -760,7 +775,7 @@ class TestNamedChunk(unittest.TestCase):
 @{
 class TestNamedChunk_Noindent(unittest.TestCase):
     def setUp(self) -> None:
-        self.theChunk = pyweb.NamedChunk("NoIndent Name...", options="-noindent")
+        self.theChunk = pyweb.NamedChunk(options=["-noindent", "NoIndent Name..."])
         cmd = MockCommand()
         self.theChunk.commands.append(cmd)
         self.theChunk.def_names = ["index", "terms"]
@@ -789,7 +804,7 @@ This defines the files of tangled code.
 @d Unit Test of OutputChunk subclass... @{
 class TestOutputChunk(unittest.TestCase):
     def setUp(self) -> None:
-        self.theChunk = pyweb.OutputChunk("filename.out")
+        self.theChunk = pyweb.OutputChunk(options=["filename.out"])
         self.theChunk.comment_start = "# "
         self.theChunk.comment_end = ""
         cmd = MockCommand()
@@ -1177,30 +1192,86 @@ class TestTokenizer(unittest.TestCase):
 
 @d Unit Test of WebReader... @{
 class TestOptionParser_OutputChunk(unittest.TestCase):
-    def setUp(self) -> None:
-        rdr = pyweb.WebReader()
-        self.option_parser = rdr.output_option_parser
     def test_with_options_should_parse(self) -> None:
-        text1 = " -start /* -end */ something.css "
-        options1 = self.option_parser.parse_args(shlex.split(text1))
-        self.assertEqual(argparse.Namespace(start='/*', end='*/', argument=['something.css']), options1)
+        text1 = " -start /* -end */ -noweave something.css "
+        chunk1 = pyweb.OutputChunk(options=shlex.split(text1))
+        self.assertEqual(
+            asdict(chunk1), 
+            {'commands': [],
+             'comment_end': '',
+             'comment_start': '# ',
+             'def_names': [],
+             'indent': None,
+             'initial': False,
+             'logger': chunk1.logger,
+             'name': 'something.css',
+             'options': ['-start', '/*', '-end', '*/', '-noweave', 'something.css'],
+             'referencedBy': None,
+             'references': 0,
+             'seq': None,
+             'style': None,
+             'weave': False,
+             'web': None})
     def test_without_options_should_parse(self) -> None:
         text2 = " something.py "
-        options2 = self.option_parser.parse_args(shlex.split(text2))
-        self.assertEqual(argparse. Namespace(start=None, end='', argument=['something.py']), options2)
+        chunk2 = pyweb.OutputChunk(options=shlex.split(text2))
+        self.assertEqual(asdict(chunk2), 
+            {'commands': [],
+            'comment_end': '',
+            'comment_start': '# ',
+            'def_names': [],
+            'indent': None,
+            'initial': False,
+            'logger': chunk2.logger,
+            'name': 'something.py',
+            'options': ['something.py'],
+            'referencedBy': None,
+            'references': 0,
+            'seq': None,
+            'style': None,
+            'weave': True,
+            'web': None})
         
 class TestOptionParser_NamedChunk(unittest.TestCase):
-    def setUp(self) -> None:
-        rdr = pyweb.WebReader()
-        self.option_parser = rdr.definition_option_parser        
     def test_with_options_should_parse(self) -> None:
         text1 = " -indent the name of test1 chunk... "
-        options1 = self.option_parser.parse_args(shlex.split(text1))
-        self.assertEqual(argparse.Namespace(argument=['the', 'name', 'of', 'test1', 'chunk...'], indent=True, noindent=False), options1)
+        chunk1 = pyweb.NamedChunk(options=shlex.split(text1))
+        self.assertEqual(asdict(chunk1),
+            {'commands': [],
+            'comment_end': None,
+            'comment_start': None,
+            'def_names': [],
+            'indent': None,
+            'initial': False,
+            'logger': chunk1.logger,
+            'name': 'the name of test1 chunk...',
+            'options': ['-indent', 'the', 'name', 'of', 'test1', 'chunk...'],
+            'referencedBy': None,
+            'references': 0,
+            'seq': None,
+            'style': None,
+            'weave': True,
+            'web': None})
     def test_without_options_should_parse(self) -> None:
         text2 = " the name of test2 chunk... "
-        options2 = self.option_parser.parse_args(shlex.split(text2))
-        self.assertEqual(argparse.Namespace(argument=['the', 'name', 'of', 'test2', 'chunk...'], indent=False, noindent=False), options2)
+        chunk2 = pyweb.NamedChunk(options=shlex.split(text2))
+        self.assertEqual(asdict(chunk2),
+            {'commands': [],
+            'comment_end': None,
+            'comment_start': None,
+            'def_names': [],
+            'indent': None,
+            'initial': False,
+            'logger': chunk2.logger,
+            'name': 'the name of test2 chunk...',
+            'options': ['the', 'name', 'of', 'test2', 'chunk...'],
+            'referencedBy': None,
+            'references': 0,
+            'seq': None,
+            'style': None,
+            'weave': True,
+            'web': None}
+            )
 @}
 
 Testing the ``@@@@`` case and one of the ``@@(expr@@)`` cases.
@@ -1264,7 +1335,6 @@ class TestWeaveAction(unittest.TestCase):
         self.weaver = MockWeaver()
         self.options = argparse.Namespace( 
             theWeaver=self.weaver,
-            # reference_style=pyweb.SimpleReference(),  # Remove this
             output=Path.cwd(),
             web=self.web,
             weaver='rst',
@@ -1343,6 +1413,7 @@ The boilerplate code for unit testing is the following.
 @d Unit Test overheads...
 @{"""Unit tests."""
 import argparse
+from dataclasses import asdict
 import io
 import logging
 import os

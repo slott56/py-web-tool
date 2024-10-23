@@ -1,17 +1,18 @@
 ..  py-web-tool/src/scripts.w
 
-Handy Scripts and Other Files
-=================================================
+Handy Scripts
+=============
 
-Two aditional scripts, ``tangle.py`` and ``weave.py``, are provided as examples 
-which can be customized and extended.
+Two aditional scripts, ``tangle.py`` and ``weave.py``, are provided as examples which can be customized and extended.
 
 ``tangle.py`` Script
 ---------------------
 
-This script shows a simple version of Tangling.  This has a permitted 
-error for '@@i' commands to allow an include file (for example test results)
-to be omitted from the tangle operation.
+This script shows a simple version of Tangling.
+This has a permitted error for '@@i' commands to allow an include file to be omitted from a tangle operation.
+This permits a WEB to include the log from test output.
+When tangling the code and test cases, the log is not available, and can be safely ignored.
+When weaving a final document after testing, the log will be available.
 
 Note the general flow of this top-level script.
 
@@ -20,11 +21,13 @@ Note the general flow of this top-level script.
 2.	Create the options. This hard-coded object is a stand-in for 
 	parsing command-line options. 
 	
-3.	Create the web object.
+3.	Create the ``Web`` object.
 
 4.	For each action (``LoadAction`` and ``TangleAction`` in this example)
 	Set the web, set the options, execute the callable action, and write
 	a summary.
+
+Conspicuous by its absence is CLI parsing to get the name of a WEB file to process.
 
 @o tangle.py 
 @{#!/usr/bin/env python3
@@ -54,15 +57,16 @@ def main(source: Path) -> None:
             logger.info(action.summary())
 
 if __name__ == "__main__":
-    main(Path("examples/test_rst.w"))
+    # CLI parsing goes here...
+    source = Path("examples/test_rst.w")
+    main(source)
 @}
 
 ``weave.py`` Script
 ---------------------
 
-This script shows a simple version of Weaving.  This shows how
-to define a customized set of templates for a different markup language.
-
+This script shows a simple version of Weaving.
+This shows how to define a customized set of templates for a new markup language, or to use new features of a supported language.
 
 A customized weaver generally has three parts.
 
@@ -73,6 +77,8 @@ A customized weaver generally has three parts.
 
 @<weaver.py processing: load and weave the document@>
 @}
+
+Conspicuous by its absence is CLI parsing to get the name of a WEB file to process.
 
 @d weave.py overheads...
 @{#!/usr/bin/env python3
@@ -86,24 +92,25 @@ from textwrap import dedent
 import pyweb
 @}
 
-To override templates, a class
-needs to provide a text definition of
-the Jinja ``{% macro %}`` definitions.
+To override templates, a class needs to provide a list of text definitions for each Jinja ``{% macro %}`` definition.
 This is used to update the superclass
-``template_map``.
+``template_name_map``.
 
 Something like the following sets the macros in use.
 
 ..  parsed-literal::
 
-    self.template_map['html_macros'] = my_templates
+    self.template_name_map['html'] = (
+        (my_templates,) + self.template_name_map['html']
+    )
 
-Any macro **not** defined gets a default implementation.
+The value of a template name is a tuple of definition lists, with the overriding definitions first, and the default definitions must follow later.
+This will be used to build a ``ChainMap``, ensuring the high-priority items defined first override the defaults defined later.
 
 @d weave.py custom weaver definition...
 @{
-class MyHTML(pyweb.Weaver):
-    bootstrap_html = dedent("""
+bootstrap_html = [
+    dedent("""\
     {%- macro begin_code(chunk) %}
     <div class="card">
       <div class="card-header">
@@ -114,21 +121,27 @@ class MyHTML(pyweb.Weaver):
       <div class="card-body">
         <pre><code>
     {%- endmacro -%}
-
+    """),
+    dedent("""\
     {%- macro end_code(chunk) %}
         </code></pre>
       </div>
     <div class="card-footer">
       <p>&#8718; <em>{{chunk.full_name or chunk.name}} ({{chunk.seq}})</em>.
-      </p> 
+      </p>
     </div>
     </div>
     {% endmacro -%}
     """)
-    
+    ]
+
+class MyHTML(pyweb.Weaver):
     def __init__(self, output: Path = Path.cwd()) -> None:
         super().__init__(output)
-        self.template_map = pyweb.Weaver.template_map | {"html_macros": self.bootstrap_html}
+        self.template_name_map['html'] = (
+            (bootstrap_html,) +
+            self.template_name_map['html']
+        )
 @}
 
 @d weaver.py processing...
@@ -147,7 +160,7 @@ def main(source: Path) -> None:
             tangler_line_numbers=False,
             webReader=pyweb.WebReader(),
             
-            theWeaver=MyHTML(),  # Customize with a specific Weaver subclass
+            theWeaver=MyHTML(),  # Customized with a specific Weaver subclass
         )
         
         for action in pyweb.LoadAction(), pyweb.WeaveAction():
@@ -155,5 +168,7 @@ def main(source: Path) -> None:
             logger.info(action.summary())
 
 if __name__ == "__main__":
-    main(Path("examples/test_rst.w"))
+    # CLI parsing goes here...
+    source = Path("examples/test_rst.w")
+    main(source)
 @}

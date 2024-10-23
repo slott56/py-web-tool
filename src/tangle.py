@@ -25,4 +25,6 @@ def main(source: Path) -> None:
             logger.info(action.summary())
 
 if __name__ == "__main__":
-    main(Path("examples/test_rst.w"))
+    # CLI parsing goes here...
+    source = Path("examples/test_rst.w")
+    main(source)

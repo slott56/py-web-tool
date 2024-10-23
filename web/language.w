@@ -137,13 +137,20 @@ in an input file.
     for the tangled output; this allows inclusion of source
     line numbers.
 
-``@@d`` *name* ``@@{`` *text* ``@@}``
+``@@d`` *options* *name* ``@@{`` *text* ``@@}``
 
     The ``@@d`` (define) command defines a named chunk of program source. 
     This text is tangled or woven when it is referenced by the *reference* inline tag.
     
-    There are options available to specify the indentation for this particular chunk.
+    The ``-indent`` and ``-noindent`` options specify the indentation for this particular chunk.
     In rare cases, it can be helpful to override the indentation context.
+
+    The ``-style *name*`` option specifies a parameter that's provided to the ``begin_code()`` and ``end_code()`` macro.
+    This permits a macro to fine-tune the presentation for a specific chunk.
+    This can help when writing LaTeX that has a mixture of example block styles.
+
+    A special case extension uses ``@@[`` and ``@@]`` to bracket text instead of program source. A *reference* tag can expand this somewhere else in the text.
+    It's not clear what the use case for this is.
 
 Each ``@@o`` and ``@@d`` tag is followed by a chunk which is delimited by ``@@{`` and ``@@}`` tags.
 At the end of that chunk, there is an optional "major" tag.  

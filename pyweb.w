@@ -44,7 +44,7 @@ User Identifiers
 
 ---------
 
-..	class:: small
+..	container:: small
 
 	Created by @(thisApplication@) at @(datetime.datetime.now().ctime()@).
 

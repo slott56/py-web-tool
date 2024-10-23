@@ -10,8 +10,8 @@ import pyweb
 
 
 
-class MyHTML(pyweb.Weaver):
-    bootstrap_html = dedent("""
+bootstrap_html = [
+    dedent("""\
     {%- macro begin_code(chunk) %}
     <div class="card">
       <div class="card-header">
@@ -22,21 +22,27 @@ class MyHTML(pyweb.Weaver):
       <div class="card-body">
         <pre><code>
     {%- endmacro -%}
-
+    """),
+    dedent("""\
     {%- macro end_code(chunk) %}
         </code></pre>
       </div>
     <div class="card-footer">
       <p>&#8718; <em>{{chunk.full_name or chunk.name}} ({{chunk.seq}})</em>.
-      </p> 
+      </p>
     </div>
     </div>
     {% endmacro -%}
     """)
-    
+    ]
+
+class MyHTML(pyweb.Weaver):
     def __init__(self, output: Path = Path.cwd()) -> None:
         super().__init__(output)
-        self.template_map = pyweb.Weaver.template_map | {"html_macros": self.bootstrap_html}
+        self.template_name_map['html'] = (
+            (bootstrap_html,) +
+            self.template_name_map['html']
+        )
 
 
 
@@ -54,7 +60,7 @@ def main(source: Path) -> None:
             tangler_line_numbers=False,
             webReader=pyweb.WebReader(),
             
-            theWeaver=MyHTML(),  # Customize with a specific Weaver subclass
+            theWeaver=MyHTML(),  # Customized with a specific Weaver subclass
         )
         
         for action in pyweb.LoadAction(), pyweb.WeaveAction():
@@ -62,5 +68,7 @@ def main(source: Path) -> None:
             logger.info(action.summary())
 
 if __name__ == "__main__":
-    main(Path("examples/test_rst.w"))
+    # CLI parsing goes here...
+    source = Path("examples/test_rst.w")
+    main(source)
 

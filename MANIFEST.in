@@ -1,4 +1,5 @@
-include src/*.w src/*.css src/*.html src/*.conf src/*.rst src/*.py
+include *.w web/*.w
+include src/*.py src/*.toml
 include bootstrap/*.py
-include tests/*.w tests/*.css tests/*.html tests/*.conf tests/*.py
+include tests/*.py
 include jedit/*.xml

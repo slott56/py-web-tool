@@ -33,7 +33,7 @@ We need to be able to load a web from one or more source files.
 Parsing test cases have a common setup shown in this superclass.
 
 By using some class-level variables ``text``,
-``file_path``, we can simply provide a file-like
+``file_path``, we can provide a file-like
 input object to the ``WebReader`` instance.
 
 @d Load Test superclass...
@@ -536,9 +536,9 @@ test0_expected_debug = (
     'text: TextCommand(text=\'<html>\\n<head>\\n    <link rel="StyleSheet" href="pyweb.css" type="text/css" />\\n</head>\\n<body>\\n\', location=(\'test0.w\', 1))\n'
     "ref: ReferenceCommand(name='some code', location=('test0.w', 6))"
     "text: TextCommand(text='\\n\\n', location=('test0.w', 7))\n"
-    "begin_code: NamedChunk(name='some code', seq=1, commands=[CodeCommand(text='\\ndef fastExp(n, p):\\n    r = 1\\n    while p > 0:\\n        if p%2 == 1: return n*fastExp(n,p-1)\\n    return n*n*fastExp(n,p/2)\\n\\nfor i in range(24):\\n    fastExp(2,i)\\n', location=('test0.w', 10))], options=[], def_names=[], initial=True, comment_start=None, comment_end=None, references=0, referencedBy=None, logger=<Logger Chunk (INFO)>)\n"
+    "begin_code: NamedChunk(options=['some', 'code'], name='some code', seq=1, commands=[CodeCommand(text='\\ndef fastExp(n, p):\\n    r = 1\\n    while p > 0:\\n        if p%2 == 1: return n*fastExp(n,p-1)\\n    return n*n*fastExp(n,p/2)\\n\\nfor i in range(24):\\n    fastExp(2,i)\\n', location=('test0.w', 10))], def_names=[], initial=True, comment_start=None, comment_end=None, weave=True, style=None, references=0, referencedBy=None, logger=<Logger Chunk (INFO)>, indent=None)\n"
     "code: CodeCommand(text='\\ndef fastExp(n, p):\\n    r = 1\\n    while p > 0:\\n        if p%2 == 1: return n*fastExp(n,p-1)\\n    return n*n*fastExp(n,p/2)\\n\\nfor i in range(24):\\n    fastExp(2,i)\\n', location=('test0.w', 10))\n"
-    "end_code: NamedChunk(name='some code', seq=1, commands=[CodeCommand(text='\\ndef fastExp(n, p):\\n    r = 1\\n    while p > 0:\\n        if p%2 == 1: return n*fastExp(n,p-1)\\n    return n*n*fastExp(n,p/2)\\n\\nfor i in range(24):\\n    fastExp(2,i)\\n', location=('test0.w', 10))], options=[], def_names=[], initial=True, comment_start=None, comment_end=None, references=0, referencedBy=None, logger=<Logger Chunk (INFO)>)\n"
+    "end_code: NamedChunk(options=['some', 'code'], name='some code', seq=1, commands=[CodeCommand(text='\\ndef fastExp(n, p):\\n    r = 1\\n    while p > 0:\\n        if p%2 == 1: return n*fastExp(n,p-1)\\n    return n*n*fastExp(n,p/2)\\n\\nfor i in range(24):\\n    fastExp(2,i)\\n', location=('test0.w', 10))], def_names=[], initial=True, comment_start=None, comment_end=None, weave=True, style=None, references=0, referencedBy=None, logger=<Logger Chunk (INFO)>, indent=None)\n"
     "text: TextCommand(text='\\n</body>\\n</html>\\n', location=('test0.w', 19))"
     )
 @}

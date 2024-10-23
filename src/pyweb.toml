@@ -1,14 +1,19 @@
 
 [pyweb]
 # PyWeb options go here.
+# Override macro definitions.
+# macros = [
+# """{% macro begin_code(chunk) %}...{% endmacro %}""",
+# """{% macro end_code(chunk) %}...{% endmacro %}"""
+# ]
 
 [logging]
 version = 1
 disable_existing_loggers = false
 
 [logging.root]
-handlers = [ "console",]
-level = "INFO"
+handlers = ["console",]
+level = "DEBUG"
 
 [logging.handlers.console]
 class = "logging.StreamHandler"
@@ -18,6 +23,9 @@ formatter = "basic"
 [logging.formatters.basic]
 format = "{levelname}:{name}:{message}"
 style = "{"
+
+[logging.loggers.Application]
+level = "INFO"
 
 [logging.loggers.Weaver]
 level = "INFO"

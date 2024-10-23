@@ -177,32 +177,19 @@ Dependencies
 
 **py-web-lp** requires Python 3.12 or newer.
 
-The following components are listed in the ``requirements.txt`` file.
-These can be loaded via
+Dependencies are summarized in the ``pyproject.toml``.
 
-..  code:: bash
-    
-    python -m pip install -r requirements.txt
-    
-This project uses `Jinja <https://palletsprojects.com/p/jinja/>`_ for template processing.
+This does not **format** the output.
 
-The `tomli <https://pypi.org/project/tomli/>`_ library is used to parse configuration files
-for older Python that lack a ``tomllib`` in the standard library.
+If you create RST output, you'll want to use either `docutils <https://docutils.sourceforge.io>`_ or `Sphinx <https://www.sphinx-doc.org/en/master/>`_ to translate the RST to HTML or LaTeX or any of the other formats available.
 
-If you create RST output, you'll want to use either `docutils <https://docutils.sourceforge.io>`_ or `Sphinx <https://www.sphinx-doc.org/en/master/>`_ to translate the RST to HTML or LaTeX or any of the other formats supported by docutils or Sphinx.
-This is not a proper requirement to run the tool.
-It's a common part of an overall document production tool chain.
-
-The overview contains PlantUML diagrams.
+This overview documentation contains PlantUML diagrams.
 See https://plantuml.com/ for more information.
-The `PlantUML for Sphinx <https://github.com/sphinx-contrib/plantuml>`_ plug-in can be used to render the diagrams automatically.
-
-For development, additional components like ``pytest``, ``tox``, and ``mypy`` are also used for development.
 
 More Advanced Usage
 ===================
 
-Here are two more advanced use cases.
+Here are two more advanced use cases that help define the role for this tool.
 
 Tangle, Test, and Weave with Test Results
 -----------------------------------------
@@ -267,5 +254,7 @@ The woven document is based -- primarily -- on the text in the source WEB file.
 This is processed using a small set of Jinja2 macros to modify behavior.
 To fine-tune the results, we can adjust the templates used by this application.
 
-The easiest way to do this is to work with the ``weave.py`` script which shows how to create a customized subclass of ``Weaver``.
-The `Handy Scripts and Other Files`_ section shows this script and how to build it from a few ``pyweb`` components.
+One way to do this is to work with the ``weave.py`` script which shows how to create a customized subclass of ``Weaver``.
+The `Handy Scripts`_ section shows this script and how to build it from a few ``pyweb`` components.
+
+A future extension will allow defining macros in the WEB document, or in the ``pyweb.toml`` configuration file.

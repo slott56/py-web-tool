@@ -189,14 +189,12 @@ simple approach started by *nuweb* and adopted by **py-web-lp**.
     The need to support arbitrary
     programming languages has many consequences:
 
-    :No prettyprinting:
+    :Deferred prettyprinting:
         Both ``WEB`` and ``CWEB`` are able to
         prettyprint the code sections of their documents because they
         understand the language well enough to parse it. Since we want to use
         *any* language, we've got to abandon this feature.
-        However, we do allow particular individual formulas or fragments
-        of L\ :sub:`a`\ T\ :sub:`e`\ X
-        or HTML code to be formatted and still be part of the output files.
+        Instead of doing it in this tool, we push of any pretty-printing to L\ :sub:`a`\ T\ :sub:`e`\ X or RST post-processing, where minted and pygments can be employed.
 
     :Limited index of identifiers:
         Because ``WEB`` knows about Pascal,

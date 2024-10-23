@@ -104,6 +104,7 @@ rst_weaver_template = dedent("""\
     """)
 
 rst_overrides_template = dedent("""\
+    {# Doesn't work {% from defaults import text, begin_code, code, end_code, file_xref, macro_xref, userid_xref, ref, ref_list %} #}
     {# Write override macros here #}
     """)
 
@@ -294,7 +295,6 @@ class Chunk:
     def typeid(cls) -> TypeId:
         return TypeId(cls)
 
-
 class OutputChunk(Chunk):
     @property
     def path(self) -> Path:
@@ -307,10 +307,8 @@ class OutputChunk(Chunk):
 class NamedChunk(Chunk): 
     pass
 
-
 class NamedDocumentChunk(Chunk): 
     pass
-
 
 @dataclass
 class TextCommand:
@@ -322,7 +320,6 @@ class TextCommand:
     def typeid(cls) -> TypeId:
         return TypeId(cls)
 
-
 @dataclass
 class CodeCommand:
     lines: list[str]  #: The code
@@ -332,7 +329,6 @@ class CodeCommand:
     @property
     def typeid(cls) -> TypeId:
         return TypeId(cls)
-
 
 @dataclass
 class ReferenceCommand:
@@ -360,7 +356,6 @@ class ReferenceCommand:
     def typeid(cls) -> TypeId:
         return TypeId(cls)
 
-
 @dataclass
 class FileXrefCommand:
     web: ReferenceType[Web] = field(init=False)
@@ -374,7 +369,6 @@ class FileXrefCommand:
     def typeid(cls) -> TypeId:
         return TypeId(cls)
 
-
 @dataclass
 class MacroXrefCommand:
     web: ReferenceType[Web] = field(init=False)
@@ -387,7 +381,6 @@ class MacroXrefCommand:
     @property
     def typeid(cls) -> TypeId:
         return TypeId(cls)
-
 
 @dataclass
 class UserIdXrefCommand:
@@ -572,22 +565,21 @@ web_2 = Web(
     ],
 )
 
-
 def weave(web):
     """
     Given a template and a quoting rule function, weave a document.
     
     The base weaver template doesn't change.
+    A global BASE_TEMPLATE provides this.
     
-    The template imports two definitions:
-    
+    The template imports macro definitions.
     """
     env = Environment(
         loader=DictLoader(
             {
                 'rst_defaults': rst_weaver_template,
                 'rst_macros': rst_overrides_template,
-                'base_weaver': base_weaver_template_2,
+                'base_weaver': BASE_TEMPLATE,
             }
         ),
         autoescape=select_autoescape()
@@ -597,7 +589,7 @@ def weave(web):
     defaults = env.get_template("rst_defaults")
     macros = env.get_template("rst_macros")
     template = env.get_template("base_weaver")
-    return template.render(web=web, macros=macros, defaults=defaults)
+    return template.render(web=web, macros=macros, defaults=defaults, )
 
 
 def test_template_whitespace():
@@ -614,6 +606,7 @@ def demo_2():
 
 
 if __name__ == "__main__":
+    BASE_TEMPLATE = base_weaver_template_2
     test_template_whitespace()
     # demo_1()
     demo_2()

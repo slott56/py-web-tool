@@ -10,3 +10,4 @@ pyweb WEB file.
 
     pyweb
     pyweb_test
+

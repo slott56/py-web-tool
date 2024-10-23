@@ -416,10 +416,10 @@ A ``Chunk`` can be woven or tangled to create output.
 ..  uml::
 
     class Chunk {
+        options: list[str]
         name: str
         seq: int
         commands: list[Command]
-        options: list[str]
         def_names: list[str]
         initial: bool
     }
@@ -463,6 +463,9 @@ It's not easy to rely on proper inheritance because the templates are implemente
 class Chunk:
     """Superclass for OutputChunk, NamedChunk, NamedDocumentChunk.
     """
+    #: Parsed options for @@d and @@o chunks; used by __post_init__() to set other attributes.
+    options: list[str] = field(default_factory=list)
+
     #: Short name of the chunk.
     name: str | None = None
     
@@ -471,21 +474,24 @@ class Chunk:
     
     #: Sequence of commands inside this chunk.
     commands: list["Command"] = field(default_factory=list)
-    
-    #: Parsed options for @@d and @@o chunks.  
-    options: list[str] = field(default_factory=list)  
-    
+
     #: Names defined after ``@@|`` in this chunk.
     def_names: list[str] = field(default_factory=list)
       
-    #: Is this the first use of a given Chunk name?     
+    #: Is this the first use of a given Chunk name?
     initial: bool = False  
     
-    #: If injecting location details whenm tangling, this is the comment prefix.
+    #: If injecting location details when tangling, this is the comment prefix.
     comment_start: str | None = None
     
     #: If injecting location details, this is the comment suffix. 
-    comment_end: str | None = None  
+    comment_end: str | None = None
+
+    #: When weaving, set weave=False to skip this.
+    weave: bool = True
+
+    #: When weaving, this is a style to use.
+    style: str | None = None
 
     #: Count of references to this Chunk.
     references: int = field(init=False, default=0)
@@ -494,13 +500,23 @@ class Chunk:
     referencedBy: "Chunk | None" = field(init=False, default=None)
     
     #: Weak reference to the ``Web`` containing this ``Chunk``.
-    web: ReferenceType["Web"] = field(init=False, repr=False)
+    web: ReferenceType["Web"] | None = field(init=False, repr=False, default=None)
     
     #: Logger for any chunk-specific messages.
     logger: logging.Logger = field(init=False, default=logging.getLogger("Chunk"))
 
+    #: Indentation Rule; None means indent; number is the amount to indent.
+    indent: None | int = None
+
+    def __post_init__(self) -> None:
+        """Parse options."""
+        if self.options:
+            self.logger.warning("attempt to create %s with options %r", self.__class__.__name__, self.options)
+
     @@property
     def full_name(self) -> str | None:
+        if self.web is None:
+            raise ValueError("no web assigned to chunk {self!s}")
         if self.name:
             return cast(Web, self.web()).resolve_name(self.name)
         else:
@@ -534,22 +550,39 @@ class Chunk:
         Instead of type name matching, we could check for these features:
         - has_code() (i.e., NamedChunk and OutputChunk)
         - has_text() (i.e., Chunk and NamedDocumentChunk)
-        This is for template rendering, where proper Liskov
-        Substitution is irrelevant.
+        Since this is for template rendering, where proper Liskov
+        Substitution is irrelevant, we match class names.
+
+        This can't **easily** use the ``typeid`` metaclass because it's a dataclass.
         """
         return self.__class__.__name__ == name
 @}
 
-The subclasses do little more than partition thd Chunks in a way
-that permits customization in the template rendering process.
+The subclasses do little more than partition the Chunks in a way that permits customization in the template rendering process.
 
-An ``OutputChunk`` is distinguished from a ``NamedChunk`` by having
-a ``path`` property and not having a ``full_name`` property.
+An ``OutputChunk`` is distinguished from ``NamedChunk`` by having a ``path`` property and not having a ``full_name`` property.
 
 @d Chunk class hierarchy...
 @{
 class OutputChunk(Chunk):
-    """An output file."""
+    """An output file from an ``@@o`` Chunk"""
+    option_parser: argparse.ArgumentParser | None = None
+
+    def __post_init__(self) -> None:
+        """Parse options."""
+        if not self.option_parser:
+            self.option_parser = argparse.ArgumentParser(add_help=False, exit_on_error=False)
+            self.option_parser.add_argument("-start", dest='start', type=str, default=None)
+            self.option_parser.add_argument("-end", dest='end', type=str, default="")
+            self.option_parser.add_argument("-noweave", dest="weave", action='store_false', default=True)
+            # All remaining arguments form the chunk name
+            self.option_parser.add_argument("argument", type=str, nargs="*")
+        options = self.option_parser.parse_args(self.options)
+        self.name = ' '.join(options.argument)
+        self.comment_start = options.start if '-start' in options else "# "
+        self.comment_end = options.end if '-end' in options else ""
+        self.weave = options.weave
+
     @@property
     def path(self) -> Path | None:
         if self.name:
@@ -570,7 +603,34 @@ class OutputChunk(Chunk):
         return self
              
 class NamedChunk(Chunk): 
-    """A defined name with code."""
+    """
+    A defined name with code from a ``@@d`` Chunk
+
+    ..  note:: syntex for ``-indent``/``-noindent``.
+
+        - ``-indent`` provides None, normal indent
+
+        - ``-noindent`` is effectively ``-indent 0``.
+    """
+
+    option_parser: argparse.ArgumentParser | None = None
+
+    def __post_init__(self) -> None:
+        if not self.option_parser:
+            self.option_parser = argparse.ArgumentParser(add_help=False, exit_on_error=False)
+            self.option_parser.add_argument("-style", dest="style", action="store", default=None)
+            self.option_parser.add_argument("-indent", dest='indent', action='store_const',
+             const=None, default=None)
+            self.option_parser.add_argument("-noindent", dest='indent', action='store_const', const=0, default=None)
+            self.option_parser.add_argument("argument", type=str, nargs="*")
+        options = self.option_parser.parse_args(self.options)
+        self.name = ' '.join(options.argument)
+        if 'noindent' in options and options.noindent:
+            self.indent = 0
+        elif 'indent' in options and options.indent:
+            self.indent = int(options.indent)
+        self.style = options.style
+
     def add_text(self, text: str, location: tuple[str, int]) -> Chunk:
         if self.commands and self.commands[-1].typeid.CodeCommand:
             cast(HasText, self.commands[-1]).text += text
@@ -579,14 +639,24 @@ class NamedChunk(Chunk):
             self.commands.append(CodeCommand(text, location))
         return self
              
-class NamedChunk_Noindent(Chunk):
-    """A defined name with code and the -noIndent option."""
-    pass
+class NamedDocumentChunk(Chunk):
+    """
+    A defined name with text.
 
-class NamedDocumentChunk(Chunk): 
-    """A defined name with text."""
-    pass
-@| Chunk NamedChunk OutputChunk NamedChunk_Noindent NamedDocumentChunk
+    ..  todo:: Refactor parse_options to base class
+    """
+    option_parser: argparse.ArgumentParser | None = None
+
+    def __post_init__(self) -> None:
+        if not self.option_parser:
+            self.option_parser = argparse.ArgumentParser(add_help=False, exit_on_error=False)
+            self.option_parser.add_argument("-style", action="store", type=str, default=None)
+            # All remaining arguments form the chunk name
+            self.option_parser.add_argument("argument", type=str, nargs="*")
+        options = self.option_parser.parse_args(self.options)
+        self.name = ' '.join(options.argument)
+
+@| Chunk NamedChunk OutputChunk NamedDocumentChunk
 @}
 
 Command Class Hierarchy
@@ -886,7 +956,7 @@ class ReferenceCommand(Command):
         aTangler.fragment = ""
 
         for chunk in chunk_list:
-            # TODO: if chunk.options includes '-indent': do a setIndent before tangling.
+            # TODO: if chunk.indent is not None: do a setIndent before tangling.
             for command in chunk.commands:
                 command.tangle(aTangler, target)
                 
@@ -997,8 +1067,10 @@ are displayed.
 
 @d Imports
 @{import abc
+from collections import ChainMap
 from textwrap import dedent, shorten
 from jinja2 import Environment, DictLoader, select_autoescape
+import jinja2.nodes
 @}
 
 The ``Emitter`` class is an abstraction, used to check the consistency
@@ -1025,138 +1097,197 @@ The job is to build the necessary environment, locate the templates,
 and then evaluate the template's ``generate()`` method to fill the values
 into the template to create the woven document.
 
-There's "base_weaver" template that contains the essential structure of the output document.
-This creates the needed macros, and then weaves the various chunks, in order.
+A single ``base_weaver_template`` template contains the essential structure of the woven document.
+It's a series of chunks.
+Code chunks get a wrapper and quoting rules, text chunks are emitted unchanged.
+Each chunk contains a sequence of commands.
 
-Each markup language has macros that provide the unique markup required for the various chunks.
-This permits customization of the markup.
+The ``base_weaver_template`` relies on a number of macros that customize the output by injecting repetitive boiler-plate markup constructs around code blocks and references between code blocks.
 
-We have an interesting wrinkle with RST-formatted output. There are two variants that may be important:
+Each markup language requires unique macros.
+A default set of macros will yield a readable document.
+The macros can be customized via the configuration file and via ``@@t`` commands in the WEB file.
+This permits some customization of the markup.
+
+As an example, consider RST-formatted output. There are two variants on the way containers and classes work:
 
 - When used with Sphinx, the "small" caption at the end of a code block uses ``..  rst-class:: small``.
 
-- When used without Sphinx, i.e., native docutils, the the "small" caption at the end of a code block uses ``..  class:: small``.
+- When used without Sphinx, i.e., native docutils, the the "small" caption at the end of a code block can use ``..  class:: small``.
 
-This is a minor change to the template being used.
-The question is how to make that distinction in the weaver?
-One view is to use subclasses of :py:class:`Weaver` for this.
-However, the templates are found by name in the ``template_map`` within the ``Weaver``.
-The ``--weaver`` command-line option provides the string (e.g., ``rst`` or ``html``) used
-to build a key into the template map. 
+This distinction is a minor change to the template being used.
+The question is how to make that distinction in the weaver? There are several choices:
 
-We can, therefore, use the ``--weaver`` command-line option  to provide an expanded set of names for RST processing.
+-   Use subclasses of :py:class:`Weaver` for this.
 
-- ``-w rst`` is the Sphinx option.
+-   Note that templates are found by string name in the ``template_name_map`` within the :py:class:`Weaver` class.
+    The ``--weaver`` command-line option provides a string (e.g., ``rst`` or ``html``) used to build a key into the template map.
+    We can extend this string with options and features.
+
+Using the ``--weaver`` command-line option allows us to provide an expanded set of names for RST processing.
+
+- ``-w rst`` is the baseline, Sphinx option.
 
 - ``-w rst-sphinx`` is an alias for ``rst``. The dictionary key points to the same templates as ``rst``.
 
-- ``-w rst-nosphinx`` is the "pure-docutils" version, using ``.. class::``. 
+- ``-w rst-nosphinx`` is the "pure-docutils" version, using ``.. class::`` instead of ``.. rst-class::``.
 
 - ``-w rst-docutils`` is an alias for the ``rst-nosphinx`` option.
 
-While this works out nicely, it turns out that the ``..  container:: small`` is, perhaps, a better markup that ``..  class:: small``.
-This work in docutils **and** Sphinx.
+..  sidebar::
+
+    While this works out nicely, it turns out that the ``..  container:: small`` is, perhaps, a better markup that ``..  class:: small``.
+    This work in both docutils **and** Sphinx.
+
+To match user expectations ``template_name_map`` must have a number of markup-related names.
+
+-   ``markup``. A 1-tuple with the default list.
+
+-   ``markup-option``. A 2-tuple with the default list and an override list that extends or customizes the defaults.
+
+As noted above, there will be aliases in the markup-option category to provide alternative names for feature sets.
 
 @d Weaver Subclass...
 @{
-@<Debug Templates -- these display debugging information@>
+# Template Definitions
 
-@<RST Templates -- the default weave output@>
+@<Quote Rules Base Class@>
 
-@<HTML Templates -- emit HTML weave output@> 
+@<Debug Macros -- these display debugging information@>
 
-@<LaTeX Templates -- emit LaTeX weave output@> 
+@<RST Macros -- the default weave output@>
+
+@<HTML Macros -- emit HTML weave output@>
+
+@<LaTeX Macros -- emit LaTeX weave output@>
 
 @<Common base template -- this is used for ALL weaving@>
 
 class Weaver(Emitter):
-    template_map = {
-        "debug_defaults": debug_weaver_template, "debug_macros": "",
-        "rst_defaults": rst_weaver_template, "rst_macros": rst_overrides_template,
-        "html_defaults": html_weaver_template, "html_macros": html_overrides_template,
-        "tex_defaults": latex_weaver_template, "tex_macros": tex_overrides_template,
-
-        "rst-sphinx_defaults": rst_weaver_template, "rst-sphinx_macros": rst_overrides_template, 
-        "rst-nosphinx_defaults": rst_weaver_template, "rst-nosphinx_macros": rst_nosphinx_template, 
-        "rst-docutils_defaults": rst_weaver_template, "rst-docutils_macros": rst_nosphinx_template, 
-    }
-        
-    quote_rules = {
-        "rst": rst_quote_rules,
-        "html": html_quote_rules,
-        "tex": latex_quote_rules,
-        "debug": debug_quote_rules,
-    }
 
     def __init__(self, output: Path = Path.cwd()) -> None:
         super().__init__(output)
-        # Summary
+        #: map markup name to macros in priority order: override, base
+        self.template_name_map = {
+            "debug": (debug_macros,),
+            "rst": (rst_macros,),
+            "html": (html_macros,),
+            "tex": (tex_macros,),
+            "latex": (tex_macros,),
+
+            "rst-sphinx": (rst_macros,),
+            "rst-nosphinx": (rst_docutils_macros, rst_macros,),
+            "rst-docutils": (rst_docutils_macros, rst_macros,),
+
+            "tex-verbatim": (tex_macros,),
+            "tex-minted": (tex_minted_macros, tex_macros),
+            "latex-verbatim": (tex_macros,),
+            "latex-minted": (tex_minted_macros, tex_macros),
+        }
+
+        #: map markup name to quote rules.
+        self.quote_rules = {
+        "debug": debug_quote_rules,
+        "rst": rst_quote_rules,
+        "rst-sphinx": rst_quote_rules,
+        "rst-nosphinx": rst_quote_rules,
+        "rst-docutils": rst_quote_rules,
+        "html": html_quote_rules,
+        "tex": latex_quote_rules,
+        "tex-verbatim": latex_quote_rules,
+        "tex-minted": latex_minted_quote_rules,
+        "latex": latex_quote_rules,
+        "latex-verbatim": latex_quote_rules,
+        "latex-minted": latex_minted_quote_rules,
+        }
+
+        #: macros found in the config file.
+        self.config_macros = []
+
+        #: final mapping from macro name to definition.
+        self.template_map = {}
+
+        #: Working JINJA environment.
+        self.env = Environment(
+            autoescape=select_autoescape()
+        )
+
+        #: Summary
         self.linesWritten = 0
         
     def set_markup(self, markup: str = "rst") -> "Weaver":
         self.markup = markup
         return self
-        
+
     def emit(self, web: Web) -> None:
+        """Open output files. Then generate text."""
         self.target_path = (self.output / web.web_path.name).with_suffix(f".{self.markup}")
         self.logger.info("Weaving %s using %s markup", self.target_path, self.markup)
         with self.target_path.open('w') as target_file:
             for text in self.generate_text(web):
                 self.linesWritten += text.count("\n")
                 target_file.write(text)
-                
-    def generate_text(self, web: Web) -> Iterator[str]:
-        self.env = Environment(
-            loader=DictLoader(
-                self.template_map | 
-                {'base_weaver': base_template,}
-            ),
-            autoescape=select_autoescape()
-        )
+
+    def macro_name_iter(self, source: list[str]) -> Iterator[tuple[str, str]]:
+        for m in source:
+            ast = self.env.parse(m)
+            for child in ast.iter_child_nodes():
+                match child:
+                    case jinja2.nodes.Macro() as macro:
+                        yield macro.name, m
+                    case _:
+                        raise RuntimeError(f"improper macro text {type(child)!s}: {child!r}")
+
+    def configure_macros(self, web: Web) -> None:
+        if self.template_map: return
         self.env.filters |= {
             "quote_rules": self.quote_rules[self.markup]
         }
-        defaults = self.env.get_template(f"{self.markup}_defaults")
-        macros = self.env.get_template(f"{self.markup}_macros")
-        template = self.env.get_template("base_weaver")
-        return template.generate(web=web, macros=macros, defaults=defaults)
+        ordered_definitions = (
+            # list(web_template_iter())
+            [self.config_macros] +
+            list(self.template_name_map[self.markup])
+        )
+        ordered_macro_name_maps = [
+            dict(self.macro_name_iter(priority))
+            for priority in ordered_definitions
+        ]
+        all_macros = ChainMap(*ordered_macro_name_maps)
+        macro_template = "\n\n".join(
+            all_macros[k] for k in all_macros.keys()
+        )
+        self.template_map = {
+            'base_weaver_template': base_weaver_template,
+            'macros': macro_template
+        }
+        self.env.loader=DictLoader(self.template_map)
+
+    def generate_text(self, web: Web) -> Iterator[str]:
+        self.configure_macros(web)
+        macros = self.env.get_template(f"macros")
+        base_weaver_template = self.env.get_template("base_weaver_template")
+        return base_weaver_template.generate(web=web, macros=macros)
 @}
 
-There are several strategy plug-ins.
-Each is unique for a particular flavort of markup.
-These include the quoting function used to escape markup characters, and the templates used.
+Within the Jinja framework, the macro definitions amount to **Strategy** plug-ins to the weaver.
+Each set of macro definitions is unique for a particular flavor of markup.
+The strategies include the quoting function used to escape markup characters.
 
-The objective is to have a generic "weaver" template which includes three levels
-of template definition:
+A generic "base_weaver_template" template relies on macros.
+The macro definitions come from four sources:
 
-1. Defaults.
-2. Configured overrides from ``pyweb.toml``.
-3. Document overrides from the ``.w`` file in ``@@t name @@{...@@}`` commands.
+1. Application defaults, defined here.
+2. Application overrides to the defaults, also defined here.
+3. Configured overrides from ``pyweb.toml``.
+4. Document overrides from the ``.w`` file in ``@@t name @@{...@@}`` commands.
 
-This means there is a two-step binding between document and macros.
+The document overrides are the highest priority.
 
-1. The base weaver document should import three generic template definitions:
+The ``Weaver`` class must populate the environment very late in the process.
+This must be done **after** the configuration files are read and **after** the web has been parsed to locate template definitions.
+We can then pick the templates to put into a ``DictLoader`` to support the standard weaving structure.
 
-    ``{%- from 'markup' import * %}``
-
-    ``{%- from 'configured' import * %}``
-
-    ``{%- from 'document' import * %}``
-
-2. These names map (*somehow*) to specific templates based on markup language.
-    ``markup`` -> ``rst/markup``, etc.
-    
-This allows us to provide all templates and make a final binding
-at weave time. We can use a prefix loader with a given prefix.
-Some kind of "import rst/markup as markup" would be ideal. 
-
-Jinja, however, doesn't seem to support this the same way Python does.
-There's no ``import as`` construct allowing very late binding.
- 
-The alternative is to  create the environment very late in the process, once we have all the information available.
-We can then pick the templates to put into a DictLoader to support the standard weaving structure.
-
-The quoting rules apply to the various template languages.
+Additionally, quoting rules apply to some template languages.
 The idea is that a few characters must be escaped for proper presentation in the code sample sections.
 
 Common Base Template
@@ -1164,34 +1295,42 @@ Common Base Template
 
 The common base template expands each chunk and each command in order.
 This involves some special case processing for ``OutputChunk`` and ``NamedChunk``
-which have a "wrapper" woven around the chunk's sequence of commands.
+which have a "wrapper" woven around the chunk's sequence of commands so that it's typeset in a distinctive style.
 
-This relies on a number of individual macros:
+The base template relies on a number of individual macros:
 
--   text(command). Emits a block of text -- this should do *nothing* with the text. The author's original
-    markup passes through untouched.
+-   ``text(command)``.
+    Emits a block of text -- this should do *nothing* with the text.
+    The author's original markup passes through untouched.
     
--   begin_code(chunk). Starts a block of code, either ``@@d`` or ``@@o``.
+-   ``begin_code(chunk)``.
+    Starts a block of code, either ``@@d`` or ``@@o``.
  
--   code(command). Emits a block fo code. This may require escapes for special characters that would break
-    the markup being used.
+-   ``code(command)``.
+    Emits a block fo code.
+    This may require escapes for special characters that would break the markup being used.
     
--   ref(command). Emits a reference to a named block of code. 
+-   ``ref(command)``.
+    Emits a reference to a named block of code.
 
--   end_code(chunk). Ends a block of code.
+-   ``end_code(chunk)``.
+    Ends a block of code.
 
--   file_xref(command). Emit the full ``@@f`` output, usually some kind of definition list.
+-   ``file_xref(command)``.
+    Emit the full ``@@f`` output, usually some kind of definition list.
 
--   macro_xref(command). Emit the full ``@@m`` output, usually some kind of definition list.
+-   ``macro_xref(command)``.
+    Emit the full ``@@m`` output, usually some kind of definition list.
 
--   userid_xref(command). Emit the full ``@@u`` output, usually some kind of definition list.
+-   ``userid_xref(command)``.
+    Emit the full ``@@u`` output, usually some kind of definition list.
 
 The ``ref()`` macro can also be used in the XREF output macros. It can also be used in the ``end_code()`` macro.
 After a block of code, some tools (like Interscript) will show where the block was referenced.
 The point of using the ``ref()`` macro in multiple places is to make all of them look identical.
 
-There are a variety of optional formatting considerations.
-First is cross-references, second is a variety of ``begin_code()`` options.
+There are a some optional formatting considerations.
+These include cross-references as well as the variety of ``begin_code()`` options.
 
 There are four styles for the "referencedBy" information in a ``Chunk``.
 
@@ -1209,29 +1348,28 @@ There are four styles for the "referencedBy" information in a ``Chunk``.
 These require four distinct versions of the ``end_code()`` macro.
 This macro uses the ``transitive_referencedBy`` property of a ``Chunk`` producing a sequence of ``ref()`` values.
 
-(Note the ``→`` characters are preface characters for a link.)
+(Note the ``&rarr;`` characters is a preface characters for a link.)
+
+The ``begin_code()`` and ``end_code()`` macros will bracket a code block.
+In LaTeX, there are a number of ways to bracket a literal block, including ``Verbatim``, ``lstlisting``, ``minted``, or a custom-defined ``TColorBox``.
+The ``begin_code()`` and ``end_code()`` macros must match, of course.
+There may be distinct parameters, also, to provide additional parameters to the chunk.
 
 @d Common base template...
 @{
-base_template = dedent("""\
+base_weaver_template = dedent("""\
     {%- from macros import text, begin_code, code, ref, end_code, file_xref, macro_xref, userid_xref -%}
-    {%- if not text is defined %}{%- from defaults import text -%}{%- endif -%}
-    {%- if not begin_code is defined %}{%- from defaults import begin_code -%}{%- endif -%}
-    {%- if not code is defined %}{%- from defaults import code -%}{%- endif -%}
-    {%- if not ref is defined %}{%- from defaults import ref -%}{%- endif -%}
-    {%- if not end_code is defined %}{%- from defaults import end_code -%}{%- endif -%}
-    {%- if not file_xref is defined %}{%- from defaults import file_xref -%}{%- endif -%}
-    {%- if not macro_xref is defined %}{%- from defaults import macro_xref -%}{%- endif -%}
-    {%- if not userid_xref is defined %}{%- from defaults import userid_xref -%}{%- endif -%}
     {% for chunk in web.chunks -%}
         {%- if chunk.type_is('OutputChunk') or chunk.type_is('NamedChunk') -%}
-            {{begin_code(chunk)}}
-            {%- for command in chunk.commands -%}
-                {%- if command.typeid.CodeCommand -%}{{code(command)}}
-                {%- elif command.typeid.ReferenceCommand -%}{{ref(command)}}
-                {%- endif -%}
-            {%- endfor -%}
-            {{end_code(chunk)}}
+            {% if chunk.weave -%}
+                {{begin_code(chunk)}}
+                {%- for command in chunk.commands -%}
+                    {%- if command.typeid.CodeCommand -%}{{code(command)}}
+                    {%- elif command.typeid.ReferenceCommand -%}{{ref(command)}}
+                    {%- endif -%}
+                {%- endfor -%}
+                {{end_code(chunk)}}
+            {%- endif -%}
         {%- elif chunk.type_is('Chunk') -%}
             {%- for command in chunk.commands -%}
                 {%- if command.typeid.TextCommand %}{{text(command)}}
@@ -1246,225 +1384,226 @@ base_template = dedent("""\
 """)
 @}
 
-..  todo:: Need to more gracefully handle the case where an output chunk has multiple definitions.
+The QuoteRule class lets us define a quote rule as a callable object.
+The result of ``qr = QuoteRules(("this", "that"))`` is a callable object, ``qr()`` that performs the replacement.
 
-    For example,
-
-    ..  parsed-literal::
-
-        @@o x.y
-        @@{
-        ... part 1 ...
-        @@}
-
-        @@o x.y
-        @@{
-        ... part 2 ...
-        @@}
-
-    The above should have the same output as the following (more complex) alternative:
-
-    ..  parsed-literal::
-
-        @@o x.y
-        @@{
-        @@<part 1@@>
-        @@<part 2@@>
-        @@}
-
-        @@d part 1
-        @@{
-        ... part 1 ...
-        @@}
-
-        @@d part 2
-        @@{
-        ... part 2 ...
-        @@}
-
-    Currently, we casually treat the first instance
-    as the "definition", and don't provide references
-    to the additional parts of the definition.
-
-Debug Template
-***************
-
-@d Debug Templates...
+@d Quote Rules Base Class
 @{
-def debug_quote_rules(text: str) -> str:
-    return repr(text)
-    
-debug_weaver_template = dedent("""\
-    {%- macro text(command) -%}
-    text: {{command}}
-    {%- endmacro -%}
-    
-    {%- macro begin_code(chunk) %}
-    begin_code: {{chunk}}
-    {%- endmacro -%}
-    
-    {%- macro code(command) %}
-    code: {{command}}
-    {%- endmacro -%}
-    
-    {%- macro ref(id) %}
-    ref: {{id}}
-    {%- endmacro -%}
-    
-    {%- macro end_code(chunk) %}
-    end_code: {{chunk}}
-    {% endmacro -%}
-    
-    {%- macro file_xref(command) -%}
-    file_xref {{command.files}}
-    {%- endmacro -%}
-    
-    {%- macro macro_xref(command) -%}
-    macro_xref {{command.macros}}
-    {%- endmacro -%}
-
-    {%- macro userid_xref(command) -%}
-    userid_xref {{command.userids}}
-    {%- endmacro -%}
-    """)
+class QuoteRules:
+    def __init__(self, *mapping: tuple[str, str]) -> None:
+        self.mapping = mapping
+    def __call__(self, text: str) -> str:
+        clean = text
+        for from_, to_ in self.mapping:
+            clean = clean.replace(from_, to_)
+        return clean
 @}
 
-RST Template
+
+Debug Macros
 ***************
 
-The RST Templates produce ReStructuredText for the various web commands.
+The debug macros don't use a quote rule with individual replacements. In this case, the quote rule is the built-in ``repr()`` function.
+
+@d Debug Macros...
+@{
+debug_quote_rules = repr
+    
+debug_macros = [
+    dedent("""\
+        {%- macro text(command) -%}
+        text: {{command}}
+        {%- endmacro -%}
+    """),
+    dedent("""\
+        {%- macro begin_code(chunk) %}
+        begin_code: {{chunk}}
+        {%- endmacro -%}
+    """),
+    dedent("""\
+        {%- macro code(command) %}
+        code: {{command}}
+        {%- endmacro -%}
+    """),
+    dedent("""\
+        {%- macro ref(id) %}
+        ref: {{id}}
+        {%- endmacro -%}
+    """),
+    dedent("""\
+        {%- macro end_code(chunk) %}
+        end_code: {{chunk}}
+        {% endmacro -%}
+    """),
+    dedent("""\
+        {%- macro file_xref(command) -%}
+        file_xref {{command.files}}
+        {%- endmacro -%}
+    """),
+    dedent("""\
+        {%- macro macro_xref(command) -%}
+        macro_xref {{command.macros}}
+        {%- endmacro -%}
+    """),
+    dedent("""\
+        {%- macro userid_xref(command) -%}
+        userid_xref {{command.userids}}
+        {%- endmacro -%}
+    """)
+    ]
+@}
+
+RST Macros
+***************
+
+The RST Macros produce ReStructuredText for the various web commands.
 Note that code lines must be indented when using this markup.
 
-@d RST Templates...
+There is a base set of template macros.
+The ``rst_weaver_template`` variable defines the default macros.
+The ``rst-sphinx`` key makes these defaults active.
+
+These can be overridden by macros defined in
+the ``rst_nosphinx_template`` variable.
+This defines  updates to the base templates focused on **docutils**.
+The ``rst-nosphinx`` and ``rst-docutils`` keys provides updates to the base temples focused on docutils.
+
+@d RST Macros...
 @{
+rst_quote_rules = str
 
-def rst_quote_rules(text: str) -> str:
-    quoted_chars = [
-        ('\\', r'\\'), # Must be first.
-        ('`', r'\`'),
-        ('_', r'\_'), 
-        ('*', r'\*'),
-        ('|', r'\|'),
+ # Old rules, used with ``..  parsed-literal::``
+ #rst_quote_rules = QuoteRules(
+ #       ('\\', r'\\'), # Must be first.
+ #       ('`', r'\`'),
+ #       ('_', r'\_'),
+ #       ('*', r'\*'),
+ #       ('|', r'\|'),
+ #   )
+
+rst_macros = [
+    dedent("""
+        {%- macro text(command) -%}
+        {{command.text}}
+        {%- endmacro -%}
+    """),
+    dedent("""\
+        {%- macro begin_code(chunk) %}
+        ..  _`{{chunk.full_name or chunk.name}} ({{chunk.seq}})`:
+        ..  rubric:: {{chunk.full_name or chunk.name}} ({{chunk.seq}}) {% if chunk.initial %}={% else %}+={% endif %}
+        ..  code-block::
+            :class: code
+
+        {% endmacro -%}
+    """),
+    dedent("""\
+        {# For RST, each line must be indented. #}
+        {%- macro code(command) %}{% for line in command.text.splitlines() %}    {{line | quote_rules}}
+        {% endfor -%}{% endmacro -%}
+    """),
+    dedent("""\
+        {%- macro ref(id) %}    \N{RIGHTWARDS ARROW} `{{id.full_name or id.name}} ({{id.seq}})`_{% endmacro -%}
+    """),
+   dedent("""\
+        {%- macro end_code(chunk) %}
+        ..
+
+        ..  container:: small
+
+            \N{END OF PROOF} *{{chunk.full_name or chunk.name}} ({{chunk.seq}})*.
+            {% if chunk.referencedBy %}Used by {{ref(chunk.referencedBy)}}.{% endif %}
+
+        {% endmacro -%}
+    """),
+    dedent("""\
+        {%- macro file_xref(command) -%}
+        {% for file in command.files -%}
+        :{{file.name}}:
+            \N{RIGHTWARDS ARROW} `{{file.name}} ({{file.seq}})`_
+        {%- endfor %}
+        {%- endmacro -%}
+    """),
+    dedent("""\
+        {%- macro macro_xref(command) -%}
+        {% for macro in command.macros -%}
+        :{{macro.full_name}}:
+            {% for d in macro.def_list -%}\N{RIGHTWARDS ARROW} `{{d.full_name or d.name}} ({{d.seq}})`_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
+
+        {% endfor %}
+        {%- endmacro -%}
+    """),
+    dedent("""\
+        {%- macro userid_xref(command) -%}
+        {% for userid in command.userids -%}
+        :{{userid.userid}}:
+            {% for r in userid.ref_list -%}\N{RIGHTWARDS ARROW} `{{r.full_name or r.name}} ({{r.seq}})`_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
+
+        {% endfor %}
+        {%- endmacro -%}
+    """)
     ]
-    clean = text
-    for from_, to_ in quoted_chars:
-        clean = clean.replace(from_, to_)
-    return clean
-    
-rst_weaver_template = dedent("""
-    {%- macro text(command) -%}
-    {{command.text}}
-    {%- endmacro -%}
-    
-    {%- macro begin_code(chunk) %}
-    ..  _`{{chunk.full_name or chunk.name}} ({{chunk.seq}})`:
-    ..  rubric:: {{chunk.full_name or chunk.name}} ({{chunk.seq}}) {% if chunk.initial %}={% else %}+={% endif %}
-    ..  parsed-literal::
-        :class: code
-        
-    {% endmacro -%}
 
-    {# For RST, each line must be indented. #}    
-    {%- macro code(command) %}{% for line in command.text.splitlines() %}    {{line | quote_rules}}
-    {% endfor -%}{% endmacro -%}
-    
-    {%- macro ref(id) %}    \N{RIGHTWARDS ARROW} `{{id.full_name or id.name}} ({{id.seq}})`_{% endmacro -%}
-    
-    {# When using Sphinx, this *could* be rst-class::, pure docutils uses container::#}
-    {%- macro end_code(chunk) %}
-    ..
-    
-    ..  container:: small
-    
-        \N{END OF PROOF} *{{chunk.full_name or chunk.name}} ({{chunk.seq}})*.
-        {% if chunk.referencedBy %}Used by {{ref(chunk.referencedBy)}}.{% endif %}
-        
-    {% endmacro -%}
-    
-    {%- macro file_xref(command) -%}
-    {% for file in command.files -%}
-    :{{file.name}}:
-        \N{RIGHTWARDS ARROW} `{{file.name}} ({{file.seq}})`_
-    {%- endfor %}
-    {%- endmacro -%}
-    
-    {%- macro macro_xref(command) -%}
-    {% for macro in command.macros -%}
-    :{{macro.full_name}}:
-        {% for d in macro.def_list -%}\N{RIGHTWARDS ARROW} `{{d.full_name or d.name}} ({{d.seq}})`_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
-        
-    {% endfor %}
-    {%- endmacro -%}
+rst_docutils_macros = [
+    dedent("""\
+        {%- macro end_code(chunk) %}
+        ..
 
-    {%- macro userid_xref(command) -%}
-    {% for userid in command.userids -%}
-    :{{userid.userid}}:
-        {% for r in userid.ref_list -%}\N{RIGHTWARDS ARROW} `{{r.full_name or r.name}} ({{r.seq}})`_{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
-        
-    {% endfor %}
-    {%- endmacro -%}
-    """)
+        ..  class:: small
 
-rst_overrides_template = dedent("""\
+            \N{END OF PROOF} *{{chunk.full_name or chunk.name}} ({{chunk.seq}})*
+
+        {% endmacro -%}
     """)
-    
-rst_nosphinx_template = dedent("""\
-    {%- macro end_code(chunk) %}
-    ..
-    
-    ..  class:: small
-    
-        \N{END OF PROOF} *{{chunk.full_name or chunk.name}} ({{chunk.seq}})*
-        
-    {% endmacro -%}
-    """)
+    ]
 @}
 
-HTML Template
+HTML Macros
 ***************
 
-The HTML templates use a relatively simple markup, avoiding any CSS names.
-A slightly more flexible approach might be to name specific CSS styles, and provide
-generic definitions for those styles. This would make it easier to
-tailor HTML output via CSS changes, avoiding any HTML modifications.
+The HTML macros use a relatively simple markup, avoiding any CSS names.
+A slightly more flexible approach might be to name specific CSS styles, and provide generic definitions for those styles.
+This would make it easier to tailor HTML output via CSS changes, avoiding any HTML modifications.
 
-@d HTML Templates...
+The ``ref()`` macro injects ``&rarr;`` characters into the chunk references as an attempt to make it clear they are links.
+
+@d HTML Macros...
 @{
-def html_quote_rules(text: str) -> str:
-    quoted_chars = [
+html_quote_rules = QuoteRules(
         ("&", "&amp;"),  # Must be first
         ("<", "&lt;"),
         (">", "&gt;"),
         ('"', "&quot;"),  # Only applies inside tags...
-    ]
-    clean = text
-    for from_, to_ in quoted_chars:
-        clean = clean.replace(from_, to_)
-    return clean
+    )
 
-html_weaver_template = dedent("""\
+html_macros = [
+    dedent("""\
     {%- macro text(command) -%}
     {{command.text}}
     {%- endmacro -%}
-    
+    """),
+    dedent("""\
     {%- macro begin_code(chunk) %}
     <a name="pyweb_{{chunk.seq}}"></a>
     <!--line number {{chunk.location}}-->
     <p><em>{{chunk.full_name or chunk.name}} ({{chunk.seq}})</em> {% if chunk.initial %}={% else %}+={% endif %}</p>
     <pre><code>
     {%- endmacro -%}
-    
+    """),
+    dedent("""\
     {%- macro code(command) -%}{{command.text | quote_rules}}{%- endmacro -%}
-    
+    """),
+    dedent("""\
     {%- macro ref(id) %}&rarr;<a href="#pyweb_{{id.seq}}"><em>{{id.full_name or id.name}} ({{id.seq}})</em></a>{% endmacro -%}
-    
+    """),
+    dedent("""\
     {%- macro end_code(chunk) %}
     </code></pre>
     <p>&#8718; <em>{{chunk.full_name or chunk.name}} ({{chunk.seq}})</em>.
     {% if chunk.referencedBy %}Used by {{ref(chunk.referencedBy)}}.{% endif %}
     </p> 
     {% endmacro -%}
-    
+    """),
+    dedent("""\
     {%- macro file_xref(command) %}
     <dl>
     {% for file in command.files -%}
@@ -1472,7 +1611,8 @@ html_weaver_template = dedent("""\
     {%- endfor %}
     </dl>
     {% endmacro -%}
-    
+    """),
+    dedent("""\
     {%- macro macro_xref(command) %}
     <dl>
     {% for macro in command.macros -%}
@@ -1481,7 +1621,8 @@ html_weaver_template = dedent("""\
     {% endfor %}
     </dl>
     {% endmacro -%}
-
+    """),
+    dedent("""\
     {%- macro userid_xref(command) %}
     <dl>
     {% for userid in command.userids -%}
@@ -1491,51 +1632,55 @@ html_weaver_template = dedent("""\
     </dl>
     {% endmacro -%}
     """)
-
-html_overrides_template = dedent("""\
-    """)
+    ]
 @}
 
-LaTeX Template
+LaTeX Macros
 ***************
 
-The LaTeX templates use a markup focused in the ``verbatim`` environment.
-Common alternatives include ``listings`` and ``minted``.
+The LaTeX macros defined here use a markup focused on using the ``Verbatim`` environment.
+Common alternatives include ``lstlistings`` and ``minted``.
+A particular popular form uses Text Color Block (TCB) to create distinctive code formatting.
 
-@d LaTeX Templates...
+@d LaTeX Macros...
 @{
-def latex_quote_rules(text: str) -> str:
-    quoted_strings = [
+latex_quote_rules = QuoteRules(
         ("\\end{Verbatim}", "\\end\\,{Verbatim}"),  # Allow \end{Verbatim} in a Verbatim context
         ("\\{", "\\\\,{"), # Prevent unexpected commands in Verbatim
         ("$", "\\$"), # Prevent unexpected math in Verbatim
-    ]
-    clean = text
-    for from_, to_ in quoted_strings:
-        clean = clean.replace(from_, to_)
-    return clean
+    )
 
-latex_weaver_template = dedent("""\
+latex_minted_quote_rules = QuoteRules(
+        ("\\end{minted}", "\\end\\,{minted}"),  # Allow \end{minted} in a minted context
+    )
+
+tex_macros = [
+    dedent("""\
     {%- macro text(command) -%}
     {{command.text}}
     {%- endmacro -%}
-    
+    """),
+    dedent("""\
     {%- macro begin_code(chunk) %}
     \\label{pyweb-{{chunk.seq}}}
     \\begin{flushleft}
     \\textit{Code example {{chunk.full_name or chunk.name}} ({{chunk.seq}})}
     \\begin{Verbatim}[commandchars=\\\\\\{\\},codes={\\catcode`$$=3\\catcode`^=7},frame=single]
     {%- endmacro -%}
-    
+    """),
+    dedent("""\
     {%- macro code(command) -%}{{command.text | quote_rules}}{%- endmacro -%}
-    
+    """),
+    dedent("""\
     {%- macro ref(id) %}$$\\rightarrow$$ Code Example {{id.full_name or id.name}} ({{id.seq}}){% endmacro -%}
-    
+    """),
+    dedent("""\
     {%- macro end_code(chunk) %}
     \\end{Verbatim}
     \\end{flushleft}
     {% endmacro -%}
-    
+    """),
+    dedent("""\
     {%- macro file_xref(command) %}
     \\begin{itemize}
     {% for file in command.files -%}
@@ -1543,7 +1688,8 @@ latex_weaver_template = dedent("""\
     {%- endfor %}
     \\end{itemize}
     {% endmacro -%}
-    
+    """),
+    dedent("""\
     {%- macro macro_xref(command) %}
     \\begin{itemize}
     {% for macro in command.macros -%}
@@ -1552,7 +1698,8 @@ latex_weaver_template = dedent("""\
     {% endfor %}
     \\end{itemize}
     {% endmacro -%}
-
+    """),
+    dedent("""\
     {%- macro userid_xref(command) %}
     \\begin{itemize}
     {% for userid in command.userids -%}
@@ -1562,10 +1709,22 @@ latex_weaver_template = dedent("""\
     \\end{itemize}
     {% endmacro -%}
     """)
+    ]
 
-tex_overrides_template = dedent("""\
-    """)
-
+tex_minted_macros = [
+    dedent("""\
+    {%- macro begin_code(chunk) %}
+    \\label{pyweb-{{chunk.seq}}}
+    \\textit{Code example {{chunk.full_name or chunk.name}} ({{chunk.seq}})}
+    \\begin{minted}{{'{'}}{{chunk.style}}{{'}'}}
+    {%- endmacro -%}
+    """),
+    dedent("""\
+    {%- macro end_code(chunk) %}
+    \\end{minted}
+    {% endmacro -%}
+    """),
+    ]
 @}
 
 The Tangler Subclasses
@@ -1609,6 +1768,7 @@ class Tangler(Emitter):
 
     def __init__(self, output: Path = Path.cwd()) -> None:
         super().__init__(output)
+        self.include_line_numbers = False
         self.context: list[int] = []  #: Indentations
         self.fragment = ""  # Nothing written yet.
         # Create context and initial lastIndent values
@@ -1618,6 +1778,7 @@ class Tangler(Emitter):
         self.linesWritten = 0
         self.totalFiles = 0
         self.totalLines = 0
+        self.logger.debug("output base: %r, line numbers %s", self.output, self.include_line_numbers)
 
     def emit(self, web: Web) -> None:
         for file_chunk in web.files:
@@ -1659,7 +1820,13 @@ a document. There are two sources of indentation:
         This can happen with there's a ``@@@@`` command at the left end of a line; often a Python decorator. 
         The fragment is written and the ``fragment`` attribute cleared.  No ``addIdent()`` will have
         been done to consume the fragment. 
-    
+
+..  todo:: Insert line numbers into the code
+
+    This is inserted before the first (``CodeCommand`` with a trailing ``\n``, and there is no pending ``fragment``) condition.
+
+    This supports the ``include_line_numbers`` feature.
+
 While the WEB language permits multiple ``@@<name@@> @@<name@@>`` on a single line,
 this is odd and potentially confusing. It isn't clear how the second reference
 should be indented.
@@ -1667,12 +1834,12 @@ should be indented.
 The ``ReferenceCommand`` ``tangle()`` implementation handles much of this. 
 The following two rules apply:
     
--   A line of text that does not end with a newline, sets a new prevailing indent
-    for the following command(s).
+-   A line of text that does not end with a newline,
+    sets a new prevailing indent for the following command(s).
 
 -   A line of text ending with a newline resets the prevailing indent.
 
-This a stack, maintained by the Tangler.
+This a stack of indentations, maintained by the ``Tangler``.
 
 
 @d Emitter write a block of code...
@@ -1939,17 +2106,6 @@ class WebReader:
     def __init__(self, parent: "WebReader | None" = None) -> None:
         self.logger = logging.getLogger(self.__class__.__qualname__)
 
-        self.output_option_parser = argparse.ArgumentParser(add_help=False, exit_on_error=False)
-        self.output_option_parser.add_argument("-start", dest='start', type=str, default=None)
-        self.output_option_parser.add_argument("-end", dest='end', type=str, default="")
-        self.output_option_parser.add_argument("argument", type=str, nargs="*")
-
-        # TODO: Allow a numeric argument value in ``-indent``
-        self.definition_option_parser = argparse.ArgumentParser(add_help=False, exit_on_error=False)
-        self.definition_option_parser.add_argument("-indent", dest='indent', action='store_true', default=False)
-        self.definition_option_parser.add_argument("-noindent", dest='noindent', action='store_true', default=False)
-        self.definition_option_parser.add_argument("argument", type=str, nargs="*")
-
         # Configuration comes from the parent or defaults if there is no parent.
         self.parent = parent
         if self.parent: 
@@ -2066,12 +2222,7 @@ With some small additional changes, we could use ``OutputChunk(**options)``.
 @{
 arg_str = next(self.tokenizer)
 self.expect({self.cmdlcurl})
-options = self.output_option_parser.parse_args(shlex.split(arg_str))
-new_chunk = OutputChunk(
-    name=' '.join(options.argument),
-    comment_start=options.start if '-start' in options else "# ",
-    comment_end=options.end if '-end' in options else "",
-)
+new_chunk = OutputChunk(options=shlex.split(arg_str))
 self.content.append(new_chunk)
 # capture an OutputChunk up to @@}
 @}
@@ -2100,16 +2251,22 @@ If both are in the options, we should provide a warning.
 @{
 arg_str = next(self.tokenizer)
 brack = self.expect({self.cmdlcurl, self.cmdlbrak})
-options = self.definition_option_parser.parse_args(shlex.split(arg_str))
-name = ' '.join(options.argument)
 
+# REFACTOR parse_options into various CHUNK types.
+# REFACTOR remove NamedChunk_Noindent as a distinct subclass.
 if brack == self.cmdlbrak:
-    new_chunk = NamedDocumentChunk(name)
+    # options = NamedDocumentChunk.parse_options(shlex.split(arg_str))
+    # name = ' '.join(options.argument)
+    new_chunk = NamedDocumentChunk(options=shlex.split(arg_str))
 elif brack == self.cmdlcurl:
-    if 'noindent' in options and options.noindent:
-        new_chunk = NamedChunk_Noindent(name)
-    else:
-        new_chunk = NamedChunk(name)
+    # options = NamedChunk.parse_options(shlex.split(arg_str))
+    # indent: None | int = None
+    # name = ' '.join(options.argument)
+    # if 'noindent' in options and options.noindent:
+    #     indent = 0
+    # elif 'indent' in options and options.indent:
+    #     indent = int(options.indent)
+    new_chunk = NamedChunk(options=shlex.split(arg_str))
 elif brack == None:
     new_chunk = None
     pass  # Error already noted by ``expect()``
@@ -2559,9 +2716,8 @@ This application performs three major actions: loading the document web, weaving
 Generally, the use case is to perform a load, weave and tangle.
 However, a less common use case is to first load and tangle output files, run a regression test and then load and weave a result that includes the test output file.
 
-The ``-x`` option excludes one of the two output actions.
-The ``-xw``  excludes the weave pass, doing only the tangle action.
-The ``-xt`` excludes the tangle pass, doing the weave action.
+The ``-xw`` option excludes the weave pass, doing only the tangle action.
+The ``-xt`` option excludes the tangle pass, doing the weave action.
 
 This two pass action might be embedded in the following type of Python program.
 
@@ -2750,8 +2906,7 @@ Otherwise, the first few characters are examined and a weaver is selected.
 
 This class overrides the ``__call__()`` method of the superclass.
 
-If the options include ``theWeaver``, that ``Weaver`` instance will be used.
-Otherwise, the ``web.language()`` method function is used to guess what weaver to use.
+If the options include ``theWeaver``, specifying the ``Weaver`` instance to be used.
 
 @d WeaveAction subclass... @{
 class WeaveAction(Action):
@@ -2762,26 +2917,19 @@ class WeaveAction(Action):
     def __str__(self) -> str:
         return f"{self.name!s} [{self.options.web!s}, {self.options.theWeaver!s}]"
 
-    @<WeaveAction call method to pick the language@>
+    @<WeaveAction call method to weave@>
     
-    @<WeaveAction summary of language choice@>
+    @<WeaveAction summary@>
 @| WeaveAction
 @}
 
-The language is picked just prior to weaving.
-It is either (1) the language specified on the command line, or, (2) if no language was specified, a language is selected based on the first few characters of the input.
-
+The language for the weaver templates is set just prior to weaving.
 Weaving can only raise an exception when there is a reference to a chunk that
 is never defined.
 
 @d WeaveAction call... @{
 def __call__(self, options: argparse.Namespace) -> None:
     super().__call__(options)
-    if not self.options.weaver: 
-        # Examine first few chars of first chunk of web to determine language
-        self.options.weaver = self.options.web.language() 
-        self.logger.info("Using %s", self.options.theWeaver)
-    self.options.theWeaver.output = self.options.output
     try:
         self.options.theWeaver.set_markup(self.options.weaver)
         self.options.theWeaver.emit(self.options.web)
@@ -2838,7 +2986,6 @@ Program code chunks are defined  with any of ``@@d`` or ``@@o``  and use ``@@{``
 def __call__(self, options: argparse.Namespace) -> None:
     super().__call__(options)
     self.options.theTangler.include_line_numbers = self.options.tangler_line_numbers
-    self.options.theTangler.output = self.options.output
     try:
         self.options.theTangler.emit(self.options.web)
     except Error as e:
@@ -2955,44 +3102,49 @@ The Application Class
 
 The ``Application`` class is provided so that the ``Action`` instances have an overall application to update.
 This allows the ``WeaveAction`` to  provide the selected ``Weaver`` instance to the application.
-It also provides a central location for the various options and alternatives that might be accepted from the command line.
+It also provides a central location for the various options and alternatives that might be accepted from the the configuration file and the command line.
+
+Note the binding of working directories:
+
+-   Weaver writes to ``Path.cwd() / "docs"``. The ``-o`` option resets this.
+    ``-o .`` is previous version behavior.
+
+-   Tangler writes to ``Path.cwd()``. Previously, the ``-o`` option controlled this.
+    Now, there's a ``-t`` ``--target`` option for a tangling directory, if needed.
 
 The constructor creates a default ``argparse.Namespace`` with values
 suitable for weaving and tangling.
 
 The ``parseArgs()`` method uses the ``sys.argv`` sequence to  parse the command line arguments and update the options.
-This allows a program to pre-process the arguments, passing other arguments to this module.
+This allows another application to pre-process the arguments, passing other arguments to this module's class definitions.
 
+After this, the ``process()`` method processes the list of files defined by given argument values.
+The configuration can be either a ``types.SimpleNamespace`` or an
+``argparse.Namespace`` instance.
 
-The ``process()`` method processes a list of files.
-This is either the list of files passed as an argument, or it is the list of files
-parsed by the ``parseArgs()`` method.
-
-
-The ``parseArgs()`` and process() functions are separated so that
+The ``parseArgs()`` and ``process()`` functions are separated so that
 another application can ``import pyweb``, bypass command-line parsing, yet still perform
-the basic actionss simply and consistently.
+the basic actions consistently.
 For example:
 
 ..  parsed-literal::
 
-    import pyweb, argparse
-    
+    import pyweb, argparse, sys, tomllib
+
+    config = tomlib.load((Path.cwd() / "yourapp.toml").read_bytes())
+
     p = argparse.ArgumentParser()
-    *argument definition*
-    config = p.parse_args()
+    *argument definitions*
+    p.set_defaults(\*\*config)
+    args = p.parse_args(sys.argv[1:])
     
     a = pyweb.Application()
-    *Configure the Application based on options*
-    a.process(config)
+    args = a.expand(args)
+    a.process(args)
 
-
-The ``main()`` function creates an ``Application`` instance and
-calls the ``parseArgs()`` and ``process()`` methods to provide the
-expected default behavior for this module when it is used as the main program.
-
-The configuration can be either a ``types.SimpleNamespace`` or an
-``argparse.Namespace`` instance.
+The built-in behavior is defined by the ``main()`` function.
+This creates an ``Application`` instance and calls the ``args = application.parseArgs(sys.argv[1:], **defaults)``, and ``process(args)`` methods.
+This provides the expected behavior for this module when it is used as the main program.
 
 
 @d Imports
@@ -3004,7 +3156,7 @@ import shlex
 @d Application Class for overall CLI operation
 @{
 class Application:
-    def __init__(self, base_config: dict[str, Any] | None = None) -> None:
+    def __init__(self) -> None:
         self.logger = logging.getLogger(self.__class__.__qualname__)
         @<Application default options@>
         
@@ -3014,33 +3166,25 @@ class Application:
 @| Application
 @}
 
-The first part of parsing the command line is 
-setting default values that apply when parameters are omitted.
+The first part of parsing the command line uses application defaults and an application configuration file to set default parameter values.
 The default values are set as follows:
 
-:defaults:
-    A default configuration.
-
 :webReader:
-    is the ``WebReader`` instance created for the current
-    input file.
+    is the ``WebReader`` instance created for the current input file.
  
 :doWeave:
-    instance of ``Action``
-    that does weaving only.
+    instance of ``Action`` that does weaving only.
 
 :doTangle:
-    instance of ``Action``
-    that does tangling only.
+    instance of ``Action`` that does tangling only.
     
 :theAction:
     is an instance of ``Action`` that describes
-    the default overall action: load, tangle and weave.  This is the default unless
+    the default overall action: often load, tangle and weave.  This is the default unless
     overridden by an option.
     
-Here are the configuration values. These are attributes
-of the ``argparse.namespace`` default as well as the updated
-namespace returned by ``parseArgs()``.
+Here are the configuration values.
+These are attributes of an ``argparse.Namespace`` default as well as the updated namespace returned by ``parseArgs()``.
 
 :verbosity:
     Either ``logging.INFO``, ``logging.WARN`` or ``logging.DEBUG``
@@ -3060,7 +3204,7 @@ namespace returned by ``parseArgs()``.
     is the final list of argument files from the command line; 
     these will be processed unless overridden in the call to ``process()``.
 
-!skip:
+:skip:
     a list of steps to skip: perhaps ``'w'`` or ``'t'`` to skip weaving or tangling.
     
 :weaver:
@@ -3080,34 +3224,23 @@ self.defaults = argparse.Namespace(
     command='@@',
     weaver='rst', 
     skip='',  # Don't skip any steps
-    permit='',  # Don't tolerate missing includes
+    permit='',  # Don't tolerate failing commands
     reference='s',  # Simple references
     tangler_line_numbers=False,
     output=Path.cwd() / "docs",  # Weaving output
-    target=Path.cwd(),  # Tangler root directory
+    target=Path.cwd(),  # Tangling output
     )
-
-# Primitive Actions
-self.loadOp = LoadAction()
-self.weaveOp = WeaveAction()
-self.tangleOp = TangleAction()
-
-# Composite Actions
-self.doWeave = ActionSequence("load and weave", [self.loadOp, self.weaveOp])
-self.doTangle = ActionSequence("load and tangle", [self.loadOp, self.tangleOp])
-self.theAction = ActionSequence("load, tangle and weave", [self.loadOp, self.tangleOp, self.weaveOp])
 @}
 
 The algorithm for parsing the command line parameters uses the built in ``argparse`` module.
 We have to build a parser, define the options, and the parse the command-line arguments, updating the default namespace.
 
-We further expand on the arguments. This transforms simple strings into object
-instances.
-
+The last step is to create argument values where string values are transformed into more useful objects.
+Also, in some cases, derived objects are created from the parameterv values.
 
 @d Application parse command line...
 @{
-def parseArgs(self, argv: list[str]) -> argparse.Namespace:
+def parseArgs(self, argv: list[str], **config: str) -> argparse.Namespace:
     p = argparse.ArgumentParser()
     p.add_argument("-v", "--verbose", dest="verbosity", action="store_const", const=logging.INFO)
     p.add_argument("-s", "--silent", dest="verbosity", action="store_const", const=logging.WARN)
@@ -3121,41 +3254,50 @@ def parseArgs(self, argv: list[str]) -> argparse.Namespace:
     p.add_argument("-t", "--target", dest="target", action="store", type=Path, help="Tangler output")
     p.add_argument("-V", "--Version", action='version', version=f"py-web-lp pyweb.py {__version__}")
     p.add_argument("files", nargs='+', type=Path)
-    config = p.parse_args(argv, namespace=self.defaults)
-    self.expand(config)
-    return config
-    
-def expand(self, config: argparse.Namespace) -> argparse.Namespace:
-    """Translate the argument values from simple text to useful objects.
-    Weaver. Tangler. WebReader.
 
-    Note the binding of working directories:
+    defaults = vars(self.defaults) | config
+    args = argparse.Namespace(**defaults)
+    p.parse_args(argv, namespace=args)
 
-    -   Weaver writes to ``Path.cwd() / "docs"``. The ``-o`` option resets this.
-        ``-o .`` is previous version behavior.
-
-    -   Tangler writes to ``Path.cwd()``. Previously, the ``-o`` option reset this.
-        Now, there's a ``-t --target`` option for a directory.
-    """
-    # Weaver & Tangler
-    config.theWeaver = Weaver(config.output)
-    config.theTangler = TanglerMake(config.target)
-    
-    # Permitted errors, usual case is ``-pi`` to permit ``@@i`` include errors
-    if config.permit:
-        config.permitList = [f'{config.command!s}{c!s}' for c in config.permit]
+    # Expand the permitted errors, usual case is ``-pi`` to permit the ``@@i`` command to fail.
+    if args.permit:
+        args.permitList = [f'{args.command!s}{c!s}' for c in args.permit]
     else:
-        config.permitList = []
+        args.permitList = []
 
-    # Create the configured WebReader
-    config.webReader = WebReader()
+    return args
 
-    return config
-@| parseArgs expand
+def inject(self, args: argparse.Namespace) -> argparse.Namespace:
+    """Inject final classes by creating instances.
+    This **updates** the args namespace.
+    It puts concrete classes in place.
+    """
+    # Primitive Actions
+    self.loadOp = LoadAction()
+    self.weaveOp = WeaveAction()
+    self.tangleOp = TangleAction()
+
+    # Composite Actions
+    self.doWeave = ActionSequence("load and weave", [self.loadOp, self.weaveOp])
+    self.doTangle = ActionSequence("load and tangle", [self.loadOp, self.tangleOp])
+    self.theAction = ActionSequence("load, tangle and weave", [self.loadOp, self.tangleOp, self.weaveOp])
+
+    # Create Weaver & Tangler used by the Actions.
+    # Update Weaver macros from config file.
+    args.theWeaver = Weaver(args.output)
+    if "macros" in args:
+        args.theWeaver.config_macros = args.macros
+    args.theTangler = TanglerMake(args.target)
+
+    # Create the configured WebReader used by the Actions.
+    args.webReader = WebReader()
+
+    self.logger.debug("config: %r", args)
+    return args
+@| parseArgs
 @}
 
-The ``process()`` function uses the current ``Application`` settings
-to process each file as follows:
+The ``process()`` function uses the final ``argparse.Namespace`` to process each file as follows:
 
 1.  Create a new ``WebReader`` for the ``Application``, providing
     the parameters required to process the input file.
@@ -3165,8 +3307,7 @@ to process each file as follows:
 
 3.  Perform the given command, typically a ``ActionSequence``, 
     which does some combination of load, tangle the output files and
-    weave the final document in the target language; if
-    necessary, examine the ``Web`` to determine the documentation language.
+    weave the final document in the target markup language.
 
 4.  Print a performance summary line that shows lines processed per second.
 
@@ -3179,7 +3320,9 @@ def process(self, config: argparse.Namespace) -> None:
     root = logging.getLogger()
     root.setLevel(config.verbosity)
     self.logger.debug("Setting root log level to %r", logging.getLevelName(root.getEffectiveLevel()))
-    
+
+    self.inject(config)
+
     if config.command:
         self.logger.debug("Command character %r", config.command)
         
@@ -3284,14 +3427,19 @@ Exposing this via a configuration file is better.
 @{
 [pyweb]
 # PyWeb options go here.
+# Override macro definitions.
+# macros = [
+# """{% macro begin_code(chunk) %}...{% endmacro %}""",
+# """{% macro end_code(chunk) %}...{% endmacro %}"""
+# ]
 
 [logging]
 version = 1
 disable_existing_loggers = false
 
 [logging.root]
-handlers = [ "console",]
-level = "INFO"
+handlers = ["console",]
+level = "DEBUG"
 
 [logging.handlers.console]
 class = "logging.StreamHandler"
@@ -3301,6 +3449,9 @@ formatter = "basic"
 [logging.formatters.basic]
 format = "{levelname}:{name}:{message}"
 style = "{"
+
+[logging.loggers.Application]
+level = "INFO"
 
 [logging.loggers.Weaver]
 level = "INFO"
@@ -3354,8 +3505,8 @@ as a weaver template configuration file.
 @d Interface Functions
 @{
 def main(argv: list[str] = sys.argv[1:], base_config: dict[str, Any] | None=None) -> None:
-    a = Application(base_config)
-    config = a.parseArgs(argv)
+    a = Application()
+    config = a.parseArgs(argv, **(base_config or {}))
     a.process(config)
 @}
 
@@ -3375,9 +3526,10 @@ The **pyWeb** application file is shown below:
 @<Interface Functions@>
 
 if __name__ == "__main__":
-    config_paths = Path("pyweb.toml"), Path.home()/"pyweb.toml"
+    config_dirs = Path.cwd(), Path.home(), Path(__file__).parent
     base_config: dict[str, Any] = {}
-    for cp in config_paths:
+    for dir in config_dirs:
+        cp = dir / "pyweb.toml"
         if cp.exists():
             with cp.open('rb') as config_file:
                 base_config = toml.load(config_file)
