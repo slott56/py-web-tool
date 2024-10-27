@@ -98,9 +98,9 @@ Changes for 3.1
 
 -   Add Test cases for ``weave.py`` and ``tangle.py``
 
--   Replace hand-build mock classes with ``unittest.mock.Mock`` objects
+-   Replace hand-built mock classes with ``unittest.mock.Mock`` objects
 
--   Separate the projec into ``src``, ``tests``, ``examples``. Cleanup ``Makefile``, ``pyproject.toml``, etc.
+-   Separate the project into ``src``, ``tests``, ``examples``. Cleanup ``Makefile``, ``pyproject.toml``, etc.
 
 -   Silence the ERROR-level logging during testing.
 

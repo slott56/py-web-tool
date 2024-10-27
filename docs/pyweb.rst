@@ -2004,7 +2004,7 @@ These subclasss reflect three kinds of content in the WEB source document:
         Text in the body becomes a ``CodeCommand``.
         Any ``@< reference @>`` will be expanded when tangling, but become a link when weaving.
 
-Most of the attributes are pushed up to the superclass.
+Most of the attributes are pushed up to the base class.
 This makes type checking the complex WEB tree simpler.
 
 The attributes are visible to the Jinja templates.
@@ -2023,7 +2023,7 @@ It's not easy to rely on proper inheritance because the templates are implemente
     
     @dataclass
     class Chunk:
-        """Superclass for OutputChunk, NamedChunk, NamedDocumentChunk.
+        """Base class for OutputChunk, NamedChunk, NamedDocumentChunk.
         """
         #: Parsed options for @d and @o chunks; used by __post_init__() to set other attributes.
         options: list[str] = field(default_factory=list)
@@ -2246,7 +2246,7 @@ Command Class Hierarchy
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 A ``Chunk`` is a sequence of ``Command`` instances.
-For the generic ``Chunk`` superclass, the commands are -- mostly -- the ``TextCommand`` subclass of ``Command``; these are blocks of text.
+For the generic ``Chunk`` base class, the commands are -- mostly -- the ``TextCommand`` subclass of ``Command``; these are blocks of text.
 A ``Chunk`` may also include some ``XRefCommand`` instances which expand to cross-reference material for an index.
 
 For the ``CodeChunk`` and ``NamedChunk`` subclasses, the commands are ``CodeCommand`` instances intermixed with ``ReferenceCommand`` instances.
@@ -2761,7 +2761,7 @@ are displayed.
     :class: code
 
     
-    → `Emitter Superclass (21)`_    
+    → `Emitter base class (21)`_    
     
     → `Weaver Subclass -- Uses Jinja templates to weave documentation (22)`_    
     
@@ -2803,8 +2803,8 @@ The ``Emitter`` class is an abstraction, used to check the consistency
 of the subclasses.
 
 
-..  _`Emitter Superclass (21)`:
-..  rubric:: Emitter Superclass (21) =
+..  _`Emitter base class (21)`:
+..  rubric:: Emitter base class (21) =
 ..  code-block::
     :class: code
 
@@ -2823,7 +2823,7 @@ of the subclasses.
 
 ..  container:: small
 
-    ∎ *Emitter Superclass (21)*.
+    ∎ *Emitter base class (21)*.
     Used by     → `Base Class Definitions (19)`_.
 
 
@@ -2964,7 +2964,7 @@ As noted above, there will be aliases in the markup-option category to provide a
             return self
     
         def emit(self, web: Web) -> None:
-            """Open output files. Then generate text."""
+            """Open output files. Then generate woven text."""
             self.target_path = (self.output / web.web_path.name).with_suffix(f".{self.markup}")
             self.logger.info("Weaving %s using %s markup", self.target_path, self.markup)
             with self.target_path.open('w') as target_file:
@@ -4083,10 +4083,10 @@ If the command is not recognized, ``handleCommand()`` returns false, and this is
 
 A subclass can override ``handleCommand()`` to 
 
-(1) Evaluate this superclass version;
+(1) Evaluate the base class ``handleCommand()`` method;
 
-(2) If the command is unknown to the superclass, 
-    then the subclass can process it;
+(2) If the command is unknown to the base,
+    then the current class can process it;
 
 (3) If the command is unknown to both classes, 
     then return ``False``.  Either a subclass will handle it, or the default activity taken
@@ -4298,7 +4298,7 @@ can weave the test output file into a final, complete document.
         self.totalFiles += include.totalFiles
         if include.errors:
             self.errors += include.errors
-            self.logger.error("Errors in included file '%s', output is incomplete.", incPath)
+            self.logger.error("Errors in included file '%s', output is incomplete.", incPath.relative_to(self.base_path))
     except Error as e:
         self.logger.error("Problems with included file '%s', output is incomplete.", incPath)
         self.errors += 1
@@ -4579,7 +4579,7 @@ to correctly reference the original input files.
 
     
     def location(self) -> tuple[str, int]:
-        return (str(self.filePath), self.tokenizer.lineNumber+1)
+        return (str(self.filePath.relative_to(self.base_path)), self.tokenizer.lineNumber+1)
     
 
 ..
@@ -4925,7 +4925,7 @@ that defines the application options, inputs and results.
     :class: code
 
     
-    → `Action superclass has common features of all actions (55)`_    
+    → `Action base class has common features of all actions (55)`_    
     → `ActionSequence subclass that holds a sequence of other actions (58)`_    
     → `WeaveAction subclass initiates the weave action (61)`_    
     → `TangleAction subclass initiates the tangle action (64)`_    
@@ -4962,7 +4962,7 @@ These correspond to the command-line options.
     anOp(*argparse.Namespace*)
 
 
-The ``Action`` is the superclass for all actions.
+The ``Action`` is the base class for all action class definitions.
 An ``Action`` has a number of common attributes.
 
 :name:
@@ -4978,8 +4978,8 @@ An ``Action`` has a number of common attributes.
 
 
 
-..  _`Action superclass has common features of all actions (55)`:
-..  rubric:: Action superclass has common features of all actions (55) =
+..  _`Action base class has common features of all actions (55)`:
+..  rubric:: Action base class has common features of all actions (55) =
 ..  code-block::
     :class: code
 
@@ -5007,13 +5007,13 @@ An ``Action`` has a number of common attributes.
 
 ..  container:: small
 
-    ∎ *Action superclass has common features of all actions (55)*.
+    ∎ *Action base class has common features of all actions (55)*.
     Used by     → `Action class hierarchy used to describe actions of the application (54)`_.
 
 
 
 The ``__call__()`` method does the real work of the action.
-For the superclass, it merely logs a message.  This is overridden 
+For the base class, it merely logs a message.  This is overridden
 by a subclass.
 
 
@@ -5034,7 +5034,7 @@ by a subclass.
 ..  container:: small
 
     ∎ *Action call method actually does the real work (56)*.
-    Used by     → `Action superclass has common features of all actions (55)`_.
+    Used by     → `Action base class has common features of all actions (55)`_.
 
 
 
@@ -5060,7 +5060,7 @@ The ``summary()`` method returns some basic processing statistics for this actio
 ..  container:: small
 
     ∎ *Action final summary of what was done (57)*.
-    Used by     → `Action superclass has common features of all actions (55)`_.
+    Used by     → `Action base class has common features of all actions (55)`_.
 
 
 
@@ -6227,7 +6227,7 @@ source files.
     
     ### DO NOT EDIT THIS FILE!
     ### It was created by src/pyweb.py, __version__='3.3'.
-    ### From source web/impl.w modified Wed Oct 23 08:22:43 2024.
+    ### From source web/impl.w modified Thu Oct 24 08:57:55 2024.
     ### In working directory '/Users/slott/Documents/Projects/py-web-tool'.
 
 ..
@@ -6321,8 +6321,9 @@ Conspicuous by its absence is CLI parsing to get the name of a WEB file to proce
                 permitList=['@i'],
                 tangler_line_numbers=False,
                 webReader=pyweb.WebReader(),
-                theTangler=pyweb.TanglerMake(),
+                theTangler=pyweb.TanglerMake(source.parent),
             )
+            logger.info("Options %r", options)
                 
             for action in pyweb.LoadAction(), pyweb.TangleAction():
                 action(options)
@@ -6399,8 +6400,8 @@ Conspicuous by its absence is CLI parsing to get the name of a WEB file to proce
 
 
 To override templates, a class needs to provide a list of text definitions for each Jinja ``{% macro %}`` definition.
-This is used to update the superclass
-``template_name_map``.
+This is used to update the base class
+``template_name_map``, used by all ``Weaver`` classes.
 
 Something like the following sets the macros in use.
 
@@ -6448,6 +6449,7 @@ This will be used to build a ``ChainMap``, ensuring the high-priority items defi
     
     class MyHTML(pyweb.Weaver):
         def __init__(self, output: Path = Path.cwd()) -> None:
+            print(f"MyHTML {output}")
             super().__init__(output)
             self.template_name_map['html'] = (
                 (bootstrap_html,) +
@@ -6484,9 +6486,10 @@ This will be used to build a ``ChainMap``, ensuring the high-priority items defi
                 tangler_line_numbers=False,
                 webReader=pyweb.WebReader(),
                 
-                theWeaver=MyHTML(),  # Customized with a specific Weaver subclass
+                theWeaver=MyHTML(source.parent),  # Customized with a specific Weaver subclass
             )
-            
+            logger.debug("Options %r", options)
+    
             for action in pyweb.LoadAction(), pyweb.WeaveAction():
                 action(options)
                 logger.info(action.summary())
@@ -6554,6 +6557,8 @@ For writing books, we need a number of new features.
     Make minted the default.
 
 [x] Accept macro definitions from the configuration file.
+
+[x] Clean up path/directory processing to remove some assumptions uncovered via testing with pytest ``tmp_path`` fixture.
 
 Other Extensions for 3.4
 ------------------------
@@ -6783,9 +6788,9 @@ Changes for 3.1
 
 -   Add Test cases for ``weave.py`` and ``tangle.py``
 
--   Replace hand-build mock classes with ``unittest.mock.Mock`` objects
+-   Replace hand-built mock classes with ``unittest.mock.Mock`` objects
 
--   Separate the projec into ``src``, ``tests``, ``examples``. Cleanup ``Makefile``, ``pyproject.toml``, etc.
+-   Separate the project into ``src``, ``tests``, ``examples``. Cleanup ``Makefile``, ``pyproject.toml``, etc.
 
 -   Silence the ERROR-level logging during testing.
 
@@ -6936,6 +6941,9 @@ Files
 Macros
 ------
 
+:Action base class has common features of all actions:
+    → `Action base class has common features of all actions (55)`_
+
 :Action call method actually does the real work:
     → `Action call method actually does the real work (56)`_
 
@@ -6944,9 +6952,6 @@ Macros
 
 :Action final summary of what was done:
     → `Action final summary of what was done (57)`_
-
-:Action superclass has common features of all actions:
-    → `Action superclass has common features of all actions (55)`_
 
 :ActionSequence call method delegates the sequence of ations:
     → `ActionSequence call method delegates the sequence of ations (59)`_
@@ -6984,8 +6989,8 @@ Macros
 :Debug Macros -- these display debugging information:
     → `Debug Macros -- these display debugging information (25)`_
 
-:Emitter Superclass:
-    → `Emitter Superclass (21)`_
+:Emitter base class:
+    → `Emitter base class (21)`_
 
 :Emitter indent control: set, clear and reset:
     → `Emitter indent control: set, clear and reset (31)`_
@@ -7137,7 +7142,7 @@ User Identifiers
 ----------------
 
 :Action:
-    → `Action superclass has common features of all actions (55)`_
+    → `Action base class has common features of all actions (55)`_
 
 :ActionSequence:
     → `ActionSequence subclass that holds a sequence of other actions (58)`_
@@ -7278,7 +7283,7 @@ User Identifiers
 
 ..	container:: small
 
-	Created by src/pyweb.py at Wed Oct 23 08:25:31 2024.
+	Created by src/pyweb.py at Thu Oct 24 08:58:40 2024.
 
     Source pyweb.w modified Sun Oct 20 13:50:05 2024.
 

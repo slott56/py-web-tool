@@ -8,30 +8,11 @@ import string
 import sys
 from textwrap import dedent
 from typing import ClassVar
-import unittest
+
+import pytest
 
 import pyweb
 
-
-class WeaveTestcase(unittest.TestCase):
-    text: ClassVar[str]
-    error: ClassVar[str]
-    file_path: ClassVar[Path]
-    
-    def setUp(self) -> None:
-        self.source = io.StringIO(self.text)
-        self.rdr = pyweb.WebReader()
-        self.maxDiff = None
-
-    def tearDown(self) -> None:
-        try:
-            self.file_path.with_suffix(".html").unlink()
-        except FileNotFoundError:
-            pass
-        try:
-            self.file_path.with_suffix(".debug").unlink()
-        except FileNotFoundError:
-            pass
 
 
  
@@ -99,34 +80,43 @@ test0_expected_debug = (
     )
 
 
-class Test_RefDefWeave(WeaveTestcase):
-    text = test0_w
-    file_path = Path("test0.w")
-    def test_load_should_createChunks(self) -> None:
-        chunks = self.rdr.load(self.file_path, self.source)
-        self.assertEqual(3, len(chunks))
+
+@pytest.mark.text_name(test0_w, "test0.w")
+def test_load_should_createChunks(source_path) -> None:
+    source, file_path = source_path
+    rdr = pyweb.WebReader()
+    chunks = rdr.load(file_path, source)
+    assert 3 == len(chunks)
         
-    def test_weave_should_create_html(self) -> None:
-        chunks = self.rdr.load(self.file_path, self.source)
-        self.web = pyweb.Web(chunks)
-        self.web.web_path = self.file_path
-        doc = pyweb.Weaver( )
-        doc.set_markup("html")
-        doc.emit(self.web)
-        actual = self.file_path.with_suffix(".html").read_text()
-        self.maxDiff = None
-        self.assertEqual(test0_expected_html, actual)
+@pytest.mark.text_name(test0_w, "test0.w")
+def test_weave_should_create_html(tmp_path, source_path) -> None:
+    source, file_path = source_path
+    rdr = pyweb.WebReader()
+    chunks = rdr.load(file_path, source)
+    web = pyweb.Web(chunks)
+    web.web_path = file_path
+    doc = pyweb.Weaver( )
+    doc.set_markup("html")
+    doc.output = tmp_path
+    doc.emit(web)
+    assert doc.target_path == file_path.with_suffix(".html")
+    actual = doc.target_path.read_text()
+    assert test0_expected_html == actual
         
-    def test_weave_should_create_debug(self) -> None:
-        chunks = self.rdr.load(self.file_path, self.source)
-        self.web = pyweb.Web(chunks)
-        self.web.web_path = self.file_path
-        doc = pyweb.Weaver( )
-        doc.set_markup("debug")
-        doc.emit(self.web)
-        actual = self.file_path.with_suffix(".debug").read_text()
-        self.maxDiff = None
-        self.assertEqual(test0_expected_debug, actual)
+@pytest.mark.text_name(test0_w, "test0.w")
+def test_weave_should_create_debug(tmp_path, source_path) -> None:
+    source, file_path = source_path
+    rdr = pyweb.WebReader()
+    chunks = rdr.load(file_path, source)
+    web = pyweb.Web(chunks)
+    web.web_path = file_path
+    doc = pyweb.Weaver( )
+    doc.set_markup("debug")
+    doc.output = tmp_path
+    doc.emit(web)
+    assert doc.target_path == file_path.with_suffix(".debug")
+    actual = doc.target_path.read_text()
+    assert test0_expected_debug == actual
 
 
 
@@ -140,29 +130,29 @@ CWD = @(os.path.realpath('.')@)
 
 from unittest.mock import Mock
 
-class TestEvaluations(WeaveTestcase):
-    text = test9_w
-    file_path = Path("test9.w")
-    def setUp(self):
-        super().setUp()
-        self.mock_time = Mock(asctime=Mock(return_value="mocked time"))
-    def test_should_evaluate(self) -> None:
-        chunks = self.rdr.load(self.file_path, self.source)
-        self.web = pyweb.Web(chunks)
-        self.web.web_path = self.file_path
-        doc = pyweb.Weaver( )
-        doc.set_markup("html")
-        doc.emit(self.web)
-        actual = self.file_path.with_suffix(".html").read_text().splitlines()
-        #print(actual)
-        self.assertEqual("An anonymous chunk.", actual[0])
-        self.assertTrue("Time = mocked time", actual[1])
-        self.assertEqual("File = ('test9.w', 3)", actual[2])
-        self.assertEqual('Version = 3.3', actual[3])
-        self.assertEqual(f'CWD = {os.getcwd()}', actual[4])
+@pytest.fixture()
+def mock_time(monkeypatch):
+    mock_time = Mock(asctime=Mock(return_value="mocked time"))
+    monkeypatch.setattr(pyweb, "time", mock_time)
+    return mock_time
 
-
-if __name__ == "__main__":
-    logging.basicConfig(stream=sys.stderr, level=logging.WARN)
-    unittest.main()
+@pytest.mark.text_name(test9_w, "test9.w")
+def test_should_evaluate(tmp_path, source_path, mock_time) -> None:
+    source, file_path = source_path
+    rdr = pyweb.WebReader()
+    chunks = rdr.load(file_path, source)
+    web = pyweb.Web(chunks)
+    web.web_path = file_path
+    doc = pyweb.Weaver( )
+    doc.set_markup("html")
+    doc.output = tmp_path
+    doc.emit(web)
+    assert doc.target_path == file_path.with_suffix(".html")
+    actual = doc.target_path.read_text().splitlines()
+    #print(actual)
+    assert "An anonymous chunk." == actual[0]
+    assert "Time = mocked time" == actual[1]
+    assert "File = ('test9.w', 3)" == actual[2]
+    assert 'Version = 3.3' == actual[3]
+    assert f'CWD = {os.getcwd()}' == actual[4]
 

@@ -38,6 +38,7 @@ bootstrap_html = [
 
 class MyHTML(pyweb.Weaver):
     def __init__(self, output: Path = Path.cwd()) -> None:
+        print(f"MyHTML {output}")
         super().__init__(output)
         self.template_name_map['html'] = (
             (bootstrap_html,) +
@@ -60,9 +61,10 @@ def main(source: Path) -> None:
             tangler_line_numbers=False,
             webReader=pyweb.WebReader(),
             
-            theWeaver=MyHTML(),  # Customized with a specific Weaver subclass
+            theWeaver=MyHTML(source.parent),  # Customized with a specific Weaver subclass
         )
-        
+        logger.debug("Options %r", options)
+
         for action in pyweb.LoadAction(), pyweb.WeaveAction():
             action(options)
             logger.info(action.summary())

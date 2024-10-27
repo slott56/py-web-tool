@@ -9,6 +9,7 @@ We provide these two additional scripts; effectively command-line short-cuts:
 
 -   ``weave.py``
 
+These isolate specific actions, making it slightly easier to provide a new subclass or macro configuration.
 These need their own test cases.
 
 
@@ -19,13 +20,11 @@ This gives us the following outline for the script testing.
 
 @<Sample web file to test with@>
 
-@<Superclass for test cases@>
+@<Fixture for test cases@>
 
 @<Test of weave.py@>
 
 @<Test of tangle.py@>
-
-@<Scripts Test main@>
 @}
 
 Sample Web File
@@ -71,30 +70,26 @@ sample = textwrap.dedent("""
     """)
 @}
 
-Superclass for test cases
+Fixture for test cases
 -------------------------
 
-This superclass definition creates a consistent test fixture for both test cases.
+The ``sample_path`` is a consistent test fixture for both test cases.
 The sample ``test_sample.w`` file is created and removed after the test.
 
-@d Superclass...
+@d Fixture for test cases...
 @{
-class SampleWeb(unittest.TestCase):
-    def setUp(self) -> None:
-        self.sample_path = Path("test_sample.w")
-        self.sample_path.write_text(sample)
-        self.maxDiff = None
-        
-    def tearDown(self) -> None:
-        self.sample_path.unlink()
+@@pytest.fixture
+def sample_path(tmp_path) -> Path:
+    sample_path = tmp_path / "test_sample.w"
+    sample_path.write_text(sample)
+    yield sample_path
+    sample_path.unlink()
 
-    def assertEqual_Ignore_Blank_Lines(self, first: str, second: str, msg: str=None) -> None:
-        """Skips blank lines and trailing whitespace that (generally) aren't problems when weaving."""
-        def non_blank(line: str) -> bool:
-            return len(line) > 0
-        first_nb = '\n'.join(filter(non_blank, (line.rstrip() for line in first.splitlines())))
-        second_nb = '\n'.join(filter(non_blank, (line.rstrip() for line in second.splitlines())))
-        self.assertEqual(first_nb, second_nb, msg)
+def clean_lines(first: str) -> list[str]:
+    """Strips blank lines and trailing whitespace that (generally) aren't problems when weaving."""
+    def non_blank(line: str) -> bool:
+        return len(line) > 0
+    return list(filter(non_blank, (line.rstrip() for line in first.splitlines())))
 @}
 
 Weave Script Test
@@ -105,85 +100,82 @@ This could be altered to check a few features of the weave file rather than comp
 
 @d Test of weave.py
 @{
-expected_weave = ('<!doctype html>\n'
-    '<html lang="en">\n'
-    '  <head>\n'
-    '    <meta charset="utf-8">\n'
-    '    <meta name="viewport" content="width=device-width, initial-scale=1">\n'
-    '    <title>Sample HTML web file</title>\n'
-    '  </head>\n'
-    '  <body>\n'
-    '    <h1>Sample HTML web file</h1>\n'
-    "    <p>We're avoiding using Python specifically.\n"
-    '    This hints at other languages being tangled by this tool.</p>\n'
-    '<div class="card">\n'
-    '  <div class="card-header">\n'
-    '    <a type="button" class="btn btn-primary" name="pyweb_1"></a>\n'
-    "    <!--line number ('test_sample.w', 16)-->\n"
-    '    <p class="small"><em>sample_tangle.code (1)</em> =</p>\n'
-    '   </div>\n'
-    '  <div class="card-body">\n'
-    '    <pre><code>\n'
-    '&rarr;<a href="#pyweb_2"><em>preamble (2)</em></a>\n'
-    '&rarr;<a href="#pyweb_3"><em>body (3)</em></a>\n'
-    '    </code></pre>\n'
-    '  </div>\n'
-    '<div class="card-footer">\n'
-    '  <p>&#8718; <em>sample_tangle.code (1)</em>.\n'
-    '  </p>\n'
-    '</div>\n'
-    '</div>\n'
-    '<div class="card">\n'
-    '  <div class="card-header">\n'
-    '    <a type="button" class="btn btn-primary" name="pyweb_2"></a>\n'
-    "    <!--line number ('test_sample.w', 22)-->\n"
-    '    <p class="small"><em>preamble (2)</em> =</p>\n'
-    '   </div>\n'
-    '  <div class="card-body">\n'
-    '    <pre><code>\n'
-    '#include &lt;stdio.h&gt;\n'
-    '    </code></pre>\n'
-    '  </div>\n'
-    '<div class="card-footer">\n'
-    '  <p>&#8718; <em>preamble (2)</em>.\n'
-    '  </p>\n'
-    '</div>\n'
-    '</div>\n'
-    '<div class="card">\n'
-    '  <div class="card-header">\n'
-    '    <a type="button" class="btn btn-primary" name="pyweb_3"></a>\n'
-    "    <!--line number ('test_sample.w', 27)-->\n"
-    '    <p class="small"><em>body (3)</em> =</p>\n'
-    '   </div>\n'
-    '  <div class="card-body">\n'
-    '    <pre><code>\n'
-    'int main() {\n'
-    '    println(&quot;Hello, World!&quot;)\n'
-    '}\n'
-    '    </code></pre>\n'
-    '  </div>\n'
-    '<div class="card-footer">\n'
-    '  <p>&#8718; <em>body (3)</em>.\n'
-    '  </p>\n'
-    '</div>\n'
-    '</div>\n'
-    '  </body>\n'
-    '</html>')
-    
-class TestWeave(SampleWeb):
-    def setUp(self) -> None:
-        super().setUp()
-        self.output = self.sample_path.with_suffix(".html")
-        self.maxDiff = None
+@@pytest.fixture
+def expected_weave(sample_path) -> str:
+    expected_weave = ('<!doctype html>\n'
+        '<html lang="en">\n'
+        '  <head>\n'
+        '    <meta charset="utf-8">\n'
+        '    <meta name="viewport" content="width=device-width, initial-scale=1">\n'
+        '    <title>Sample HTML web file</title>\n'
+        '  </head>\n'
+        '  <body>\n'
+        '    <h1>Sample HTML web file</h1>\n'
+        "    <p>We're avoiding using Python specifically.\n"
+        '    This hints at other languages being tangled by this tool.</p>\n'
+        '<div class="card">\n'
+        '  <div class="card-header">\n'
+        '    <a type="button" class="btn btn-primary" name="pyweb_1"></a>\n'
+        "    <!--line number ('test_sample.w', 16)-->\n"
+        '    <p class="small"><em>sample_tangle.code (1)</em> =</p>\n'
+        '   </div>\n'
+        '  <div class="card-body">\n'
+        '    <pre><code>\n'
+        '&rarr;<a href="#pyweb_2"><em>preamble (2)</em></a>\n'
+        '&rarr;<a href="#pyweb_3"><em>body (3)</em></a>\n'
+        '    </code></pre>\n'
+        '  </div>\n'
+        '<div class="card-footer">\n'
+        '  <p>&#8718; <em>sample_tangle.code (1)</em>.\n'
+        '  </p>\n'
+        '</div>\n'
+        '</div>\n'
+        '<div class="card">\n'
+        '  <div class="card-header">\n'
+        '    <a type="button" class="btn btn-primary" name="pyweb_2"></a>\n'
+        "    <!--line number ('test_sample.w', 22)-->\n"
+        '    <p class="small"><em>preamble (2)</em> =</p>\n'
+        '   </div>\n'
+        '  <div class="card-body">\n'
+        '    <pre><code>\n'
+        '#include &lt;stdio.h&gt;\n'
+        '    </code></pre>\n'
+        '  </div>\n'
+        '<div class="card-footer">\n'
+        '  <p>&#8718; <em>preamble (2)</em>.\n'
+        '  </p>\n'
+        '</div>\n'
+        '</div>\n'
+        '<div class="card">\n'
+        '  <div class="card-header">\n'
+        '    <a type="button" class="btn btn-primary" name="pyweb_3"></a>\n'
+        "    <!--line number ('test_sample.w', 27)-->\n"
+        '    <p class="small"><em>body (3)</em> =</p>\n'
+        '   </div>\n'
+        '  <div class="card-body">\n'
+        '    <pre><code>\n'
+        'int main() {\n'
+        '    println(&quot;Hello, World!&quot;)\n'
+        '}\n'
+        '    </code></pre>\n'
+        '  </div>\n'
+        '<div class="card-footer">\n'
+        '  <p>&#8718; <em>body (3)</em>.\n'
+        '  </p>\n'
+        '</div>\n'
+        '</div>\n'
+        '  </body>\n'
+        '</html>')
+    return expected_weave
 
-    def test(self) -> None:
-        weave.main(self.sample_path)
-        result = self.output.read_text()
-        self.assertEqual_Ignore_Blank_Lines(expected_weave, result)
+def test_weave(sample_path: Path, expected_weave) -> None:
+    output = sample_path.with_suffix(".html")
 
-    def tearDown(self) -> None:
-        super().tearDown()
-        self.output.unlink()
+    weave.main(sample_path)
+    result = output.read_text()
+    output.unlink()
+
+    assert clean_lines(expected_weave) == clean_lines(result)
 @}
 
 Tangle Script Test
@@ -204,45 +196,43 @@ expected_tangle = textwrap.dedent("""
     }
     
     """)
-    
-class TestTangle(SampleWeb):
-    def setUp(self) -> None:
-        super().setUp()
-        self.output = Path("sample_tangle.code")
 
-    def test(self) -> None:
-        tangle.main(self.sample_path)
-        result = self.output.read_text()
-        self.assertEqual(expected_tangle, result)
+def test_tangle(sample_path):
+    # Name comes from ``@@o`` command
+    output = sample_path.parent / "sample_tangle.code"
 
-    def tearDown(self) -> None:
-        super().tearDown()
-        self.output.unlink()
+    tangle.main(sample_path)
+    result = output.read_text()
+    output.unlink()
+    assert clean_lines(expected_tangle) == clean_lines(result)
 @}
 
-Overheads and Main Script
+Overheads
 --------------------------
 
-This is typical of the other test modules. We provide a unittest runner 
-here in case we want to run these tests in isolation.
+These are the common Python overheads required for testing.
+Import some modules used in general.
+Import ``pytest`` to provide helpful definitions.
+Import the modules under test.
 
 @d Script Test overheads...
-@{"""Script tests."""
+@{
+"""Script tests."""
 import logging
 from pathlib import Path
 import sys
 import textwrap
-import unittest
+
+import pytest
 
 import tangle
 import weave
 @}
 
-@d Scripts Test main...
-@{
-if __name__ == "__main__":
-    logging.basicConfig(stream=sys.stdout, level=logging.WARN)
-    unittest.main()
-@}
+Run this test with the following command:
 
-We run the default ``unittest.main()`` to execute the entire suite of tests.
+.. code-block:: bash
+
+    PYTHONPATH=src pytest tests/test_scripts.py
+
+This will put the local ``src`` directory on the ``PYTHONPATH``, so the modules under test can be imported.

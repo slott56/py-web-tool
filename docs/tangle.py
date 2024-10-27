@@ -19,6 +19,7 @@ def main(source: Path) -> None:
             webReader=pyweb.WebReader(),
             theTangler=pyweb.TanglerMake(),
         )
+        logger.info("Options %r", options)
             
         for action in pyweb.LoadAction(), pyweb.TangleAction():
             action(options)

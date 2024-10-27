@@ -47,6 +47,10 @@ For writing books, we need a number of new features.
 
 [x] Accept macro definitions from the configuration file.
 
+[x] Clean up path/directory processing to remove some assumptions uncovered via testing with pytest ``tmp_path`` fixture.
+
+[x] Replace ``unittest.TestCase`` with ``pyweb`` tests.
+
 Other Extensions for 3.4
 ------------------------
 

@@ -7,14 +7,17 @@ EXAMPLES_PYLPWEB = examples/hello_world_latex.w examples/hello_world_rst.w acker
 DOCUTILS_PYLPWEB = docutils.conf pyweb.css page-layout.css
 TEST_DOCUTILS_PYLPWEB = tests/docutils.conf tests/pyweb.css tests/page-layout.css
 
-.PHONY : test doc build examples tox
+.PHONY : test doc build examples tox clean
 
 # Known good version.
 PYLPWEB_BOOTSTRAP=${PWD}/bootstrap/pyweb.py
 
+clean :
+	-rm src/*
+
 test : $(SOURCE_PYLPWEB) $(TEST_PYLPWEB)
 	# 1. Build new src/pyweb.py from pyweb.w -- NOTE pre 3.3 -o option.
-	python3 $(PYLPWEB_BOOTSTRAP) -xw -v -t src -o docs pyweb.w
+	python3 $(PYLPWEB_BOOTSTRAP) -xw -v -o src pyweb.w
 	# 2. Use new pyweb.py to build new tests/*.py from pyweb_test.w
 	python3 src/pyweb.py pyweb_test.w -o docs
 	# 3. Run test suite.
@@ -29,7 +32,7 @@ test : $(SOURCE_PYLPWEB) $(TEST_PYLPWEB)
 
 build : bootstrap/pyweb.py src/pyweb.py src/tangle.py src/weave.py docs/pyweb.rst docs/pyweb_test.rst
 
-src/pyweb.py docs/pyweb.rst : $(SOURCE_PYLPWEB)
+src/pyweb.py docs/pyweb.rst src/tangle.py src/weave.py : $(SOURCE_PYLPWEB)
 	python3 src/pyweb.py pyweb.w -o docs -t src
 
 doc : docs/pyweb.html docs/pyweb_test.html

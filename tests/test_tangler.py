@@ -4,36 +4,11 @@ import io
 import logging
 import os
 from pathlib import Path
-from typing import ClassVar
-import unittest
+from typing import ClassVar, TextIO
+
+import pytest
 
 import pyweb
-
-
-class TangleTestcase(unittest.TestCase):
-    text: ClassVar[str]
-    error: ClassVar[str]
-    file_path: ClassVar[Path]
-    
-    def setUp(self) -> None:
-        self.source = io.StringIO(self.text)
-        self.rdr = pyweb.WebReader()
-        self.tangler = pyweb.Tangler()
-        
-    def tangle_and_check_exception(self, exception_text: str) -> None:
-        with self.assertRaises(pyweb.Error) as exc_mgr:
-            chunks = self.rdr.load(self.file_path, self.source)
-            self.web = pyweb.Web(chunks)
-            self.tangler.emit(self.web)
-            self.fail("Should not tangle")
-        exc = exc_mgr.exception
-        self.assertEqual(exception_text, exc.args[0])
-            
-    def tearDown(self) -> None:
-        try:
-            self.file_path.with_suffix(".tmp").unlink()
-        except FileNotFoundError:
-            pass  # If the test fails, nothing to remove...
 
 
 
@@ -46,15 +21,6 @@ test2_w = """Some anonymous chunk
 Okay, now for some errors: no part2!
 """
 
-
-class Test_SemanticError_2(TangleTestcase):
-    text = test2_w
-    file_path = Path("test2.w")
-    def test_should_raise_undefined(self) -> None:
-        self.tangle_and_check_exception("Attempt to tangle an undefined Chunk, 'part2'")
-
-
-
 test3_w = """Some anonymous chunk
 @o test3.tmp
 @{@<part1@>
@@ -65,15 +31,6 @@ test3_w = """Some anonymous chunk
 Okay, now for some errors: attempt to tangle a cross-reference!
 """
 
-
-class Test_SemanticError_3(TangleTestcase):
-    text = test3_w
-    file_path = Path("test3.w")
-    def test_should_raise_bad_xref(self) -> None:
-        self.tangle_and_check_exception("Illegal tangling of a cross reference command.")
-
-
-
 test4_w = """Some anonymous chunk
 @o test4.tmp
 @{@<part1...@>
@@ -83,16 +40,6 @@ test4_w = """Some anonymous chunk
 @d part2 @{This is part 2.@}
 Okay, now for some errors: attempt to weave but no full name for part1....
 """
-
-
-class Test_SemanticError_4(TangleTestcase):
-    """An optional feature of a Web."""
-    text = test4_w
-    file_path = Path("test4.w")
-    def test_should_raise_noFullName(self) -> None:
-        self.tangle_and_check_exception("No full name for 'part1...'")
-
-
 
 test5_w = """
 Some anonymous chunk
@@ -107,11 +54,36 @@ Okay, now for some errors: part1... is ambiguous
 """
 
 
-class Test_SemanticError_5(TangleTestcase):
-    text = test5_w
-    file_path = Path("test5.w")
-    def test_should_raise_ambiguous(self) -> None:
-        self.tangle_and_check_exception("Ambiguous abbreviation 'part1...', matches ['part1a', 'part1b']")
+
+tangle_cases = [
+    (test2_w, "test2.w", "Attempt to tangle an undefined Chunk, 'part2'"),
+    (test3_w, "test3.w", "Illegal tangling of a cross reference command."),
+    (test4_w, "test4.w", "No full name for 'part1...'"),
+    (test5_w, "test5.w", "Ambiguous abbreviation 'part1...', matches ['part1a', 'part1b']"),
+]
+
+@pytest.fixture(params=tangle_cases)
+def source_reader_path_tangler_error(request, tmp_path) -> [TextIO, pyweb.WebReader, Path, pyweb.Tangler, str]:
+    text, name, error = request.param
+    source = io.StringIO(text)
+    rdr = pyweb.WebReader()
+    path = tmp_path / name
+    tangler = pyweb.Tangler(tmp_path)
+    yield source, rdr, path, tangler, error
+    for output in tmp_path.glob("*.tmp"):
+        output.unlink()
+
+
+def test_tangle_and_check_exception(source_reader_path_tangler_error) -> None:
+    source, rdr, file_path, tangler, exception_text = source_reader_path_tangler_error
+
+    with pytest.raises(pyweb.Error) as exc_info:
+        chunks = rdr.load(file_path, source)
+        web = pyweb.Web(chunks)
+        tangler.emit(web)
+        assert False, "Should not tangle"
+    assert exception_text == exc_info.value.args[0]
+
 
  
 
@@ -128,17 +100,18 @@ Okay, now for some warnings:
 """
 
 
-class Test_SemanticError_6(TangleTestcase):
-    text = test6_w
-    file_path = Path("test6.w")
-    def test_should_warn(self) -> None:
-        chunks = self.rdr.load(self.file_path, self.source)
-        self.web = pyweb.Web(chunks)
-        self.tangler.emit(self.web)
-        print(self.web.no_reference())
-        self.assertEqual(1, len(self.web.no_reference()))
-        self.assertEqual(1, len(self.web.multi_reference()))
-        self.assertEqual({'part1a', 'part1...'}, self.tangler.reference_names)
+@pytest.mark.text_name(test6_w, "test6.w")
+def test_tangle_warnings(tmp_path, source_path) -> None:
+    source, file_path = source_path
+    rdr = pyweb.WebReader()
+    chunks = rdr.load(file_path, source)
+    web = pyweb.Web(chunks)
+    tangler = pyweb.Tangler(tmp_path)
+    tangler.emit(web)
+    print(web.no_reference())
+    assert 1 == len(web.no_reference())
+    assert 1 == len(web.multi_reference())
+    assert {'part1a', 'part1...'} == tangler.reference_names
 
 
 
@@ -153,25 +126,15 @@ A final anonymous chunk from test7.w
 test7_inc_w = """The test7a.tmp chunk for test7.w"""
 
 
-class Test_IncludeError_7(TangleTestcase):
-    text = test7_w
-    file_path = Path("test7.w")
-    def setUp(self) -> None:
-        Path('test7_inc.tmp').write_text(test7_inc_w)
-        super().setUp()
-    def test_should_include(self) -> None:
-        chunks = self.rdr.load(self.file_path, self.source)
-        self.web = pyweb.Web(chunks)
-        self.tangler.emit(self.web)
-        self.assertEqual(5, len(self.web.chunks))
-        self.assertEqual(test7_inc_w, self.web.chunks[3].commands[0].text)
-    def tearDown(self) -> None:
-        Path('test7_inc.tmp').unlink()
-        super().tearDown()
+@pytest.mark.text_name_incl(test7_w, "test7.w", test7_inc_w, 'test7_inc.tmp')
+def test_tangle_should_include(tmp_path, source_path_incl) -> None:
+    source, file_path = source_path_incl
+    rdr = pyweb.WebReader()
 
-
-if __name__ == "__main__":
-    import sys
-    logging.basicConfig(stream=sys.stdout, level=logging.WARN)
-    unittest.main()
+    chunks = rdr.load(file_path, source)
+    web = pyweb.Web(chunks)
+    tangler = pyweb.Tangler(tmp_path)
+    tangler.emit(web)
+    assert 5 == len(web.chunks)
+    assert test7_inc_w == web.chunks[3].commands[0].text
 

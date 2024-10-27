@@ -1852,7 +1852,7 @@ Any <code class="docutils literal notranslate"><span class="pre">&#64;&lt;</span
 </dl>
 </li>
 </ul>
-<p>Most of the attributes are pushed up to the superclass.
+<p>Most of the attributes are pushed up to the base class.
 This makes type checking the complex WEB tree simpler.</p>
 <p>The attributes are visible to the Jinja templates.
 In particular the sequence number, <code class="docutils literal notranslate"><span class="pre">seq</span></code>,  and the initial definition indicator, <code class="docutils literal notranslate"><span class="pre">initial</span></code>, are often used to customize presentation of the woven content.</p>
@@ -1862,7 +1862,7 @@ It’s not easy to rely on proper inheritance because the templates are implemen
 <p class="rubric" id="chunk-class-hierarchy-used-to-describe-individual-chunks-8">Chunk class hierarchy – used to describe individual chunks (8) =</p>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">Chunk</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Superclass for OutputChunk, NamedChunk, NamedDocumentChunk.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for OutputChunk, NamedChunk, NamedDocumentChunk.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1">#: Parsed options for @d and @o chunks; used by __post_init__() to set other attributes.</span>
     <span class="n">options</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
@@ -2067,7 +2067,7 @@ Used by     → <a class="reference internal" href="#base-class-definitions-1">B
 <section id="command-class-hierarchy">
 <h4><a class="toc-backref" href="#id48" role="doc-backlink">Command Class Hierarchy</a><a class="headerlink" href="#command-class-hierarchy" title="Link to this heading">¶</a></h4>
 <p>A <code class="docutils literal notranslate"><span class="pre">Chunk</span></code> is a sequence of <code class="docutils literal notranslate"><span class="pre">Command</span></code> instances.
-For the generic <code class="docutils literal notranslate"><span class="pre">Chunk</span></code> superclass, the commands are – mostly – the <code class="docutils literal notranslate"><span class="pre">TextCommand</span></code> subclass of <code class="docutils literal notranslate"><span class="pre">Command</span></code>; these are blocks of text.
+For the generic <code class="docutils literal notranslate"><span class="pre">Chunk</span></code> base class, the commands are – mostly – the <code class="docutils literal notranslate"><span class="pre">TextCommand</span></code> subclass of <code class="docutils literal notranslate"><span class="pre">Command</span></code>; these are blocks of text.
 A <code class="docutils literal notranslate"><span class="pre">Chunk</span></code> may also include some <code class="docutils literal notranslate"><span class="pre">XRefCommand</span></code> instances which expand to cross-reference material for an index.</p>
 <p>For the <code class="docutils literal notranslate"><span class="pre">CodeChunk</span></code> and <code class="docutils literal notranslate"><span class="pre">NamedChunk</span></code> subclasses, the commands are <code class="docutils literal notranslate"><span class="pre">CodeCommand</span></code> instances intermixed with <code class="docutils literal notranslate"><span class="pre">ReferenceCommand</span></code> instances.
 A <code class="docutils literal notranslate"><span class="pre">CodeCommand</span></code> has a wrapper applied to it when weaving.
@@ -2462,7 +2462,7 @@ The two reference class definitions are used by by the <code class="docutils lit
 We’ll look at them later, since they’re a tiny strategy change in how cross-references
 are displayed.</p>
 <p class="rubric" id="base-class-definitions-19">Base Class Definitions (19) +=</p>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>→ `Emitter Superclass (21)`_
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>→ `Emitter base class (21)`_
 
 → `Weaver Subclass -- Uses Jinja templates to weave documentation (22)`_
 
@@ -2489,7 +2489,7 @@ Used by     → <a class="reference internal" href="#pyweb-py-80">pyweb.py (80)<
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">Emitter</span></code> class is an abstraction, used to check the consistency
 of the subclasses.</p>
-<p class="rubric" id="emitter-superclass-21">Emitter Superclass (21) =</p>
+<p class="rubric" id="emitter-base-class-21">Emitter base class (21) =</p>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Emitter</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">:</span> <span class="n">Path</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">)</span>
@@ -2502,7 +2502,7 @@ of the subclasses.</p>
 </pre></div>
 </div>
 <div class="small docutils container">
-<p>∎ <em>Emitter Superclass (21)</em>.
+<p>∎ <em>Emitter base class (21)</em>.
 Used by     → <a class="reference internal" href="#base-class-definitions-19">Base Class Definitions (19)</a>.</p>
 </div>
 <section id="the-weaver-subclass">
@@ -2622,7 +2622,7 @@ class Weaver(Emitter):
         return self
 
     def emit(self, web: Web) -&gt; None:
-        &quot;&quot;&quot;Open output files. Then generate text.&quot;&quot;&quot;
+        &quot;&quot;&quot;Open output files. Then generate woven text.&quot;&quot;&quot;
         self.target_path = (self.output / web.web_path.name).with_suffix(f&quot;.{self.markup}&quot;)
         self.logger.info(&quot;Weaving %s using %s markup&quot;, self.target_path, self.markup)
         with self.target_path.open(&#39;w&#39;) as target_file:
@@ -3538,9 +3538,9 @@ is available for all of the content outside named chunks.</p></li>
 <p>If the command is not recognized, <code class="docutils literal notranslate"><span class="pre">handleCommand()</span></code> returns false, and this is a syntax error.</p>
 <p>A subclass can override <code class="docutils literal notranslate"><span class="pre">handleCommand()</span></code> to</p>
 <ol class="arabic simple">
-<li><p>Evaluate this superclass version;</p></li>
-<li><p>If the command is unknown to the superclass,
-then the subclass can process it;</p></li>
+<li><p>Evaluate the base class <code class="docutils literal notranslate"><span class="pre">handleCommand()</span></code> method;</p></li>
+<li><p>If the command is unknown to the base,
+then the current class can process it;</p></li>
 <li><p>If the command is unknown to both classes,
 then return <code class="docutils literal notranslate"><span class="pre">False</span></code>.  Either a subclass will handle it, or the default activity taken
 by <code class="docutils literal notranslate"><span class="pre">load()</span></code> is to treat the command as a syntax error.</p></li>
@@ -3696,7 +3696,7 @@ can weave the test output file into a final, complete document.</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">totalFiles</span> <span class="o">+=</span> <span class="n">include</span><span class="o">.</span><span class="n">totalFiles</span>
     <span class="k">if</span> <span class="n">include</span><span class="o">.</span><span class="n">errors</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">errors</span> <span class="o">+=</span> <span class="n">include</span><span class="o">.</span><span class="n">errors</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Errors in included file &#39;</span><span class="si">%s</span><span class="s2">&#39;, output is incomplete.&quot;</span><span class="p">,</span> <span class="n">incPath</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Errors in included file &#39;</span><span class="si">%s</span><span class="s2">&#39;, output is incomplete.&quot;</span><span class="p">,</span> <span class="n">incPath</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_path</span><span class="p">))</span>
 <span class="k">except</span> <span class="n">Error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Problems with included file &#39;</span><span class="si">%s</span><span class="s2">&#39;, output is incomplete.&quot;</span><span class="p">,</span> <span class="n">incPath</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">errors</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -3878,7 +3878,7 @@ This allows error messages as well as tangled or woven output
 to correctly reference the original input files.</p>
 <p class="rubric" id="webreader-location-in-the-input-stream-47">WebReader location in the input stream (47) =</p>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">location</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-    <span class="k">return</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filePath</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">lineNumber</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filePath</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_path</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">lineNumber</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="small docutils container">
@@ -4117,7 +4117,7 @@ It eliminates the need for a  forest of <code class="docutils literal notranslat
 A partner with this command hierarchy is the <code class="docutils literal notranslate"><span class="pre">Application</span></code> class
 that defines the application options, inputs and results.</p>
 <p class="rubric" id="action-class-hierarchy-used-to-describe-actions-of-the-application-54">Action class hierarchy used to describe actions of the application (54) =</p>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>→ `Action superclass has common features of all actions (55)`_
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>→ `Action base class has common features of all actions (55)`_
 → `ActionSequence subclass that holds a sequence of other actions (58)`_
 → `WeaveAction subclass initiates the weave action (61)`_
 → `TangleAction subclass initiates the tangle action (64)`_
@@ -4142,7 +4142,7 @@ that is a macro and does both tangling and weaving, an instance that excludes ta
 These correspond to the command-line options.</p>
 <pre class="literal-block">anOp = SomeAction(&quot;name&quot;)
 anOp(<em>argparse.Namespace</em>)</pre>
-<p>The <code class="docutils literal notranslate"><span class="pre">Action</span></code> is the superclass for all actions.
+<p>The <code class="docutils literal notranslate"><span class="pre">Action</span></code> is the base class for all action class definitions.
 An <code class="docutils literal notranslate"><span class="pre">Action</span></code> has a number of common attributes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">name<span class="colon">:</span></dt>
@@ -4157,7 +4157,7 @@ A LoadAction will update this with the <code class="docutils literal notranslate
 <dt>!start:</dt><dd><p>The time at which the action started.</p>
 </dd>
 </dl>
-<p class="rubric" id="action-superclass-has-common-features-of-all-actions-55">Action superclass has common features of all actions (55) =</p>
+<p class="rubric" id="action-base-class-has-common-features-of-all-actions-55">Action base class has common features of all actions (55) =</p>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>class Action:
     &quot;&quot;&quot;An action performed by pyWeb.&quot;&quot;&quot;
     start: float
@@ -4178,11 +4178,11 @@ A LoadAction will update this with the <code class="docutils literal notranslate
 </pre></div>
 </div>
 <div class="small docutils container">
-<p>∎ <em>Action superclass has common features of all actions (55)</em>.
+<p>∎ <em>Action base class has common features of all actions (55)</em>.
 Used by     → <a class="reference internal" href="#action-class-hierarchy-used-to-describe-actions-of-the-application-54">Action class hierarchy used to describe actions of the application (54)</a>.</p>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">__call__()</span></code> method does the real work of the action.
-For the superclass, it merely logs a message.  This is overridden
+For the base class, it merely logs a message.  This is overridden
 by a subclass.</p>
 <p class="rubric" id="action-call-method-actually-does-the-real-work-56">Action call method actually does the real work (56) =</p>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -4193,7 +4193,7 @@ by a subclass.</p>
 </div>
 <div class="small docutils container">
 <p>∎ <em>Action call method actually does the real work (56)</em>.
-Used by     → <a class="reference internal" href="#action-superclass-has-common-features-of-all-actions-55">Action superclass has common features of all actions (55)</a>.</p>
+Used by     → <a class="reference internal" href="#action-base-class-has-common-features-of-all-actions-55">Action base class has common features of all actions (55)</a>.</p>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">summary()</span></code> method returns some basic processing statistics for this action.</p>
 <p class="rubric" id="action-final-summary-of-what-was-done-57">Action final summary of what was done (57) =</p>
@@ -4207,7 +4207,7 @@ Used by     → <a class="reference internal" href="#action-superclass-has-commo
 </div>
 <div class="small docutils container">
 <p>∎ <em>Action final summary of what was done (57)</em>.
-Used by     → <a class="reference internal" href="#action-superclass-has-common-features-of-all-actions-55">Action superclass has common features of all actions (55)</a>.</p>
+Used by     → <a class="reference internal" href="#action-base-class-has-common-features-of-all-actions-55">Action base class has common features of all actions (55)</a>.</p>
 </div>
 </section>
 <section id="actionsequence-class">
@@ -5012,7 +5012,7 @@ source files.</p>
 
 <span class="c1">### DO NOT EDIT THIS FILE!</span>
 <span class="c1">### It was created by src/pyweb.py, __version__=&#39;3.3&#39;.</span>
-<span class="c1">### From source web/impl.w modified Wed Oct 23 08:22:43 2024.</span>
+<span class="c1">### From source web/impl.w modified Thu Oct 24 08:57:55 2024.</span>
 <span class="c1">### In working directory &#39;/Users/slott/Documents/Projects/py-web-tool&#39;.</span>
 </pre></div>
 </div>
@@ -5079,8 +5079,9 @@ a summary.</p></li>
             <span class="n">permitList</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;@i&#39;</span><span class="p">],</span>
             <span class="n">tangler_line_numbers</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">webReader</span><span class="o">=</span><span class="n">pyweb</span><span class="o">.</span><span class="n">WebReader</span><span class="p">(),</span>
-            <span class="n">theTangler</span><span class="o">=</span><span class="n">pyweb</span><span class="o">.</span><span class="n">TanglerMake</span><span class="p">(),</span>
+            <span class="n">theTangler</span><span class="o">=</span><span class="n">pyweb</span><span class="o">.</span><span class="n">TanglerMake</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">parent</span><span class="p">),</span>
         <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Options </span><span class="si">%r</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">pyweb</span><span class="o">.</span><span class="n">LoadAction</span><span class="p">(),</span> <span class="n">pyweb</span><span class="o">.</span><span class="n">TangleAction</span><span class="p">():</span>
             <span class="n">action</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
@@ -5130,8 +5131,8 @@ This shows how to define a customized set of templates for a new markup language
 Used by     → <a class="reference internal" href="#weave-py-86">weave.py (86)</a>.</p>
 </div>
 <p>To override templates, a class needs to provide a list of text definitions for each Jinja <code class="docutils literal notranslate"><span class="pre">{%</span> <span class="pre">macro</span> <span class="pre">%}</span></code> definition.
-This is used to update the superclass
-<code class="docutils literal notranslate"><span class="pre">template_name_map</span></code>.</p>
+This is used to update the base class
+<code class="docutils literal notranslate"><span class="pre">template_name_map</span></code>, used by all <code class="docutils literal notranslate"><span class="pre">Weaver</span></code> classes.</p>
 <p>Something like the following sets the macros in use.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">template_name_map</span><span class="p">[</span><span class="s1">&#39;html&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
     <span class="p">(</span><span class="n">my_templates</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_name_map</span><span class="p">[</span><span class="s1">&#39;html&#39;</span><span class="p">]</span>
@@ -5169,6 +5170,7 @@ This will be used to build a <code class="docutils literal notranslate"><span cl
 
 <span class="k">class</span> <span class="nc">MyHTML</span><span class="p">(</span><span class="n">pyweb</span><span class="o">.</span><span class="n">Weaver</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">())</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;MyHTML </span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">template_name_map</span><span class="p">[</span><span class="s1">&#39;html&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
             <span class="p">(</span><span class="n">bootstrap_html</span><span class="p">,)</span> <span class="o">+</span>
@@ -5195,8 +5197,9 @@ Used by     → <a class="reference internal" href="#weave-py-86">weave.py (86)<
             <span class="n">tangler_line_numbers</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">webReader</span><span class="o">=</span><span class="n">pyweb</span><span class="o">.</span><span class="n">WebReader</span><span class="p">(),</span>
 
-            <span class="n">theWeaver</span><span class="o">=</span><span class="n">MyHTML</span><span class="p">(),</span>  <span class="c1"># Customized with a specific Weaver subclass</span>
+            <span class="n">theWeaver</span><span class="o">=</span><span class="n">MyHTML</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">parent</span><span class="p">),</span>  <span class="c1"># Customized with a specific Weaver subclass</span>
         <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Options </span><span class="si">%r</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">pyweb</span><span class="o">.</span><span class="n">LoadAction</span><span class="p">(),</span> <span class="n">pyweb</span><span class="o">.</span><span class="n">WeaveAction</span><span class="p">():</span>
             <span class="n">action</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
@@ -5251,6 +5254,7 @@ Make minted the default.</p>
 </dd>
 </dl>
 <p>[x] Accept macro definitions from the configuration file.</p>
+<p>[x] Clean up path/directory processing to remove some assumptions uncovered via testing with pytest <code class="docutils literal notranslate"><span class="pre">tmp_path</span></code> fixture.</p>
 </section>
 <section id="other-extensions-for-3-4">
 <h3><a class="toc-backref" href="#id85" role="doc-backlink">Other Extensions for 3.4</a><a class="headerlink" href="#other-extensions-for-3-4" title="Link to this heading">¶</a></h3>
@@ -5439,8 +5443,8 @@ This also requires designing a more easily extended <code class="docutils litera
 <li><p>Implement <code class="docutils literal notranslate"><span class="pre">-o</span> <span class="pre">dir</span></code> option to write output to a directory of choice, simplifying <strong>tox</strong> setup.</p></li>
 <li><p>Add <code class="docutils literal notranslate"><span class="pre">bootstrap</span></code> directory with a snapshot of a previous working release to simplify development.</p></li>
 <li><p>Add Test cases for <code class="docutils literal notranslate"><span class="pre">weave.py</span></code> and <code class="docutils literal notranslate"><span class="pre">tangle.py</span></code></p></li>
-<li><p>Replace hand-build mock classes with <code class="docutils literal notranslate"><span class="pre">unittest.mock.Mock</span></code> objects</p></li>
-<li><p>Separate the projec into <code class="docutils literal notranslate"><span class="pre">src</span></code>, <code class="docutils literal notranslate"><span class="pre">tests</span></code>, <code class="docutils literal notranslate"><span class="pre">examples</span></code>. Cleanup <code class="docutils literal notranslate"><span class="pre">Makefile</span></code>, <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>, etc.</p></li>
+<li><p>Replace hand-built mock classes with <code class="docutils literal notranslate"><span class="pre">unittest.mock.Mock</span></code> objects</p></li>
+<li><p>Separate the project into <code class="docutils literal notranslate"><span class="pre">src</span></code>, <code class="docutils literal notranslate"><span class="pre">tests</span></code>, <code class="docutils literal notranslate"><span class="pre">examples</span></code>. Cleanup <code class="docutils literal notranslate"><span class="pre">Makefile</span></code>, <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>, etc.</p></li>
 <li><p>Silence the ERROR-level logging during testing.</p></li>
 <li><p>Clean up the examples</p></li>
 </ul>
@@ -5555,17 +5559,17 @@ of the ReferenceCommand.</p></li>
 <section id="macros">
 <h3><a class="toc-backref" href="#id91" role="doc-backlink">Macros</a><a class="headerlink" href="#macros" title="Link to this heading">¶</a></h3>
 <dl class="field-list simple">
-<dt class="field-odd">Action call method actually does the real work<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→ <a class="reference internal" href="#action-call-method-actually-does-the-real-work-56">Action call method actually does the real work (56)</a></p>
+<dt class="field-odd">Action base class has common features of all actions<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#action-base-class-has-common-features-of-all-actions-55">Action base class has common features of all actions (55)</a></p>
 </dd>
-<dt class="field-even">Action class hierarchy used to describe actions of the application<span class="colon">:</span></dt>
-<dd class="field-even"><p>→ <a class="reference internal" href="#action-class-hierarchy-used-to-describe-actions-of-the-application-54">Action class hierarchy used to describe actions of the application (54)</a></p>
+<dt class="field-even">Action call method actually does the real work<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#action-call-method-actually-does-the-real-work-56">Action call method actually does the real work (56)</a></p>
 </dd>
-<dt class="field-odd">Action final summary of what was done<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→ <a class="reference internal" href="#action-final-summary-of-what-was-done-57">Action final summary of what was done (57)</a></p>
+<dt class="field-odd">Action class hierarchy used to describe actions of the application<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#action-class-hierarchy-used-to-describe-actions-of-the-application-54">Action class hierarchy used to describe actions of the application (54)</a></p>
 </dd>
-<dt class="field-even">Action superclass has common features of all actions<span class="colon">:</span></dt>
-<dd class="field-even"><p>→ <a class="reference internal" href="#action-superclass-has-common-features-of-all-actions-55">Action superclass has common features of all actions (55)</a></p>
+<dt class="field-even">Action final summary of what was done<span class="colon">:</span></dt>
+<dd class="field-even"><p>→ <a class="reference internal" href="#action-final-summary-of-what-was-done-57">Action final summary of what was done (57)</a></p>
 </dd>
 <dt class="field-odd">ActionSequence call method delegates the sequence of ations<span class="colon">:</span></dt>
 <dd class="field-odd"><p>→ <a class="reference internal" href="#actionsequence-call-method-delegates-the-sequence-of-ations-59">ActionSequence call method delegates the sequence of ations (59)</a></p>
@@ -5603,8 +5607,8 @@ of the ReferenceCommand.</p></li>
 <dt class="field-even">Debug Macros – these display debugging information<span class="colon">:</span></dt>
 <dd class="field-even"><p>→ <a class="reference internal" href="#debug-macros-these-display-debugging-information-25">Debug Macros – these display debugging information (25)</a></p>
 </dd>
-<dt class="field-odd">Emitter Superclass<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→ <a class="reference internal" href="#emitter-superclass-21">Emitter Superclass (21)</a></p>
+<dt class="field-odd">Emitter base class<span class="colon">:</span></dt>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#emitter-base-class-21">Emitter base class (21)</a></p>
 </dd>
 <dt class="field-even">Emitter indent control<span class="colon">:</span></dt>
 <dd class="field-even"><p>set, clear and reset:
@@ -5758,7 +5762,7 @@ of the ReferenceCommand.</p></li>
 <h3><a class="toc-backref" href="#id92" role="doc-backlink">User Identifiers</a><a class="headerlink" href="#user-identifiers" title="Link to this heading">¶</a></h3>
 <dl class="field-list simple">
 <dt class="field-odd">Action<span class="colon">:</span></dt>
-<dd class="field-odd"><p>→ <a class="reference internal" href="#action-superclass-has-common-features-of-all-actions-55">Action superclass has common features of all actions (55)</a></p>
+<dd class="field-odd"><p>→ <a class="reference internal" href="#action-base-class-has-common-features-of-all-actions-55">Action base class has common features of all actions (55)</a></p>
 </dd>
 <dt class="field-even">ActionSequence<span class="colon">:</span></dt>
 <dd class="field-even"><p>→ <a class="reference internal" href="#actionsequence-subclass-that-holds-a-sequence-of-other-actions-58">ActionSequence subclass that holds a sequence of other actions (58)</a></p>
@@ -5896,7 +5900,7 @@ of the ReferenceCommand.</p></li>
 <hr class="docutils" />
 <div class="small docutils container">
 <blockquote>
-<div><p>Created by src/pyweb.py at Wed Oct 23 08:25:31 2024.</p>
+<div><p>Created by src/pyweb.py at Thu Oct 24 08:58:40 2024.</p>
 </div></blockquote>
 <p>Source pyweb.w modified Sun Oct 20 13:50:05 2024.</p>
 <blockquote>

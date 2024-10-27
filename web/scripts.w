@@ -49,8 +49,9 @@ def main(source: Path) -> None:
             permitList=['@@i'],
             tangler_line_numbers=False,
             webReader=pyweb.WebReader(),
-            theTangler=pyweb.TanglerMake(),
+            theTangler=pyweb.TanglerMake(source.parent),
         )
+        logger.info("Options %r", options)
             
         for action in pyweb.LoadAction(), pyweb.TangleAction():
             action(options)
@@ -93,8 +94,8 @@ import pyweb
 @}
 
 To override templates, a class needs to provide a list of text definitions for each Jinja ``{% macro %}`` definition.
-This is used to update the superclass
-``template_name_map``.
+This is used to update the base class
+``template_name_map``, used by all ``Weaver`` classes.
 
 Something like the following sets the macros in use.
 
@@ -137,6 +138,7 @@ bootstrap_html = [
 
 class MyHTML(pyweb.Weaver):
     def __init__(self, output: Path = Path.cwd()) -> None:
+        print(f"MyHTML {output}")
         super().__init__(output)
         self.template_name_map['html'] = (
             (bootstrap_html,) +
@@ -160,9 +162,10 @@ def main(source: Path) -> None:
             tangler_line_numbers=False,
             webReader=pyweb.WebReader(),
             
-            theWeaver=MyHTML(),  # Customized with a specific Weaver subclass
+            theWeaver=MyHTML(source.parent),  # Customized with a specific Weaver subclass
         )
-        
+        logger.debug("Options %r", options)
+
         for action in pyweb.LoadAction(), pyweb.WeaveAction():
             action(options)
             logger.info(action.summary())

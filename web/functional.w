@@ -11,7 +11,67 @@ There are three broad areas of functional testing.
 
 -   `Tests for Weaving`_
 
-There are a total of 11 test cases.
+Because of some overlaps in fixture definition, there is also a ``conftest.py`` file that contains the shared test fixtures.
+
+Shared Fixtures
+---------------
+
+@o tests/conftest.py
+@{
+import io
+from pathlib import Path
+from typing import TextIO
+import pytest
+import pyweb
+
+@<Fixture for Source, WebReader, and Path@>
+
+@<Fixture for Source, WebReader, Path, with an Include@>
+@}
+
+These fixtures require a "marker" set in each test that uses them.
+The marker provides needed parameter values.
+
+Many of the parsing test cases have a common setup shown in this fixture.
+
+@d Fixture for Source, WebReader, and Path...
+@{
+@@pytest.fixture
+def source_path(request, tmp_path) -> [TextIO, pyweb.WebReader, Path]:
+    marker = request.node.get_closest_marker("text_name")
+    text, name = marker.args
+    source = io.StringIO(text)
+    path = tmp_path / name
+    return source, path
+@}
+
+Some of the more complex cases inject an Include file.
+This requires a somewhat more complicated fixture.
+
+@d Fixture for Source, WebReader, Path, with an Include
+@{
+@@pytest.fixture
+def source_path_incl(request, tmp_path) -> [TextIO, pyweb.WebReader, Path]:
+    marker = request.node.get_closest_marker("text_name_incl")
+    text, name, incl_text, incl_name = marker.args
+    include_path = tmp_path / incl_name
+    include_path.write_text(incl_text)
+    source = io.StringIO(text)
+    path = tmp_path / name
+    return source, path
+@}
+
+Additionally, a ``pytest.ini`` is also required to register the marks used to provide test parameters to a fixture.
+This also sets a logging format to assure the log messages have the expected format.
+
+@o pytest.ini
+@{
+[pytest]
+markers =
+    text_name: a blob of text, the path name
+    text_name_incl: a blob of text, a path, a blob of include text, the include path
+log_format = %(levelname)s:%(name)s:%(message)s
+@}
 
 Tests for Loading
 ------------------
@@ -21,62 +81,32 @@ We need to be able to load a web from one or more source files.
 @o tests/test_loader.py
 @{@<Load Test overheads: imports, etc.@>
 
-@<Load Test superclass to refactor common setup@>
-
 @<Load Test error handling with a few common syntax errors@>
 
 @<Load Test include processing with syntax errors@>
-
-@<Load Test main program@>
-@}
-
-Parsing test cases have a common setup shown in this superclass.
-
-By using some class-level variables ``text``,
-``file_path``, we can provide a file-like
-input object to the ``WebReader`` instance.
-
-@d Load Test superclass...
-@{
-class ParseTestcase(unittest.TestCase):
-    text: ClassVar[str]
-    file_path: ClassVar[Path]
-    
-    def setUp(self) -> None:
-        self.source = io.StringIO(self.text)
-        self.rdr = pyweb.WebReader()
 @}
 
 There are a lot of specific parsing exceptions which can be thrown.
-We'll cover most of the cases with a quick check for a failure to 
-find an expected next token.
-
-@d Load Test overheads...
-@{
-import logging.handlers
-from pathlib import Path
-from textwrap import dedent
-from typing import ClassVar
-@}
+We'll cover most of the cases with a quick check for a failure to  find an expected next token.
 
 @d Load Test error handling...
 @{
+
 @<Sample Document 1 with correct and incorrect syntax@>
 
-class Test_ParseErrors(ParseTestcase):
-    text = test1_w
-    file_path = Path("test1.w")
-    def test_error_should_count_1(self) -> None:
-        with self.assertLogs('WebReader', level='WARN') as log_capture:
-            chunks = self.rdr.load(self.file_path, self.source)
-        self.assertEqual(3, self.rdr.errors)
-        self.assertEqual(log_capture.output, 
-            [
-                "ERROR:WebReader:At ('test1.w', 8): expected {'@@{'}, found '@@o'",
-                "ERROR:WebReader:Extra '@@{' (possibly missing chunk name) near ('test1.w', 9)",
-                "ERROR:WebReader:Extra '@@{' (possibly missing chunk name) near ('test1.w', 9)"
-            ]
-        )
+@@pytest.mark.text_name(test1_w, "test1.w")
+def test_error_should_count_1(source_path, caplog):
+    source, file_path = source_path
+    rdr = pyweb.WebReader()
+
+    with caplog.at_level(level='WARN', logger='WebReader') as log_capture:
+        chunks = rdr.load(file_path, source)
+    assert 3 == rdr.errors
+    assert caplog.text.splitlines() == [
+        "ERROR:WebReader:At ('test1.w', 8): expected {'@@{'}, found '@@o'",
+        "ERROR:WebReader:Extra '@@{' (possibly missing chunk name) near ('test1.w', 9)",
+        "ERROR:WebReader:Extra '@@{' (possibly missing chunk name) near ('test1.w', 9)"
+    ]
 @}
 
 @d Sample Document 1...
@@ -93,49 +123,37 @@ Okay, now for an error.
 """
 @}
 
-All of the parsing exceptions should be correctly identified with
-any included file.
-We'll cover most of the cases with a quick check for a failure to 
-find an expected next token.
+All of the parsing exceptions should be correctly identified with any included file.
+We'll cover most of the cases with a quick check for a failure to find an expected next token.
 
-In order to test the include file processing, we have to actually
-create a temporary file.  It's hard to mock the include processing,
-since it's a nested instance of the tokenizer.
+In order to test the include file processing, we have to actually create a temporary file.
+It's hard to mock the include processing, since it's a nested instance of the tokenizer.
 
 @d Load Test include...
 @{
 @<Sample Document 8 and the file it includes@>
 
-class Test_IncludeParseErrors(ParseTestcase):
-    text = test8_w
-    file_path = Path("test8.w")
-    def setUp(self) -> None:
-        super().setUp()
-        Path('test8_inc.tmp').write_text(test8_inc_w)
-    def test_error_should_count_2(self) -> None:
-        with self.assertLogs('WebReader', level='WARN') as log_capture:
-            chunks = self.rdr.load(self.file_path, self.source)
-        self.assertEqual(1, self.rdr.errors)
-        self.assertEqual(log_capture.output,
-            [
-                "ERROR:WebReader:At ('test8_inc.tmp', 4): end of input, {'@@{', '@@['} not found", 
-                "ERROR:WebReader:Errors in included file 'test8_inc.tmp', output is incomplete."
-            ]
-        ) 
-    def tearDown(self) -> None:
-        super().tearDown()
-        Path('test8_inc.tmp').unlink()
+@@pytest.mark.text_name_incl(test8_w, "test8.w", test8_inc_w, 'test8_inc.w')
+def test_error_should_count_2(caplog, tmp_path, source_path_incl) -> None:
+    source, file_path = source_path_incl
+    rdr = pyweb.WebReader()
+    with caplog.at_level(level='WARN', logger='WebReader') as log_capture:
+        chunks = rdr.load(file_path, source)
+    assert 1 == rdr.errors
+    assert caplog.text.splitlines() == [
+        "ERROR:WebReader:At ('test8_inc.w', 4): end of input, {'@@{', '@@['} not found",
+        "ERROR:WebReader:Errors in included file 'test8_inc.w', output is incomplete."
+    ]
 @}
 
-The sample document must reference the correct name that will
-be given to the included document by ``setUp``.
+The sample document must reference the correct name that will be given to the included document by ``setUp``.
 
 @d Sample Document 8...
 @{
 test8_w = """Some anonymous chunk.
 @@d title @@[the title of this document, defined with @@@@[ and @@@@]@@]
 A reference to @@<title@@>.
-@@i test8_inc.tmp
+@@i test8_inc.w
 A final anonymous chunk from test8.w
 """
 
@@ -145,30 +163,25 @@ And now for an error - incorrect syntax in an included file!
 """
 @}
 
-<p>The overheads for a Python unittest.</p>
+The overheads for a Python test.
 
 @d Load Test overheads...
 @{
 """Loader and parsing tests."""
 import io
 import logging
+import logging.handlers
 import os
 from pathlib import Path
 import string
 import sys
+from textwrap import dedent
 import types
-import unittest
+from typing import TextIO
+
+import pytest
 
 import pyweb
-@}
-
-A main program that configures logging and then runs the test.
-
-@d Load Test main program...
-@{
-if __name__ == "__main__":
-    logging.basicConfig(stream=sys.stdout, level=logging.WARN)
-    unittest.main()
 @}
 
 Tests for Tangling
@@ -178,62 +191,58 @@ We need to be able to tangle a web.
 
 @o tests/test_tangler.py
 @{@<Tangle Test overheads: imports, etc.@>
-@<Tangle Test superclass to refactor common setup@>
-@<Tangle Test semantic error 2@>
-@<Tangle Test semantic error 3@>
-@<Tangle Test semantic error 4@>
-@<Tangle Test semantic error 5@>
+
+@<Tangle Test semantic errors 2-5@>
+
+@<Tangle Test fixture to refactor common setup@>
+@<Tangle Test function to execute cases@>
+
 @<Tangle Test semantic error 6@>
-@<Tangle Test include error 7@>
-@<Tangle Test main program@>
+@<Tangle Test include example 7@>
 @}
 
-Tangling test cases have a common setup and teardown shown in this superclass.
+Tangling test cases have a common setup and teardown shown in this fixture.
 Since tangling must produce a file, it's helpful to remove the file that gets created.
-The essential test case is to load and attempt to tangle, checking the 
-exceptions raised.
+The essential test case is to load and attempt to tangle, checking the exceptions raised.
 
+Since these test cases are all very similar, we can use a parameterized fixture to execute a single test function repeatedly.
 
-@d Tangle Test superclass...
+@d Tangle Test fixture...
 @{
-class TangleTestcase(unittest.TestCase):
-    text: ClassVar[str]
-    error: ClassVar[str]
-    file_path: ClassVar[Path]
-    
-    def setUp(self) -> None:
-        self.source = io.StringIO(self.text)
-        self.rdr = pyweb.WebReader()
-        self.tangler = pyweb.Tangler()
-        
-    def tangle_and_check_exception(self, exception_text: str) -> None:
-        with self.assertRaises(pyweb.Error) as exc_mgr:
-            chunks = self.rdr.load(self.file_path, self.source)
-            self.web = pyweb.Web(chunks)
-            self.tangler.emit(self.web)
-            self.fail("Should not tangle")
-        exc = exc_mgr.exception
-        self.assertEqual(exception_text, exc.args[0])
-            
-    def tearDown(self) -> None:
-        try:
-            self.file_path.with_suffix(".tmp").unlink()
-        except FileNotFoundError:
-            pass  # If the test fails, nothing to remove...
+tangle_cases = [
+    (test2_w, "test2.w", "Attempt to tangle an undefined Chunk, 'part2'"),
+    (test3_w, "test3.w", "Illegal tangling of a cross reference command."),
+    (test4_w, "test4.w", "No full name for 'part1...'"),
+    (test5_w, "test5.w", "Ambiguous abbreviation 'part1...', matches ['part1a', 'part1b']"),
+]
+
+@@pytest.fixture(params=tangle_cases)
+def source_reader_path_tangler_error(request, tmp_path) -> [TextIO, pyweb.WebReader, Path, pyweb.Tangler, str]:
+    text, name, error = request.param
+    source = io.StringIO(text)
+    rdr = pyweb.WebReader()
+    path = tmp_path / name
+    tangler = pyweb.Tangler(tmp_path)
+    yield source, rdr, path, tangler, error
+    for output in tmp_path.glob("*.tmp"):
+        output.unlink()
 @}
 
-@d Tangle Test semantic error 2... 
+@d Tangle Test function...
 @{
-@<Sample Document 2@>
+def test_tangle_and_check_exception(source_reader_path_tangler_error) -> None:
+    source, rdr, file_path, tangler, exception_text = source_reader_path_tangler_error
 
-class Test_SemanticError_2(TangleTestcase):
-    text = test2_w
-    file_path = Path("test2.w")
-    def test_should_raise_undefined(self) -> None:
-        self.tangle_and_check_exception("Attempt to tangle an undefined Chunk, 'part2'")
+    with pytest.raises(pyweb.Error) as exc_info:
+        chunks = rdr.load(file_path, source)
+        web = pyweb.Web(chunks)
+        tangler.emit(web)
+        assert False, "Should not tangle"
+    assert exception_text == exc_info.value.args[0]
 @}
 
-@d Sample Document 2... @{
+@d Tangle Test semantic errors 2-5...
+@{
 test2_w = """Some anonymous chunk
 @@o test2.tmp
 @@{@@<part1@@>
@@ -242,20 +251,7 @@ test2_w = """Some anonymous chunk
 @@d part1 @@{This is part 1.@@}
 Okay, now for some errors: no part2!
 """
-@}
 
-@d Tangle Test semantic error 3... 
-@{
-@<Sample Document 3@>
-
-class Test_SemanticError_3(TangleTestcase):
-    text = test3_w
-    file_path = Path("test3.w")
-    def test_should_raise_bad_xref(self) -> None:
-        self.tangle_and_check_exception("Illegal tangling of a cross reference command.")
-@}
-
-@d Sample Document 3... @{
 test3_w = """Some anonymous chunk
 @@o test3.tmp
 @@{@@<part1@@>
@@ -265,22 +261,7 @@ test3_w = """Some anonymous chunk
 @@d part2 @@{This is part 2, with an illegal: @@f.@@}
 Okay, now for some errors: attempt to tangle a cross-reference!
 """
-@}
 
-
-@d Tangle Test semantic error 4... 
-@{
-@<Sample Document 4@>
-
-class Test_SemanticError_4(TangleTestcase):
-    """An optional feature of a Web."""
-    text = test4_w
-    file_path = Path("test4.w")
-    def test_should_raise_noFullName(self) -> None:
-        self.tangle_and_check_exception("No full name for 'part1...'")
-@}
-
-@d Sample Document 4... @{
 test4_w = """Some anonymous chunk
 @@o test4.tmp
 @@{@@<part1...@@>
@@ -290,20 +271,7 @@ test4_w = """Some anonymous chunk
 @@d part2 @@{This is part 2.@@}
 Okay, now for some errors: attempt to weave but no full name for part1....
 """
-@}
 
-@d Tangle Test semantic error 5... 
-@{
-@<Sample Document 5@>
-
-class Test_SemanticError_5(TangleTestcase):
-    text = test5_w
-    file_path = Path("test5.w")
-    def test_should_raise_ambiguous(self) -> None:
-        self.tangle_and_check_exception("Ambiguous abbreviation 'part1...', matches ['part1a', 'part1b']")
-@}
-
-@d Sample Document 5... @{
 test5_w = """
 Some anonymous chunk
 @@o test5.tmp
@@ -317,21 +285,25 @@ Okay, now for some errors: part1... is ambiguous
 """
 @}
 
+The remaining errors have unique features, and can't use the generic test function.
+The first of these looks for a number of warnings, instead of an exception.
+
 @d Tangle Test semantic error 6... 
 @{ 
 @<Sample Document 6@>
 
-class Test_SemanticError_6(TangleTestcase):
-    text = test6_w
-    file_path = Path("test6.w")
-    def test_should_warn(self) -> None:
-        chunks = self.rdr.load(self.file_path, self.source)
-        self.web = pyweb.Web(chunks)
-        self.tangler.emit(self.web)
-        print(self.web.no_reference())
-        self.assertEqual(1, len(self.web.no_reference()))
-        self.assertEqual(1, len(self.web.multi_reference()))
-        self.assertEqual({'part1a', 'part1...'}, self.tangler.reference_names)
+@@pytest.mark.text_name(test6_w, "test6.w")
+def test_tangle_warnings(tmp_path, source_path) -> None:
+    source, file_path = source_path
+    rdr = pyweb.WebReader()
+    chunks = rdr.load(file_path, source)
+    web = pyweb.Web(chunks)
+    tangler = pyweb.Tangler(tmp_path)
+    tangler.emit(web)
+    print(web.no_reference())
+    assert 1 == len(web.no_reference())
+    assert 1 == len(web.multi_reference())
+    assert {'part1a', 'part1...'} == tangler.reference_names
 @}
 
 @d Sample Document 6... @{
@@ -348,25 +320,21 @@ Okay, now for some warnings:
 """
 @}
 
-@d Tangle Test include error 7... 
+@d Tangle Test include example 7...
 @{
 @<Sample Document 7 and it's included file@>
 
-class Test_IncludeError_7(TangleTestcase):
-    text = test7_w
-    file_path = Path("test7.w")
-    def setUp(self) -> None:
-        Path('test7_inc.tmp').write_text(test7_inc_w)
-        super().setUp()
-    def test_should_include(self) -> None:
-        chunks = self.rdr.load(self.file_path, self.source)
-        self.web = pyweb.Web(chunks)
-        self.tangler.emit(self.web)
-        self.assertEqual(5, len(self.web.chunks))
-        self.assertEqual(test7_inc_w, self.web.chunks[3].commands[0].text)
-    def tearDown(self) -> None:
-        Path('test7_inc.tmp').unlink()
-        super().tearDown()
+@@pytest.mark.text_name_incl(test7_w, "test7.w", test7_inc_w, 'test7_inc.tmp')
+def test_tangle_should_include(tmp_path, source_path_incl) -> None:
+    source, file_path = source_path_incl
+    rdr = pyweb.WebReader()
+
+    chunks = rdr.load(file_path, source)
+    web = pyweb.Web(chunks)
+    tangler = pyweb.Tangler(tmp_path)
+    tangler.emit(web)
+    assert 5 == len(web.chunks)
+    assert test7_inc_w == web.chunks[3].commands[0].text
 @}
 
 @d Sample Document 7... @{
@@ -388,18 +356,11 @@ import io
 import logging
 import os
 from pathlib import Path
-from typing import ClassVar
-import unittest
+from typing import ClassVar, TextIO
+
+import pytest
 
 import pyweb
-@}
-
-@d Tangle Test main program...
-@{
-if __name__ == "__main__":
-    import sys
-    logging.basicConfig(stream=sys.stdout, level=logging.WARN)
-    unittest.main()
 @}
 
 
@@ -410,68 +371,54 @@ We need to be able to weave a document from one or more source files.
 
 @o tests/test_weaver.py
 @{@<Weave Test overheads: imports, etc.@>
-@<Weave Test superclass to refactor common setup@>
+
 @<Weave Test references and definitions@>
 @<Weave Test evaluation of expressions@>
-@<Weave Test main program@>
 @}
 
-Weaving test cases have a common setup shown in this superclass.
-
-@d Weave Test superclass... @{
-class WeaveTestcase(unittest.TestCase):
-    text: ClassVar[str]
-    error: ClassVar[str]
-    file_path: ClassVar[Path]
-    
-    def setUp(self) -> None:
-        self.source = io.StringIO(self.text)
-        self.rdr = pyweb.WebReader()
-        self.maxDiff = None
-
-    def tearDown(self) -> None:
-        try:
-            self.file_path.with_suffix(".html").unlink()
-        except FileNotFoundError:
-            pass
-        try:
-            self.file_path.with_suffix(".debug").unlink()
-        except FileNotFoundError:
-            pass
-@}
+Weaving test cases have a common setup shown in this fixture.
 
 @d Weave Test references... @{
 @<Sample Document 0@>
 @<Expected Output 0@>
 
-class Test_RefDefWeave(WeaveTestcase):
-    text = test0_w
-    file_path = Path("test0.w")
-    def test_load_should_createChunks(self) -> None:
-        chunks = self.rdr.load(self.file_path, self.source)
-        self.assertEqual(3, len(chunks))
+
+@@pytest.mark.text_name(test0_w, "test0.w")
+def test_load_should_createChunks(source_path) -> None:
+    source, file_path = source_path
+    rdr = pyweb.WebReader()
+    chunks = rdr.load(file_path, source)
+    assert 3 == len(chunks)
         
-    def test_weave_should_create_html(self) -> None:
-        chunks = self.rdr.load(self.file_path, self.source)
-        self.web = pyweb.Web(chunks)
-        self.web.web_path = self.file_path
-        doc = pyweb.Weaver( )
-        doc.set_markup("html")
-        doc.emit(self.web)
-        actual = self.file_path.with_suffix(".html").read_text()
-        self.maxDiff = None
-        self.assertEqual(test0_expected_html, actual)
+@@pytest.mark.text_name(test0_w, "test0.w")
+def test_weave_should_create_html(tmp_path, source_path) -> None:
+    source, file_path = source_path
+    rdr = pyweb.WebReader()
+    chunks = rdr.load(file_path, source)
+    web = pyweb.Web(chunks)
+    web.web_path = file_path
+    doc = pyweb.Weaver( )
+    doc.set_markup("html")
+    doc.output = tmp_path
+    doc.emit(web)
+    assert doc.target_path == file_path.with_suffix(".html")
+    actual = doc.target_path.read_text()
+    assert test0_expected_html == actual
         
-    def test_weave_should_create_debug(self) -> None:
-        chunks = self.rdr.load(self.file_path, self.source)
-        self.web = pyweb.Web(chunks)
-        self.web.web_path = self.file_path
-        doc = pyweb.Weaver( )
-        doc.set_markup("debug")
-        doc.emit(self.web)
-        actual = self.file_path.with_suffix(".debug").read_text()
-        self.maxDiff = None
-        self.assertEqual(test0_expected_debug, actual)
+@@pytest.mark.text_name(test0_w, "test0.w")
+def test_weave_should_create_debug(tmp_path, source_path) -> None:
+    source, file_path = source_path
+    rdr = pyweb.WebReader()
+    chunks = rdr.load(file_path, source)
+    web = pyweb.Web(chunks)
+    web.web_path = file_path
+    doc = pyweb.Weaver( )
+    doc.set_markup("debug")
+    doc.output = tmp_path
+    doc.emit(web)
+    assert doc.target_path == file_path.with_suffix(".debug")
+    actual = doc.target_path.read_text()
+    assert test0_expected_debug == actual
 @}
 
 @d Sample Document 0... 
@@ -543,7 +490,7 @@ test0_expected_debug = (
     )
 @}
 
-Note that this really requires a mocked ``time`` module in order
+Note that this requires a mocked ``time`` module in order
 to properly provide a consistent output from ``time.asctime()``.
 
 @d Weave Test evaluation... @{
@@ -551,26 +498,31 @@ to properly provide a consistent output from ``time.asctime()``.
 
 from unittest.mock import Mock
 
-class TestEvaluations(WeaveTestcase):
-    text = test9_w
-    file_path = Path("test9.w")
-    def setUp(self):
-        super().setUp()
-        self.mock_time = Mock(asctime=Mock(return_value="mocked time"))
-    def test_should_evaluate(self) -> None:
-        chunks = self.rdr.load(self.file_path, self.source)
-        self.web = pyweb.Web(chunks)
-        self.web.web_path = self.file_path
-        doc = pyweb.Weaver( )
-        doc.set_markup("html")
-        doc.emit(self.web)
-        actual = self.file_path.with_suffix(".html").read_text().splitlines()
-        #print(actual)
-        self.assertEqual("An anonymous chunk.", actual[0])
-        self.assertTrue("Time = mocked time", actual[1])
-        self.assertEqual("File = ('test9.w', 3)", actual[2])
-        self.assertEqual('Version = 3.3', actual[3])
-        self.assertEqual(f'CWD = {os.getcwd()}', actual[4])
+@@pytest.fixture()
+def mock_time(monkeypatch):
+    mock_time = Mock(asctime=Mock(return_value="mocked time"))
+    monkeypatch.setattr(pyweb, "time", mock_time)
+    return mock_time
+
+@@pytest.mark.text_name(test9_w, "test9.w")
+def test_should_evaluate(tmp_path, source_path, mock_time) -> None:
+    source, file_path = source_path
+    rdr = pyweb.WebReader()
+    chunks = rdr.load(file_path, source)
+    web = pyweb.Web(chunks)
+    web.web_path = file_path
+    doc = pyweb.Weaver( )
+    doc.set_markup("html")
+    doc.output = tmp_path
+    doc.emit(web)
+    assert doc.target_path == file_path.with_suffix(".html")
+    actual = doc.target_path.read_text().splitlines()
+    #print(actual)
+    assert "An anonymous chunk." == actual[0]
+    assert "Time = mocked time" == actual[1]
+    assert "File = ('test9.w', 3)" == actual[2]
+    assert 'Version = 3.3' == actual[3]
+    assert f'CWD = {os.getcwd()}' == actual[4]
 @}
 
 @d Sample Document 9...
@@ -594,14 +546,8 @@ import string
 import sys
 from textwrap import dedent
 from typing import ClassVar
-import unittest
+
+import pytest
 
 import pyweb
-@}
-
-@d Weave Test main program...
-@{
-if __name__ == "__main__":
-    logging.basicConfig(stream=sys.stderr, level=logging.WARN)
-    unittest.main()
 @}

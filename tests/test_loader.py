@@ -1,30 +1,20 @@
 
-import logging.handlers
-from pathlib import Path
-from textwrap import dedent
-from typing import ClassVar
-
 """Loader and parsing tests."""
 import io
 import logging
+import logging.handlers
 import os
 from pathlib import Path
 import string
 import sys
+from textwrap import dedent
 import types
-import unittest
+from typing import TextIO
+
+import pytest
 
 import pyweb
 
-
-
-class ParseTestcase(unittest.TestCase):
-    text: ClassVar[str]
-    file_path: ClassVar[Path]
-    
-    def setUp(self) -> None:
-        self.source = io.StringIO(self.text)
-        self.rdr = pyweb.WebReader()
 
 
 
@@ -41,20 +31,19 @@ Okay, now for an error.
 """
 
 
-class Test_ParseErrors(ParseTestcase):
-    text = test1_w
-    file_path = Path("test1.w")
-    def test_error_should_count_1(self) -> None:
-        with self.assertLogs('WebReader', level='WARN') as log_capture:
-            chunks = self.rdr.load(self.file_path, self.source)
-        self.assertEqual(3, self.rdr.errors)
-        self.assertEqual(log_capture.output, 
-            [
-                "ERROR:WebReader:At ('test1.w', 8): expected {'@{'}, found '@o'",
-                "ERROR:WebReader:Extra '@{' (possibly missing chunk name) near ('test1.w', 9)",
-                "ERROR:WebReader:Extra '@{' (possibly missing chunk name) near ('test1.w', 9)"
-            ]
-        )
+@pytest.mark.text_name(test1_w, "test1.w")
+def test_error_should_count_1(source_path, caplog):
+    source, file_path = source_path
+    rdr = pyweb.WebReader()
+
+    with caplog.at_level(level='WARN', logger='WebReader') as log_capture:
+        chunks = rdr.load(file_path, source)
+    assert 3 == rdr.errors
+    assert caplog.text.splitlines() == [
+        "ERROR:WebReader:At ('test1.w', 8): expected {'@{'}, found '@o'",
+        "ERROR:WebReader:Extra '@{' (possibly missing chunk name) near ('test1.w', 9)",
+        "ERROR:WebReader:Extra '@{' (possibly missing chunk name) near ('test1.w', 9)"
+    ]
 
 
 
@@ -62,7 +51,7 @@ class Test_ParseErrors(ParseTestcase):
 test8_w = """Some anonymous chunk.
 @d title @[the title of this document, defined with @@[ and @@]@]
 A reference to @<title@>.
-@i test8_inc.tmp
+@i test8_inc.w
 A final anonymous chunk from test8.w
 """
 
@@ -72,29 +61,15 @@ And now for an error - incorrect syntax in an included file!
 """
 
 
-class Test_IncludeParseErrors(ParseTestcase):
-    text = test8_w
-    file_path = Path("test8.w")
-    def setUp(self) -> None:
-        super().setUp()
-        Path('test8_inc.tmp').write_text(test8_inc_w)
-    def test_error_should_count_2(self) -> None:
-        with self.assertLogs('WebReader', level='WARN') as log_capture:
-            chunks = self.rdr.load(self.file_path, self.source)
-        self.assertEqual(1, self.rdr.errors)
-        self.assertEqual(log_capture.output,
-            [
-                "ERROR:WebReader:At ('test8_inc.tmp', 4): end of input, {'@{', '@['} not found", 
-                "ERROR:WebReader:Errors in included file 'test8_inc.tmp', output is incomplete."
-            ]
-        ) 
-    def tearDown(self) -> None:
-        super().tearDown()
-        Path('test8_inc.tmp').unlink()
-
-
-
-if __name__ == "__main__":
-    logging.basicConfig(stream=sys.stdout, level=logging.WARN)
-    unittest.main()
+@pytest.mark.text_name_incl(test8_w, "test8.w", test8_inc_w, 'test8_inc.w')
+def test_error_should_count_2(caplog, tmp_path, source_path_incl) -> None:
+    source, file_path = source_path_incl
+    rdr = pyweb.WebReader()
+    with caplog.at_level(level='WARN', logger='WebReader') as log_capture:
+        chunks = rdr.load(file_path, source)
+    assert 1 == rdr.errors
+    assert caplog.text.splitlines() == [
+        "ERROR:WebReader:At ('test8_inc.w', 4): end of input, {'@{', '@['} not found",
+        "ERROR:WebReader:Errors in included file 'test8_inc.w', output is incomplete."
+    ]
 

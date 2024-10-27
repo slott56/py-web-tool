@@ -1,0 +1,48 @@
+
+[pyweb]
+# PyWeb options go here.
+# Override macro definitions.
+# macros = [
+# """{% macro begin_code(chunk) %}...{% endmacro %}""",
+# """{% macro end_code(chunk) %}...{% endmacro %}"""
+# ]
+
+[logging]
+version = 1
+disable_existing_loggers = false
+
+[logging.root]
+handlers = ["console",]
+level = "DEBUG"
+
+[logging.handlers.console]
+class = "logging.StreamHandler"
+stream = "ext://sys.stderr"
+formatter = "basic"
+
+[logging.formatters.basic]
+format = "{levelname}:{name}:{message}"
+style = "{"
+
+[logging.loggers.Application]
+level = "INFO"
+
+[logging.loggers.Weaver]
+level = "INFO"
+
+[logging.loggers.WebReader]
+level = "INFO"
+
+[logging.loggers.Tangler]
+level = "INFO"
+
+[logging.loggers.TanglerMake]
+level = "INFO"
+
+[logging.loggers.indent.TanglerMake]
+level = "INFO"
+
+[logging.loggers.ReferenceCommand]
+# Unit test requires this...
+level = "INFO"
+
