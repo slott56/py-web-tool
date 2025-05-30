@@ -79,7 +79,7 @@ A typical command to tangle (without weaving) is:
 
 ..  parsed-literal::
 
-    python -m pyweb -xw examples/hw.w -o examples
+    pyweb -xw examples/hw.w -o examples
 
 The outputs will be defined by the ``@@o`` commands in the source.
 The ``-o`` option writes the resulting tangled files to the named directory.
@@ -101,7 +101,7 @@ A typical command to weave (without tangling) is:
 
 ..  parsed-literal::
 
-    python -m pyweb -xt examples/hw.w -o examples
+    pyweb -xt examples/hw.w -o examples
     
 The output will be named ``examples/hw.rst``. The ``-o`` option made sure the file
 was written to the ``examples`` directory.
@@ -114,7 +114,7 @@ you do the following:
 
 ..  code:: bash
 
-    python -m pyweb examples/hw.w -o examples
+    pyweb examples/hw.w -o examples
 
 This will tangle the ``@@o`` commands in ``examples/hw.w``
 It will also weave the output, and create ``examples/hw.rst``.
@@ -261,9 +261,9 @@ The sequence is as follows:
 
 ..  parsed-literal::
 
-    python -m pyweb -xw -pi examples/hw.w -o examples
+    pyweb -xw -pi examples/hw.w -o examples
     python examples/hw.py >examples/hw_output.log
-    python -m pyweb -xt examples/hw.w -o examples
+    pyweb -xt examples/hw.w -o examples
      
 The first step uses ``-xw`` to excludes document weaving.
 The ``-pi`` option will permits errors on the ``@@i`` command. 
