@@ -56,7 +56,7 @@ tox==4.6.4
     # via pip-tools (pyproject.toml)
 typing-extensions==4.7.1
     # via mypy
-virtualenv==20.23.1
+virtualenv==20.26.6
     # via tox
 wheel==0.40.0
     # via pip-tools (pyproject.toml)
